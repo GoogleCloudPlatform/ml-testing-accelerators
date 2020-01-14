@@ -1,0 +1,10 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/model-garden:$_VERSION', '.', '-f', 'images/garden/Dockerfile']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/$PROJECT_ID/model-garden:$_VERSION']
+images: ['gcr.io/$PROJECT_ID/model-garden:$_VERSION']
+substitutions:
+  _VERSION: 'latest'
+options:
+    substitution_option: 'ALLOW_LOOSE'
