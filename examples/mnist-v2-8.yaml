@@ -1,0 +1,56 @@
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "name": "mnist-v2-8-example"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "spec":
+      "backoffLimit": 0
+      "template":
+        "metadata":
+          "annotations":
+            "tf-version.cloud-tpus.google.com": "nightly-2.x"
+        "spec":
+          "activeDeadlineSeconds": 3600
+          "containers":
+          - "args":
+            - "python3"
+            - "official/vision/image_classification/mnist_main.py"
+            - "--data_dir=gs://xl-ml-test-us-central1/data/mnist"
+            - "--distribution_strategy=tpu"
+            - "--batch_size=1024"
+            - "--train_epochs=1"
+            - "--epochs_between_evals=1"
+            - "--model_dir=$(MODEL_DIR)"
+            "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/mnist/functional/v2-8/$(JOB_NAME)"
+            - "name": "METRIC_COLLECTION_CONFIG"
+              "value": "ewogICJkZWZhdWx0X2FnZ3JlZ2F0aW9uX3N0cmF0ZWd5IjogImZpbmFsIiwKICAibWV0cmljX3RvX2FnZ3JlZ2F0aW9uX3N0cmF0ZWd5IjogewoKICB9LAogICJ0YWdzX3RvX2lnbm9yZSI6IFsKCiAgXSwKICAidGltZV90b19hY2N1cmFjeSI6IHsKICAgICJhY2N1cmFjeV90YWciOiAiZXZhbC9hY2N1cmFjeSIsCiAgICAiYWNjdXJhY3lfdGhyZXNob2xkIjogMAogIH0sCiAgIndyaXRlX3RvX2JpZ3F1ZXJ5IjogZmFsc2UKfQ=="
+            - "name": "REGRESSION_TEST_CONFIG"
+              "value": "bnVsbA=="
+            "image": "gcr.io/xl-ml-test/model-garden:nightly"
+            "imagePullPolicy": "Always"
+            "name": "mnist-functional-v2-8"
+            "resources":
+              "limits":
+                "cloud-tpus.google.com/preemptible-v2": 8
+          "restartPolicy": "Never"
+  "schedule": "0 */24 * * *"
