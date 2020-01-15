@@ -218,8 +218,9 @@ class CloudMetricsHandler(object):
                        'See README for how to set up the config.')
     values = raw_metrics.get(tta_config['accuracy_tag'], [])
     if not values:
-      raise ValueError('No values found for time to accuracy tag: {}'.format(
-          tta_config['accuracy_tag']))
+      raise ValueError('No values found for time to accuracy tag: {}. '
+          'Possible tags were: {}'.format(
+          tta_config['accuracy_tag'], raw_metrics.keys()))
 
     # MetricPoints should be sorted by timestamp with earlier events first.
     start_wall_time = values[0].wall_time
