@@ -426,13 +426,14 @@ class CloudMetricsHandler(object):
 def run_main(event, context):
   pubsub_message = base64.b64decode(event['data']).decode('utf-8')
   event = json.loads(pubsub_message)
+  print('Decoded pubsub message: {}'.format(event))
 
   # Get test_name, events_dir, path_to_config_file from pubsub message.
   events_dir = event.get('model_dir', None)
   # TODO: Default to None and error if no name given in pubsub msg.
   test_name = event.get('config_name', 'tf-mnist-v2-8')
+  metric_collection_config = event.get('metric_collection_config', None)
   # TODO: Default to None and error if no config given in pubsub msg.
-  metric_collection_config = event.get('metric_collection_config', 1)
   regression_alert_config = event.get('regression_test_config', 1)
   logs_link = event.get('logs_link', None)
   if not (events_dir and test_name and logs_link):
