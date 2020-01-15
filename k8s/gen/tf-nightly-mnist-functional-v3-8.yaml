@@ -25,6 +25,8 @@
             - "--epochs_between_evals=1"
             - "--model_dir=$(MODEL_DIR)"
             "env":
+            - "name": "CONFIG_NAME"
+              "value": "tf-nightly-mnist-functional-v3-8"
             - "name": "POD_NAME"
               "valueFrom":
                 "fieldRef":

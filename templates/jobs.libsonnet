@@ -45,6 +45,11 @@ local tpus = import "tpus.libsonnet";
               },
               env: [
                 {
+                  # TODO: come up with a better name
+                  name: 'CONFIG_NAME',
+                  value: config.job_name,
+                },
+                {
                   name: 'POD_NAME',
                   valueFrom: {
                     fieldRef: {
