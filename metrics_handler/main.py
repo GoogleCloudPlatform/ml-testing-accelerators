@@ -92,7 +92,7 @@ class CloudMetricsHandler(object):
         'tags_to_ignore': ['LearningRate'],
         'time_to_accuracy': {
           'accuracy_threshold': 99.0,
-          'accuracy_tag': 'Accuracy/test',
+          'accuracy_tag': 'epoch_sparse_categorical_accuracy',
         },
       },
      
