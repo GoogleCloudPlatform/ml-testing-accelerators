@@ -1,0 +1,5 @@
+google-cloud-bigquery==1.23.1
+google-cloud-monitoring==0.34.0
+google-cloud-storage==1.23.0
+tensorboard>=2.0.0
+tensorflow>=1.14.0
