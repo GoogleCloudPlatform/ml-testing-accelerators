@@ -8,7 +8,7 @@ local tpus = import '../../tpus.libsonnet';
     command: [
       'python3',
       'official/vision/image_classification/mnist_main.py',
-      '--data_dir=gs://xl-ml-test-us-central1/mnist_tfds',
+      '--data_dir=gs://xl-ml-test-us-central1/data/mnist',
       '--distribution_strategy=tpu',
       '--clean',
     ],

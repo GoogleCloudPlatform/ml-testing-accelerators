@@ -17,7 +17,7 @@
           - "args":
             - "python3"
             - "official/vision/image_classification/mnist_main.py"
-            - "--data_dir=gs://xl-ml-test-us-central1/mnist_tfds"
+            - "--data_dir=gs://xl-ml-test-us-central1/data/mnist"
             - "--distribution_strategy=tpu"
             - "--clean"
             - "--batch_size=2048"
@@ -47,7 +47,7 @@
               "value": "bnVsbA=="
             - "name": "REGRESSION_TEST_CONFIG"
               "value": "bnVsbA=="
-            "image": "gcr.io/wcromar-tpus/model-garden:nightly"
+            "image": "gcr.io/xl-ml-test/model-garden:nightly"
             "name": "tf-nightly-mnist-convergence-v3-8"
             "resources":
               "limits":
