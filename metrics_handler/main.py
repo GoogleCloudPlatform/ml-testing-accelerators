@@ -101,14 +101,14 @@ class CloudMetricsHandler(object):
         # TODO 'min_num_datapoints_before_alerting': 10,
         'min_num_datapoints_before_alerting': 0,
         'metrics_to_ignore': ['loss'],
-        'notification_channel_display_names': ['zcain_notification_channel'],
+        'notification_channel_display_names': ['tmp_notification_channel'],
 
         'base_threshold_expression': 'v_mean + (v_stddev * 6.0)',
         'base_comparison': 'COMPARISON_GT',
    
         # Allow overriding specific metrics with custom thresholds or comparisons.
-        'Accuracy/test_final_threshold_expression': 'v_mean - (v_stddev * 3.0)',
-        'Accuracy/test_final_comparison': 'COMPARISON_LT',
+        'epoch_sparse_categorical_accuracy_final_expression': 'v_mean - (v_stddev * 3.0)',
+        'epoch_sparse_categorical_accuracy_final_comparison': 'COMPARISON_LT',
       },
     }
     ###########################################################################
