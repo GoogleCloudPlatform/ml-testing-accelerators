@@ -1,0 +1,58 @@
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "name": "tf-nightly-mnist-functional-v2-8"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "spec":
+      "activeDeadlineSeconds": 3600
+      "backoffLimit": 2
+      "template":
+        "metadata":
+          "annotations":
+            "tf-version.cloud-tpus.google.com": "nightly-2.x"
+        "spec":
+          "containers":
+          - "args":
+            - "python3"
+            - "official/vision/image_classification/mnist_main.py"
+            - "--data_dir=gs://xl-ml-test-us-central1/data/mnist"
+            - "--distribution_strategy=tpu"
+            - "--clean"
+            - "--batch_size=1024"
+            - "--train_epochs=1"
+            - "--epochs_between_evals=1"
+            - "--model_dir=$(MODEL_DIR)"
+            "env":
+            - "name": "CONFIG_NAME"
+              "value": "tf-nightly-mnist-functional-v2-8"
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/mnist/functional/v2-8/$(JOB_NAME)"
+            - "name": "METRIC_COLLECTION_CONFIG"
+              "value": "bnVsbA=="
+            - "name": "REGRESSION_TEST_CONFIG"
+              "value": "bnVsbA=="
+            "image": "gcr.io/xl-ml-test/model-garden:nightly"
+            "name": "tf-nightly-mnist-functional-v2-8"
+            "resources":
+              "limits":
+                "cloud-tpus.google.com/preemptible-v2": 8
+          "restartPolicy": "Never"
+  "schedule": "0 */12 * * *"

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: 'tpu-limit'
+spec:
+  hard:
+    requests.cloud-tpus.google.com/v2: 8
+    requests.cloud-tpus.google.com/v3: 8
+    requests.cloud-tpus.google.com/preemptible-v2: 24
+    requests.cloud-tpus.google.com/preemptible-v3: 24
