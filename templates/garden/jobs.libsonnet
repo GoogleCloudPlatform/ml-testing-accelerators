@@ -4,7 +4,7 @@ local jobs = import '../jobs.libsonnet';
   GardenJobConfig:: jobs.JobConfig {
     local config = self,
 
-    image: 'gcr.io/wcromar-tpus/model-garden',
+    image: 'gcr.io/xl-ml-test/model-garden',
     job_spec+:: {
       template+: {
         spec+: {
