@@ -347,7 +347,7 @@ class CloudMetricsHandler(object):
   def _compute_alert_bounds(self, metrics_history):
     # TODO: use passed-in metrics_history instead of stub below.
     metrics_history = {
-        'Accuracy/test_final': [
+        'epoch_sparse_categorical_accuracy_final': [
             self.MetricPoint(metric_value=99.03428649902344, wall_time=1576864929.3065562),
             self.MetricPoint(metric_value=97.03428649902344, wall_time=1576864999.3065562),
             self.MetricPoint(metric_value=95.03428649902344, wall_time=1576864888.3065562),
