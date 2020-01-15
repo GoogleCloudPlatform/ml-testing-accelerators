@@ -1,3 +1,4 @@
+import base64
 from collections import defaultdict
 from collections import namedtuple
 import datetime
@@ -53,8 +54,8 @@ _BASE_ALERT_DICT = {
 
 
 class CloudMetricsHandler(object):
-  def __init__(self, test_name, events_dir, config_dict,
-               stackdriver_logs_link):
+  def __init__(self, test_name, events_dir, stackdriver_logs_link,
+               metric_collection_config, regression_alert_config):
     """Handles metrics storage, collection, aggregation, alerts, etc.
 
     Used in conjunction with the Cloud Accelerator Testing framework
@@ -66,55 +67,37 @@ class CloudMetricsHandler(object):
         naming, e.g. for the name of alerts if this test's metrics regress.
       events_dir (string): Path to a GCS or local directory where Tensorboard
         summaries are stored.
-      config_dict (dict): Config file detailing desired behavior for collecting
-        metrics and monitoring for metrics regressions. See README for
-        documentation on writing this config.
       stackdriver_logs_link (string): Link to the Stackdriver Logs for the run
         that produced the metrics being handled.
+      metric_collection_config (dict): Options for collecting metrics. See
+        README for documentation.
+      regression_alert_config (dict): Options for alerting in the event of
+        metrics regressions. See README for documentation.
     """
     self.MetricPoint = namedtuple('MetricPoint', 'metric_value wall_time')
     self.test_name = test_name
     self.events_dir = events_dir
     self.stackdriver_logs_link = stackdriver_logs_link
+    self.metric_collection_config = metric_collection_config
 
     ###########################################################################
     # Temporary code until config templating is finished.
-    config_dict = {
-      'metrics_collection_config': {
-        'write_to_bigquery': 'True',
-        'bigquery_dataset_name': 'xl_ml_metrics_dataset',
-        'bigquery_table_name': 'xl_ml_metrics_table',
-        'default_aggregation_strategies': ['final'], 
-        'metric_to_aggregation_strategy': {
-          'loss': ['final', 'min'],  # Save final loss and min loss.
-          'accuracy': ['max'],       # Save max accuracy only.
-        },
-        'tags_to_ignore': ['LearningRate'],
-        'time_to_accuracy': {
-          'accuracy_threshold': 99.0,
-          'accuracy_tag': 'epoch_sparse_categorical_accuracy',
-        },
-      },
-     
-      'regression_alert_config': {
-        'write_to_stackdriver': 'True',
-        # TODO 'min_num_datapoints_before_alerting': 10,
-        'min_num_datapoints_before_alerting': 0,
-        'metrics_to_ignore': ['loss'],
-        'notification_channel_display_names': ['tmp_notification_channel'],
+    self.regression_alert_config = {
+      'write_to_stackdriver': 'True',
+      # TODO 'min_num_datapoints_before_alerting': 10,
+      'min_num_datapoints_before_alerting': 0,
+      'metrics_to_ignore': ['loss'],
+      'notification_channel_display_names': ['tmp_notification_channel'],
 
-        'base_threshold_expression': 'v_mean + (v_stddev * 6.0)',
-        'base_comparison': 'COMPARISON_GT',
+      'base_threshold_expression': 'v_mean + (v_stddev * 6.0)',
+      'base_comparison': 'COMPARISON_GT',
    
-        # Allow overriding specific metrics with custom thresholds or comparisons.
-        'epoch_sparse_categorical_accuracy_final_expression': 'v_mean - (v_stddev * 3.0)',
-        'epoch_sparse_categorical_accuracy_final_comparison': 'COMPARISON_LT',
-      },
+      # Allow overriding specific metrics with custom thresholds or comparisons.
+      'epoch_sparse_categorical_accuracy_final_expression': 'v_mean - (v_stddev * 3.0)',
+      'epoch_sparse_categorical_accuracy_final_comparison': 'COMPARISON_LT',
     }
     ###########################################################################
 
-    self.metrics_collection_config = config_dict['metrics_collection_config']
-    self.regression_alert_config = config_dict['regression_alert_config']
     self.project = google.auth.default()[1]
 
     # Initalize clients to interact with various Cloud APIs.
@@ -143,15 +126,15 @@ class CloudMetricsHandler(object):
 
 
   def _make_bigquery_table(self):
-    if not self.metrics_collection_config.get(
+    if not self.metric_collection_config.get(
         'write_to_bigquery', True):
       return
-    dataset_name = self.metrics_collection_config['bigquery_dataset_name']
+    dataset_name = self.metric_collection_config['bigquery_dataset_name']
     dataset = bigquery.Dataset(self.bigquery_client.dataset(dataset_name))
     _ = self.bigquery_client.create_dataset(dataset, exists_ok=True)
       
     table_id = '{}.{}.{}'.format(self.project, dataset_name,
-        self.metrics_collection_config['bigquery_table_name'])
+        self.metric_collection_config['bigquery_table_name'])
     schema = [
         bigquery.SchemaField("test_name", "STRING", mode="REQUIRED"),
         bigquery.SchemaField("metric_name", "STRING", mode="REQUIRED"),
@@ -211,7 +194,7 @@ class CloudMetricsHandler(object):
 
   def _add_time_to_accuracy_to_metrics(self, raw_metrics, metrics_to_update):
     """Compute time_to_accuracy based on `raw_metrics`."""
-    tta_config = self.metrics_collection_config['time_to_accuracy']
+    tta_config = self.metric_collection_config['time_to_accuracy']
     if 'accuracy_tag' not in tta_config or \
         'accuracy_threshold' not in tta_config:
       raise ValueError('Invalid `time_to_accuracy` portion of config. '
@@ -244,7 +227,7 @@ class CloudMetricsHandler(object):
 
   def _get_metrics_from_events_dir(self):
     tags_to_ignore = set(
-        self.metrics_collection_config.get('tags_to_ignore', []))
+        self.metric_collection_config.get('tags_to_ignore', []))
   
     em = event_multiplexer.EventMultiplexer()
     em.AddRunsFromDirectory(self.events_dir)
@@ -284,17 +267,17 @@ class CloudMetricsHandler(object):
   
     # Second pass: aggregate values for each metric based on the config.
     final_metrics = {}
-    tag_to_custom_aggregation_strategies = self.metrics_collection_config.get(
+    tag_to_custom_aggregation_strategies = self.metric_collection_config.get(
         'metric_to_aggregation_strategy', {})
     for tag, metrics in raw_metrics.items():
       strategies = tag_to_custom_aggregation_strategies.get(
-          tag, self.metrics_collection_config['default_aggregation_strategies'])
+          tag, self.metric_collection_config['default_aggregation_strategies'])
       for strategy in strategies:
         final_metrics['{}_{}'.format(tag, strategy)] = self._aggregate_metrics(
             metrics, strategy)
 
     # Compute time_to_accuracy if requested in the config.
-    if 'time_to_accuracy' in self.metrics_collection_config:
+    if 'time_to_accuracy' in self.metric_collection_config:
       self._add_time_to_accuracy_to_metrics(raw_metrics, final_metrics)
 
     return final_metrics
@@ -441,20 +424,23 @@ class CloudMetricsHandler(object):
 
 
 def run_main(event, context):
+  pubsub_message = base64.b64decode(event['data']).decode('utf-8')
+  event = json.loads(pubsub_message)
+
   # Get test_name, events_dir, path_to_config_file from pubsub message.
-  # test_name = 'fake_mnist_v3_8'
-  # events_dir = 'gs://zcain-metrics-storage/debug_mnist_events'
   events_dir = event.get('model_dir', None)
   # TODO: Default to None and error if no name given in pubsub msg.
-  test_name = event.get('test_name', 'tf-mnist-v2-8')
+  test_name = event.get('config_name', 'tf-mnist-v2-8')
   # TODO: Default to None and error if no config given in pubsub msg.
-  config_dict = event.get('config_dict', 1)
+  metric_collection_config = event.get('metric_collection_config', 1)
+  regression_alert_config = event.get('regression_test_config', 1)
   logs_link = event.get('logs_link', None)
-  if not (events_dir and test_name and config_dict and logs_link):
-    raise ValueError('Pubsub message must contain 4 required fields: '
-                     'events_dir, test_name, config_dict, logs_link. See '
+  if not (events_dir and test_name and logs_link):
+    raise ValueError('Pubsub message must contain 3 required fields: '
+                     'events_dir, test_name, and logs_link. See '
                      'README for documentation. Message was: {}'.format(event))
-  handler = CloudMetricsHandler(test_name, events_dir, config_dict, logs_link)
+  handler = CloudMetricsHandler(test_name, events_dir, logs_link,
+      metric_collection_config, regression_alert_config)
 
   new_metrics = handler._get_metrics_from_events_dir()
   print('NEW METRICS: {}\n\n\n'.format(new_metrics))
@@ -476,3 +462,4 @@ def run_main(event, context):
   handler._add_new_metrics_to_bigquery(new_metrics)
   print('Added metrics to bigquery')
   # TODO: this once threw google.api_core.exceptions.DeadlineExceeded: 504 Deadline Exceeded
+

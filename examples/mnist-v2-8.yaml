@@ -43,7 +43,7 @@
             - "name": "MODEL_DIR"
               "value": "gs://xl-ml-test-us-central1/k8s/mnist/functional/v2-8/$(JOB_NAME)"
             - "name": "METRIC_COLLECTION_CONFIG"
-              "value": "ewogICJkZWZhdWx0X2FnZ3JlZ2F0aW9uX3N0cmF0ZWd5IjogImZpbmFsIiwKICAibWV0cmljX3RvX2FnZ3JlZ2F0aW9uX3N0cmF0ZWd5IjogewoKICB9LAogICJ0YWdzX3RvX2lnbm9yZSI6IFsKCiAgXSwKICAidGltZV90b19hY2N1cmFjeSI6IHsKICAgICJhY2N1cmFjeV90YWciOiAiZXZhbC9hY2N1cmFjeSIsCiAgICAiYWNjdXJhY3lfdGhyZXNob2xkIjogMAogIH0sCiAgIndyaXRlX3RvX2JpZ3F1ZXJ5IjogZmFsc2UKfQ=="
+              "value": "eyJtZXRyaWNfY29sbGVjdGlvbl9jb25maWciOiB7ImJpZ3F1ZXJ5X3RhYmxlX25hbWUiOiAieGxfbWxfbWV0cmljc190YWJsZSIsICJ3cml0ZV90b19iaWdxdWVyeSI6IlRydWUiLCAiYmlncXVlcnlfZGF0YXNldF9uYW1lIjogInhsX21sX21ldHJpY3NfZGF0YXNldCIsICJ0YWdzX3RvX2lnbm9yZSI6IFsiTGVhcm5pbmdSYXRlIl0sICJkZWZhdWx0X2FnZ3JlZ2F0aW9uX3N0cmF0ZWdpZXMiOiBbImZpbmFsIl0sICJtZXRyaWNfdG9fYWdncmVnYXRpb25fc3RyYXRlZ3kiOiB7Imxvc3MiOiBbImZpbmFsIiwgIm1pbiJdLCAiYWNjdXJhY3kiOiBbIm1heCJdfSwgInRpbWVfdG9fYWNjdXJhY3kiOiB7ImFjY3VyYWN5X3RocmVzaG9sZCI6IDk5LjAsICJhY2N1cmFjeV90YWciOiAiZXBvY2hfc3BhcnNlX2NhdGVnb3JpY2FsX2FjY3VyYWN5In19LCAiY29uZmlnX25hbWUiOiAidGYtbW5pc3QtdjItOCIsICJsb2dzX2xpbmsiOiAic2FtcGxlIiwgIm1vZGVsX2RpciI6ICJnczovL3hsLW1sLXRlc3QtdXMtY2VudHJhbDEvazhzL21uaXN0L2Z1bmN0aW9uYWwvdjItOC9tbmlzdC12Mi04LWV4YW1wbGUtMTU3OTA0NjQwMC90cmFpbiJ9"
             - "name": "REGRESSION_TEST_CONFIG"
               "value": "bnVsbA=="
             "image": "gcr.io/xl-ml-test/model-garden:nightly"
