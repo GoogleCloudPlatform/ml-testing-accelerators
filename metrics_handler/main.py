@@ -99,7 +99,7 @@ class CloudMetricsHandler(object):
       'regression_alert_config': {
         'write_to_stackdriver': 'True',
         # TODO 'min_num_datapoints_before_alerting': 10,
-        'min_num_datapoints_before_alerting': 1,
+        'min_num_datapoints_before_alerting': 0,
         'metrics_to_ignore': ['loss'],
         'notification_channel_display_names': ['zcain_notification_channel'],
 
@@ -444,8 +444,10 @@ def run_main(event, context):
   # test_name = 'fake_mnist_v3_8'
   # events_dir = 'gs://zcain-metrics-storage/debug_mnist_events'
   events_dir = event.get('model_dir', None)
-  test_name = event.get('test_name', None)
-  config_dict = event.get('config_dict', None)
+  # TODO: Default to None and error if no name given in pubsub msg.
+  test_name = event.get('test_name', 'tf-mnist-v2-8')
+  # TODO: Default to None and error if no config given in pubsub msg.
+  config_dict = event.get('config_dict', 1)
   logs_link = event.get('logs_link', None)
   if not (events_dir and test_name and config_dict and logs_link):
     raise ValueError('Pubsub message must contain 4 required fields: '
