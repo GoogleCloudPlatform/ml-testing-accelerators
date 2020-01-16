@@ -48,18 +48,18 @@
               "value": |
                 {
                     "write_to_bigquery": "True",
-                    "bigquery_table_name": "xl_ml_metrics_table",
                     "bigquery_dataset_name": "xl_ml_metrics_dataset",
+                    "bigquery_table_name": "xl_ml_metrics_table",
                     "tags_to_ignore": ["LearningRate"],
                     "default_aggregation_strategies": ["final"],
                     "metric_to_aggregation_strategies": {
                         "epoch_loss": ["final", "min"]
                     },
-                   "time_to_accuracy": {
+                    "time_to_accuracy": {
                        "accuracy_threshold": 99.0,
                        "accuracy_tag": "epoch_sparse_categorical_accuracy"
-                   }
-               }
+                    }
+                 }
             - "name": "REGRESSION_TEST_CONFIG"
               "value": |
                 {
@@ -85,3 +85,4 @@
                 "cloud-tpus.google.com/preemptible-v2": 8
           "restartPolicy": "Never"
   "schedule": "0 */24 * * *"
+
