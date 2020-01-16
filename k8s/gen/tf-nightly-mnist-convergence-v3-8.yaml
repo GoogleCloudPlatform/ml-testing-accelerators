@@ -25,7 +25,7 @@
             - "--epochs_between_evals=10"
             - "--model_dir=$(MODEL_DIR)"
             "env":
-            - "name": "CONFIG_NAME"
+            - "name": "TEST_NAME"
               "value": "tf-nightly-mnist-convergence-v3-8"
             - "name": "POD_NAME"
               "valueFrom":

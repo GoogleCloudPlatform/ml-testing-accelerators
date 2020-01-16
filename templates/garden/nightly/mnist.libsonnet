@@ -35,12 +35,7 @@ local tpus = import '../../tpus.libsonnet';
   },
 
   configs: [
-    mnist + v2_8 + functional + {
-      metric_collection_config: {
-        something: "foo",
-        something2: "bar",
-      },
-    },
+    mnist + v2_8 + functional,
     mnist + v2_8 + convergence,
     mnist + v3_8 + functional,
     mnist + v3_8 + convergence,

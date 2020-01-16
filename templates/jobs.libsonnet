@@ -45,8 +45,7 @@ local tpus = import "tpus.libsonnet";
               },
               env: [
                 {
-                  # TODO: come up with a better name
-                  name: 'CONFIG_NAME',
+                  name: 'TEST_NAME',
                   value: config.job_name,
                 },
                 {
