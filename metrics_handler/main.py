@@ -424,6 +424,7 @@ class CloudMetricsHandler(object):
 
 
 def run_main(event, context):
+  print('Raw pubsub message: {}'.format(event['data']))
   pubsub_message = base64.b64decode(event['data']).decode('utf-8')
   event = json.loads(pubsub_message)
   print('Decoded pubsub message: {}'.format(event))
