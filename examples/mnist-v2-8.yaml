@@ -43,7 +43,7 @@
             - "name": "MODEL_DIR"
               "value": "gs://xl-ml-test-us-central1/k8s/mnist/functional/v2-8/$(JOB_NAME)"
             - "name": "METRIC_COLLECTION_CONFIG"
-              "value": "eyJtZXRyaWNfY29sbGVjdGlvbl9jb25maWciOiB7ImJpZ3F1ZXJ5X3RhYmxlX25hbWUiOiAieGxfbWxfbWV0cmljc190YWJsZSIsICJ3cml0ZV90b19iaWdxdWVyeSI6IlRydWUiLCAiYmlncXVlcnlfZGF0YXNldF9uYW1lIjogInhsX21sX21ldHJpY3NfZGF0YXNldCIsICJ0YWdzX3RvX2lnbm9yZSI6IFsiTGVhcm5pbmdSYXRlIl0sICJkZWZhdWx0X2FnZ3JlZ2F0aW9uX3N0cmF0ZWdpZXMiOiBbImZpbmFsIl0sICJtZXRyaWNfdG9fYWdncmVnYXRpb25fc3RyYXRlZ3kiOiB7Imxvc3MiOiBbImZpbmFsIiwgIm1pbiJdLCAiYWNjdXJhY3kiOiBbIm1heCJdfSwgInRpbWVfdG9fYWNjdXJhY3kiOiB7ImFjY3VyYWN5X3RocmVzaG9sZCI6IDk5LjAsICJhY2N1cmFjeV90YWciOiAiZXBvY2hfc3BhcnNlX2NhdGVnb3JpY2FsX2FjY3VyYWN5In19LCAiY29uZmlnX25hbWUiOiAidGYtbW5pc3QtdjItOCIsICJsb2dzX2xpbmsiOiAic2FtcGxlIiwgIm1vZGVsX2RpciI6ICJnczovL3hsLW1sLXRlc3QtdXMtY2VudHJhbDEvazhzL21uaXN0L2Z1bmN0aW9uYWwvdjItOC9tbmlzdC12Mi04LWV4YW1wbGUtMTU3OTA0NjQwMC90cmFpbiJ9"
+              "value": "eyJiaWdxdWVyeV90YWJsZV9uYW1lIjogInhsX21sX21ldHJpY3NfdGFibGUiLCAid3JpdGVfdG9fYmlncXVlcnkiOiAiVHJ1ZSIsICJiaWdxdWVyeV9kYXRhc2V0X25hbWUiOiAieGxfbWxfbWV0cmljc19kYXRhc2V0IiwgInRhZ3NfdG9faWdub3JlIjogWyJMZWFybmluZ1JhdGUiXSwgImRlZmF1bHRfYWdncmVnYXRpb25fc3RyYXRlZ2llcyI6IFsiZmluYWwiXSwgIm1ldHJpY190b19hZ2dyZWdhdGlvbl9zdHJhdGVneSI6IHsibG9zcyI6IFsiZmluYWwiLCAibWluIl0sICJhY2N1cmFjeSI6IFsibWF4Il19LCAidGltZV90b19hY2N1cmFjeSI6IHsiYWNjdXJhY3lfdGhyZXNob2xkIjogOTkuMCwgImFjY3VyYWN5X3RhZyI6ICJlcG9jaF9zcGFyc2VfY2F0ZWdvcmljYWxfYWNjdXJhY3kifX0="
             - "name": "REGRESSION_TEST_CONFIG"
               "value": "bnVsbA=="
             "image": "gcr.io/xl-ml-test/model-garden:nightly"
