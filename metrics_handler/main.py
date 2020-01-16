@@ -79,28 +79,10 @@ class CloudMetricsHandler(object):
     self.events_dir = events_dir
     self.stackdriver_logs_link = stackdriver_logs_link
     self.metric_collection_config = metric_collection_config
-
-    ###########################################################################
-    # Temporary code until config templating is finished.
-    self.regression_alert_config = {
-      'write_to_stackdriver': 'True',
-      # TODO 'min_num_datapoints_before_alerting': 10,
-      'min_num_datapoints_before_alerting': 0,
-      'metrics_to_ignore': ['loss'],
-      'notification_channel_display_names': ['tmp_notification_channel'],
-
-      'base_threshold_expression': 'v_mean + (v_stddev * 6.0)',
-      'base_comparison': 'COMPARISON_GT',
-   
-      # Allow overriding specific metrics with custom thresholds or comparisons.
-      'epoch_sparse_categorical_accuracy_final_expression': 'v_mean - (v_stddev * 3.0)',
-      'epoch_sparse_categorical_accuracy_final_comparison': 'COMPARISON_LT',
-    }
-    ###########################################################################
-
-    self.project = google.auth.default()[1]
-
+    self.regression_alert_config = regression_alert_config
+    
     # Initalize clients to interact with various Cloud APIs.
+    self.project = google.auth.default()[1]
     self.bigquery_client = bigquery.Client()
     self.table_id = self._make_bigquery_table()
     self.gcs_client = gcs.Client()
@@ -126,8 +108,7 @@ class CloudMetricsHandler(object):
 
 
   def _make_bigquery_table(self):
-    if not self.metric_collection_config.get(
-        'write_to_bigquery', True):
+    if not self.metric_collection_config.get('write_to_bigquery'):
       return
     dataset_name = self.metric_collection_config['bigquery_dataset_name']
     dataset = bigquery.Dataset(self.bigquery_client.dataset(dataset_name))
@@ -149,6 +130,8 @@ class CloudMetricsHandler(object):
 
 
   def _add_new_metrics_to_bigquery(self, aggregated_metrics_dict):
+    if not self.metric_collection_config.get('write_to_bigquery'):
+      return
     rows_to_insert = [
         (self.test_name, key, float(x.metric_value),
         self._wall_time_to_sql_timestamp(x.wall_time),
@@ -241,9 +224,7 @@ class CloudMetricsHandler(object):
         if tag in tags_to_ignore:
           continue
         raw_metrics[tag].extend(
-            [self.MetricPoint(metric_value=x.value, wall_time=time.time())
-            # TODO: use real wall_time.
-            # [self.MetricPoint(metric_value=x.value, wall_time=x.wall_time)
+            [self.MetricPoint(metric_value=x.value, wall_time=x.wall_time)
             for x in em.Scalars(run, tag)])
       # 'New-style' runs stores values inside of Tensor protos.
       for tag in tags['tensors']:
@@ -257,9 +238,7 @@ class CloudMetricsHandler(object):
                 tensor_dtype.as_numpy_dtype).tolist()
             assert len(val) == 1  # There should be 1 value per tensor.
             raw_metrics[tag].append(
-                self.MetricPoint(metric_value=val[0], wall_time=time.time()))
-                # TODO: use real wall_time.
-                #self.MetricPoint(metric_value=val[0], wall_time=t.wall_time))
+                self.MetricPoint(metric_value=val[0], wall_time=t.wall_time))
           except ValueError as e:
             print('Unable to parse tag: `{}` from tensor_content: {}. '
                   'Error: {}. Consider adding this tag to tags_to_ignore '
@@ -328,14 +307,8 @@ class CloudMetricsHandler(object):
 
 
   def _compute_alert_bounds(self, metrics_history):
-    # TODO: use passed-in metrics_history instead of stub below.
-    metrics_history = {
-        'epoch_sparse_categorical_accuracy_final': [
-            self.MetricPoint(metric_value=99.03428649902344, wall_time=1576864929.3065562),
-            self.MetricPoint(metric_value=97.03428649902344, wall_time=1576864999.3065562),
-            self.MetricPoint(metric_value=95.03428649902344, wall_time=1576864888.3065562),
-        ],
-    }
+    if not self.regression_alert_config.get('write_alerts_to_stackdriver'):
+      return
     notification_channels = self._get_notification_channels()
   
     metric_name_to_alert = {}
@@ -379,6 +352,8 @@ class CloudMetricsHandler(object):
 
 
   def _add_new_metrics_to_stackdriver(self, new_metrics_dict):
+    if not self.regression_alert_config.get('write_metrics_to_stackdriver'):
+      return
     project_name = self.monitoring_client.project_path(self.project)
     series_list = []
     for metric_name, metric_point in new_metrics_dict.items():
@@ -390,17 +365,19 @@ class CloudMetricsHandler(object):
       series.resource.labels['instance_id'] = '1234567890123456789'
       series.resource.labels['zone'] = 'us-central1-f'
       point = series.points.add()
-      #point.value.double_value = 99.5
       point.value.double_value = metric_point.metric_value
       point.interval.end_time.seconds = int(metric_point.wall_time)
       point.interval.end_time.nanos = int(
           (metric_point.wall_time - point.interval.end_time.seconds) * 10**9)
       series_list.append(series)
     self.monitoring_client.create_time_series(project_name, series_list)
+    print('Added metrics to stackdriver')
 
 
   def _add_alerts_to_stackdriver(self, metric_name_to_alert_dict):
-    # using API: https://googleapis.dev/python/monitoring/latest/gapic/v3/api.html
+    if not self.regression_alert_config.get('write_alerts_to_stackdriver'):
+      return
+
     project_name = self.alert_client.project_path(self.project)
   
     # First find the unique ID for all the existing policies.
@@ -421,6 +398,7 @@ class CloudMetricsHandler(object):
       else:
         response = self.alert_client.create_alert_policy(project_name, alert)
         print('RESPONSE FROM create_alert_policy: {}'.format(response))
+    print('Added alerts to Stackdriver')
 
 
 def run_main(event, context):
@@ -434,8 +412,19 @@ def run_main(event, context):
   # TODO: Default to None and error if no name given in pubsub msg.
   test_name = event.get('config_name', 'tf-mnist-v2-8')
   metric_collection_config = event.get('metric_collection_config', None)
-  # TODO: Default to None and error if no config given in pubsub msg.
-  regression_alert_config = event.get('regression_test_config', 1)
+  regression_alert_config = event.get('regression_test_config', {})
+  if not regression_alert_config and not metric_collection_config:
+    raise ValueError('metric_collection_config and regression_alert_config '
+                     'were both null; stopping early. See README for '
+                     'documentation on writing these configs.')
+  if regression_alert_config and not metric_collection_config:
+    # TODO: Think about use cases. metric_collection_config contains bigquery
+    # location, which is needed to create regression alerts. Should we have a
+    # 3rd config for bigquery locations or just require metric_collection_config
+    # if user has non-None regression_alert_config?
+    raise ValueError('metric_collection_config is required if using '
+                     'regression_alert_config. See README for documentation on '
+                     'writing these configs.')
   logs_link = event.get('logs_link', None)
   if not (events_dir and test_name and logs_link):
     raise ValueError('Pubsub message must contain 3 required fields: '
@@ -454,14 +443,11 @@ def run_main(event, context):
   print('METRIC_NAME_TO_ALERT: {}\n\n\n'.format(metric_name_to_alert))
 
   handler._add_new_metrics_to_stackdriver(new_metrics)
-  print('Added metrics to stackdriver')
   # TODO: this once threw google.api_core.exceptions.InternalServerError
   #   ^^ consider retrying for some statuses: https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
 
   handler._add_alerts_to_stackdriver(metric_name_to_alert)
-  print('Added alerts to Stackdriver')
 
   handler._add_new_metrics_to_bigquery(new_metrics)
-  print('Added metrics to bigquery')
   # TODO: this once threw google.api_core.exceptions.DeadlineExceeded: 504 Deadline Exceeded
 
