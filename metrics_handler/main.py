@@ -247,7 +247,7 @@ class CloudMetricsHandler(object):
     # Second pass: aggregate values for each metric based on the config.
     final_metrics = {}
     tag_to_custom_aggregation_strategies = self.metric_collection_config.get(
-        'metric_to_aggregation_strategy', {})
+        'metric_to_aggregation_strategies', {})
     for tag, metrics in raw_metrics.items():
       strategies = tag_to_custom_aggregation_strategies.get(
           tag, self.metric_collection_config['default_aggregation_strategies'])
@@ -410,7 +410,7 @@ def run_main(event, context):
   # Get test_name, events_dir, path_to_config_file from pubsub message.
   events_dir = event.get('model_dir', None)
   # TODO: Default to None and error if no name given in pubsub msg.
-  test_name = event.get('config_name', 'tf-mnist-v2-8')
+  test_name = event.get('test_name', 'tf-mnist-v2-8')
   metric_collection_config = event.get('metric_collection_config', None)
   regression_alert_config = event.get('regression_test_config', {})
   if not regression_alert_config and not metric_collection_config:
