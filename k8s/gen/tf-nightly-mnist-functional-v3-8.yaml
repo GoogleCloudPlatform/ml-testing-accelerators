@@ -46,9 +46,9 @@
             - "name": "MODEL_DIR"
               "value": "gs://xl-ml-test-us-central1/k8s/mnist/functional/v3-8/$(JOB_NAME)"
             - "name": "METRIC_COLLECTION_CONFIG"
-              "value": "bnVsbA=="
+              "value": "null"
             - "name": "REGRESSION_TEST_CONFIG"
-              "value": "bnVsbA=="
+              "value": "null"
             "image": "gcr.io/xl-ml-test/model-garden:nightly"
             "name": "tf-nightly-mnist-functional-v3-8"
             "resources":

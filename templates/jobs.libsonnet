@@ -88,11 +88,11 @@ local tpus = import "tpus.libsonnet";
                 },
                 {
                   name: 'METRIC_COLLECTION_CONFIG',
-                  value: std.base64(std.manifestJsonEx(config.metric_collection_config, '  '))
+                  value: std.manifestJsonEx(config.metric_collection_config, ' ')
                 },
                 {
                   name: 'REGRESSION_TEST_CONFIG',
-                  value: std.base64(std.manifestJsonEx(config.regression_test_config, '  '))
+                  value: std.manifestJsonEx(config.regression_test_config, ' ')
                 },
               ],
             },
