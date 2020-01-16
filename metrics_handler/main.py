@@ -324,12 +324,12 @@ class CloudMetricsHandler(object):
       v_mean = np.mean(metric_values)
       v_stddev = np.std(metric_values)
       threshold_expr = self.regression_alert_config.get(
-          '{}_{}'.format(metric_name, 'threshold_expression'), None) or \
+          'threshold_expression_overrides', {}).get(metric_name) or \
           self.regression_alert_config['base_threshold_expression']
       regression_threshold = eval(threshold_expr, None, {
           'v_mean': v_mean, 'v_stddev': v_stddev})
       regression_comparison = self.regression_alert_config.get(
-          '{}_{}'.format(metric_name, 'comparison'), None) or \
+          'comparison_overrides', {}).get(metric_name) or \
           self.regression_alert_config['base_comparison']
   
       # Create the Stackdriver AlertPolicy based on the bounds.
