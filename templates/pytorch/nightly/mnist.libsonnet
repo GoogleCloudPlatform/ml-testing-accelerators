@@ -5,7 +5,7 @@ local tpus = import '../../tpus.libsonnet';
 
 {
   local mnist = jobs.PyTorchJobConfig {
-    model_name: 'mnist-pytorch',
+    model_name: 'mnist',
     command: [
       'python3',
       'pytorch/xla/test/test_train_mp_mnist.py',
