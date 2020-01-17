@@ -2,6 +2,16 @@ local jobs = import '../jobs.libsonnet';
 
 {
   PyTorchJobConfig:: jobs.JobConfig {
+
+    regression_test_config+: {
+      "threshold_expression_overrides": {
+        "Accuracy/test_final": "v_mean - (v_stddev * 3.0)"
+      },
+      "comparison_overrides": {
+        "Accuracy/test_final": "COMPARISON_LT"
+      }
+    },
+
     image: 'gcr.io/xl-ml-test/pytorch-xla',
     job_spec+:: {
       template+: {

@@ -17,9 +17,20 @@ local tpus = import "tpus.libsonnet";
     image_tag: 'latest',
     timeout: error "Must specify `timeout`", # 1 hour
 
-    # TODO: give these reasonable defaults
-    metric_collection_config: null,
-    regression_test_config: null,
+    metric_collection_config: {
+      "write_to_bigquery": "True",
+      "bigquery_dataset_name": "xl_ml_metrics_dataset",
+      "bigquery_table_name": "xl_ml_metrics_table",
+      "default_aggregation_strategies": ["final"],
+    },
+    # TODO: increase min_num_datapoints_before_alerting. Low for debugging.
+    regression_test_config: {
+      "write_metrics_to_stackdriver": "True",
+      "write_alerts_to_stackdriver": "True",
+      "min_num_datapoints_before_alerting": 1,
+      "base_threshold_expression": "v_mean + (v_stddev * 3.0)",
+      "base_comparison": "COMPARISON_GT",
+    },
 
     job_name:: '%(framework_prefix)s-%(model_name)s-%(mode)s-%(accelerator_name)s' % config,
     job_spec:: {
