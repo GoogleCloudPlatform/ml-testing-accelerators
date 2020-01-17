@@ -1,7 +1,7 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-mnist-pytorch-convergence-v2-8"
+  "name": "pt-nightly-mnist-convergence-v3-8"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
@@ -19,7 +19,7 @@
             - "pytorch/xla/test/test_train_mp_mnist.py"
             "env":
             - "name": "TEST_NAME"
-              "value": "pt-nightly-mnist-pytorch-convergence-v2-8"
+              "value": "pt-nightly-mnist-convergence-v3-8"
             - "name": "POD_NAME"
               "valueFrom":
                 "fieldRef":
@@ -37,7 +37,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/mnist-pytorch/convergence/v2-8/$(JOB_NAME)"
+              "value": "gs://xl-ml-test-us-central1/k8s/mnist/convergence/v3-8/$(JOB_NAME)"
             - "name": "METRIC_COLLECTION_CONFIG"
               "value": "{\n \"bigquery_dataset_name\": \"xl_ml_metrics_dataset\",\n \"bigquery_table_name\": \"xl_ml_metrics_table\",\n \"default_aggregation_strategies\": [\n  \"final\"\n ],\n \"write_to_bigquery\": \"True\"\n}"
             - "name": "REGRESSION_TEST_CONFIG"
@@ -45,10 +45,10 @@
             - "name": "XLA_USE_BF16"
               "value": "0"
             "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
-            "name": "pt-nightly-mnist-pytorch-convergence-v2-8"
+            "name": "pt-nightly-mnist-convergence-v3-8"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v2": 8
+                "cloud-tpus.google.com/preemptible-v3": 8
               "requests":
                 "cpu": "2.5"
                 "memory": "8Gi"
