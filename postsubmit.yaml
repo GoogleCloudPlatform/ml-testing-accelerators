@@ -1,0 +1,11 @@
+steps:
+- name: 'gcr.io/cloud-builders/kubectl'
+  args: ['apply', '-f', 'k8s/gen', '-f', 'k8s/', '--dry-run']
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test'
+- name: 'gcr.io/cloud-builders/kubectl'
+  args: ['apply', '-f', 'k8s/gen', '-f', 'k8s/']
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test'
