@@ -409,8 +409,7 @@ def run_main(event, context):
 
   # Get test_name, events_dir, path_to_config_file from pubsub message.
   events_dir = event.get('model_dir', None)
-  # TODO: Default to None and error if no name given in pubsub msg.
-  test_name = event.get('test_name', 'tf-mnist-v2-8')
+  test_name = event.get('test_name', None)
   metric_collection_config = event.get('metric_collection_config', None)
   regression_alert_config = event.get('regression_test_config', {})
   if not regression_alert_config and not metric_collection_config:
