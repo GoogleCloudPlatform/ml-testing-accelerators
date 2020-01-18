@@ -17,6 +17,7 @@
           - "args":
             - "python3"
             - "pytorch/xla/test/test_train_mp_mnist.py"
+            - "--logdir=$(MODEL_DIR)"
             "env":
             - "name": "TEST_NAME"
               "value": "pt-nightly-mnist-convergence-v2-8"

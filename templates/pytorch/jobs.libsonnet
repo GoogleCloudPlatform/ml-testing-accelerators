@@ -24,6 +24,7 @@ local jobs = import '../jobs.libsonnet';
           }],
           containers: [
             container {
+              args+: ['--logdir=$(MODEL_DIR)' ],
               volumeMounts: [{
                 mountPath: '/dev/shm',
                 name: 'dshm',
