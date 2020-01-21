@@ -1,0 +1,68 @@
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "name": "tf-nightly-resnet-ctl-convergence-v2-8"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "spec":
+      "activeDeadlineSeconds": 57600
+      "backoffLimit": 2
+      "template":
+        "metadata":
+          "annotations":
+            "tf-version.cloud-tpus.google.com": "nightly-2.x"
+        "spec":
+          "containers":
+          - "args":
+            - "python3"
+            - "official/vision/image_classification/resnet_ctl_imagenet_main.py"
+            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
+            - "--data_dir=gs://imagenet-us-central1/train"
+            - "--distribution_strategy=tpu"
+            - "--batch_size=1024"
+            - "--steps_per_loop=500"
+            - "--use_synthetic_data=false"
+            - "--dtype=fp32"
+            - "--enable_eager=true"
+            - "--enable_tensorboard=true"
+            - "--log_steps=50"
+            - "--single_l2_loss_op=true"
+            - "--use_tf_function=true"
+            - "--clean"
+            - "--batch_size=1024"
+            - "--train_epochs=90"
+            - "--epochs_between_evals=90"
+            - "--model_dir=$(MODEL_DIR)"
+            "env":
+            - "name": "TEST_NAME"
+              "value": "tf-nightly-resnet-ctl-convergence-v2-8"
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/resnet-ctl/convergence/v2-8/$(JOB_NAME)"
+            - "name": "METRIC_COLLECTION_CONFIG"
+              "value": "null"
+            - "name": "REGRESSION_TEST_CONFIG"
+              "value": "null"
+            "image": "gcr.io/xl-ml-test/model-garden:nightly"
+            "name": "tf-nightly-resnet-ctl-convergence-v2-8"
+            "resources":
+              "limits":
+                "cloud-tpus.google.com/preemptible-v2": 8
+          "restartPolicy": "Never"
+  "schedule": "30 7 * * */1"
