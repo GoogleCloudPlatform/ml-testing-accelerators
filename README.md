@@ -11,6 +11,6 @@ jsonnet templates/oneshot.jsonnet --tla-str test=$TEST_NAME | kubectl apply -f -
 To generate and deploy Kubernetes YAMLs from the templates, run the following:
 
 ```bash
-jsonnet -S templates/build.jsonnet -m k8s/gen
+jsonnet -S templates/multifile.jsonnet -m k8s/gen
 kubectl apply -f k8s/gen
 ```

@@ -2,6 +2,7 @@
 "kind": "CronJob"
 "metadata":
   "name": "tf-nightly-mnist-functional-v2-8"
+  "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":

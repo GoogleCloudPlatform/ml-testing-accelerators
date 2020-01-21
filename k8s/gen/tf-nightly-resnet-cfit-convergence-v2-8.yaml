@@ -2,6 +2,7 @@
 "kind": "CronJob"
 "metadata":
   "name": "tf-nightly-resnet-cfit-convergence-v2-8"
+  "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":

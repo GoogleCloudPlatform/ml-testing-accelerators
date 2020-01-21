@@ -2,6 +2,7 @@
 "kind": "CronJob"
 "metadata":
   "name": "tf-nightly-resnet-ctl-functional-v3-8"
+  "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":

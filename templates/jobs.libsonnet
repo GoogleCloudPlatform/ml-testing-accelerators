@@ -125,6 +125,7 @@ local tpus = import "tpus.libsonnet";
       kind: 'CronJob',
       metadata: {
         name: config.job_name,
+        namespace: 'automated'
       },
       spec: {
         schedule: schedule,
