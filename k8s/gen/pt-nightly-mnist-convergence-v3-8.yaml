@@ -51,7 +51,7 @@
               "limits":
                 "cloud-tpus.google.com/preemptible-v3": 8
               "requests":
-                "cpu": "2.5"
+                "cpu": "4.5"
                 "memory": "8Gi"
             "volumeMounts":
             - "mountPath": "/dev/shm"

@@ -35,7 +35,7 @@ local jobs = import '../jobs.libsonnet';
               }],
               resources+: {
                 requests+: {
-                  cpu: '2.5',
+                  cpu: '4.5',
                   memory: '8Gi',
                 },
               },
