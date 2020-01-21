@@ -111,6 +111,15 @@ local tpus = import "tpus.libsonnet";
       },
     },
 
+    oneshot_job:: {
+      apiVersion: 'batch/v1',
+      kind: 'Job',
+      metadata: {
+        name: config.job_name,
+      },
+      spec: config.job_spec
+    },
+
     cron_job(schedule):: {
       apiVersion: 'batch/v1beta1',
       kind: 'CronJob',
