@@ -1,5 +1,5 @@
 local base = import 'base.libsonnet';
-local modes = import '../../modes.libsonnet';
+local mixins = import '../../mixins.libsonnet';
 local timeouts = import "../../timeouts.libsonnet";
 local tpus = import '../../tpus.libsonnet';
 
@@ -24,13 +24,13 @@ local tpus = import '../../tpus.libsonnet';
       '--clean',
     ],
   },
-  local functional = modes.Functional {
+  local functional = mixins.Functional {
     command+: [
       '--train_epochs=1',
       '--epochs_between_evals=1',
     ],
   },
-  local convergence = modes.Convergence {
+  local convergence = mixins.Convergence {
     command+: [
       '--train_epochs=90',
       '--epochs_between_evals=90',

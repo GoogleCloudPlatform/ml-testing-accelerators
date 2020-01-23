@@ -1,5 +1,5 @@
 local base = import 'base.libsonnet';
-local modes = import '../../modes.libsonnet';
+local mixins = import '../../mixins.libsonnet';
 local timeouts = import '../../timeouts.libsonnet';
 local tpus = import '../../tpus.libsonnet';
 
@@ -11,7 +11,7 @@ local tpus = import '../../tpus.libsonnet';
       'pytorch/xla/test/test_train_mp_mnist.py',
     ],
   },
-  local convergence = modes.Convergence {
+  local convergence = mixins.Convergence {
     accelerator+: tpus.Preemptible,
   },
   local v2_8 = {
