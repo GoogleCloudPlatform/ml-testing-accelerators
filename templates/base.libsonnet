@@ -2,7 +2,7 @@ local timeouts = import "timeouts.libsonnet";
 local tpus = import "tpus.libsonnet";
 
 {
-  JobConfig:: {
+  BaseTest:: {
     local config = self,
 
     framework_prefix: error "Must specify `framework_prefix`",
@@ -115,9 +115,9 @@ local tpus = import "tpus.libsonnet";
       apiVersion: 'batch/v1',
       kind: 'Job',
       metadata: {
-        name: config.job_name,
+        name: config.job_name
       },
-      spec: config.job_spec
+      spec: config.job_spec,
     },
 
     cron_job(schedule):: {

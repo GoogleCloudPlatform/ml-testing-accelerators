@@ -1,10 +1,10 @@
-local jobs = import 'jobs.libsonnet';
+local base = import 'base.libsonnet';
 local modes = import '../../modes.libsonnet';
 local timeouts = import '../../timeouts.libsonnet';
 local tpus = import '../../tpus.libsonnet';
 
 {
-  local mnist = jobs.PyTorchJobConfig {
+  local mnist = base.PyTorchTest {
     model_name: 'mnist',
     command: [
       'python3',

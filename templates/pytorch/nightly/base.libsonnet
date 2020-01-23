@@ -1,7 +1,7 @@
-local jobs = import '../jobs.libsonnet';
+local base = import '../base.libsonnet';
 
 {
-  PyTorchJobConfig:: jobs.PyTorchJobConfig {
+  PyTorchTest:: base.PyTorchTest {
     framework_prefix: 'pt-nightly',
     framework_version: 'pytorch-nightly',
     image_tag: 'nightly', 

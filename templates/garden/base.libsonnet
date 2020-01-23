@@ -1,7 +1,7 @@
-local jobs = import '../jobs.libsonnet';
+local base = import '../base.libsonnet';
 
 {
-  GardenJobConfig:: jobs.JobConfig {
+  GardenTest:: base.BaseTest {
     local config = self,
 
     regression_test_config+: {

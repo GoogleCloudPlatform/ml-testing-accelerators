@@ -1,10 +1,10 @@
-local jobs = import 'jobs.libsonnet';
+local base = import 'base.libsonnet';
 local modes = import '../../modes.libsonnet';
 local timeouts = import "../../timeouts.libsonnet";
 local tpus = import '../../tpus.libsonnet';
 
 {
-  local resnet = jobs.GardenJobConfig {
+  local resnet = base.GardenTest {
     model_name: 'resnet-cfit',
     command: [
       'python3',

@@ -1,7 +1,7 @@
-local jobs = import '../jobs.libsonnet';
+local base = import '../base.libsonnet';
 
 {
-  PyTorchJobConfig:: jobs.JobConfig {
+  PyTorchTest:: base.BaseTest {
 
     regression_test_config+: {
       "threshold_expression_overrides": {

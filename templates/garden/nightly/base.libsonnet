@@ -1,7 +1,7 @@
-local jobs = import '../jobs.libsonnet';
+local base = import '../base.libsonnet';
 
 {
-  GardenJobConfig:: jobs.GardenJobConfig {
+  GardenTest:: base.GardenTest {
     framework_prefix: 'tf-nightly',
     framework_version: 'nightly-2.x',
     image_tag: 'nightly',

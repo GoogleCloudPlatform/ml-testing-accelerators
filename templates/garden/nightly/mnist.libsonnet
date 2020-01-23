@@ -1,9 +1,9 @@
-local jobs = import 'jobs.libsonnet';
+local base = import 'base.libsonnet';
 local modes = import '../../modes.libsonnet';
 local tpus = import '../../tpus.libsonnet';
 
 {
-  local mnist = jobs.GardenJobConfig {
+  local mnist = base.GardenTest {
     model_name: 'mnist',
     command: [
       'python3',
