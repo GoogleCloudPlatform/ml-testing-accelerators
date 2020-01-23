@@ -48,7 +48,7 @@ local tpus = import '../../tpus.libsonnet';
   configs: [
     resnet + v2_8 + functional,
     resnet + v3_8 + functional,
-    resnet + v2_8 + convergence + timeouts.hours(16),
+    resnet + v2_8 + convergence + timeouts.Hours(16),
     resnet + v3_8 + convergence,
   ],
 }

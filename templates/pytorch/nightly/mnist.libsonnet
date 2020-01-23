@@ -22,7 +22,7 @@ local tpus = import '../../tpus.libsonnet';
   },
 
   configs: [
-    mnist + v2_8 + convergence + timeouts.hours(1),
-    mnist + v3_8 + convergence + timeouts.hours(1),
+    mnist + v2_8 + convergence + timeouts.Hours(1),
+    mnist + v3_8 + convergence + timeouts.Hours(1),
   ],
 }
