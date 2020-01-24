@@ -3,7 +3,7 @@ local base = import '../base.libsonnet';
 {
   PyTorchTest:: base.BaseTest {
 
-    regression_test_config+: {
+    regressionTestConfig+: {
       "threshold_expression_overrides": {
         "Accuracy/test_final": "v_mean - (v_stddev * 3.0)"
       },
@@ -13,7 +13,7 @@ local base = import '../base.libsonnet';
     },
 
     image: 'gcr.io/xl-ml-test/pytorch-xla',
-    job_spec+:: {
+    jobSpec+:: {
       template+: {
         spec+: {
           volumes: [{

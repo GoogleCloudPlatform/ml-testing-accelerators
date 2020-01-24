@@ -5,5 +5,5 @@ local all_tests = garden_tests + pytorch_tests;
 
 # Mapping from unique test name to test config
 {
-  [test.job_name]: test for test in all_tests
+  [test.testName]: test for test in all_tests
 }

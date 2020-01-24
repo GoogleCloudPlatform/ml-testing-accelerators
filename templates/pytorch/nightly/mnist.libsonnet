@@ -5,7 +5,7 @@ local tpus = import '../../tpus.libsonnet';
 
 {
   local mnist = base.PyTorchTest {
-    model_name: 'mnist',
+    modelName: 'mnist',
     command: [
       'python3',
       'pytorch/xla/test/test_train_mp_mnist.py',

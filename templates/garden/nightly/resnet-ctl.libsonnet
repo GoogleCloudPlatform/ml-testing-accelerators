@@ -5,7 +5,7 @@ local tpus = import '../../tpus.libsonnet';
 
 {
   local resnet = base.GardenTest {
-    model_name: 'resnet-ctl',
+    modelName: 'resnet-ctl',
     command: [
       'python3',
       'official/vision/image_classification/resnet_ctl_imagenet_main.py',

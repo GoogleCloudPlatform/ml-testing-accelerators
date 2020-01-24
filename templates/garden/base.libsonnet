@@ -4,7 +4,7 @@ local base = import '../base.libsonnet';
   GardenTest:: base.BaseTest {
     local config = self,
 
-    regression_test_config+: {
+    regressionTestConfig+: {
       "threshold_expression_overrides": {
         "epoch_sparse_categorical_accuracy_final": "v_mean - (v_stddev * 3.0)"
       },
@@ -14,7 +14,7 @@ local base = import '../base.libsonnet';
     },
 
     image: 'gcr.io/xl-ml-test/model-garden',
-    job_spec+:: {
+    jobSpec+:: {
       template+: {
         spec+: {
           containers: [

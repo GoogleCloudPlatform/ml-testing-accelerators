@@ -9,7 +9,7 @@ local schedules = {
 # Outputs {filename: yaml_string} for each target
 {
   [name + '.yaml']: std.manifestYamlDoc(
-    targets[name].cron_job(
+    targets[name].cronJob(
       schedules[targets[name].mode]
     )
   ) for name in std.objectFields(targets)

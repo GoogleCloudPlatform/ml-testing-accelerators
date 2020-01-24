@@ -4,7 +4,7 @@ local tpus = import '../../tpus.libsonnet';
 
 {
   local mnist = base.GardenTest {
-    model_name: 'mnist',
+    modelName: 'mnist',
     command: [
       'python3',
       'official/vision/image_classification/mnist_main.py',
