@@ -1,14 +1,14 @@
-local base = import 'base.libsonnet';
-local mixins = import '../../mixins.libsonnet';
-local timeouts = import '../../timeouts.libsonnet';
-local tpus = import '../../tpus.libsonnet';
+local base = import "base.libsonnet";
+local mixins = import "../../mixins.libsonnet";
+local timeouts = import "../../timeouts.libsonnet";
+local tpus = import "../../tpus.libsonnet";
 
 {
   local mnist = base.PyTorchTest {
-    modelName: 'mnist',
+    modelName: "mnist",
     command: [
-      'python3',
-      'pytorch/xla/test/test_train_mp_mnist.py',
+      "python3",
+      "pytorch/xla/test/test_train_mp_mnist.py",
     ],
   },
   local convergence = mixins.Convergence {

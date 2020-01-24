@@ -1,5 +1,5 @@
-local garden_tests = import 'garden/targets.jsonnet';
-local pytorch_tests = import 'pytorch/targets.jsonnet';
+local garden_tests = import "garden/targets.jsonnet";
+local pytorch_tests = import "pytorch/targets.jsonnet";
 
 local all_tests = garden_tests + pytorch_tests;
 

@@ -1,9 +1,9 @@
-local base = import '../base.libsonnet';
+local base = import "../base.libsonnet";
 
 {
   PyTorchTest:: base.PyTorchTest {
-    frameworkPrefix: 'pt-nightly',
-    frameworkVersion: 'pytorch-nightly',
-    imageTag: 'nightly', 
+    frameworkPrefix: "pt-nightly",
+    frameworkVersion: "pytorch-nightly",
+    imageTag: "nightly", 
   },
 }
