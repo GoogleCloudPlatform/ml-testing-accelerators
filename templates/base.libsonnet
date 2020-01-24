@@ -112,12 +112,20 @@ local tpus = import "tpus.libsonnet";
     },
 
     oneshotJob:: {
+      // Don't record metrics from oneshot jobs
+      local oneshotConfig = config {
+        metricCollectionConfig+: {
+          write_to_bigquery: false,
+        },
+        regressionTestConfig: null,
+      },
+
       apiVersion: "batch/v1",
       kind: "Job",
       metadata: {
-        name: config.testName
+        name: oneshotConfig.testName,
       },
-      spec: config.jobSpec,
+      spec: oneshotConfig.jobSpec,
     },
 
     cronJob(schedule):: {
