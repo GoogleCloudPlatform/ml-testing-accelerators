@@ -1,3 +1,3 @@
-local targets = import 'targets.jsonnet';
+local targets = import 'all_targets.jsonnet';
 
-function(test) targets[test].oneshot_job
+function(test) targets[test].oneshotJob

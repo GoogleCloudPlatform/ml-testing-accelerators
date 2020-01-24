@@ -1,4 +1,4 @@
-local targets = import 'targets.jsonnet';
+local targets = import 'all_targets.jsonnet';
 
 # Times in UTC
 local schedules = {
