@@ -62,4 +62,4 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-  "schedule": "30 7 * * */1"
+  "schedule": "30 7 * * */2"

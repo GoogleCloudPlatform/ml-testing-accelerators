@@ -16,6 +16,8 @@ local tpus = import "tpus.libsonnet";
     image: error "Must specify mode `image`",
     imageTag: "latest",
     timeout: error "Must specify `timeout`", # 1 hour
+    # Schedule for CronJob in UTC
+    schedule: error "Must specify `schedule`",
 
     metricCollectionConfig: {
       write_to_bigquery: "True",
@@ -128,7 +130,7 @@ local tpus = import "tpus.libsonnet";
       spec: oneshotConfig.jobSpec,
     },
 
-    cronJob(schedule):: {
+    cronJob:: {
       apiVersion: "batch/v1beta1",
       kind: "CronJob",
       metadata: {
@@ -136,7 +138,7 @@ local tpus = import "tpus.libsonnet";
         namespace: "automated"
       },
       spec: {
-        schedule: schedule,
+        schedule: config.schedule,
         concurrencyPolicy: "Forbid",
         jobTemplate: {
           spec: config.jobSpec,

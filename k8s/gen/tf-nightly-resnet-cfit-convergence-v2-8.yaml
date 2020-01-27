@@ -65,4 +65,4 @@
               "limits":
                 "cloud-tpus.google.com/v2": 8
           "restartPolicy": "Never"
-  "schedule": "30 7 * * */1"
+  "schedule": "30 7 * * */2"
