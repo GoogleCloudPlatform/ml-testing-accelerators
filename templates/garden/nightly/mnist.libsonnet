@@ -10,7 +10,6 @@ local tpus = import "../../tpus.libsonnet";
       "official/vision/image_classification/mnist_main.py",
       "--data_dir=gs://xl-ml-test-us-central1/data/mnist",
       "--distribution_strategy=tpu",
-      "--clean",
     ],
   },
   local functional = mixins.Functional {

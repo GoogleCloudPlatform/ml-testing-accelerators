@@ -21,7 +21,6 @@ local tpus = import "../../tpus.libsonnet";
       "--enable_checkpoint_and_export",
       "--distribution_strategy=tpu",
       "--report_accuracy_metrics=true",
-      "--clean",
     ],
   },
   local functional = mixins.Functional {

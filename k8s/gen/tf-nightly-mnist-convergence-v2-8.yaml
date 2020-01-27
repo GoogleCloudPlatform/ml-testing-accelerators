@@ -20,7 +20,6 @@
             - "official/vision/image_classification/mnist_main.py"
             - "--data_dir=gs://xl-ml-test-us-central1/data/mnist"
             - "--distribution_strategy=tpu"
-            - "--clean"
             - "--batch_size=1024"
             - "--train_epochs=10"
             - "--epochs_between_evals=10"
