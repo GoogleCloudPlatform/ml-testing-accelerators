@@ -16,12 +16,21 @@ local base = import "../base.libsonnet";
     jobSpec+:: {
       template+: {
         spec+: {
-          volumes: [{
-            name: "dshm",
-            emptyDir: {
-              medium: "Memory",
+          volumes: [
+            {
+              name: "dshm",
+              emptyDir: {
+                medium: "Memory",
+              },
             },
-          }],
+            {
+              name: "datasets-pd",
+              gcePersistentDisk: {
+                pdName: "pytorch-datasets-pd-central1-b",
+                fsType: "ext4",
+              },
+            },
+          ],
           containers: [
             container {
               args+: ["--logdir=$(MODEL_DIR)" ],
