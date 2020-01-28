@@ -9,7 +9,16 @@ local base = import "../base.libsonnet";
       },
       comparison_overrides: {
         "Accuracy/test_final": "COMPARISON_LT"
-      }
+      },
+      metric_opt_in_list: [
+        "Accuracy/test_final",
+        "ExecuteTime__Percentile_99_sec_final",
+        "CompileTime__Percentile_99_sec_final"
+      ]
+    },
+
+    metricCollectionConfig+: {
+      "tags_to_ignore": ["LearningRate"]
     },
 
     image: "gcr.io/xl-ml-test/pytorch-xla",

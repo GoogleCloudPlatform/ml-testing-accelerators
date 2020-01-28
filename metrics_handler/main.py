@@ -80,6 +80,11 @@ class CloudMetricsHandler(object):
     self.stackdriver_logs_link = stackdriver_logs_link
     self.metric_collection_config = metric_collection_config
     self.regression_alert_config = regression_alert_config
+    if self.regression_alert_config.get('metric_opt_in_list', None):
+      self.regression_metrics = set(
+          self.regression_alert_config['metric_opt_in_list'])
+    else:
+      self.regression_metrics = None
     
     # Initalize clients to interact with various Cloud APIs.
     self.project = google.auth.default()[1]
@@ -357,6 +362,8 @@ class CloudMetricsHandler(object):
     project_name = self.monitoring_client.project_path(self.project)
     series_list = []
     for metric_name, metric_point in new_metrics_dict.items():
+      if self.regression_metrics and metric_name not in self.regression_metrics:
+        continue
       series = monitoring_v3.types.TimeSeries()
       series.metric.type = self._metric_name_to_metric_id(metric_name)
       # Resource type, instance_id, and zone are required by monitoring API
@@ -390,14 +397,14 @@ class CloudMetricsHandler(object):
   
     # For each bound that we computed, update or create a corresponding policy.
     for metric_name, alert in metric_name_to_alert_dict.items():
+      if self.regression_metrics and metric_name not in self.regression_metrics:
+        continue
       display_name = self._metric_name_to_alert_display_name(metric_name)
       if display_name in display_name_to_alert_id:
         alert.name = display_name_to_alert_id[display_name]
         response = self.alert_client.update_alert_policy(alert)
-        print('RESPONSE FROM update_alert_policy: {}'.format(response))
       else:
         response = self.alert_client.create_alert_policy(project_name, alert)
-        print('RESPONSE FROM create_alert_policy: {}'.format(response))
     print('Added alerts to Stackdriver')
 
 
@@ -449,4 +456,3 @@ def run_main(event, context):
 
   handler._add_new_metrics_to_bigquery(new_metrics)
   # TODO: this once threw google.api_core.exceptions.DeadlineExceeded: 504 Deadline Exceeded
-
