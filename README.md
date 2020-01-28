@@ -1,6 +1,6 @@
 # XL ML Test
 
-Cloud **Accel**erated **M**achine **L**earning Tests
+Cloud **Accel**erated **M**achine **L**earning **Test**s
 
 To run one test once, run the following:
 
