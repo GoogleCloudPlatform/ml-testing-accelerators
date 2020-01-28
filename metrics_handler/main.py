@@ -78,14 +78,14 @@ class CloudMetricsHandler(object):
     self.test_name = test_name
     self.events_dir = events_dir
     self.stackdriver_logs_link = stackdriver_logs_link
-    self.metric_collection_config = metric_collection_config
-    self.regression_alert_config = regression_alert_config
+    self.metric_collection_config = metric_collection_config or {}
+    self.regression_alert_config = regression_alert_config or {}
     if self.regression_alert_config.get('metric_opt_in_list', None):
       self.regression_metrics = set(
           self.regression_alert_config['metric_opt_in_list'])
     else:
       self.regression_metrics = None
-    
+
     # Initalize clients to interact with various Cloud APIs.
     self.project = google.auth.default()[1]
     self.bigquery_client = bigquery.Client()
@@ -94,7 +94,7 @@ class CloudMetricsHandler(object):
     self.monitoring_client = monitoring_v3.MetricServiceClient()
     self.alert_client = monitoring_v3.AlertPolicyServiceClient()
     self.notification_client = google.cloud.monitoring_v3.NotificationChannelServiceClient()
- 
+
 
   @staticmethod
   def _wall_time_to_sql_timestamp(wall_time):
@@ -118,7 +118,7 @@ class CloudMetricsHandler(object):
     dataset_name = self.metric_collection_config['bigquery_dataset_name']
     dataset = bigquery.Dataset(self.bigquery_client.dataset(dataset_name))
     _ = self.bigquery_client.create_dataset(dataset, exists_ok=True)
-      
+
     table_id = '{}.{}.{}'.format(self.project, dataset_name,
         self.metric_collection_config['bigquery_table_name'])
     schema = [
@@ -211,16 +211,16 @@ class CloudMetricsHandler(object):
           # Set to a high enough value to trigger alerts.
           metric_value=60 * 60 * 24 * 365,
           wall_time=start_wall_time)
- 
+
 
   def _get_metrics_from_events_dir(self):
     tags_to_ignore = set(
         self.metric_collection_config.get('tags_to_ignore', []))
-  
+
     em = event_multiplexer.EventMultiplexer()
     em.AddRunsFromDirectory(self.events_dir)
     em.Reload()
-  
+
     # First pass: collect the values for each metric.
     raw_metrics = defaultdict(list)
     for run, tags in em.Runs().items():
@@ -248,7 +248,7 @@ class CloudMetricsHandler(object):
             print('Unable to parse tag: `{}` from tensor_content: {}. '
                   'Error: {}. Consider adding this tag to tags_to_ignore '
                   'in config.'.format(tag, t.tensor_proto.tensor_content, e))
-  
+
     # Second pass: aggregate values for each metric based on the config.
     final_metrics = {}
     tag_to_custom_aggregation_strategies = self.metric_collection_config.get(
@@ -276,11 +276,11 @@ class CloudMetricsHandler(object):
       metrics_history[row['metric_name']].append(self.MetricPoint(
           metric_value=row['metric_value'],
           wall_time=row['timestamp'].timestamp()))
-  
+
     # Add the metrics from the latest run. These aren't in Bigquery yet.
     for metric_name, metric_value in new_metrics.items():
       metrics_history[metric_name].append(metric_value)
-  
+
     return metrics_history
 
 
@@ -297,7 +297,7 @@ class CloudMetricsHandler(object):
           display_names_to_find.remove(nc.display_name)
           if not display_names_to_find:
             return notification_channels
-  
+
       # If we checked all existing notification channels and didn't find all
       # that the user requested in the config, print a warning.
       print('WARNING: No notification channel found for display_names: {}. '
@@ -315,7 +315,6 @@ class CloudMetricsHandler(object):
     if not self.regression_alert_config.get('write_alerts_to_stackdriver'):
       return
     notification_channels = self._get_notification_channels()
-  
     metric_name_to_alert = {}
     metrics_to_ignore = set(self.regression_alert_config.get(
         'metrics_to_ignore', []))
@@ -336,7 +335,7 @@ class CloudMetricsHandler(object):
       regression_comparison = self.regression_alert_config.get(
           'comparison_overrides', {}).get(metric_name) or \
           self.regression_alert_config['base_comparison']
-  
+
       # Create the Stackdriver AlertPolicy based on the bounds.
       new_alert = dict(_BASE_ALERT_DICT)
       new_alert['display_name'] = self._metric_name_to_alert_display_name(
@@ -352,7 +351,7 @@ class CloudMetricsHandler(object):
       if notification_channels:
         alert_policy.notification_channels[:] = notification_channels
       metric_name_to_alert[metric_name] = alert_policy
-   
+
     return metric_name_to_alert
 
 
@@ -384,9 +383,8 @@ class CloudMetricsHandler(object):
   def _add_alerts_to_stackdriver(self, metric_name_to_alert_dict):
     if not self.regression_alert_config.get('write_alerts_to_stackdriver'):
       return
-
     project_name = self.alert_client.project_path(self.project)
-  
+
     # First find the unique ID for all the existing policies.
     # The ID is required to update existing policies.
     display_name_to_alert_id = {}
@@ -394,7 +392,7 @@ class CloudMetricsHandler(object):
       print(p)
       display_name_to_alert_id[p.display_name] = p.name
     print(display_name_to_alert_id)
-  
+
     # For each bound that we computed, update or create a corresponding policy.
     for metric_name, alert in metric_name_to_alert_dict.items():
       if self.regression_metrics and metric_name not in self.regression_metrics:
