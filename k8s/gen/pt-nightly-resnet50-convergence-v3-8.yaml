@@ -1,13 +1,13 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-mnist-convergence-v2-8"
+  "name": "pt-nightly-resnet50-convergence-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 3600
+      "activeDeadlineSeconds": 82800
       "backoffLimit": 2
       "template":
         "metadata":
@@ -16,12 +16,20 @@
         "spec":
           "containers":
           - "args":
+            - "tar -C ~/ -xvf /datasets/imagenet.tar"
+            - "&&"
             - "python3"
-            - "pytorch/xla/test/test_train_mp_mnist.py"
+            - "pytorch/xla/test/test_train_imagenet.py"
+            - "--num_epochs=2"
+            - "--model=resnet50"
+            - "--num_workers=64"
+            - "--batch_size=128"
+            - "--log_steps=200"
+            - "--datadir=~/imagenet"
             - "--logdir=$(MODEL_DIR)"
             "env":
             - "name": "TEST_NAME"
-              "value": "pt-nightly-mnist-convergence-v2-8"
+              "value": "pt-nightly-resnet50-convergence-v3-8"
             - "name": "POD_NAME"
               "valueFrom":
                 "fieldRef":
@@ -39,7 +47,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/mnist/convergence/v2-8/$(JOB_NAME)"
+              "value": "gs://xl-ml-test-us-central1/k8s/resnet50/convergence/v3-8/$(JOB_NAME)"
             - "name": "METRIC_COLLECTION_CONFIG"
               "value": "{\n \"bigquery_dataset_name\": \"xl_ml_metrics_dataset\",\n \"bigquery_table_name\": \"xl_ml_metrics_table\",\n \"default_aggregation_strategies\": [\n  \"final\"\n ],\n \"tags_to_ignore\": [\n  \"LearningRate\"\n ],\n \"write_to_bigquery\": \"True\"\n}"
             - "name": "REGRESSION_TEST_CONFIG"
@@ -47,16 +55,18 @@
             - "name": "XLA_USE_BF16"
               "value": "0"
             "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
-            "name": "pt-nightly-mnist-convergence-v2-8"
+            "name": "pt-nightly-resnet50-convergence-v3-8"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v2": 8
+                "cloud-tpus.google.com/preemptible-v3": 8
               "requests":
-                "cpu": "4.5"
-                "memory": "8Gi"
+                "cpu": "90.0"
+                "memory": "400Gi"
             "volumeMounts":
             - "mountPath": "/dev/shm"
               "name": "dshm"
+            - "mountPath": "/datasets"
+              "name": "datasets-pd"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":
