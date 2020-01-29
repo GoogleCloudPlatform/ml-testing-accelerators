@@ -1,0 +1,65 @@
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "name": "tf-nightly-bert-mnli-convergence-v2-8"
+  "namespace": "automated"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "spec":
+      "activeDeadlineSeconds": 7200
+      "backoffLimit": 2
+      "template":
+        "metadata":
+          "annotations":
+            "tf-version.cloud-tpus.google.com": "nightly-2.x"
+        "spec":
+          "containers":
+          - "args":
+            - "python3"
+            - "official/nlp/bert/run_classifier.py"
+            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
+            - "--steps_per_loop=1000"
+            - "--input_meta_data_path=gs://cloud-tpu-checkpoints/bert/classification/mnli_meta_data"
+            - "--train_data_path=gs://cloud-tpu-checkpoints/bert/classification/mnli_train.tf_record"
+            - "--eval_data_path=gs://cloud-tpu-checkpoints/bert/classification/mnli_eval.tf_record"
+            - "--bert_config_file=gs://cloud-tpu-checkpoints/bert/keras_bert/uncased_L-24_H-1024_A-16/bert_config.json"
+            - "--init_checkpoint=gs://cloud-tpu-checkpoints/bert/keras_bert/uncased_L-24_H-1024_A-16/bert_model.ckpt"
+            - "--learning_rate=3e-5"
+            - "--distribution_strategy=tpu"
+            - "--train_batch_size=32"
+            - "--eval_batch_size=32"
+            - "--num_train_epochs=3"
+            - "--model_dir=$(MODEL_DIR)"
+            "env":
+            - "name": "TEST_NAME"
+              "value": "tf-nightly-bert-mnli-convergence-v2-8"
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/bert-mnli/convergence/v2-8/$(JOB_NAME)"
+            - "name": "METRIC_COLLECTION_CONFIG"
+              "value": "{\n \"bigquery_dataset_name\": \"xl_ml_metrics_dataset\",\n \"bigquery_table_name\": \"xl_ml_metrics_table\",\n \"default_aggregation_strategies\": [\n  \"final\"\n ],\n \"write_to_bigquery\": \"True\"\n}"
+            - "name": "REGRESSION_TEST_CONFIG"
+              "value": "{\n \"base_comparison\": \"COMPARISON_GT\",\n \"base_threshold_expression\": \"v_mean + (v_stddev * 3.0)\",\n \"comparison_overrides\": {\n  \"epoch_sparse_categorical_accuracy_final\": \"COMPARISON_LT\"\n },\n \"min_num_datapoints_before_alerting\": 1,\n \"threshold_expression_overrides\": {\n  \"epoch_sparse_categorical_accuracy_final\": \"v_mean - (v_stddev * 3.0)\"\n },\n \"write_alerts_to_stackdriver\": \"True\",\n \"write_metrics_to_stackdriver\": \"True\"\n}"
+            "image": "gcr.io/xl-ml-test/model-garden:nightly"
+            "name": "tf-nightly-bert-mnli-convergence-v2-8"
+            "resources":
+              "limits":
+                "cloud-tpus.google.com/v2": 8
+          "restartPolicy": "Never"
+  "schedule": "30 7 * * */2"
