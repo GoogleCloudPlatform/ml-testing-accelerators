@@ -7,8 +7,6 @@ local tpus = import "../../tpus.libsonnet";
   local resnet50 = base.PyTorchTest {
     modelName: "resnet50",
     command: [
-      "tar -C ~/ -xvf /datasets/imagenet.tar",
-      "&&",
       "python3",
       "pytorch/xla/test/test_train_imagenet.py",
       "--num_epochs=2",
@@ -16,7 +14,7 @@ local tpus = import "../../tpus.libsonnet";
       "--num_workers=64",
       "--batch_size=128",
       "--log_steps=200",
-      "--datadir=~/imagenet",
+      "--datadir=/datasets/imagenet",
     ],
     jobSpec+:: {
       template+: {
