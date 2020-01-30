@@ -1,9 +1,14 @@
 FROM python:3.7-slim
 
-RUN apt-get update && apt-get install -y --no-install-recommends git curl gcc python3.7-dev
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  curl \
+  gcc \
+  git \
+  python3.7-dev \
+  libglib2.0-0
 RUN curl -sSL https://sdk.cloud.google.com | bash
 
-RUN pip3 install tf-nightly-cpu cloud-tpu-client
+RUN pip3 install tf-nightly-cpu cloud-tpu-client pyyaml
 
 # Checkout tensorflow/models at HEAD
 RUN git clone --depth 1 --branch master https://github.com/tensorflow/models.git /garden
