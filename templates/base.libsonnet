@@ -29,6 +29,8 @@ local tpus = import "tpus.libsonnet";
     regressionTestConfig: {
       write_metrics_to_stackdriver: "True",
       write_alerts_to_stackdriver: "True",
+      bigquery_dataset_name: "xl_ml_metrics_dataset",
+      bigquery_table_name: "xl_ml_metrics_table",
       min_num_datapoints_before_alerting: 1,
       base_threshold_expression: "v_mean + (v_stddev * 3.0)",
       base_comparison: "COMPARISON_GT",

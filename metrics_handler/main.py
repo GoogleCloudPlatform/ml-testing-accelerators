@@ -90,7 +90,6 @@ class CloudMetricsHandler(object):
     # Initalize clients to interact with various Cloud APIs.
     self.project = google.auth.default()[1]
     self.bigquery_client = bigquery.Client()
-    self.table_id = self._make_bigquery_table()
     self.gcs_client = gcs.Client()
     self.monitoring_client = monitoring_v3.MetricServiceClient()
     self.alert_client = monitoring_v3.AlertPolicyServiceClient()
@@ -103,6 +102,10 @@ class CloudMetricsHandler(object):
         '%Y-%m-%d %H:%M:%S')
 
 
+  def _get_table_id(self, dataset_name, table_name):
+     return '{}.{}.{}'.format(self.project, dataset_name, table_name)
+
+
   def _metric_name_to_alert_display_name(self, metric_name):
     return 'MetricOutsideExpectedBounds__TestName:{}__MetricName:{}'.format(
         self.test_name, metric_name)
@@ -111,50 +114,6 @@ class CloudMetricsHandler(object):
   def _metric_name_to_metric_id(self, metric_name):
     return '{}/{}/{}'.format(
         'custom.googleapis.com/cloudtpu', self.test_name, metric_name)
-
-
-  def _make_bigquery_table(self):
-    if not self.metric_collection_config.get('write_to_bigquery'):
-      return
-    dataset_name = self.metric_collection_config['bigquery_dataset_name']
-    dataset = bigquery.Dataset(self.bigquery_client.dataset(dataset_name))
-    _ = self.bigquery_client.create_dataset(dataset, exists_ok=True)
-
-    table_id = '{}.{}.{}'.format(self.project, dataset_name,
-        self.metric_collection_config['bigquery_table_name'])
-    schema = [
-        bigquery.SchemaField("test_name", "STRING", mode="REQUIRED"),
-        bigquery.SchemaField("metric_name", "STRING", mode="REQUIRED"),
-        bigquery.SchemaField("metric_value", "FLOAT64", mode="REQUIRED"),
-        bigquery.SchemaField("timestamp", "TIMESTAMP", mode="REQUIRED"),
-        bigquery.SchemaField("stackdriver_logs_link", "STRING",
-                             mode="REQUIRED"),
-    ]
-    table = bigquery.Table(table_id, schema=schema)
-    _ = self.bigquery_client.create_table(table, exists_ok=True)
-    return table_id
-
-
-  def add_new_metrics_to_bigquery(self, aggregated_metrics_dict):
-    if not self.metric_collection_config.get('write_to_bigquery'):
-      return
-    rows_to_insert = [
-        (self.test_name, key, float(x.metric_value),
-        self._wall_time_to_sql_timestamp(x.wall_time),
-        self.stackdriver_logs_link) for key, x in \
-        aggregated_metrics_dict.items()]
-    logging.log(logging.INFO,
-                'Rows to insert into BigQuery: {}'.format(rows_to_insert))
-    table = self.bigquery_client.get_table(self.table_id)
-    errors = self.bigquery_client.insert_rows(table, rows_to_insert)
-    if errors == []:
-      logging.log(logging.INFO, 'Added metrics to bigquery table: {}'.format(
-          self.table_id))
-    else:
-      # TODO: Maybe add retry logic. insert_rows seems to be atomic for all
-      #       elements in the list, so it should be safe to retry.
-      logging.log(logging.ERROR,
-          'Failed to add metrics to bigquery table: {}'.format(errors))
 
 
   def _aggregate_metrics(self, metrics, strategy):
@@ -274,8 +233,85 @@ class CloudMetricsHandler(object):
     return final_metrics
 
 
-  def get_metrics_history_from_bigquery(self, new_metrics):
-    rows_iter = self.bigquery_client.list_rows(self.table_id)
+  def _make_bigquery_table(self):
+    if not self.metric_collection_config.get('write_to_bigquery'):
+      return
+    dataset_name = self.metric_collection_config['bigquery_dataset_name']
+    dataset = bigquery.Dataset(self.bigquery_client.dataset(dataset_name))
+    _ = self.bigquery_client.create_dataset(dataset, exists_ok=True)
+
+    table_id = self._get_table_id(
+        dataset_name, self.metric_collection_config['bigquery_table_name'])
+    schema = [
+        bigquery.SchemaField("test_name", "STRING", mode="REQUIRED"),
+        bigquery.SchemaField("metric_name", "STRING", mode="REQUIRED"),
+        bigquery.SchemaField("metric_value", "FLOAT64", mode="REQUIRED"),
+        bigquery.SchemaField("timestamp", "TIMESTAMP", mode="REQUIRED"),
+        bigquery.SchemaField("stackdriver_logs_link", "STRING",
+                             mode="REQUIRED"),
+    ]
+    table = bigquery.Table(table_id, schema=schema)
+    _ = self.bigquery_client.create_table(table, exists_ok=True)
+    return table_id
+
+
+  def add_new_metrics_to_bigquery(self, aggregated_metrics_dict):
+    if not self.metric_collection_config.get('write_to_bigquery', False):
+      logging.log(logging.INFO, 'Skipping writing metrics to BigQuery.')
+      return
+    table_id = self._make_bigquery_table()
+    rows_to_insert = [
+        (self.test_name, key, float(x.metric_value),
+        self._wall_time_to_sql_timestamp(x.wall_time),
+        self.stackdriver_logs_link) for key, x in \
+        aggregated_metrics_dict.items()]
+    logging.log(logging.INFO,
+                'Rows to insert into BigQuery: {}'.format(rows_to_insert))
+    table = self.bigquery_client.get_table(table_id)
+    errors = self.bigquery_client.insert_rows(table, rows_to_insert)
+    if errors == []:
+      logging.log(logging.INFO, 'Added metrics to bigquery table: {}'.format(
+          table_id))
+    else:
+      # TODO: Maybe add retry logic. insert_rows seems to be atomic for all
+      #       elements in the list, so it should be safe to retry.
+      logging.log(logging.ERROR,
+          'Failed to add metrics to bigquery table: {}'.format(errors))
+
+
+  def add_new_metrics_to_stackdriver(self, new_metrics_dict):
+    if not self.regression_alert_config.get('write_metrics_to_stackdriver',
+                                            False):
+      logging.log(logging.INFO, 'Skipping writing metrics to Stackdriver.')
+      return
+    project_name = self.monitoring_client.project_path(self.project)
+    series_list = []
+    for metric_name, metric_point in new_metrics_dict.items():
+      if self.regression_metrics and metric_name not in self.regression_metrics:
+        continue
+      series = monitoring_v3.types.TimeSeries()
+      series.metric.type = self._metric_name_to_metric_id(metric_name)
+      # Resource type, instance_id, and zone are required by monitoring API
+      # even though they are irrelevant to our metrics.
+      series.resource.type = 'k8s_pod'
+      series.resource.labels['instance_id'] = '1234567890123456789'
+      series.resource.labels['zone'] = 'us-central1-f'
+      point = series.points.add()
+      point.value.double_value = metric_point.metric_value
+      point.interval.end_time.seconds = int(metric_point.wall_time)
+      point.interval.end_time.nanos = int(
+          (metric_point.wall_time - point.interval.end_time.seconds) * 10**9)
+      series_list.append(series)
+    self.monitoring_client.create_time_series(project_name, series_list)
+    logging.log(logging.INFO, 'Added metrics to stackdriver.')
+
+
+
+  def _get_metrics_history_from_bigquery(self):
+    dataset_name = self.regression_alert_config['bigquery_dataset_name']
+    table_id = self._get_table_id(
+        dataset_name, self.regression_alert_config['bigquery_table_name'])
+    rows_iter = self.bigquery_client.list_rows(table_id)
     metrics_history = defaultdict(list)
     for row in rows_iter:
       if row['test_name'] != self.test_name:
@@ -283,11 +319,6 @@ class CloudMetricsHandler(object):
       metrics_history[row['metric_name']].append(self.MetricPoint(
           metric_value=row['metric_value'],
           wall_time=row['timestamp'].timestamp()))
-
-    # Add the metrics from the latest run. These aren't in Bigquery yet.
-    for metric_name, metric_value in new_metrics.items():
-      metrics_history[metric_name].append(metric_value)
-
     return metrics_history
 
 
@@ -322,9 +353,13 @@ class CloudMetricsHandler(object):
     return notification_channels
 
 
-  def compute_alert_bounds(self, metrics_history):
-    if not self.regression_alert_config.get('write_alerts_to_stackdriver'):
-      return
+  def _compute_alert_bounds(self, new_metrics):
+    metrics_history = self._get_metrics_history_from_bigquery()
+
+    # Add the metrics from the latest run. These aren't in Bigquery yet.
+    for metric_name, metric_value in new_metrics.items():
+      metrics_history[metric_name].append(metric_value)
+
     notification_channels = self._get_notification_channels()
     metric_name_to_alert = {}
     metrics_to_ignore = set(self.regression_alert_config.get(
@@ -366,34 +401,12 @@ class CloudMetricsHandler(object):
     return metric_name_to_alert
 
 
-  def add_new_metrics_to_stackdriver(self, new_metrics_dict):
-    if not self.regression_alert_config.get('write_metrics_to_stackdriver'):
+  def add_alerts_to_stackdriver(self, new_metrics):
+    if not self.regression_alert_config.get('write_alerts_to_stackdriver',
+                                            False):
+      logging.log(logging.INFO, 'Skipping writing alerts to Stackdriver.')
       return
-    project_name = self.monitoring_client.project_path(self.project)
-    series_list = []
-    for metric_name, metric_point in new_metrics_dict.items():
-      if self.regression_metrics and metric_name not in self.regression_metrics:
-        continue
-      series = monitoring_v3.types.TimeSeries()
-      series.metric.type = self._metric_name_to_metric_id(metric_name)
-      # Resource type, instance_id, and zone are required by monitoring API
-      # even though they are irrelevant to our metrics.
-      series.resource.type = 'gce_instance'
-      series.resource.labels['instance_id'] = '1234567890123456789'
-      series.resource.labels['zone'] = 'us-central1-f'
-      point = series.points.add()
-      point.value.double_value = metric_point.metric_value
-      point.interval.end_time.seconds = int(metric_point.wall_time)
-      point.interval.end_time.nanos = int(
-          (metric_point.wall_time - point.interval.end_time.seconds) * 10**9)
-      series_list.append(series)
-    self.monitoring_client.create_time_series(project_name, series_list)
-    logging.log(logging.INFO, 'Added metrics to stackdriver.')
-
-
-  def add_alerts_to_stackdriver(self, metric_name_to_alert_dict):
-    if not self.regression_alert_config.get('write_alerts_to_stackdriver'):
-      return
+    metric_name_to_alert_dict = self._compute_alert_bounds(new_metrics)
     project_name = self.alert_client.project_path(self.project)
 
     # First find the unique ID for all the existing policies.
@@ -421,24 +434,16 @@ def run_main(event, context):
   event = json.loads(pubsub_message)
   logging.log(logging.INFO, 'Decoded pubsub message: {}'.format(event))
 
-  # Get test_name, events_dir, path_to_config_file from pubsub message.
-  events_dir = event.get('model_dir', None)
-  test_name = event.get('test_name', None)
-  metric_collection_config = event.get('metric_collection_config', None)
-  regression_alert_config = event.get('regression_test_config', {})
+  events_dir = event.get('model_dir')
+  test_name = event.get('test_name')
+  logs_link = event.get('logs_link')
+  metric_collection_config = event.get('metric_collection_config')
+  regression_alert_config = event.get('regression_test_config')
+
   if not regression_alert_config and not metric_collection_config:
     raise ValueError('metric_collection_config and regression_alert_config '
                      'were both null; stopping early. See README for '
                      'documentation on writing these configs.')
-  if regression_alert_config and not metric_collection_config:
-    # TODO: Think about use cases. metric_collection_config contains bigquery
-    # location, which is needed to create regression alerts. Should we have a
-    # 3rd config for bigquery locations or just require metric_collection_config
-    # if user has non-None regression_alert_config?
-    raise ValueError('metric_collection_config is required if using '
-                     'regression_alert_config. See README for documentation on '
-                     'writing these configs.')
-  logs_link = event.get('logs_link', None)
   if not (events_dir and test_name and logs_link):
     raise ValueError('Pubsub message must contain 3 required fields: '
                      'events_dir, test_name, and logs_link. See '
@@ -449,12 +454,6 @@ def run_main(event, context):
   new_metrics = handler.get_metrics_from_events_dir()
   logging.log(logging.INFO, 'new_metrics: {}\n\n\n'.format(new_metrics))
 
-  metrics_history = handler.get_metrics_history_from_bigquery(new_metrics)
-  logging.log(logging.DEBUG, 'metrics_history: {}\n\n\n'.format(
-      metrics_history))
-
-  metric_name_to_alert = handler.compute_alert_bounds(metrics_history)
-
   handler.add_new_metrics_to_bigquery(new_metrics)
   # TODO: this once threw google.api_core.exceptions.DeadlineExceeded: 504 Deadline Exceeded
 
@@ -462,4 +461,4 @@ def run_main(event, context):
   # TODO: this once threw google.api_core.exceptions.InternalServerError
   #   ^^ consider retrying for some statuses: https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
 
-  handler.add_alerts_to_stackdriver(metric_name_to_alert)
+  handler.add_alerts_to_stackdriver(new_metrics)

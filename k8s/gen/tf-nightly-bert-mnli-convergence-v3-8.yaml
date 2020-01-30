@@ -55,7 +55,7 @@
             - "name": "METRIC_COLLECTION_CONFIG"
               "value": "{\n \"bigquery_dataset_name\": \"xl_ml_metrics_dataset\",\n \"bigquery_table_name\": \"xl_ml_metrics_table\",\n \"default_aggregation_strategies\": [\n  \"final\"\n ],\n \"write_to_bigquery\": \"True\"\n}"
             - "name": "REGRESSION_TEST_CONFIG"
-              "value": "{\n \"base_comparison\": \"COMPARISON_GT\",\n \"base_threshold_expression\": \"v_mean + (v_stddev * 3.0)\",\n \"comparison_overrides\": {\n  \"epoch_sparse_categorical_accuracy_final\": \"COMPARISON_LT\"\n },\n \"min_num_datapoints_before_alerting\": 1,\n \"threshold_expression_overrides\": {\n  \"epoch_sparse_categorical_accuracy_final\": \"v_mean - (v_stddev * 3.0)\"\n },\n \"write_alerts_to_stackdriver\": \"True\",\n \"write_metrics_to_stackdriver\": \"True\"\n}"
+              "value": "{\n \"base_comparison\": \"COMPARISON_GT\",\n \"base_threshold_expression\": \"v_mean + (v_stddev * 3.0)\",\n \"bigquery_dataset_name\": \"xl_ml_metrics_dataset\",\n \"bigquery_table_name\": \"xl_ml_metrics_table\",\n \"comparison_overrides\": {\n  \"epoch_sparse_categorical_accuracy_final\": \"COMPARISON_LT\"\n },\n \"min_num_datapoints_before_alerting\": 1,\n \"threshold_expression_overrides\": {\n  \"epoch_sparse_categorical_accuracy_final\": \"v_mean - (v_stddev * 3.0)\"\n },\n \"write_alerts_to_stackdriver\": \"True\",\n \"write_metrics_to_stackdriver\": \"True\"\n}"
             "image": "gcr.io/xl-ml-test/model-garden:nightly"
             "name": "tf-nightly-bert-mnli-convergence-v3-8"
             "resources":
