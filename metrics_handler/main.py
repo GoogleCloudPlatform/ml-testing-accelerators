@@ -209,8 +209,8 @@ class CloudMetricsHandler(object):
           metric_value=(end_wall_time - start_wall_time),
           wall_time=end_wall_time)
     else:
-      logging.log(logging.WARNING,
-          'WARNING: Accuracy was never high enough to satisfy the '
+      logging.log(logging.ERROR,
+          'Accuracy was never high enough to satisfy the '
           '`time_to_accuracy` settings from the config.')
       metrics_to_update['time_to_accuracy'] = self.MetricPoint(
           # Set to a high enough value to trigger alerts.
@@ -308,7 +308,7 @@ class CloudMetricsHandler(object):
       # If we checked all existing notification channels and didn't find all
       # that the user requested in the config, log a warning.
       logging.log(
-          logging.WARNING,
+          logging.ERROR,
           'No notification channel found for display_names: {}. '
           'You can create channels in the Pantheon UI under Stackdriver > '
           'Monitoring > Alerting > Edit Notification Channels'.format(

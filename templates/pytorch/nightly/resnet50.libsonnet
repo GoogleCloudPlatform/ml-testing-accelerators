@@ -9,12 +9,10 @@ local tpus = import "../../tpus.libsonnet";
     command: [
       "python3",
       "pytorch/xla/test/test_train_imagenet.py",
-      "--num_epochs=2",
       "--model=resnet50",
       "--num_workers=64",
       "--batch_size=128",
       "--log_steps=200",
-      "--datadir=/datasets/imagenet",
     ],
     jobSpec+:: {
       template+: {
@@ -37,14 +35,24 @@ local tpus = import "../../tpus.libsonnet";
       },
     },
   },
+  local functional = mixins.Functional {
+    command+: [
+      "--num_epochs=2",
+      "--datadir=/datasets/imagenet-mini",
+    ],
+  },
   local convergence = mixins.Convergence {
     accelerator+: tpus.Preemptible,
+    command+: [
+      "--num_epochs=90",
+      "--datadir=/datasets/imagenet",
+    ],
   },
   local v3_8 = {
     accelerator+: tpus.v3_8,
   },
-
   configs: [
     resnet50 + v3_8 + convergence + timeouts.Hours(23),
+    resnet50 + v3_8 + functional + timeouts.Hours(2),
   ],
 }
