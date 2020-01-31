@@ -63,8 +63,7 @@
             - "name": "REGRESSION_TEST_CONFIG"
               "value": |
                 {
-                  "write_metrics_to_stackdriver": "True",
-                  "write_alerts_to_stackdriver": "True",
+                  "write_to_stackdriver": "True",
                   "bigquery_dataset_name": "xl_ml_metrics_dataset",
                   "bigquery_table_name": "xl_ml_metrics_table",
                   "min_num_datapoints_before_alerting": 10,

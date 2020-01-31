@@ -4,6 +4,7 @@ from collections import namedtuple
 import datetime
 import io
 import json
+import math
 import time
 
 from absl import logging
@@ -168,13 +169,27 @@ class CloudMetricsHandler(object):
           metric_value=(end_wall_time - start_wall_time),
           wall_time=end_wall_time)
     else:
-      logging.log(logging.ERROR,
-          'Accuracy was never high enough to satisfy the '
-          '`time_to_accuracy` settings from the config.')
+      logging.error('Accuracy was never high enough to satisfy the '
+                    '`time_to_accuracy` settings from the config.')
       metrics_to_update['time_to_accuracy'] = self.MetricPoint(
           # Set to a high enough value to trigger alerts.
           metric_value=60 * 60 * 24 * 365,
           wall_time=start_wall_time)
+
+
+  def _add_total_wall_time_to_metrics(self, raw_metrics, metrics_to_update):
+    """Compute total time according to `raw_metrics`."""
+    min_wall_time = math.inf
+    max_wall_time = -math.inf
+    for tag in raw_metrics:
+      for value in raw_metrics[tag]:
+        if value.wall_time < min_wall_time:
+          min_wall_time = value.wall_time
+        if value.wall_time > max_wall_time:
+          max_wall_time = value.wall_time
+    metrics_to_update['total_wall_time'] = self.MetricPoint(
+        metric_value=(max_wall_time - min_wall_time),
+        wall_time=max_wall_time)
 
 
   def get_metrics_from_events_dir(self):
@@ -209,8 +224,7 @@ class CloudMetricsHandler(object):
             raw_metrics[tag].append(
                 self.MetricPoint(metric_value=val[0], wall_time=t.wall_time))
           except ValueError as e:
-            logging.log(
-                logging.ERROR,
+            logging.error(
                 'Unable to parse tag: `{}` from tensor_content: {}. '
                 'Error: {}. Consider adding this tag to tags_to_ignore '
                 'in config.'.format(tag, t.tensor_proto.tensor_content, e))
@@ -230,6 +244,7 @@ class CloudMetricsHandler(object):
     if 'time_to_accuracy' in self.metric_collection_config:
       self._add_time_to_accuracy_to_metrics(raw_metrics, final_metrics)
 
+    self._add_total_wall_time_to_metrics(raw_metrics, final_metrics)
     return final_metrics
 
 
@@ -257,7 +272,7 @@ class CloudMetricsHandler(object):
 
   def add_new_metrics_to_bigquery(self, aggregated_metrics_dict):
     if not self.metric_collection_config.get('write_to_bigquery', False):
-      logging.log(logging.INFO, 'Skipping writing metrics to BigQuery.')
+      logging.info('Skipping writing metrics to BigQuery.')
       return
     table_id = self._make_bigquery_table()
     rows_to_insert = [
@@ -265,24 +280,22 @@ class CloudMetricsHandler(object):
         self._wall_time_to_sql_timestamp(x.wall_time),
         self.stackdriver_logs_link) for key, x in \
         aggregated_metrics_dict.items()]
-    logging.log(logging.INFO,
-                'Rows to insert into BigQuery: {}'.format(rows_to_insert))
+    logging.info('Rows to insert into BigQuery: {}'.format(rows_to_insert))
     table = self.bigquery_client.get_table(table_id)
     errors = self.bigquery_client.insert_rows(table, rows_to_insert)
     if errors == []:
-      logging.log(logging.INFO, 'Added metrics to bigquery table: {}'.format(
-          table_id))
+      logging.info('Added metrics to bigquery table: {}'.format(table_id))
     else:
       # TODO: Maybe add retry logic. insert_rows seems to be atomic for all
       #       elements in the list, so it should be safe to retry.
-      logging.log(logging.ERROR,
+      logging.error(
           'Failed to add metrics to bigquery table: {}'.format(errors))
 
 
   def add_new_metrics_to_stackdriver(self, new_metrics_dict):
-    if not self.regression_alert_config.get('write_metrics_to_stackdriver',
+    if not self.regression_alert_config.get('write_to_stackdriver',
                                             False):
-      logging.log(logging.INFO, 'Skipping writing metrics to Stackdriver.')
+      logging.info('Skipping writing metrics to Stackdriver.')
       return
     project_name = self.monitoring_client.project_path(self.project)
     series_list = []
@@ -294,8 +307,10 @@ class CloudMetricsHandler(object):
       # Resource type, instance_id, and zone are required by monitoring API
       # even though they are irrelevant to our metrics.
       series.resource.type = 'k8s_pod'
-      series.resource.labels['instance_id'] = '1234567890123456789'
-      series.resource.labels['zone'] = 'us-central1-f'
+      series.resource.labels['cluster_name'] = 'xl-ml-test'
+      series.resource.labels['location'] = 'us-central1-b'
+      series.resource.labels['pod_name'] = 'xl-ml-test'
+      series.resource.labels['namespace_name'] = 'xl-ml-test'
       point = series.points.add()
       point.value.double_value = metric_point.metric_value
       point.interval.end_time.seconds = int(metric_point.wall_time)
@@ -303,7 +318,7 @@ class CloudMetricsHandler(object):
           (metric_point.wall_time - point.interval.end_time.seconds) * 10**9)
       series_list.append(series)
     self.monitoring_client.create_time_series(project_name, series_list)
-    logging.log(logging.INFO, 'Added metrics to stackdriver.')
+    logging.info('Added metrics to stackdriver.')
 
 
 
@@ -338,15 +353,13 @@ class CloudMetricsHandler(object):
 
       # If we checked all existing notification channels and didn't find all
       # that the user requested in the config, log a warning.
-      logging.log(
-          logging.ERROR,
+      logging.error(
           'No notification channel found for display_names: {}. '
           'You can create channels in the Pantheon UI under Stackdriver > '
           'Monitoring > Alerting > Edit Notification Channels'.format(
               display_names_to_find))
     else:
-      logging.log(
-          logging.WARNING,
+      logging.warning(
           'No notification channels set; no emails will be sent '
           'for firing alerts. See the config documentation for how to '
           'set these up.')
@@ -402,9 +415,9 @@ class CloudMetricsHandler(object):
 
 
   def add_alerts_to_stackdriver(self, new_metrics):
-    if not self.regression_alert_config.get('write_alerts_to_stackdriver',
+    if not self.regression_alert_config.get('write_to_stackdriver',
                                             False):
-      logging.log(logging.INFO, 'Skipping writing alerts to Stackdriver.')
+      logging.info('Skipping writing alerts to Stackdriver.')
       return
     metric_name_to_alert_dict = self._compute_alert_bounds(new_metrics)
     project_name = self.alert_client.project_path(self.project)
@@ -425,14 +438,14 @@ class CloudMetricsHandler(object):
         response = self.alert_client.update_alert_policy(alert)
       else:
         response = self.alert_client.create_alert_policy(project_name, alert)
-    logging.log(logging.INFO, 'Added alerts to Stackdriver.')
+    logging.info('Added alerts to Stackdriver.')
 
 
 def run_main(event, context):
-  logging.log(logging.INFO, 'Raw pubsub message: {}'.format(event['data']))
+  logging.info('Raw pubsub message: {}'.format(event['data']))
   pubsub_message = base64.b64decode(event['data']).decode('utf-8')
   event = json.loads(pubsub_message)
-  logging.log(logging.INFO, 'Decoded pubsub message: {}'.format(event))
+  logging.info('Decoded pubsub message: {}'.format(event))
 
   events_dir = event.get('model_dir')
   test_name = event.get('test_name')
@@ -452,7 +465,7 @@ def run_main(event, context):
       metric_collection_config, regression_alert_config)
 
   new_metrics = handler.get_metrics_from_events_dir()
-  logging.log(logging.INFO, 'new_metrics: {}\n\n\n'.format(new_metrics))
+  logging.info('new_metrics: {}\n\n\n'.format(new_metrics))
 
   handler.add_new_metrics_to_bigquery(new_metrics)
   # TODO: this once threw google.api_core.exceptions.DeadlineExceeded: 504 Deadline Exceeded
@@ -462,3 +475,4 @@ def run_main(event, context):
   #   ^^ consider retrying for some statuses: https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
 
   handler.add_alerts_to_stackdriver(new_metrics)
+

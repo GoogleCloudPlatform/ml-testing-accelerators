@@ -27,8 +27,7 @@ local tpus = import "tpus.libsonnet";
     },
     # TODO: increase min_num_datapoints_before_alerting. Low for debugging.
     regressionTestConfig: {
-      write_metrics_to_stackdriver: "True",
-      write_alerts_to_stackdriver: "True",
+      write_to_stackdriver: "True",
       bigquery_dataset_name: "xl_ml_metrics_dataset",
       bigquery_table_name: "xl_ml_metrics_table",
       min_num_datapoints_before_alerting: 1,
