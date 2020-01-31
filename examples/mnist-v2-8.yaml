@@ -47,35 +47,37 @@
             - "name": "METRIC_COLLECTION_CONFIG"
               "value": |
                 {
-                    "write_to_bigquery": "True",
-                    "bigquery_dataset_name": "xl_ml_metrics_dataset",
-                    "bigquery_table_name": "xl_ml_metrics_table",
-                    "tags_to_ignore": ["LearningRate"],
-                    "default_aggregation_strategies": ["final"],
-                    "metric_to_aggregation_strategies": {
-                        "epoch_loss": ["final", "min"]
-                    },
-                    "time_to_accuracy": {
-                       "accuracy_threshold": 99.0,
-                       "accuracy_tag": "epoch_sparse_categorical_accuracy"
-                    }
-                 }
+                  "write_to_bigquery": "True",
+                  "bigquery_dataset_name": "xl_ml_metrics_dataset",
+                  "bigquery_table_name": "xl_ml_metrics_table",
+                  "tags_to_ignore": ["LearningRate"],
+                  "default_aggregation_strategies": ["final"],
+                  "metric_to_aggregation_strategies": {
+                    "epoch_loss": ["final", "min"]
+                  },
+                  "time_to_accuracy": {
+                    "accuracy_threshold": 99.0,
+                    "accuracy_tag": "epoch_sparse_categorical_accuracy"
+                  }
+                }
             - "name": "REGRESSION_TEST_CONFIG"
               "value": |
                 {
-                     "write_metrics_to_stackdriver": "True",
-                     "write_alerts_to_stackdriver": "True",
-                     "min_num_datapoints_before_alerting": 1,
-                     "metrics_to_ignore": ["loss"],
-                     "notification_channel_display_names": ["default_notification_channel"],
-                     "base_threshold_expression": "v_mean + (v_stddev * 6.0)",
-                     "base_comparison": "COMPARISON_GT",
-                     "threshold_expression_overrides": {
-                          "epoch_sparse_categorical_accuracy_final": "v_mean - (v_stddev * 3.0)"
-                     },
-                     "comparison_overrides": {
-                         "epoch_sparse_categorical_accuracy_final": "COMPARISON_LT"
-                     }
+                  "write_metrics_to_stackdriver": "True",
+                  "write_alerts_to_stackdriver": "True",
+                  "bigquery_dataset_name": "xl_ml_metrics_dataset",
+                  "bigquery_table_name": "xl_ml_metrics_table",
+                  "min_num_datapoints_before_alerting": 10,
+                  "metrics_to_ignore": ["loss"],
+                  "notification_channel_display_names": ["default_notification_channel"],
+                  "base_threshold_expression": "v_mean + (v_stddev * 6.0)",
+                  "base_comparison": "COMPARISON_GT",
+                  "threshold_expression_overrides": {
+                  "epoch_sparse_categorical_accuracy_final": "v_mean - (v_stddev * 3.0)"
+                  },
+                  "comparison_overrides": {
+                    "epoch_sparse_categorical_accuracy_final": "COMPARISON_LT"
+                  }
                 }
             "image": "gcr.io/xl-ml-test/model-garden:nightly"
             "imagePullPolicy": "Always"
