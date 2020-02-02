@@ -8,16 +8,23 @@ import math
 import time
 
 from absl import logging
-from tensorboard.backend.event_processing import event_multiplexer
-import tensorflow as tf
+from kubernetes import client as k8s_client
+from kubernetes import config as k8s_config
 import google.api_core.exceptions
 from google.cloud import bigquery
 from google.cloud import monitoring_v3
 from google.cloud import storage as gcs
 from google.cloud.monitoring_v3.proto import alert_pb2
 import numpy as np
+from tensorboard.backend.event_processing import event_multiplexer
+import tensorflow as tf
 
 from google.protobuf import duration_pb2
+
+_SUCCESS_CODE = 0.0
+_FAILURE_CODE = 1.0
+_TIMEOUT_CODE = 2.0
+_JOB_STATUS = 'job_status'
 
 _60_SECOND_DURATION = duration_pb2.Duration()
 _60_SECOND_DURATION.FromTimedelta(datetime.timedelta(seconds=60))
@@ -57,7 +64,8 @@ _BASE_ALERT_DICT = {
 
 class CloudMetricsHandler(object):
   def __init__(self, test_name, events_dir, stackdriver_logs_link,
-               metric_collection_config, regression_alert_config):
+               metric_collection_config, regression_alert_config,
+               job_name):
     """Handles metrics storage, collection, aggregation, alerts, etc.
 
     Used in conjunction with the Cloud Accelerator Testing framework
@@ -75,11 +83,14 @@ class CloudMetricsHandler(object):
         README for documentation.
       regression_alert_config (dict): Options for alerting in the event of
         metrics regressions. See README for documentation.
+      job_name (string): Name of the Kubernetes Job that ran this instance
+        of the test.
     """
     self.MetricPoint = namedtuple('MetricPoint', 'metric_value wall_time')
     self.test_name = test_name
     self.events_dir = events_dir
     self.stackdriver_logs_link = stackdriver_logs_link
+    self.job_name = job_name
     self.metric_collection_config = metric_collection_config or {}
     self.regression_alert_config = regression_alert_config or {}
     if self.regression_alert_config.get('metric_opt_in_list', None):
@@ -192,6 +203,44 @@ class CloudMetricsHandler(object):
         wall_time=max_wall_time)
 
 
+  def _add_job_status_to_metrics(self, final_metrics):
+    # Retrieve Job status from Kubernetes.
+    k8s_config.load_kube_config()
+    kubernetes_client = k8s_client.BatchV1Api()
+    status = None
+    for namespace in ['default', 'automated']:
+      try:
+        status = kubernetes_client.read_namespaced_job_status(
+          self.job_name, namespace).status
+        break
+      except k8s_client.rest.ApiException:
+        continue
+    if not status:
+      raise ValueError('Could not find status for k8s job: {}'.format(
+          self.job_name))
+
+    # Interpret status and add to metrics.
+    # TODO: status.completion_time isn't populated sometimes (maybe if one
+    # attempt of the job timed out?) so use start_time as a back up.
+    if status.completion_time:
+      completion_time = status.completion_time.timestamp()
+    else:
+      completion_time = status.start_time.timestamp()
+    if status.succeeded:
+      final_metrics[_JOB_STATUS] = self.MetricPoint(
+          metric_value=_SUCCESS_CODE,
+          wall_time=completion_time)
+    else:
+      found_timeout = False
+      for condition in status.conditions:
+        if condition.reason == 'DeadlineExceeded':
+          found_timeout = True
+          break
+      final_metrics[_JOB_STATUS] = self.MetricPoint(
+          metric_value=_TIMEOUT_CODE if found_timeout else _FAILURE_CODE,
+          wall_time=completion_time)
+
+
   def get_metrics_from_events_dir(self):
     tags_to_ignore = set(
         self.metric_collection_config.get('tags_to_ignore', []))
@@ -245,6 +294,7 @@ class CloudMetricsHandler(object):
       self._add_time_to_accuracy_to_metrics(raw_metrics, final_metrics)
 
     self._add_total_wall_time_to_metrics(raw_metrics, final_metrics)
+    self._add_job_status_to_metrics(final_metrics)
     return final_metrics
 
 
@@ -264,6 +314,8 @@ class CloudMetricsHandler(object):
         bigquery.SchemaField("timestamp", "TIMESTAMP", mode="REQUIRED"),
         bigquery.SchemaField("stackdriver_logs_link", "STRING",
                              mode="REQUIRED"),
+        bigquery.SchemaField("metric_upper_bound", "FLOAT64", mode="NULLABLE"),
+        bigquery.SchemaField("metric_lower_bound", "FLOAT64", mode="NULLABLE"),
     ]
     table = bigquery.Table(table_id, schema=schema)
     _ = self.bigquery_client.create_table(table, exists_ok=True)
@@ -275,10 +327,12 @@ class CloudMetricsHandler(object):
       logging.info('Skipping writing metrics to BigQuery.')
       return
     table_id = self._make_bigquery_table()
+    # TODO: Compute metric_upper_bound and metric_lower_bound and pass
+    # those instead of None, None.
     rows_to_insert = [
         (self.test_name, key, float(x.metric_value),
         self._wall_time_to_sql_timestamp(x.wall_time),
-        self.stackdriver_logs_link) for key, x in \
+        self.stackdriver_logs_link, None, None) for key, x in \
         aggregated_metrics_dict.items()]
     logging.info('Rows to insert into BigQuery: {}'.format(rows_to_insert))
     table = self.bigquery_client.get_table(table_id)
@@ -452,6 +506,8 @@ def run_main(event, context):
   logs_link = event.get('logs_link')
   metric_collection_config = event.get('metric_collection_config')
   regression_alert_config = event.get('regression_test_config')
+  # TODO: Pass job_name as a top-level variable in pubsub message.
+  job_name = events_dir.split('/')[-1]
 
   if not regression_alert_config and not metric_collection_config:
     raise ValueError('metric_collection_config and regression_alert_config '
@@ -462,7 +518,7 @@ def run_main(event, context):
                      'events_dir, test_name, and logs_link. See '
                      'README for documentation. Message was: {}'.format(event))
   handler = CloudMetricsHandler(test_name, events_dir, logs_link,
-      metric_collection_config, regression_alert_config)
+      metric_collection_config, regression_alert_config, job_name)
 
   new_metrics = handler.get_metrics_from_events_dir()
   logging.info('new_metrics: {}\n\n\n'.format(new_metrics))
@@ -475,4 +531,3 @@ def run_main(event, context):
   #   ^^ consider retrying for some statuses: https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
 
   handler.add_alerts_to_stackdriver(new_metrics)
-
