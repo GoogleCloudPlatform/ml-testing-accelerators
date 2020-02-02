@@ -205,7 +205,14 @@ class CloudMetricsHandler(object):
 
   def _add_job_status_to_metrics(self, final_metrics):
     # Retrieve Job status from Kubernetes.
-    k8s_config.load_kube_config()
+    try:
+      # Used when running in a Cloud Function.
+      k8s_config.load_incluster_config()
+      logging.info('Successfully loaded k8s config')
+    except Exception as e:
+      # Used when running locally.
+      logging.error('k8s load_incluster_config failed with: {}'.format(e))
+      k8s_config.load_kube_config()
     kubernetes_client = k8s_client.BatchV1Api()
     status = None
     for namespace in ['default', 'automated']:
@@ -496,6 +503,7 @@ class CloudMetricsHandler(object):
 
 
 def run_main(event, context):
+  logging.info('context: {}'.format(context))
   logging.info('Raw pubsub message: {}'.format(event['data']))
   pubsub_message = base64.b64decode(event['data']).decode('utf-8')
   event = json.loads(pubsub_message)
@@ -531,3 +539,4 @@ def run_main(event, context):
   #   ^^ consider retrying for some statuses: https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
 
   handler.add_alerts_to_stackdriver(new_metrics)
+
