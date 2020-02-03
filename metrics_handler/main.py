@@ -190,6 +190,9 @@ class CloudMetricsHandler(object):
 
   def _add_total_wall_time_to_metrics(self, raw_metrics, metrics_to_update):
     """Compute total time according to `raw_metrics`."""
+    if not raw_metrics:
+      logging.warning('Empty raw_metrics; skipping total_wall_time')
+      return
     min_wall_time = math.inf
     max_wall_time = -math.inf
     for tag in raw_metrics:
@@ -335,6 +338,9 @@ class CloudMetricsHandler(object):
   def add_new_metrics_to_bigquery(self, aggregated_metrics_dict):
     if not self.metric_collection_config.get('write_to_bigquery', False):
       logging.info('Skipping writing metrics to BigQuery.')
+      return
+    if not aggregated_metrics_dict:
+      logging.warning('No metrics to write to BigQuery.')
       return
     table_id = self._make_bigquery_table()
     # TODO: Compute metric_upper_bound and metric_lower_bound and pass
