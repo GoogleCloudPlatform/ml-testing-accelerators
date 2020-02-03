@@ -517,16 +517,15 @@ def run_main(event, context):
   logs_link = event.get('logs_link')
   metric_collection_config = event.get('metric_collection_config')
   regression_alert_config = event.get('regression_test_config')
-  # TODO: Pass job_name as a top-level variable in pubsub message.
-  job_name = events_dir.split('/')[-1]
+  job_name = event.get('job_name')
 
   if not regression_alert_config and not metric_collection_config:
     raise ValueError('metric_collection_config and regression_alert_config '
                      'were both null; stopping early. See README for '
                      'documentation on writing these configs.')
-  if not (events_dir and test_name and logs_link):
-    raise ValueError('Pubsub message must contain 3 required fields: '
-                     'events_dir, test_name, and logs_link. See '
+  if not (events_dir and test_name and logs_link and job_name):
+    raise ValueError('Pubsub message must contain 4 required fields: '
+                     'events_dir, test_name, logs_link, and job_name. See '
                      'README for documentation. Message was: {}'.format(event))
   handler = CloudMetricsHandler(test_name, events_dir, logs_link,
       metric_collection_config, regression_alert_config, job_name)
