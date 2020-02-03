@@ -126,7 +126,7 @@ local tpus = import "tpus.libsonnet";
       apiVersion: "batch/v1",
       kind: "Job",
       metadata: {
-        generateName: oneshotConfig.testName,
+        generateName: "%s-" % oneshotConfig.testName,
       },
       spec: oneshotConfig.jobSpec,
     },
