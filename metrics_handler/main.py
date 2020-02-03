@@ -301,7 +301,10 @@ class CloudMetricsHandler(object):
       self._add_time_to_accuracy_to_metrics(raw_metrics, final_metrics)
 
     self._add_total_wall_time_to_metrics(raw_metrics, final_metrics)
-    self._add_job_status_to_metrics(final_metrics)
+
+    # TODO: Re-enable this once kube config is figured out.
+    # https://b.corp.google.com/issues/148563355#comment11
+    # self._add_job_status_to_metrics(final_metrics)
     return final_metrics
 
 
