@@ -7,9 +7,9 @@ import json
 import math
 import time
 
+import job_status_handler
+
 from absl import logging
-from kubernetes import client as k8s_client
-from kubernetes import config as k8s_config
 import google.api_core.exceptions
 from google.cloud import bigquery
 from google.cloud import monitoring_v3
@@ -21,9 +21,6 @@ import tensorflow as tf
 
 from google.protobuf import duration_pb2
 
-_SUCCESS_CODE = 0.0
-_FAILURE_CODE = 1.0
-_TIMEOUT_CODE = 2.0
 _JOB_STATUS = 'job_status'
 
 _60_SECOND_DURATION = duration_pb2.Duration()
@@ -98,6 +95,11 @@ class CloudMetricsHandler(object):
           self.regression_alert_config['metric_opt_in_list'])
     else:
       self.regression_metrics = None
+
+    # TODO: Consider adding these to the pubsub message and passing them in.
+    self.project_id = 'xl-ml-test'
+    self.zone = 'us-central1-b'
+    self.cluster_id = 'xl-ml-test'
 
     # Initalize clients to interact with various Cloud APIs.
     self.project = google.auth.default()[1]
@@ -207,48 +209,17 @@ class CloudMetricsHandler(object):
 
 
   def _add_job_status_to_metrics(self, final_metrics):
-    # Retrieve Job status from Kubernetes.
-    try:
-      # Used when running in a Cloud Function.
-      k8s_config.load_incluster_config()
-      logging.info('Successfully loaded k8s config')
-    except Exception as e:
-      # Used when running locally.
-      logging.error('k8s load_incluster_config failed with: {}'.format(e))
-      k8s_config.load_kube_config()
-    kubernetes_client = k8s_client.BatchV1Api()
-    status = None
-    for namespace in ['default', 'automated']:
-      try:
-        status = kubernetes_client.read_namespaced_job_status(
-          self.job_name, namespace).status
-        break
-      except k8s_client.rest.ApiException:
-        continue
-    if not status:
-      raise ValueError('Could not find status for k8s job: {}'.format(
-          self.job_name))
-
-    # Interpret status and add to metrics.
-    # TODO: status.completion_time isn't populated sometimes (maybe if one
-    # attempt of the job timed out?) so use start_time as a back up.
-    if status.completion_time:
-      completion_time = status.completion_time.timestamp()
-    else:
-      completion_time = status.start_time.timestamp()
-    if status.succeeded:
-      final_metrics[_JOB_STATUS] = self.MetricPoint(
-          metric_value=_SUCCESS_CODE,
-          wall_time=completion_time)
-    else:
-      found_timeout = False
-      for condition in status.conditions:
-        if condition.reason == 'DeadlineExceeded':
-          found_timeout = True
-          break
-      final_metrics[_JOB_STATUS] = self.MetricPoint(
-          metric_value=_TIMEOUT_CODE if found_timeout else _FAILURE_CODE,
-          wall_time=completion_time)
+    status_handler = job_status_handler.JobStatusHandler(
+        self.project_id, self.zone, self.cluster_id)
+    status_code, completion_time = status_handler.get_job_status(
+        self.job_name, 'automated')
+    if status_code == job_status_handler.UNKNOWN_STATUS_CODE:
+      logging.error('Unknown status for job_name: {}. job_status will not '
+                    'be added to metrics.'.format(self.job_name))
+      return
+    final_metrics[_JOB_STATUS] = self.MetricPoint(
+        metric_value=status_code,
+        wall_time=completion_time)
 
 
   def get_metrics_from_events_dir(self):
@@ -304,10 +275,7 @@ class CloudMetricsHandler(object):
       self._add_time_to_accuracy_to_metrics(raw_metrics, final_metrics)
 
     self._add_total_wall_time_to_metrics(raw_metrics, final_metrics)
-
-    # TODO: Re-enable this once kube config is figured out.
-    # https://b.corp.google.com/issues/148563355#comment11
-    # self._add_job_status_to_metrics(final_metrics)
+    self._add_job_status_to_metrics(final_metrics)
     return final_metrics
 
 
@@ -547,4 +515,3 @@ def run_main(event, context):
   #   ^^ consider retrying for some statuses: https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
 
   handler.add_alerts_to_stackdriver(new_metrics)
-
