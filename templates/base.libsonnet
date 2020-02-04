@@ -52,6 +52,7 @@ local tpus = import "tpus.libsonnet";
             {
               name: config.testName,
               image: "%(image)s:%(imageTag)s" % config,
+              imagePullPolicy: "Always",
 	            # Use Docker image's entrypoint wrapper
               args: config.command,
               resources: {

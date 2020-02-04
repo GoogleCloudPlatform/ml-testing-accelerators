@@ -53,6 +53,7 @@
             - "name": "XLA_USE_BF16"
               "value": "0"
             "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
+            "imagePullPolicy": "Always"
             "name": "pt-nightly-resnet50-functional-v3-8"
             "resources":
               "limits":
