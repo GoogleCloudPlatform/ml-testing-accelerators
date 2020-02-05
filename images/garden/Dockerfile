@@ -14,7 +14,8 @@ RUN mv models-master garden/
 RUN pip3 install -r /garden/official/requirements.txt
 ENV PYTHONPATH /garden
 
-COPY images/common.sh /
+COPY images/setup.sh /
+COPY images/publish.sh /
 COPY images/garden/entrypoint.sh /
 
 WORKDIR /garden
