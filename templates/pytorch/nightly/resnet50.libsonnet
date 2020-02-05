@@ -50,7 +50,7 @@ local tpus = import "../../tpus.libsonnet";
     ],
   },
   local v3_8 = {
-    accelerator+: tpus.v3_8,
+    accelerator: tpus.v3_8,
   },
   configs: [
     resnet50 + v3_8 + convergence + timeouts.Hours(23),

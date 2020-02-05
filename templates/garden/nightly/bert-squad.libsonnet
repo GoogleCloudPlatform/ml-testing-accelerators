@@ -34,13 +34,13 @@ local tpus = import "../../tpus.libsonnet";
     ],
   },
   local v2_8 = {
-    accelerator+: tpus.v2_8,
+    accelerator: tpus.v2_8,
     command+: [
       "--train_batch_size=16",
     ],
   },
   local v3_8 = {
-    accelerator+: tpus.v3_8,
+    accelerator: tpus.v3_8,
     command+: [
       "--train_batch_size=32",
     ],

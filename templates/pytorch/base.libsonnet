@@ -22,9 +22,29 @@ local base = import "../base.libsonnet";
     },
 
     image: "gcr.io/xl-ml-test/pytorch-xla",
+
     jobSpec+:: {
       template+: {
         spec+: {
+          containerMap+: {
+            train+: {
+              args+: [ "--logdir=$(MODEL_DIR)" ],
+              envMap+: {
+                XLA_USE_BF16: "0",
+              },
+              resources+: {
+                requests+: {
+                  cpu: "4.5",
+                  memory: "8Gi",
+                },
+              },
+
+              volumeMounts: [{
+                mountPath: "/dev/shm",
+                name: "dshm",
+              }],
+            },
+          },
           volumes: [
             {
               name: "dshm",
@@ -40,25 +60,6 @@ local base = import "../base.libsonnet";
                 readOnly: true,
               },
             },
-          ],
-          containers: [
-            container {
-              args+: ["--logdir=$(MODEL_DIR)" ],
-              volumeMounts: [{
-                mountPath: "/dev/shm",
-                name: "dshm",
-              }],
-              env+: [{
-                name: "XLA_USE_BF16",
-                value: "0",
-              }],
-              resources+: {
-                requests+: {
-                  cpu: "4.5",
-                  memory: "8Gi",
-                },
-              },
-            } for container in super.containers
           ],
         },
       },

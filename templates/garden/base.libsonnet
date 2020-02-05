@@ -14,16 +14,17 @@ local base = import "../base.libsonnet";
     },
 
     image: "gcr.io/xl-ml-test/model-garden",
+
     jobSpec+:: {
       template+: {
         spec+: {
-          containers: [
-            container {
-              args+: ["--model_dir=$(MODEL_DIR)" ],
-            } for container in super.containers
-          ],
+          containerMap+: {
+            train+: {
+              args+: [ "--model_dir=$(MODEL_DIR)" ]
+            },
+          },
         },
       },
     },
-  }
+  },
 }

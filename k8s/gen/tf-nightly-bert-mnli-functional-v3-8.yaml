@@ -32,6 +32,12 @@
             - "--num_train_epochs=1"
             - "--model_dir=$(MODEL_DIR)"
             "env":
+            - "name": "METRIC_COLLECTION_CONFIG"
+              "value": "{\n \"bigquery_dataset_name\": \"xl_ml_metrics_dataset\",\n \"bigquery_table_name\": \"xl_ml_metrics_table\",\n \"default_aggregation_strategies\": [\n  \"final\"\n ],\n \"write_to_bigquery\": \"True\"\n}"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/bert-mnli/functional/v3-8/$(JOB_NAME)"
+            - "name": "REGRESSION_TEST_CONFIG"
+              "value": "{\n \"base_comparison\": \"COMPARISON_GT\",\n \"base_threshold_expression\": \"v_mean + (v_stddev * 3.0)\",\n \"bigquery_dataset_name\": \"xl_ml_metrics_dataset\",\n \"bigquery_table_name\": \"xl_ml_metrics_table\",\n \"comparison_overrides\": {\n  \"epoch_sparse_categorical_accuracy_final\": \"COMPARISON_LT\"\n },\n \"min_num_datapoints_before_alerting\": 1,\n \"threshold_expression_overrides\": {\n  \"epoch_sparse_categorical_accuracy_final\": \"v_mean - (v_stddev * 3.0)\"\n },\n \"write_to_stackdriver\": \"True\"\n}"
             - "name": "TEST_NAME"
               "value": "tf-nightly-bert-mnli-functional-v3-8"
             - "name": "POD_NAME"
@@ -50,15 +56,9 @@
               "valueFrom":
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
-            - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/bert-mnli/functional/v3-8/$(JOB_NAME)"
-            - "name": "METRIC_COLLECTION_CONFIG"
-              "value": "{\n \"bigquery_dataset_name\": \"xl_ml_metrics_dataset\",\n \"bigquery_table_name\": \"xl_ml_metrics_table\",\n \"default_aggregation_strategies\": [\n  \"final\"\n ],\n \"write_to_bigquery\": \"True\"\n}"
-            - "name": "REGRESSION_TEST_CONFIG"
-              "value": "{\n \"base_comparison\": \"COMPARISON_GT\",\n \"base_threshold_expression\": \"v_mean + (v_stddev * 3.0)\",\n \"bigquery_dataset_name\": \"xl_ml_metrics_dataset\",\n \"bigquery_table_name\": \"xl_ml_metrics_table\",\n \"comparison_overrides\": {\n  \"epoch_sparse_categorical_accuracy_final\": \"COMPARISON_LT\"\n },\n \"min_num_datapoints_before_alerting\": 1,\n \"threshold_expression_overrides\": {\n  \"epoch_sparse_categorical_accuracy_final\": \"v_mean - (v_stddev * 3.0)\"\n },\n \"write_to_stackdriver\": \"True\"\n}"
             "image": "gcr.io/xl-ml-test/model-garden:nightly"
             "imagePullPolicy": "Always"
-            "name": "tf-nightly-bert-mnli-functional-v3-8"
+            "name": "train"
             "resources":
               "limits":
                 "cloud-tpus.google.com/preemptible-v3": 8

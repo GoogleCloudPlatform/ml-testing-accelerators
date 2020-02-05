@@ -15,10 +15,10 @@ local tpus = import "../../tpus.libsonnet";
     accelerator+: tpus.Preemptible,
   },
   local v2_8 = {
-    accelerator+: tpus.v2_8,
+    accelerator: tpus.v2_8,
   },
   local v3_8 = {
-    accelerator+: tpus.v3_8,
+    accelerator: tpus.v3_8,
   },
 
   configs: [

@@ -60,7 +60,7 @@ local tpus = import "../../tpus.libsonnet";
     },
   },
   local v2_8 = {
-    accelerator+: tpus.v2_8,
+    accelerator: tpus.v2_8,
     paramsOverride+: {
       train+: {
         batch_size: 64,
@@ -68,7 +68,7 @@ local tpus = import "../../tpus.libsonnet";
     },
   },
   local v3_8 = {
-    accelerator+: tpus.v3_8,
+    accelerator: tpus.v3_8,
     paramsOverride+: {
       train+: {
         batch_size: 64,

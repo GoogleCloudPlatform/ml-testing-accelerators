@@ -7,12 +7,12 @@ local tpus = import "tpus.libsonnet";
 
     frameworkPrefix: error "Must specify `frameworkPrefix`",
     modelName: error "Must specify `modelName`",
-    accelerator: tpus.v2_8 + tpus.Preemptible,
+    accelerator: error "Must specify `accelerator`",
     # HACK: for format strings
     acceleratorName:: config.accelerator.name,
     mode: "functional",
     command: error "Must specify model `command`",
-    frameworkVersion: error "Must specify `frameworkVersion`",
+    tpuVersion: error "Must specify `tpuVersion`",
     image: error "Must specify mode `image`",
     imageTag: "latest",
     timeout: error "Must specify `timeout`", # 1 hour
@@ -43,26 +43,38 @@ local tpus = import "tpus.libsonnet";
       template: {
         metadata: {
           annotations: {
-            "tf-version.cloud-tpus.google.com": config.frameworkVersion,
+            "tf-version.cloud-tpus.google.com": config.tpuVersion,
           },
         },
-        spec: {
+        spec: config.accelerator.PodSpec {
+          local pod = self,
+
           restartPolicy: "Never",
-          containers: [
-            {
-              name: config.testName,
+          containerMap+:: {
+            train+: {
+              local main = self,
+
               image: "%(image)s:%(imageTag)s" % config,
               imagePullPolicy: "Always",
-	            # Use Docker image's entrypoint wrapper
+              # Use Docker image's entrypoint wrapper
               args: config.command,
-              resources: {
-                limits: config.accelerator.resource_limits,
+
+              envMap:: {
+                TEST_NAME: config.testName,
+                MODEL_DIR:
+                  "gs://xl-ml-test-us-central1/k8s/%(modelName)s/%(mode)s/%(acceleratorName)s/$(JOB_NAME)" % config,
+                METRIC_COLLECTION_CONFIG:
+                  std.manifestJsonEx(config.metricCollectionConfig, " "),
+                REGRESSION_TEST_CONFIG:
+                  std.manifestJsonEx(config.regressionTestConfig, " "),
               },
               env: [
                 {
-                  name: "TEST_NAME",
-                  value: config.testName,
-                },
+                  name: key,
+                  value: main.envMap[key],
+                }
+                for key in std.objectFields(main.envMap)
+              ] + [
                 {
                   name: "POD_NAME",
                   valueFrom: {
@@ -95,21 +107,12 @@ local tpus = import "tpus.libsonnet";
                     },
                   },
                 },
-                {
-                  name: "MODEL_DIR",
-                  # TODO: Factor output bucket out into a ConfigMap
-                  value: "gs://xl-ml-test-us-central1/k8s/%(modelName)s/%(mode)s/%(acceleratorName)s/$(JOB_NAME)" % config,
-                },
-                {
-                  name: "METRIC_COLLECTION_CONFIG",
-                  value: std.manifestJsonEx(config.metricCollectionConfig, " ")
-                },
-                {
-                  name: "REGRESSION_TEST_CONFIG",
-                  value: std.manifestJsonEx(config.regressionTestConfig, " ")
-                },
               ],
             },
+          },
+          containers: [
+            { name: name } + pod.containerMap[name]
+              for name in std.objectFields(pod.containerMap)
           ],
         },
       },

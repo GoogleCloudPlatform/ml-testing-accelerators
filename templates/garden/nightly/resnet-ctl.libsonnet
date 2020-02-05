@@ -37,11 +37,11 @@ local tpus = import "../../tpus.libsonnet";
     ],
   },
   local v2_8 = {
-    accelerator+: tpus.v2_8,
+    accelerator: tpus.v2_8,
     command+: [ "--batch_size=1024" ],
   },
   local v3_8 = {
-    accelerator+: tpus.v3_8,
+    accelerator: tpus.v3_8,
     command+: [ "--batch_size=2048" ],
   },
 
