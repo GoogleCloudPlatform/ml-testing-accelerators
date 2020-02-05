@@ -22,6 +22,7 @@ local tpus = import "../../tpus.libsonnet";
               volumeMounts+: [{
                 mountPath: "/datasets",
                 name: "datasets-pd",
+                readOnly: true,
               }],
               resources+: {
                 requests: {

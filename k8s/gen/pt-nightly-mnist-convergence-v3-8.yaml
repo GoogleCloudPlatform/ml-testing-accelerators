@@ -66,5 +66,6 @@
           - "gcePersistentDisk":
               "fsType": "ext4"
               "pdName": "pytorch-datasets-pd-central1-b"
+              "readOnly": true
             "name": "datasets-pd"
   "schedule": "30 7 * * */2"

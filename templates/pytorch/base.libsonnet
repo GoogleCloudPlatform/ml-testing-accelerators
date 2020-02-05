@@ -37,6 +37,7 @@ local base = import "../base.libsonnet";
               gcePersistentDisk: {
                 pdName: "pytorch-datasets-pd-central1-b",
                 fsType: "ext4",
+                readOnly: true,
               },
             },
           ],
