@@ -1,22 +1,21 @@
-FROM python:3.7-slim
+FROM tensorflow/tensorflow:nightly-gpu-py3
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-  curl \
-  gcc \
-  git \
-  python3.7-dev \
-  libglib2.0-0
+RUN apt-get update && apt-get install -y --no-install-recommends git
 RUN curl -sSL https://sdk.cloud.google.com | bash
 
-RUN pip3 install tf-nightly-cpu cloud-tpu-client pyyaml
+RUN pip3 install cloud-tpu-client pyyaml
 
 # Checkout tensorflow/models at HEAD
-RUN git clone --depth 1 --branch master https://github.com/tensorflow/models.git /garden
-WORKDIR /garden
-RUN pip3 install -r official/requirements.txt
+WORKDIR /
+RUN curl -LO https://github.com/tensorflow/models/archive/master.zip
+RUN unzip master.zip
+RUN rm master.zip
+RUN mv models-master garden/
+RUN pip3 install -r /garden/official/requirements.txt
 ENV PYTHONPATH /garden
 
 COPY images/common.sh /
 COPY images/garden/entrypoint.sh /
 
+WORKDIR /garden
 ENTRYPOINT ["/entrypoint.sh"]
