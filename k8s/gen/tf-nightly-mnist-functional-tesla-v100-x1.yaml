@@ -29,7 +29,7 @@
             - "name": "MODEL_DIR"
               "value": "gs://xl-ml-test-us-central1/k8s/mnist/functional/tesla-v100-x1/$(JOB_NAME)"
             - "name": "REGRESSION_TEST_CONFIG"
-              "value": "{\n \"base_comparison\": \"COMPARISON_GT\",\n \"base_threshold_expression\": \"v_mean + (v_stddev * 3.0)\",\n \"bigquery_dataset_name\": \"xl_ml_metrics_dataset\",\n \"bigquery_table_name\": \"xl_ml_metrics_table\",\n \"comparison_overrides\": {\n  \"epoch_sparse_categorical_accuracy_final\": \"COMPARISON_LT\"\n },\n \"min_num_datapoints_before_alerting\": 1,\n \"threshold_expression_overrides\": {\n  \"epoch_sparse_categorical_accuracy_final\": \"v_mean - (v_stddev * 3.0)\"\n },\n \"write_to_stackdriver\": \"True\"\n}"
+              "value": "{\n \"bigquery_dataset_name\": \"xl_ml_metrics_dataset\",\n \"bigquery_table_name\": \"xl_ml_metrics_table\",\n \"metric_success_conditions\": {\n  \"job_status\": {\n   \"comparison\": \"equal\",\n   \"success_threshold\": {\n    \"fixed_value\": 0\n   }\n  },\n  \"total_wall_time\": {\n   \"comparison\": \"less\",\n   \"success_threshold\": {\n    \"stddevs_from_mean\": 5\n   },\n   \"wait_for_n_points_of_history\": 10\n  }\n },\n \"write_to_error_reporting\": \"True\"\n}"
             - "name": "TEST_NAME"
               "value": "tf-nightly-mnist-functional-tesla-v100-x1"
             - "name": "POD_NAME"

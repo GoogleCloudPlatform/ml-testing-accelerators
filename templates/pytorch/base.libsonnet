@@ -4,17 +4,29 @@ local base = import "../base.libsonnet";
   PyTorchTest:: base.BaseTest {
 
     regressionTestConfig+: {
-      threshold_expression_overrides: {
-        "Accuracy/test_final": "v_mean - (v_stddev * 3.0)"
-      },
-      comparison_overrides: {
-        "Accuracy/test_final": "COMPARISON_LT"
-      },
-      metric_opt_in_list: [
-        "Accuracy/test_final",
+      metric_subset_to_alert: [
         "ExecuteTime__Percentile_99_sec_final",
-        "CompileTime__Percentile_99_sec_final"
-      ]
+	"CompileTime__Percentile_99_sec_final",
+	"job_status",
+	"total_wall_time",
+	"Accuracy/test_final",
+      ],
+      metric_success_conditions+: {
+        "ExecuteTime__Percentile_99_sec_final": {
+	  success_threshold: {
+            stddevs_from_mean: 5.0,
+	  },
+	  comparison: "less",
+	  wait_for_n_points_of_history: 10,
+	},
+        "CompileTime__Percentile_99_sec_final": {
+	  success_threshold: {
+            stddevs_from_mean: 5.0,
+	  },
+	  comparison: "less",
+	  wait_for_n_points_of_history: 10,
+	},
+      },
     },
 
     metricCollectionConfig+: {

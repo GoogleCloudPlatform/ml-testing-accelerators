@@ -13,6 +13,16 @@ local tpus = import "../../tpus.libsonnet";
   },
   local convergence = mixins.Convergence {
     accelerator+: tpus.Preemptible,
+    regressionTestConfig+: {
+      metric_success_conditions+: {
+        "Accuracy/test_final": {
+          success_threshold: {
+            fixed_value: 99.0,
+          },
+          comparison: "greater",
+        },
+      },
+    },
   },
   local v2_8 = {
     accelerator: tpus.v2_8,

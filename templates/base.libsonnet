@@ -25,14 +25,25 @@ local tpus = import "tpus.libsonnet";
       bigquery_table_name: "xl_ml_metrics_table",
       default_aggregation_strategies: ["final"],
     },
-    # TODO: increase min_num_datapoints_before_alerting. Low for debugging.
     regressionTestConfig: {
-      write_to_stackdriver: "True",
+      write_to_error_reporting: "True",
       bigquery_dataset_name: "xl_ml_metrics_dataset",
       bigquery_table_name: "xl_ml_metrics_table",
-      min_num_datapoints_before_alerting: 1,
-      base_threshold_expression: "v_mean + (v_stddev * 3.0)",
-      base_comparison: "COMPARISON_GT",
+      metric_success_conditions: {
+        "job_status": {
+	  success_threshold: {
+	    fixed_value: 0.0,
+	  },
+	  comparison: "equal",
+	},
+	"total_wall_time": {
+	  success_threshold: {
+            stddevs_from_mean: 5.0,
+	  },
+	  comparison: "less",
+	  wait_for_n_points_of_history: 10,
+	},
+      },
     },
 
     testName:: "%(frameworkPrefix)s-%(modelName)s-%(mode)s-%(acceleratorName)s" % config,

@@ -48,6 +48,16 @@ local tpus = import "../../tpus.libsonnet";
       "--num_epochs=90",
       "--datadir=/datasets/imagenet",
     ],
+    regressionTestConfig+: {
+      metric_success_conditions+: {
+        "Accuracy/test_final": {
+          success_threshold: {
+            fixed_value: 76.0,
+          },
+          comparison: "greater",
+        },
+      },
+    },
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
