@@ -51,7 +51,7 @@ local tpus = import "../../tpus.libsonnet";
   },
   local convergence = mixins.Convergence {
     command+: [
-      "--mode=train_and_eval",
+      "--mode=train",
     ],
     paramsOverride+: {
       train+: {
