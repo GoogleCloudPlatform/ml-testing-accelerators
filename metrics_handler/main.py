@@ -476,6 +476,12 @@ def run_main(event, context):
   zone = 'us-central1-b'
   cluster_id = 'xl-ml-test'
 
+  # TODO: Right now there is sometimes a small delay between a job finishing
+  # and the Kubernetes Job having the correct status. Simple fix for now but
+  # later we should see if there is some way to tell exactly when the Job is
+  # no longer in 'active' state and then send the pubsub message.
+  time.sleep(5)
+
   # Make sure the Job has finished before attempting to handle its metrics.
   status_handler = job_status_handler.JobStatusHandler(
       project_id, zone, cluster_id)
