@@ -81,12 +81,6 @@ local tpus = import "tpus.libsonnet";
               },
               env: [
                 {
-                  name: key,
-                  value: main.envMap[key],
-                }
-                for key in std.objectFields(main.envMap)
-              ] + [
-                {
                   name: "POD_NAME",
                   valueFrom: {
                     fieldRef: {
@@ -118,6 +112,12 @@ local tpus = import "tpus.libsonnet";
                     },
                   },
                 },
+              ] + [
+                {
+                  name: key,
+                  value: main.envMap[key],
+                }
+                for key in std.objectFields(main.envMap)
               ],
             },
           },
