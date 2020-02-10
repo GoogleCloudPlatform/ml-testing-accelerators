@@ -1,9 +1,9 @@
 #!/bin/bash
-set -e
 
 source /setup.sh
 
 set -u
+set -x
 
 "$@"
 export STATUS="$?"
