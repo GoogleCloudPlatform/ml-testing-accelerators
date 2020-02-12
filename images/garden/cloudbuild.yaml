@@ -4,6 +4,7 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'gcr.io/$PROJECT_ID/model-garden:$_VERSION']
 images: ['gcr.io/$PROJECT_ID/model-garden:$_VERSION']
+timeout: 1200s  # 20 minutes
 substitutions:
   _VERSION: 'latest'
 options:
