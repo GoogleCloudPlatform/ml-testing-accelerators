@@ -13,10 +13,16 @@ from absl import logging
 import google.api_core.exceptions
 from google.cloud import bigquery
 from google.cloud import error_reporting
+from google.cloud import pubsub_v1
 from google.cloud import storage as gcs
 import numpy as np
 from tensorboard.backend.event_processing import event_multiplexer
 import tensorflow as tf
+
+
+ERROR_REPORTER = error_reporting.Client()
+METRICS_WRITTEN_TOPIC = 'metrics-written'
+MIN_MSG_AGE_SEC = 30
 
 
 class CloudMetricsHandler(object):
@@ -56,7 +62,6 @@ class CloudMetricsHandler(object):
     self.project = google.auth.default()[1]
     self.bigquery_client = bigquery.Client()
     self.gcs_client = gcs.Client()
-    self.error_reporting_client = error_reporting.Client()
 
 
   @staticmethod
@@ -112,7 +117,7 @@ class CloudMetricsHandler(object):
           (end_wall_time - start_wall_time), end_wall_time)
     except StopIteration:
       max_accuracy = max(v.metric_value for v in values)
-      self.error_reporting_client.report(
+      ERROR_REPORTER.report(
           'Accuracy was never high enough to satisfy the `time_to_accuracy` '
           'settings from the config. Max accuracy: {}. Config for '
           '`time_to_accuracy`: {}. Logs for this run: {}'.format(
@@ -276,16 +281,17 @@ class CloudMetricsHandler(object):
         upper_bound,
         lower_bound,
       ])
-    logging.info('Rows to insert into BigQuery: {}'.format(rows_to_insert))
+    logging.info('Inserting {} rows into BigQuery table `{}`'.format(
+        len(rows_to_insert), table_id))
     table = self.bigquery_client.get_table(table_id)
     errors = self.bigquery_client.insert_rows(table, rows_to_insert)
     if errors == []:
-      logging.info('Added metrics to bigquery table: {}'.format(table_id))
+      logging.info('Successfully added rows to Bigquery.')
     else:
       # TODO: Maybe add retry logic. insert_rows seems to be atomic for all
       #       elements in the list, so it should be safe to retry.
       logging.error(
-          'Failed to add metrics to bigquery table: {}'.format(errors))
+          'Failed to add rows to Bigquery. Errors: {}'.format(errors))
 
 
   def _get_metrics_history_from_bigquery(self):
@@ -439,7 +445,7 @@ class CloudMetricsHandler(object):
           lower_bound)
       upper_bound = 'inf' if upper_bound is None else '{:.2f}'.format(
           upper_bound)
-      self.error_reporting_client.report(
+      ERROR_REPORTER.report(
           'Metric `{}` was out of bounds for test `{}`. Bounds were '
           '({}, {}) and value was {}. Logs for this run: {}'.format(
               metric_name, self.test_name, lower_bound, upper_bound,
@@ -449,19 +455,19 @@ class CloudMetricsHandler(object):
     return metric_name_to_visual_bounds
 
 
-def run_main(event, context):
-  logging.info('context: {}'.format(context))
-  logging.info('Raw pubsub message: {}'.format(event['data']))
-  pubsub_message = base64.b64decode(event['data']).decode('utf-8')
-  event = json.loads(pubsub_message)
-  logging.info('Decoded pubsub message: {}'.format(event))
-
-  events_dir = event.get('model_dir')
-  test_name = event.get('test_name')
-  logs_link = event.get('logs_link')
-  metric_collection_config = event.get('metric_collection_config')
-  regression_test_config = event.get('regression_test_config')
-  job_name = event.get('job_name')
+def _process_pubsub_message(msg, status_handler):
+  msg_age_sec = time.time() - msg['publish_time']
+  if msg_age_sec < MIN_MSG_AGE_SEC:
+    logging.warning('Message was {} seconds old, which is less than the '
+                    'minimum of {}. Skipping for now but will retry on '
+                    'the next run.'.format(msg_age_sec, MIN_MSG_AGE_SEC))
+    return False  # Do not ack the message.
+  events_dir = msg.get('model_dir')
+  test_name = msg.get('test_name')
+  logs_link = msg.get('logs_link')
+  metric_collection_config = msg.get('metric_collection_config')
+  regression_test_config = msg.get('regression_test_config')
+  job_name = msg.get('job_name')
 
   if not regression_test_config and not metric_collection_config:
     raise ValueError('metric_collection_config and regression_test_config '
@@ -471,26 +477,14 @@ def run_main(event, context):
     raise ValueError('Pubsub message must contain 4 required fields: '
                      'events_dir, test_name, logs_link, and job_name. See '
                      'README for documentation. Message was: {}'.format(event))
-  # TODO: Consider adding these to the pubsub message and passing them in.
-  project_id = 'xl-ml-test'
-  zone = 'us-central1-b'
-  cluster_id = 'xl-ml-test'
 
-  # TODO: Right now there is sometimes a small delay between a job finishing
-  # and the Kubernetes Job having the correct status. Simple fix for now but
-  # later we should see if there is some way to tell exactly when the Job is
-  # no longer in 'active' state and then send the pubsub message.
-  time.sleep(5)
-
-  # Make sure the Job has finished before attempting to handle its metrics.
-  status_handler = job_status_handler.JobStatusHandler(
-      project_id, zone, cluster_id)
   status_code, completion_time = status_handler.get_job_status(
       job_name, 'automated')
   if status_code == job_status_handler.UNKNOWN_STATUS_CODE:
-      logging.error(
-          'Unknown status for job_name: {}. Stopping early.'.format(job_name))
-      return
+      logging.warning(
+          'Unknown status for job_name: {}. Message will be '
+          'retried later.'.format(job_name))
+      return False  # Do not ack the message.
 
   handler = CloudMetricsHandler(test_name, events_dir, logs_link,
       metric_collection_config, regression_test_config, job_name)
@@ -498,10 +492,97 @@ def run_main(event, context):
   new_metrics = handler.get_metrics_from_events_dir()
   handler.add_point_to_metrics(new_metrics, 'job_status', status_code,
                                completion_time)
-  logging.info('new_metrics: {}\n\n\n'.format(new_metrics))
 
   metric_name_to_visual_bounds = handler.compute_bounds_and_report_errors(
       new_metrics)
+  handler.add_new_metrics_to_bigquery(
+      new_metrics, metric_name_to_visual_bounds)
+  return True  # Ack the message.
 
-  handler.add_new_metrics_to_bigquery(new_metrics, metric_name_to_visual_bounds)
-  # TODO: this once threw google.api_core.exceptions.DeadlineExceeded: 504 Deadline Exceeded
+
+def run_main(event, context):
+  project_id = google.auth.default()[1]
+
+  # Retrieve pubsub messages for all the tests that have been kicked off by
+  # the test runner.
+  subscriber = pubsub_v1.SubscriberClient()
+  project = subscriber.project_path(project_id)
+  subscription = None
+  for s in subscriber.list_subscriptions(project):
+    if s.topic.split('/')[-1] == METRICS_WRITTEN_TOPIC:
+      subscription = s.name
+      break
+  if not subscription:
+    subscription_id = subscriber.subscription_path(
+        project_id, 'metrics-handler-subscription')
+    topic = subscriber.topic_path(project_id, METRICS_WRITTEN_TOPIC)
+    subscription = subscriber.create_subscription(
+        subscription_id, topic, ack_deadline_seconds=300).name
+  try:
+    all_msgs = subscriber.pull(subscription, 100).received_messages
+  except google.api_core.exceptions.DeadlineExceeded:
+    logging.info('No messages found for subscription: {}'.format(subscription))
+    exit(0)
+
+  # Group messages by test. Each test might have made multiple attempts and
+  # therefore could have multiple messages.
+  test_name_to_msgs = collections.defaultdict(list)
+  ids_to_ack = []
+  for msg in all_msgs:
+    data_str = msg.message.data
+    try:
+      data = json.loads(data_str)
+      data['publish_time'] = msg.message.publish_time.seconds
+      data['ack_id'] = msg.ack_id
+      test_name_to_msgs[data['test_name']].append(data)
+    except Exception as e:
+      ERROR_REPORTER.report(
+          'Metrics handler encountered an invalid message in pubsub queue '
+          'for topic `{}` which led to Exception: {}. This message will '
+          'be acknowledged and ignored. The message was: {}'.format(
+              METRICS_WRITTEN_TOPIC, e, msg))
+      ids_to_ack.append(msg.ack_id)
+
+  # Grab the latest message for each test. We will process only that message
+  # and all other messages for that test will be ack'ed without being processed.
+  msgs_to_process = []
+  for test_name, msgs in test_name_to_msgs.items():
+    sorted_msgs = sorted(msgs, key = lambda x: x['publish_time'])
+    ids_to_ack.extend([msg['ack_id'] for msg in msgs[:-1]])
+    msgs_to_process.append(msgs[-1])
+  logging.info('Finished deduplicating messages from test runs. ')
+
+  # Note: it's good to ack early and often since pubsub will resend messages
+  # that are not ack'ed within the queue's deadline.
+  if ids_to_ack:
+    logging.info('Will ack these ids: {}'.format(ids_to_ack))
+    subscriber.acknowledge(subscription, ids_to_ack)
+    logging.info('Successful ack for ids: {}'.format(ids_to_ack))
+
+  # TODO: Consider adding these to the pubsub message and passing them in.
+  zone = 'us-central1-b'
+  cluster_id = 'xl-ml-test'
+  status_handler = job_status_handler.JobStatusHandler(
+      project_id, zone, cluster_id)
+
+  # Handle the metrics for each test. Ack if the process was successful or if
+  # the message is permanently invalid. Do not ack if the test is still running
+  # so that we will retry again later once that test has finished running.
+  for msg in msgs_to_process:
+    try:
+      logging.info('Pubsub message to process: {}'.format(msg))
+      should_ack = _process_pubsub_message(msg, status_handler)
+    except Exception as e:
+      ERROR_REPORTER.report(
+          'Encountered exception `{}` while attempting to process message. '
+          'The message will be acknowledged to prevent more crashes. The '
+          'message was: {}'.format(e, msg))
+      should_ack = True
+    if should_ack:
+      logging.info('Finished processing message. Will ack')
+      subscriber.acknowledge(subscription, [msg['ack_id']])
+      logging.info('Acknowledged ack_id: {}'.format(msg['ack_id']))
+    else:
+      logging.info('Finished processing message. Will not ack')
+  logging.info('Processed a message for each of the following tests: '
+               '{}'.format([x['test_name'] for x in msgs_to_process]))
