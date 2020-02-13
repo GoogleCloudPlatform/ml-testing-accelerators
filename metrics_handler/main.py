@@ -6,6 +6,7 @@ import itertools
 import json
 import math
 import time
+import uuid
 
 import job_status_handler
 
@@ -20,6 +21,9 @@ from tensorboard.backend.event_processing import event_multiplexer
 import tensorflow as tf
 
 
+BQ_DATASET_NAME = 'metrics_handler_dataset'
+BQ_JOB_TABLE_NAME = 'job_history'
+BQ_METRIC_TABLE_NAME = 'metric_history'
 ERROR_REPORTER = error_reporting.Client()
 METRICS_WRITTEN_TOPIC = 'metrics-written'
 MIN_MSG_AGE_SEC = 30
@@ -28,7 +32,7 @@ MIN_MSG_AGE_SEC = 30
 class CloudMetricsHandler(object):
   def __init__(self, test_name, events_dir, stackdriver_logs_link,
                metric_collection_config, regression_test_config,
-               job_name):
+               test_type, accelerator, framework_version):
     """Handles metrics storage, collection, aggregation, alerts, etc.
 
     Used in conjunction with the Cloud Accelerator Testing framework
@@ -46,22 +50,34 @@ class CloudMetricsHandler(object):
         README for documentation.
       regression_test_config (dict): Options for alerting in the event of
         metrics regressions. See README for documentation.
-      job_name (string): Name of the Kubernetes Job that ran this instance
-        of the test.
+      test_type (string): E.g. 'convergence' or 'functional'. Used to organize
+        metrics in Bigquery.
+      accelerator (string): E.g. 'tpu-v2-8'. The type of accelerator used to
+        run this test. Used to organize metrics in Bigquery.
+      framework_version (string): E.g. 'pt-nightly' or 'tf-nightly'. The
+        combined ML framework + version identifier used to run this test. Used
+        to organize metrics in Bigquery.
     """
     self.MetricPoint = collections.namedtuple(
         'MetricPoint', ['metric_value', 'wall_time'])
     self.test_name = test_name
+
     self.events_dir = events_dir
     self.stackdriver_logs_link = stackdriver_logs_link
-    self.job_name = job_name
     self.metric_collection_config = metric_collection_config or {}
     self.regression_test_config = regression_test_config or {}
+    self.test_type = test_type
+    self.accelerator = accelerator
+    self.framework_version = framework_version
 
     # Initalize clients to interact with various Cloud APIs.
     self.project = google.auth.default()[1]
     self.bigquery_client = bigquery.Client()
     self.gcs_client = gcs.Client()
+
+    if self.metric_collection_config.get('write_to_bigquery'):
+      self.job_history_table_id, self.metric_history_table_id = \
+          self._make_bigquery_tables()
 
 
   @staticmethod
@@ -224,35 +240,56 @@ class CloudMetricsHandler(object):
     return final_metrics
 
 
-  def _make_bigquery_table(self):
+  def _make_bigquery_tables(self):
     if not self.metric_collection_config.get('write_to_bigquery'):
       return
-    dataset_name = self.metric_collection_config['bigquery_dataset_name']
-    dataset = bigquery.Dataset(self.bigquery_client.dataset(dataset_name))
+    dataset = bigquery.Dataset(self.bigquery_client.dataset(BQ_DATASET_NAME))
     _ = self.bigquery_client.create_dataset(dataset, exists_ok=True)
 
-    table_id = self._get_table_id(
-        dataset_name, self.metric_collection_config['bigquery_table_name'])
-    schema = [
+    job_history_table_id = self._get_table_id(
+        BQ_DATASET_NAME, BQ_JOB_TABLE_NAME)
+    job_history_schema = [
+        bigquery.SchemaField("uuid", "STRING", mode="REQUIRED"),
         bigquery.SchemaField("test_name", "STRING", mode="REQUIRED"),
-        bigquery.SchemaField("metric_name", "STRING", mode="REQUIRED"),
-        bigquery.SchemaField("metric_value", "FLOAT64", mode="REQUIRED"),
+        bigquery.SchemaField("test_type", "STRING", mode="REQUIRED"),
+        bigquery.SchemaField("accelerator", "STRING", mode="REQUIRED"),
+        bigquery.SchemaField("framework_version", "STRING", mode="REQUIRED"),
+        bigquery.SchemaField("job_status", "STRING", mode="REQUIRED"),
+        bigquery.SchemaField("num_failures", "INT64", mode="REQUIRED"),
+        bigquery.SchemaField("job_duration_sec", "INT64", mode="REQUIRED"),
         bigquery.SchemaField("timestamp", "TIMESTAMP", mode="REQUIRED"),
         bigquery.SchemaField("stackdriver_logs_link", "STRING",
                              mode="REQUIRED"),
-        bigquery.SchemaField("metric_upper_bound", "FLOAT64", mode="NULLABLE"),
-        bigquery.SchemaField("metric_lower_bound", "FLOAT64", mode="NULLABLE"),
     ]
-    table = bigquery.Table(table_id, schema=schema)
-    _ = self.bigquery_client.create_table(table, exists_ok=True)
-    return table_id
+    job_history_table = bigquery.Table(
+        job_history_table_id, schema=job_history_schema)
+    _ = self.bigquery_client.create_table(job_history_table, exists_ok=True)
+
+    metric_history_table_id = self._get_table_id(
+        BQ_DATASET_NAME, BQ_METRIC_TABLE_NAME)
+    metric_history_schema = [
+        bigquery.SchemaField("uuid", "STRING", mode="REQUIRED"),
+        bigquery.SchemaField("test_name", "STRING", mode="REQUIRED"),
+        bigquery.SchemaField("timestamp", "TIMESTAMP", mode="REQUIRED"),
+        bigquery.SchemaField("metric_name", "STRING", mode="REQUIRED"),
+        bigquery.SchemaField("metric_value", "FLOAT64", mode="REQUIRED"),
+        bigquery.SchemaField("metric_lower_bound", "FLOAT64", mode="NULLABLE"),
+        bigquery.SchemaField("metric_upper_bound", "FLOAT64", mode="NULLABLE"),
+    ]
+    metric_history_table = bigquery.Table(
+        metric_history_table_id, schema=metric_history_schema)
+    _ = self.bigquery_client.create_table(metric_history_table, exists_ok=True)
+
+    return job_history_table_id, metric_history_table_id
 
 
-  def add_new_metrics_to_bigquery(self, aggregated_metrics_dict,
-                                  metric_name_to_visual_bounds={}):
-    """Adds rows to the BigQuery that contains metrics history.
+  def add_status_and_metrics_to_bigquery(
+      self, job_status, aggregated_metrics_dict,
+      metric_name_to_visual_bounds={}):
+    """Adds job_status and metrics to their respective BigQuery tables.
 
     Args:
+      job_status (dict): Contains information about the Kubernetes Job.
       aggregated_metrics_dict (dict): Key is metric name and value is a
         MetricPoint containing the aggregated value for that metric.
       metric_name_to_visual_bounds (dict, optional): Key is metric name and
@@ -262,49 +299,66 @@ class CloudMetricsHandler(object):
         have `null` for upper_bound and lower_bound.
     """
     if not self.metric_collection_config.get('write_to_bigquery', False):
-      logging.info('Skipping writing metrics to BigQuery.')
+      logging.info('Skipping writing metrics and job_status to BigQuery.')
       return
-    if not aggregated_metrics_dict:
-      logging.warning('No metrics to write to BigQuery.')
-      return
-    table_id = self._make_bigquery_table()
-    rows_to_insert = []
+
+    # Compute the join key to link together job_history and metric_history.
+    unique_key = str(uuid.uuid4())
+
+    # Every job should have 1 job status row and it should exist even if
+    # no other metrics exist.
+    job_history_row = [
+        unique_key,
+        self.test_name,
+        self.test_type,
+        self.accelerator,
+        self.framework_version,
+        job_status['final_status'],
+        job_status['num_failures'],
+        int(job_status['stop_time'] - job_status['start_time']),
+        self._wall_time_to_sql_timestamp(job_status['stop_time']),
+        self.stackdriver_logs_link,
+    ]
+
+    # Create rows to represent the computed metrics for this job.
+    metric_history_rows = []
     for metric_name, metric_point in aggregated_metrics_dict.items():
       lower_bound, upper_bound = metric_name_to_visual_bounds.get(
           metric_name, (None, None))
-      rows_to_insert.append([
+      metric_history_rows.append([
+        unique_key,
         self.test_name,
+        self._wall_time_to_sql_timestamp(metric_point.wall_time),
         metric_name,
         float(metric_point.metric_value),
-        self._wall_time_to_sql_timestamp(metric_point.wall_time),
-        self.stackdriver_logs_link,
-        upper_bound,
         lower_bound,
+        upper_bound,
       ])
-    logging.info('Inserting {} rows into BigQuery table `{}`'.format(
-        len(rows_to_insert), table_id))
-    table = self.bigquery_client.get_table(table_id)
-    errors = self.bigquery_client.insert_rows(table, rows_to_insert)
-    if errors == []:
-      logging.info('Successfully added rows to Bigquery.')
-    else:
-      # TODO: Maybe add retry logic. insert_rows seems to be atomic for all
-      #       elements in the list, so it should be safe to retry.
-      logging.error(
-          'Failed to add rows to Bigquery. Errors: {}'.format(errors))
+
+    # Insert rows in Bigquery.
+    for table_id, rows in [
+        (self.job_history_table_id, [job_history_row]),
+        (self.metric_history_table_id, metric_history_rows),
+    ]:
+      if not rows:
+        continue
+      logging.info('Inserting {} rows into BigQuery table `{}`'.format(
+          len(rows), table_id))
+      table = self.bigquery_client.get_table(table_id)
+      errors = self.bigquery_client.insert_rows(table, rows)
+      if errors == []:
+        logging.info('Successfully added rows to Bigquery.')
+      else:
+        # TODO: Maybe add retry logic. insert_rows seems to be atomic for all
+        #       elements in the list, so it should be safe to retry.
+        logging.error(
+            'Failed to add rows to Bigquery. Errors: {}'.format(errors))
 
 
   def _get_metrics_history_from_bigquery(self):
-    dataset_name = self.regression_test_config.get(
-        'bigquery_dataset_name',
-        self.metric_collection_config.get('bigquery_dataset_name'))
-    table_name = self.regression_test_config.get(
-        'bigquery_table_name',
-        self.metric_collection_config.get('bigquery_table_name'))
-    table_id = self._get_table_id(dataset_name, table_name)
     query_result = self.bigquery_client.query(
         'SELECT * FROM `{}` WHERE test_name like \"{}\"'.format(
-            table_id, self.test_name)).result()
+            self.metric_history_table_id, self.test_name)).result()
     metrics_history = collections.defaultdict(list)
     for row in query_result:
       metrics_history[row['metric_name']].append(self.MetricPoint(
@@ -398,7 +452,7 @@ class CloudMetricsHandler(object):
             success_condition))
 
 
-  def compute_bounds_and_report_errors(self, new_metrics):
+  def compute_bounds_and_report_errors(self, job_status, new_metrics):
     """Compute the bounds for metrics and report abnormal values.
 
     Any metric that is currently outside the expected bounds is reported to
@@ -408,6 +462,7 @@ class CloudMetricsHandler(object):
     to BigQuery as a visual aid when rendering metrics history into charts.
 
     Args:
+      job_status (dict): Contains information about the Kubernetes Job.
       new_metrics(dict): Key is metric name and value is MetricPoint containing
         the latest aggregated value for that metric.
 
@@ -420,6 +475,12 @@ class CloudMetricsHandler(object):
     # Add the metrics from the latest run. These aren't in Bigquery yet.
     for metric_name, metric_value in new_metrics.items():
       metrics_history[metric_name].append(metric_value)
+
+    if job_status['final_status'] != job_status_handler.SUCCESS:
+      ERROR_REPORTER.report(
+          'job_status was `{}` for test `{}`. Logs for this run: {}'.format(
+              job_status['final_status'], self.test_name,
+              self.stackdriver_logs_link))
 
     metric_name_to_visual_bounds = {}
     metric_subset_to_report = set(
@@ -468,6 +529,9 @@ def _process_pubsub_message(msg, status_handler):
   metric_collection_config = msg.get('metric_collection_config')
   regression_test_config = msg.get('regression_test_config')
   job_name = msg.get('job_name')
+  test_type = msg.get('test_type')
+  accelerator = msg.get('accelerator')
+  framework_version = msg.get('framework_version')
 
   if not regression_test_config and not metric_collection_config:
     raise ValueError('metric_collection_config and regression_test_config '
@@ -478,25 +542,39 @@ def _process_pubsub_message(msg, status_handler):
                      'events_dir, test_name, logs_link, and job_name. See '
                      'README for documentation. Message was: {}'.format(event))
 
-  status_code, completion_time = status_handler.get_job_status(
+  status, start_time, stop_time, num_failures = status_handler.get_job_status(
       job_name, 'automated')
-  if status_code == job_status_handler.UNKNOWN_STATUS_CODE:
+  if status == job_status_handler.UNKNOWN_STATUS:
       logging.warning(
           'Unknown status for job_name: {}. Message will be '
           'retried later.'.format(job_name))
       return False  # Do not ack the message.
+  job_status = {
+      'final_status': status,
+      'start_time': start_time,
+      'stop_time': stop_time,
+      'num_failures': num_failures,
+  }
 
-  handler = CloudMetricsHandler(test_name, events_dir, logs_link,
-      metric_collection_config, regression_test_config, job_name)
+  # TODO: pass these in the pubsub message and remove this block.
+  if not test_type:
+    test_type = 'functional' if 'functional' in test_name else 'convergence'
+  if not accelerator:
+    accelerator = 'tpu-v2-8' if 'v2-8' in test_name else 'tpu-v3-8'
+  if not framework_version:
+    framework_version = 'pt-nightly' if 'pt-nightly' in test_name \
+        else 'tf-nightly'
+
+  handler = CloudMetricsHandler(
+      test_name, events_dir, logs_link, metric_collection_config,
+      regression_test_config, test_type, accelerator, framework_version)
 
   new_metrics = handler.get_metrics_from_events_dir()
-  handler.add_point_to_metrics(new_metrics, 'job_status', status_code,
-                               completion_time)
 
   metric_name_to_visual_bounds = handler.compute_bounds_and_report_errors(
-      new_metrics)
-  handler.add_new_metrics_to_bigquery(
-      new_metrics, metric_name_to_visual_bounds)
+      job_status, new_metrics)
+  handler.add_status_and_metrics_to_bigquery(
+      job_status, new_metrics, metric_name_to_visual_bounds)
   return True  # Ack the message.
 
 
@@ -573,10 +651,11 @@ def run_main(event, context):
       logging.info('Pubsub message to process: {}'.format(msg))
       should_ack = _process_pubsub_message(msg, status_handler)
     except Exception as e:
-      ERROR_REPORTER.report(
-          'Encountered exception `{}` while attempting to process message. '
-          'The message will be acknowledged to prevent more crashes. The '
-          'message was: {}'.format(e, msg))
+      error_message = ('Encountered exception `{}` while attempting to '
+          'process message. The message will be acknowledged to prevent more '
+          'crashes. The message was: {}'.format(e, msg))
+      ERROR_REPORTER.report(error_message)
+      logging.error(error_message)
       should_ack = True
     if should_ack:
       logging.info('Finished processing message. Will ack')

@@ -7,10 +7,10 @@ from kubernetes import client as kubernetes_client
 from kubernetes import config as kubernetes_config
 from tempfile import NamedTemporaryFile
 
-UNKNOWN_STATUS_CODE = -1.0
-SUCCESS_CODE = 0.0
-FAILURE_CODE = 1.0
-TIMEOUT_CODE = 2.0
+UNKNOWN_STATUS = 'unknown'
+SUCCESS = 'success'
+FAILURE = 'failure'
+TIMEOUT = 'timeout'
 
 
 class JobStatusHandler(object):
@@ -71,6 +71,18 @@ class JobStatusHandler(object):
 
 
   def get_job_status(self, job_name, namespace):
+    """Returns key information about the status of a Kubernetes Job.
+
+    Args:
+      job_name (string): Name of the job.
+      namespace (string): Name of the Kubernetes namespace where the job ran.
+
+    Returns:
+      completion_code (string): The current status of the Job.
+      start_time (timestamp): Time at which the Job began.
+      stop_time (timestamp): Time at which the Job completed or fully failed.
+      num_failures (int): Number of unsuccessful attempts of this Job.
+    """
     try:
       status = self.k8s_client.read_namespaced_job_status(
           job_name, namespace).status
@@ -78,31 +90,27 @@ class JobStatusHandler(object):
       logging.error('Failed to get job status for job_name: {} and '
                     'namespace: {}.  Error was: {}'.format(
                         job_name, namespace, e))
-      return UNKNOWN_STATUS_CODE, None
+      return UNKNOWN_STATUS, None, None, None
     logging.info('job_name: {}. status: {}'.format(job_name, status))
+    start_time = status.start_time.timestamp()
     if status.active:
-      logging.error('Job is still active. Returning UNKNOWN_STATUS_CODE.')
-      return UNKNOWN_STATUS_CODE, None
+      logging.error('Job is still active. Returning UNKNOWN_STATUS.')
+      return UNKNOWN_STATUS, start_time, None, None
 
-    # Interpret status and add to metrics.
-    # TODO: status.completion_time isn't populated sometimes (maybe if one
-    # attempt of the job timed out?) so use start_time as a back up.
-    if status.completion_time:
-      completion_time = status.completion_time.timestamp()
-    else:
-      logging.error('No completion_time in job status. Falling back to '
-                    'start_time.')
-      completion_time = status.start_time.timestamp()
-
-    completion_code = UNKNOWN_STATUS_CODE
+    # Interpret status and return the important parts.
+    completion_code = UNKNOWN_STATUS
     if status.succeeded:
-      completion_code = SUCCESS_CODE
+      completion_code = SUCCESS
+      stop_time = status.completion_time.timestamp()
     else:
       if len(status.conditions) != 1:
         logging.error('Expected exactly 1 `condition` element in status.')
-        completion_code = FAILURE_CODE
+        completion_code = FAILURE
+        stop_time = status.start_time.timestamp()
       else:
-        completion_code = TIMEOUT_CODE if \
-            status.conditions[0].reason == 'DeadlineExceeded' else FAILURE_CODE
+        completion_code = TIMEOUT if \
+            status.conditions[0].reason == 'DeadlineExceeded' else FAILURE
+        stop_time = status.conditions[0].last_transition_time.timestamp()
 
-    return completion_code, completion_time
+    num_failures = status.failed or 0
+    return completion_code, start_time, stop_time, num_failures
