@@ -7,7 +7,6 @@ local base = import "../base.libsonnet";
       metric_subset_to_alert: [
         "ExecuteTime__Percentile_99_sec_final",
 	"CompileTime__Percentile_99_sec_final",
-	"job_status",
 	"total_wall_time",
 	"Accuracy/test_final",
       ],
@@ -62,14 +61,6 @@ local base = import "../base.libsonnet";
               name: "dshm",
               emptyDir: {
                 medium: "Memory",
-              },
-            },
-            {
-              name: "datasets-pd",
-              gcePersistentDisk: {
-                pdName: "pytorch-datasets-pd-central1-b",
-                fsType: "ext4",
-                readOnly: true,
               },
             },
           ],

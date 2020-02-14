@@ -21,21 +21,11 @@ local tpus = import "tpus.libsonnet";
 
     metricCollectionConfig: {
       write_to_bigquery: "True",
-      bigquery_dataset_name: "xl_ml_metrics_dataset",
-      bigquery_table_name: "xl_ml_metrics_table",
       default_aggregation_strategies: ["final"],
     },
     regressionTestConfig: {
       write_to_error_reporting: "True",
-      bigquery_dataset_name: "xl_ml_metrics_dataset",
-      bigquery_table_name: "xl_ml_metrics_table",
       metric_success_conditions: {
-        "job_status": {
-	  success_threshold: {
-	    fixed_value: 0.0,
-	  },
-	  comparison: "equal",
-	},
 	"total_wall_time": {
 	  success_threshold: {
             stddevs_from_mean: 5.0,

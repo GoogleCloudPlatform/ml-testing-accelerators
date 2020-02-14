@@ -1,7 +1,7 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-mnist-convergence-v2-8"
+  "name": "pt-nightly-cifar-inline-convergence-v2-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
@@ -17,7 +17,10 @@
           "containers":
           - "args":
             - "python3"
-            - "pytorch/xla/test/test_train_mp_mnist.py"
+            - "pytorch/xla/test/test_train_cifar.py"
+            - "--metrics_debug"
+            - "--target_accuracy=72"
+            - "--datadir=/datasets/cifar-data"
             - "--logdir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
@@ -39,11 +42,11 @@
             - "name": "METRIC_COLLECTION_CONFIG"
               "value": "{\n \"default_aggregation_strategies\": [\n  \"final\"\n ],\n \"tags_to_ignore\": [\n  \"LearningRate\"\n ],\n \"write_to_bigquery\": \"True\"\n}"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/mnist/convergence/v2-8/$(JOB_NAME)"
+              "value": "gs://xl-ml-test-us-central1/k8s/cifar-inline/convergence/v2-8/$(JOB_NAME)"
             - "name": "REGRESSION_TEST_CONFIG"
-              "value": "{\n \"metric_subset_to_alert\": [\n  \"ExecuteTime__Percentile_99_sec_final\",\n  \"CompileTime__Percentile_99_sec_final\",\n  \"total_wall_time\",\n  \"Accuracy/test_final\"\n ],\n \"metric_success_conditions\": {\n  \"Accuracy/test_final\": {\n   \"comparison\": \"greater\",\n   \"success_threshold\": {\n    \"fixed_value\": 99\n   }\n  },\n  \"CompileTime__Percentile_99_sec_final\": {\n   \"comparison\": \"less\",\n   \"success_threshold\": {\n    \"stddevs_from_mean\": 5\n   },\n   \"wait_for_n_points_of_history\": 10\n  },\n  \"ExecuteTime__Percentile_99_sec_final\": {\n   \"comparison\": \"less\",\n   \"success_threshold\": {\n    \"stddevs_from_mean\": 5\n   },\n   \"wait_for_n_points_of_history\": 10\n  },\n  \"total_wall_time\": {\n   \"comparison\": \"less\",\n   \"success_threshold\": {\n    \"stddevs_from_mean\": 5\n   },\n   \"wait_for_n_points_of_history\": 10\n  }\n },\n \"write_to_error_reporting\": \"True\"\n}"
+              "value": "{\n \"metric_subset_to_alert\": [\n  \"ExecuteTime__Percentile_99_sec_final\",\n  \"CompileTime__Percentile_99_sec_final\",\n  \"total_wall_time\",\n  \"Accuracy/test_final\"\n ],\n \"metric_success_conditions\": {\n  \"Accuracy/test_final\": {\n   \"comparison\": \"greater\",\n   \"success_threshold\": {\n    \"fixed_value\": 72\n   }\n  },\n  \"CompileTime__Percentile_99_sec_final\": {\n   \"comparison\": \"less\",\n   \"success_threshold\": {\n    \"stddevs_from_mean\": 5\n   },\n   \"wait_for_n_points_of_history\": 10\n  },\n  \"ExecuteTime__Percentile_99_sec_final\": {\n   \"comparison\": \"less\",\n   \"success_threshold\": {\n    \"stddevs_from_mean\": 5\n   },\n   \"wait_for_n_points_of_history\": 10\n  },\n  \"total_wall_time\": {\n   \"comparison\": \"less\",\n   \"success_threshold\": {\n    \"stddevs_from_mean\": 5\n   },\n   \"wait_for_n_points_of_history\": 10\n  }\n },\n \"write_to_error_reporting\": \"True\"\n}"
             - "name": "TEST_NAME"
-              "value": "pt-nightly-mnist-convergence-v2-8"
+              "value": "pt-nightly-cifar-inline-convergence-v2-8"
             - "name": "XLA_USE_BF16"
               "value": "0"
             "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
@@ -51,16 +54,24 @@
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v2": 8
+                "cloud-tpus.google.com/v2": 8
               "requests":
                 "cpu": "4.5"
                 "memory": "8Gi"
             "volumeMounts":
             - "mountPath": "/dev/shm"
               "name": "dshm"
+            - "mountPath": "/datasets"
+              "name": "cifar-pd"
+              "readOnly": true
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
+          - "gcePersistentDisk":
+              "fsType": "ext4"
+              "pdName": "cifar-pd-central1-b"
+              "readOnly": true
+            "name": "cifar-pd"
   "schedule": "30 7 * * */2"
