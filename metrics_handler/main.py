@@ -21,6 +21,7 @@ from tensorboard.backend.event_processing import event_multiplexer
 import tensorflow as tf
 
 
+ALLOWED_COMPARISONS = ['greater', 'less', 'equal', 'less_or_equal']
 BQ_DATASET_NAME = 'metrics_handler_dataset'
 BQ_JOB_TABLE_NAME = 'job_history'
 BQ_METRIC_TABLE_NAME = 'metric_history'
@@ -298,7 +299,7 @@ class CloudMetricsHandler(object):
         of metrics history. If not provided, the rows saved to BigQuery will
         have `null` for upper_bound and lower_bound.
     """
-    if not self.metric_collection_config.get('write_to_bigquery', False):
+    if not self.metric_collection_config.get('write_to_bigquery', True):
       logging.info('Skipping writing metrics and job_status to BigQuery.')
       return
 
@@ -402,11 +403,11 @@ class CloudMetricsHandler(object):
 
     metric_value = value_history[-1]
     comparison = success_condition.get('comparison')
-    if not comparison or comparison not in ['greater', 'less', 'equal']:
+    if not comparison or comparison not in ALLOWED_COMPARISONS:
       raise ValueError(
           'A metric success condition must set the `comparison` field to '
-          '`greater`, `less`, or `equal`. Condition was: {}'.format(
-              success_condition))
+          'one of {}. Condition was: {}'.format(
+              ALLOWED_COMPARISONS, success_condition))
     thresholds = [x for x in success_condition['success_threshold'].items()]
     if len(thresholds) != 1:
       raise ValueError('Each metric success condition should have exactly '
@@ -428,6 +429,11 @@ class CloudMetricsHandler(object):
         visual_lower_bound = threshold_value
         visual_upper_bound = threshold_value
         within_bounds = math.isclose(metric_value, threshold_value)
+      elif comparison == 'less_or_equal':
+        visual_lower_bound = None
+        visual_upper_bound = threshold_value
+        within_bounds = math.isclose(metric_value, threshold_value) or \
+            metric_value < threshold_value
       return within_bounds, visual_lower_bound, visual_upper_bound
 
     if threshold_type == 'stddevs_from_mean':
@@ -439,11 +445,14 @@ class CloudMetricsHandler(object):
         within_bounds = metric_value > visual_lower_bound
       elif comparison == 'less':
         within_bounds = metric_value < visual_upper_bound
+      elif comparison == 'less_or_equal':
+        within_bounds = math.isclose(metric_value, visual_upper_bound) or \
+            metric_value < visual_upper_bound
       else:
         raise ValueError(
             'A metric success condition using a `stddevs_from_mean`-type '
-            'threshold must use `greater` or `less` for the comparison. The '
-            'condition was: {}'.format(success_condition))
+            'threshold must use `greater`, `less`, or `less_or_equal` for the '
+            'comparison. The condition was: {}'.format(success_condition))
       return within_bounds, visual_lower_bound, visual_upper_bound
 
     raise ValueError(

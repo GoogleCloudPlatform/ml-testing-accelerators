@@ -20,11 +20,11 @@ local tpus = import "tpus.libsonnet";
     schedule: error "Must specify `schedule`",
 
     metricCollectionConfig: {
-      write_to_bigquery: "True",
+      write_to_bigquery: true,
       default_aggregation_strategies: ["final"],
     },
     regressionTestConfig: {
-      write_to_error_reporting: "True",
+      write_to_error_reporting: true,
       metric_success_conditions: {
 	"total_wall_time": {
 	  success_threshold: {

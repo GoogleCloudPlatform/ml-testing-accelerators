@@ -42,11 +42,11 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "METRIC_COLLECTION_CONFIG"
-              "value": "{\n \"default_aggregation_strategies\": [\n  \"final\"\n ],\n \"write_to_bigquery\": \"True\"\n}"
+              "value": "{\n \"default_aggregation_strategies\": [\n  \"final\"\n ],\n \"write_to_bigquery\": true\n}"
             - "name": "MODEL_DIR"
               "value": "gs://xl-ml-test-us-central1/k8s/mnist/convergence/v2-8/$(JOB_NAME)"
             - "name": "REGRESSION_TEST_CONFIG"
-              "value": "{\n \"metric_success_conditions\": {\n  \"total_wall_time\": {\n   \"comparison\": \"less\",\n   \"success_threshold\": {\n    \"stddevs_from_mean\": 5\n   },\n   \"wait_for_n_points_of_history\": 10\n  }\n },\n \"write_to_error_reporting\": \"True\"\n}"
+              "value": "{\n \"metric_success_conditions\": {\n  \"total_wall_time\": {\n   \"comparison\": \"less\",\n   \"success_threshold\": {\n    \"stddevs_from_mean\": 5\n   },\n   \"wait_for_n_points_of_history\": 10\n  }\n },\n \"write_to_error_reporting\": true\n}"
             - "name": "TEST_NAME"
               "value": "tf-nightly-mnist-convergence-v2-8"
             "image": "gcr.io/xl-ml-test/model-garden:nightly"

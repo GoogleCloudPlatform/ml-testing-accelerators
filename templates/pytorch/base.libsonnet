@@ -9,6 +9,7 @@ local base = import "../base.libsonnet";
 	"CompileTime__Percentile_99_sec_final",
 	"total_wall_time",
 	"Accuracy/test_final",
+	"aten_ops_sum_final",
       ],
       metric_success_conditions+: {
         "ExecuteTime__Percentile_99_sec_final": {
@@ -24,6 +25,12 @@ local base = import "../base.libsonnet";
 	  },
 	  comparison: "less",
 	  wait_for_n_points_of_history: 10,
+	},
+        "aten_ops_sum_final": {
+	  success_threshold: {
+            stddevs_from_mean: 0.0,
+	  },
+	  comparison: "less_or_equal",
 	},
       },
     },
