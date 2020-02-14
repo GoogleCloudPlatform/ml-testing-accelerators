@@ -392,7 +392,7 @@ class CloudMetricsHandler(object):
           'test config. No bounds or alerts will be computed'.format(
               metric_name))
       return True, None, None
-    if 0 and len(value_history) <= success_condition.get(
+    if len(value_history) <= success_condition.get(
         'wait_for_n_points_of_history', -1):
       logging.info(
           'Metric: {} had only {} points of history. Skipping bounds '
