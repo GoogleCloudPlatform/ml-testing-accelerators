@@ -26,7 +26,7 @@ BQ_JOB_TABLE_NAME = 'job_history'
 BQ_METRIC_TABLE_NAME = 'metric_history'
 ERROR_REPORTER = error_reporting.Client()
 METRICS_WRITTEN_TOPIC = 'metrics-written'
-MIN_MSG_AGE_SEC = 30
+MIN_MSG_AGE_SEC = 60
 
 
 class CloudMetricsHandler(object):
@@ -545,10 +545,15 @@ def _process_pubsub_message(msg, status_handler):
   status, start_time, stop_time, num_failures = status_handler.get_job_status(
       job_name, 'automated')
   if status == job_status_handler.UNKNOWN_STATUS:
-      logging.warning(
-          'Unknown status for job_name: {}. Message will be '
-          'retried later.'.format(job_name))
-      return False  # Do not ack the message.
+    logging.warning(
+        'Unknown status for job_name: {}. Message will be '
+        'retried later.'.format(job_name))
+    return False  # Do not ack the message.
+  elif status == job_status_handler.DOES_NOT_EXIST:
+    logging.warning(
+        'Job with job_name: {} no longer exists in Kubernetes. Message '
+        'will be acknowledged.'.format(job_name))
+    return True  # Ack the message.
   job_status = {
       'final_status': status,
       'start_time': start_time,

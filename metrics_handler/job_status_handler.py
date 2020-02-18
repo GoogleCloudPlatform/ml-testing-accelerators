@@ -3,10 +3,10 @@ from absl import logging
 from google.cloud import container_v1
 import google.auth
 import google.auth.transport.requests
-from kubernetes import client as kubernetes_client
-from kubernetes import config as kubernetes_config
+import kubernetes
 from tempfile import NamedTemporaryFile
 
+DOES_NOT_EXIST = 'does_not_exist'
 UNKNOWN_STATUS = 'unknown'
 SUCCESS = 'success'
 FAILURE = 'failure'
@@ -41,7 +41,7 @@ class JobStatusHandler(object):
       creds, projects = google.auth.default()
       auth_req = google.auth.transport.requests.Request()
       creds.refresh(auth_req)
-      configuration = kubernetes_client.Configuration()
+      configuration = kubernetes.client.Configuration()
       configuration.host = f'https://{response.endpoint}'
       with NamedTemporaryFile(delete=False) as ca_cert:
         ca_cert.write(
@@ -50,8 +50,8 @@ class JobStatusHandler(object):
       configuration.api_key_prefix['authorization'] = 'Bearer'
       configuration.api_key['authorization'] = creds.token
 
-      self.k8s_client = kubernetes_client.BatchV1Api(
-          kubernetes_client.ApiClient(configuration))
+      self.k8s_client = kubernetes.client.BatchV1Api(
+          kubernetes.client.ApiClient(configuration))
       logging.info('Successful init of k8s client from cluster response.')
     except Exception as e1:
       # This method is generally used for local runs where the user has already
@@ -59,8 +59,8 @@ class JobStatusHandler(object):
       logging.warning('Failed to load k8s client from cluster response: {}. '
                       'Falling back to local kubeconfig file.'.format(e1))
       try:
-        kubernetes_config.load_kube_config()
-        self.k8s_client = kubernetes_client.BatchV1Api()
+        kubernetes.config.load_kube_config()
+        self.k8s_client = kubernetes.client.BatchV1Api()
         logging.info('Successful init of k8s client from local kubeconfig file.')
       except Exception as e2:
         logging.fatal('Failed both methods of loading k8s client. Error for '
@@ -87,10 +87,16 @@ class JobStatusHandler(object):
       status = self.k8s_client.read_namespaced_job_status(
           job_name, namespace).status
     except Exception as e:
-      logging.error('Failed to get job status for job_name: {} and '
-                    'namespace: {}.  Error was: {}'.format(
-                        job_name, namespace, e))
-      return UNKNOWN_STATUS, None, None, None
+      if isinstance(e, kubernetes.client.rest.ApiException) and \
+          e.status == 404:
+        logging.error('Job with job_name: {} no longer exists in namespace: '
+                      '{}.  Error was: {}'.format(job_name, namespace, e))
+        return DOES_NOT_EXIST, None, None, None
+      else:
+        logging.error('Failed to get job status for job_name: {} and '
+                      'namespace: {}.  Error was: {}'.format(
+                          job_name, namespace, e))
+        return UNKNOWN_STATUS, None, None, None
     logging.info('job_name: {}. status: {}'.format(job_name, status))
     start_time = status.start_time.timestamp()
     if status.active:
