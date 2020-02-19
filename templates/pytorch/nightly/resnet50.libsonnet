@@ -23,6 +23,7 @@ local tpus = import "../../tpus.libsonnet";
     command: [
       "python3",
       "pytorch/xla/test/test_train_imagenet.py",
+      "--logdir=$(MODEL_DIR)",
       "--model=resnet50",
       "--num_workers=64",
       "--batch_size=128",

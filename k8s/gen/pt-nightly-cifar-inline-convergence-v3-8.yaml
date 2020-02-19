@@ -32,10 +32,10 @@
           - "args":
             - "python3"
             - "pytorch/xla/test/test_train_cifar.py"
+            - "--logdir=$(MODEL_DIR)"
             - "--metrics_debug"
             - "--target_accuracy=72"
             - "--datadir=/datasets/cifar-data"
-            - "--logdir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
               "valueFrom":

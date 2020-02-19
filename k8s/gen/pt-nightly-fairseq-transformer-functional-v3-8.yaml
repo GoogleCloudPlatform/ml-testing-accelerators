@@ -15,13 +15,13 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-resnet50-functional-v3-8"
+  "name": "pt-nightly-fairseq-transformer-functional-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 7200
+      "activeDeadlineSeconds": 3600
       "backoffLimit": 2
       "template":
         "metadata":
@@ -31,14 +31,39 @@
           "containers":
           - "args":
             - "python3"
-            - "pytorch/xla/test/test_train_imagenet.py"
-            - "--logdir=$(MODEL_DIR)"
-            - "--model=resnet50"
-            - "--num_workers=64"
-            - "--batch_size=128"
-            - "--log_steps=200"
-            - "--num_epochs=2"
-            - "--datadir=/datasets/imagenet-mini"
+            - "/tpu-examples/deps/fairseq/train.py"
+            - "/datasets/wmt18_en_de_bpej32k"
+            - "--tensorboard-logdir=$(MODEL_DIR)"
+            - "--metrics_debug"
+            - "--arch=transformer_vaswani_wmt_en_de_big"
+            - "--max-target-positions=64"
+            - "--attention-dropout=0.1"
+            - "--no-progress-bar"
+            - "--no-save"
+            - "--save-interval=1"
+            - "--criterion=label_smoothed_cross_entropy"
+            - "--source-lang=en"
+            - "--lr-scheduler=inverse_sqrt"
+            - "--min-lr=1e-09"
+            - "--skip-invalid-size-inputs-valid-test"
+            - "--target-lang=de"
+            - "--label-smoothing=0.1"
+            - "--update-freq=1"
+            - "--optimizer=adam"
+            - "--adam-betas=(0.9,0.98)"
+            - "--warmup-init-lr=1e-07"
+            - "--lr=0.0005"
+            - "--warmup-updates=4000"
+            - "--share-all-embeddings"
+            - "--dropout=0.3"
+            - "--weight-decay=0.0"
+            - "--valid-subset=valid"
+            - "--num_cores=8"
+            - "--max-epoch=1"
+            - "--log_steps=10"
+            - "--train-subset=valid"
+            - "--input_shapes"
+            - "128x64"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -59,13 +84,13 @@
             - "name": "METRIC_COLLECTION_CONFIG"
               "value": "{\n \"default_aggregation_strategies\": [\n  \"final\"\n ],\n \"tags_to_ignore\": [\n  \"LearningRate\"\n ],\n \"write_to_bigquery\": true\n}"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/resnet50/functional/v3-8/$(JOB_NAME)"
+              "value": "gs://xl-ml-test-us-central1/k8s/fairseq-transformer/functional/v3-8/$(JOB_NAME)"
             - "name": "REGRESSION_TEST_CONFIG"
               "value": "{\n \"metric_subset_to_alert\": [\n  \"ExecuteTime__Percentile_99_sec_final\",\n  \"CompileTime__Percentile_99_sec_final\",\n  \"total_wall_time\",\n  \"Accuracy/test_final\",\n  \"aten_ops_sum_final\"\n ],\n \"metric_success_conditions\": {\n  \"CompileTime__Percentile_99_sec_final\": {\n   \"comparison\": \"less\",\n   \"success_threshold\": {\n    \"stddevs_from_mean\": 5\n   },\n   \"wait_for_n_points_of_history\": 10\n  },\n  \"ExecuteTime__Percentile_99_sec_final\": {\n   \"comparison\": \"less\",\n   \"success_threshold\": {\n    \"stddevs_from_mean\": 5\n   },\n   \"wait_for_n_points_of_history\": 10\n  },\n  \"aten_ops_sum_final\": {\n   \"comparison\": \"less_or_equal\",\n   \"success_threshold\": {\n    \"stddevs_from_mean\": 0\n   }\n  },\n  \"total_wall_time\": {\n   \"comparison\": \"less\",\n   \"success_threshold\": {\n    \"stddevs_from_mean\": 5\n   },\n   \"wait_for_n_points_of_history\": 10\n  }\n },\n \"write_to_error_reporting\": true\n}"
             - "name": "TEST_NAME"
-              "value": "pt-nightly-resnet50-functional-v3-8"
+              "value": "pt-nightly-fairseq-transformer-functional-v3-8"
             - "name": "XLA_USE_BF16"
-              "value": "0"
+              "value": "1"
             "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
@@ -73,13 +98,13 @@
               "limits":
                 "cloud-tpus.google.com/preemptible-v3": 8
               "requests":
-                "cpu": "90.0"
-                "memory": "400Gi"
+                "cpu": "9.0"
+                "memory": "30Gi"
             "volumeMounts":
             - "mountPath": "/dev/shm"
               "name": "dshm"
             - "mountPath": "/datasets"
-              "name": "imagenet-mini-pd"
+              "name": "wmt18-pd"
               "readOnly": true
           "restartPolicy": "Never"
           "volumes":
@@ -88,7 +113,7 @@
             "name": "dshm"
           - "gcePersistentDisk":
               "fsType": "ext4"
-              "pdName": "imagenet-mini-pd-central1-b"
+              "pdName": "wmt18-en-de-pd-central1-b"
               "readOnly": true
-            "name": "imagenet-mini-pd"
+            "name": "wmt18-pd"
   "schedule": "0 */12 * * *"

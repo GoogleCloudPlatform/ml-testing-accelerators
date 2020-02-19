@@ -23,6 +23,7 @@ local tpus = import "../../tpus.libsonnet";
     command: [
       "python3",
       "pytorch/xla/test/test_train_mp_mnist.py",
+      "--logdir=$(MODEL_DIR)",
     ],
   },
   local convergence = mixins.Convergence {

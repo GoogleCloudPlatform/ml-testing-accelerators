@@ -32,13 +32,13 @@
           - "args":
             - "python3"
             - "pytorch/xla/test/test_train_imagenet.py"
+            - "--logdir=$(MODEL_DIR)"
             - "--model=resnet50"
             - "--num_workers=64"
             - "--batch_size=128"
             - "--log_steps=200"
             - "--num_epochs=90"
             - "--datadir=/datasets/imagenet"
-            - "--logdir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
               "valueFrom":

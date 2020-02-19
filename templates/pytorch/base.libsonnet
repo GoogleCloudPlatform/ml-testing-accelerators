@@ -60,7 +60,6 @@ local base = import "../base.libsonnet";
         spec+: {
           containerMap+: {
             train+: {
-              args+: [ "--logdir=$(MODEL_DIR)" ],
               envMap+: {
                 XLA_USE_BF16: "0",
               },

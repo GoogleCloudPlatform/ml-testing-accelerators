@@ -23,6 +23,7 @@ local tpus = import "../../tpus.libsonnet";
     command: [
       "python3",
       "pytorch/xla/test/test_train_cifar.py",
+      "--logdir=$(MODEL_DIR)",
       "--use_torchvision=True",
       "--metrics_debug",
       "--target_accuracy=72",
