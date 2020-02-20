@@ -1,3 +1,17 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
@@ -48,8 +62,6 @@
               "value": |
                 {
                   "write_to_bigquery": "True",
-                  "bigquery_dataset_name": "xl_ml_metrics_dataset",
-                  "bigquery_table_name": "xl_ml_metrics_table",
                   "tags_to_ignore": ["LearningRate"],
                   "default_aggregation_strategies": ["final"],
                   "metric_to_aggregation_strategies": {
@@ -63,19 +75,25 @@
             - "name": "REGRESSION_TEST_CONFIG"
               "value": |
                 {
-                  "write_to_stackdriver": "True",
-                  "bigquery_dataset_name": "xl_ml_metrics_dataset",
-                  "bigquery_table_name": "xl_ml_metrics_table",
-                  "min_num_datapoints_before_alerting": 10,
-                  "metrics_to_ignore": ["loss"],
-                  "notification_channel_display_names": ["default_notification_channel"],
-                  "base_threshold_expression": "v_mean + (v_stddev * 6.0)",
-                  "base_comparison": "COMPARISON_GT",
-                  "threshold_expression_overrides": {
-                  "epoch_sparse_categorical_accuracy_final": "v_mean - (v_stddev * 3.0)"
-                  },
-                  "comparison_overrides": {
-                    "epoch_sparse_categorical_accuracy_final": "COMPARISON_LT"
+                  "write_to_error_reporting": "True",
+                  "metric_subset_to_alert": [
+                    "total_wall_time",
+                    "epoch_sparse_categorical_accuracy"
+                  ],
+                  "metric_success_conditions": {
+                    "epoch_sparse_categorical_accuracy": {
+                      "comparison": "greater",
+                      "success_threshold": {
+                        "fixed_value": 99.0
+                      }
+                    },
+                    "total_wall_time": {
+                      "comparison": "less",
+                      "success_threshold": {
+                        "stddevs_from_mean": 4.0,
+                      },
+                      "wait_for_n_points_of_history": 10,
+                    }
                   }
                 }
             "image": "gcr.io/xl-ml-test/model-garden:nightly"
