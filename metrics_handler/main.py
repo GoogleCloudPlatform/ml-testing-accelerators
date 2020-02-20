@@ -397,13 +397,14 @@ class CloudMetricsHandler(object):
     Raises:
       ValueError if the regression test config is invalid.
     """
-    success_condition = self.regression_test_config.get(
-        'metric_success_conditions', {}).get(metric_name) or \
-        self.regression_test_config.get('default_metric_success_condition')
+    success_conditions = self.regression_test_config.get(
+        'metric_success_conditions', {})
+    success_condition = success_conditions.get(metric_name) or \
+        success_conditions.get('default')
     if not success_condition:
       logging.warning(
           'metric: `{}` has an empty success condition in metric_opt_in_dict '
-          'but there is no default_metric_success_condition set in regression '
+          'but there is no default condition provided in the regression '
           'test config. No bounds or alerts will be computed'.format(
               metric_name))
       return True, None, None
