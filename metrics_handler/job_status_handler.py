@@ -19,6 +19,7 @@ import google.auth
 import google.auth.transport.requests
 import kubernetes
 from tempfile import NamedTemporaryFile
+import time
 
 DOES_NOT_EXIST = 'does_not_exist'
 UNKNOWN_STATUS = 'unknown'
@@ -121,7 +122,16 @@ class JobStatusHandler(object):
     completion_code = UNKNOWN_STATUS
     if status.succeeded:
       completion_code = SUCCESS
-      stop_time = status.completion_time.timestamp()
+      if status.completion_time:
+        stop_time = status.completion_time.timestamp()
+      else:
+        logging.error(
+            'No completion_time in success status: {}'.format(status))
+        if status.conditions and len(status.conditions) == 1 and \
+            status.conditions[0].last_transition_time:
+          stop_time = status.conditions[0].last_transition_time.timestamp()
+        else:
+          stop_time = time.time()
     else:
       if len(status.conditions) != 1:
         logging.error('Expected exactly 1 `condition` element in status.')
