@@ -19,6 +19,7 @@ export PUBSUB_MESSAGE="{
   \"test_name\": \"$TEST_NAME\",
   \"logs_link\": \"$STACKDRIVER_LOGS\",
   \"job_name\": \"$JOB_NAME\",
+  \"job_namespace\": $POD_NAMESPACE,
   \"metric_collection_config\": $METRIC_COLLECTION_CONFIG,
   \"regression_test_config\": $REGRESSION_TEST_CONFIG
 }"

@@ -553,6 +553,7 @@ def _process_pubsub_message(msg, status_handler):
   metric_collection_config = msg.get('metric_collection_config')
   regression_test_config = msg.get('regression_test_config')
   job_name = msg.get('job_name')
+  job_namespace = msg.get('job_namespace')
   test_type = msg.get('test_type')
   accelerator = msg.get('accelerator')
   framework_version = msg.get('framework_version')
@@ -567,7 +568,7 @@ def _process_pubsub_message(msg, status_handler):
                      'README for documentation. Message was: {}'.format(event))
 
   status, start_time, stop_time, num_failures = status_handler.get_job_status(
-      job_name, 'automated')
+      job_name, job_namespace)
   if status == job_status_handler.UNKNOWN_STATUS:
     logging.warning(
         'Unknown status for job_name: {}. Message will be '

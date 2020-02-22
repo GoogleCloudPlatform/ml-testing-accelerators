@@ -1,0 +1,135 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: "batch/v1beta1"
+kind: "CronJob"
+metadata:
+  # TODO: Change this to a unique name within your project.
+  name: "pt-cifar-tpu-v3-8"
+spec:
+  concurrencyPolicy: "Forbid"
+  jobTemplate:
+    spec:
+      # TODO: Set the number of retries before marking test as failed.
+      backoffLimit: 2
+      template:
+        metadata:
+          annotations:
+            tf-version.cloud-tpus.google.com: "pytorch-nightly"
+        spec:
+          # TODO: Extend the timeout if your test takes longer.
+          activeDeadlineSeconds: 3600
+          restartPolicy: "Never"
+          containers:
+          - args:
+            # TODO: Change this to the command to run your test.
+            - "python3"
+            - "pytorch/xla/test/test_train_cifar.py"
+            - "--metrics_debug"
+            - "--target_accuracy=72"
+            - "--datadir=/datasets/cifar-data"
+            - "--logdir=$(MODEL_DIR)"
+            # TODO: Change this to your image if desired. See `images/README`
+            # for more on setting up images.
+            image: "gcr.io/xl-ml-test/pytorch-xla:nightly"
+            imagePullPolicy: "Always"
+            name: "train-container"
+            env:
+            - name: "POD_NAME"
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+            - name: "POD_UID"
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.uid"
+            - name: "POD_NAMESPACE"
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.namespace"
+            - name: "JOB_NAME"
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.labels['job-name']"
+            - name: "MODEL_DIR"
+              # TODO: This is where checkpoints and Tensorboard summary files
+              # will be written. At the very least, change the storage bucket
+              # name away from `xl-ml-test-us-central1` since you won't have
+              # write access to that bucket.
+              value: "gs://xl-ml-test-us-central1/k8s/cifar/convergence/v3-8/$(JOB_NAME)"
+            - name: "TEST_NAME"
+              # TODO: Recommended to match with `name` from `metadata` above.
+              value: "pt-cifar-tpu-v3-8"
+              # TODO: See `metrics_handler/README` if you want to change these
+              # configs. These are used to determine how metrics are collected
+              # for your test and how alerts will be generated.
+            - name: "METRIC_COLLECTION_CONFIG"
+              value: |
+                {
+                  "write_to_bigquery": "True",
+                  "tags_to_ignore": ["LearningRate"],
+                  "default_aggregation_strategies": ["final"],
+                  "metric_to_aggregation_strategies": {
+                    "epoch_loss": ["final", "min"]
+                  },
+                  "time_to_accuracy": {
+                    "accuracy_threshold": 99.0,
+                    "accuracy_tag": "Accuracy/Test"
+                  }
+                }
+            - name: "REGRESSION_TEST_CONFIG"
+              value: |
+                {
+                  "write_to_error_reporting": "True",
+                  "metric_success_conditions": {
+                    "Accuracy/Test_final": {
+                      "comparison": "greater",
+                      "success_threshold": {
+                        "fixed_value": 99.0
+                      }
+                    },
+                    "total_wall_time": {
+                      "comparison": "less",
+                      "success_threshold": {
+                        "stddevs_from_mean": 4.0
+                      },
+                      "wait_for_n_points_of_history": 10
+                    }
+                  }
+                }
+            resources:
+              limits:
+                cloud-tpus.google.com/preemptible-v3: 8
+            volumeMounts:
+            - mountPath: "/dev/shm"
+              name: "dshm"
+            - mountPath: "/datasets"
+              # TODO: This should match `name` of the gcePersistentDisk below.
+              name: "cifar-pd"
+              readOnly: true
+          volumes:
+          - emptyDir:
+              medium: "Memory"
+            name: "dshm"
+          - gcePersistentDisk:
+              fsType: "ext4"
+              # TODO: Change this to the name of your Cloud persistent disk.
+              pdName: "cifar-pd-central1-b"
+              readOnly: true
+            # TODO: This should match `name` under volumeMounts above.
+            name: "cifar-pd"
+  # TODO: Update the timing of your test runs:
+  # https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs/#schedule
+  schedule: "0 */24 * * *"
+
