@@ -123,7 +123,7 @@ local tpus = import "../../tpus.libsonnet";
     accelerator: tpus.v3_8,
   },
   configs: [
-    resnet50 + v3_8 + convergence + timeouts.Hours(23),
+    resnet50 + v3_8 + convergence + timeouts.Hours(26),
     resnet50 + v3_8 + functional + timeouts.Hours(2),
   ],
 }
