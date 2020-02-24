@@ -85,7 +85,7 @@ spec:
                   },
                   "time_to_accuracy": {
                     "accuracy_threshold": 99.0,
-                    "accuracy_tag": "Accuracy/Test"
+                    "accuracy_tag": "Accuracy/test"
                   }
                 }
             - name: "REGRESSION_TEST_CONFIG"
@@ -93,7 +93,7 @@ spec:
                 {
                   "write_to_error_reporting": "True",
                   "metric_success_conditions": {
-                    "Accuracy/Test_final": {
+                    "Accuracy/test_final": {
                       "comparison": "greater",
                       "success_threshold": {
                         "fixed_value": 99.0

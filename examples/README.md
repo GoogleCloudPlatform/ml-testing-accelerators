@@ -6,6 +6,7 @@ tests and/or have a relatively small number of tests (less than ~20).
 See the `templates/` directory for a templating engine to help with generating
 a large number of tests that can use inheritance.
 
+
 ## Getting started
 
 1. Make a copy of the example that is closest to your needs.

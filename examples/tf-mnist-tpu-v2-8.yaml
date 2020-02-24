@@ -16,7 +16,7 @@ apiVersion: "batch/v1beta1"
 kind: "CronJob"
 metadata:
   # TODO: Change this to a unique name within your project.
-  name: "tf-mnist-v2-8-example"
+  name: "tf-mnist-tpu-v2-8"
 spec:
   concurrencyPolicy: "Forbid"
   jobTemplate:
@@ -72,7 +72,7 @@ spec:
               value: "gs://xl-ml-test-us-central1/k8s/mnist/functional/v2-8/$(JOB_NAME)"
             - name: "TEST_NAME"
               # TODO: Recommended to match with `name` from `metadata` above.
-              value: "tf-mnist-v2-8-example"
+              value: "tf-mnist-tpu-v2-8"
               # TODO: See `metrics_handler/README` if you want to change these
               # configs. These are used to determine how metrics are collected
               # for your test and how alerts will be generated.
