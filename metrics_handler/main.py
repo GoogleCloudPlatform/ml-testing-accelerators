@@ -644,11 +644,13 @@ def run_main(event, context):
       data['ack_id'] = msg.ack_id
       test_name_to_msgs[data['test_name']].append(data)
     except Exception as e:
-      ERROR_REPORTER.report(
+      error_message = (
           'Metrics handler encountered an invalid message in pubsub queue '
           'for topic `{}` which led to Exception: {}. This message will '
           'be acknowledged and ignored. The message was: {}'.format(
               METRICS_WRITTEN_TOPIC, e, msg))
+      ERROR_REPORTER.report(error_message)
+      logging.error(error_message)
       ids_to_ack.append(msg.ack_id)
 
   # Grab the latest message for each test. We will process only that message
