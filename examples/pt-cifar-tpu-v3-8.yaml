@@ -31,12 +31,35 @@ spec:
           # TODO: Extend the timeout if your test takes longer.
           activeDeadlineSeconds: 3600
           restartPolicy: Never
+          volumes:
+          - name: dshm
+            emptyDir:
+              medium: Memory
+          # TODO: This should match `name` under volumeMounts below in the
+          # `volumeMounts` section.
+          - name: cifar-pd
+            gcePersistentDisk:
+              # TODO: Change this to the name of your Cloud persistent disk.
+              pdName: "cifar-pd-central1-b"
+              fsType: "ext4"
+              readOnly: true
           containers:
           - name: "train-container"
             # TODO: Change this to your image if desired. See `images/README`
             # for more on setting up images.
             image: "gcr.io/xl-ml-test/pytorch-xla:nightly"
             imagePullPolicy: Always
+            resources:
+              limits:
+                cloud-tpus.google.com/preemptible-v3: 8
+            volumeMounts:
+            - name: dshm
+              mountPath: "/dev/shm"
+            # TODO: This should match `name` of the gcePersistentDisk above in
+            # the `volumes` section.
+            - name: cifar-pd
+              mountPath: "/datasets"
+              readOnly: true
             args:
             # TODO: Change this to the command to run your test.
             - "python3"
@@ -45,9 +68,6 @@ spec:
             - "--target_accuracy=72"
             - "--datadir=/datasets/cifar-data"
             - "--logdir=$(MODEL_DIR)"
-            resources:
-              limits:
-                cloud-tpus.google.com/preemptible-v3: 8
             env:
             - name: "POD_NAME"
               valueFrom:
@@ -111,24 +131,6 @@ spec:
                     }
                   }
                 }
-            volumeMounts:
-            - name: dshm
-              mountPath: "/dev/shm"
-            # TODO: This should match `name` of the gcePersistentDisk below.
-            - name: cifar-pd
-              mountPath: "/datasets"
-              readOnly: true
-          volumes:
-          # TODO: This should match `name` under volumeMounts above.
-          - name: "dshm"
-            emptyDir:
-              medium: Memory
-          - name: cifar-pd
-            gcePersistentDisk:
-              # TODO: Change this to the name of your Cloud persistent disk.
-              pdName: "cifar-pd-central1-b"
-              fsType: "ext4"
-              readOnly: true
   # TODO: Update the timing of your test runs:
   # https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs/#schedule
   schedule: "0 */24 * * *"

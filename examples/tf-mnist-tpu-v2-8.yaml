@@ -38,6 +38,9 @@ spec:
             # for more on setting up images.
             image: "gcr.io/xl-ml-test/model-garden:nightly"
             imagePullPolicy: Always
+            resources:
+              limits:
+                cloud-tpus.google.com/preemptible-v2: 8
             args:
             - "python3"
             - "official/vision/image_classification/mnist_main.py"
@@ -47,9 +50,6 @@ spec:
             - "--train_epochs=1"
             - "--epochs_between_evals=1"
             - "--model_dir=$(MODEL_DIR)"
-            resources:
-              limits:
-                cloud-tpus.google.com/preemptible-v2: 8
             env:
             - name: "POD_NAME"
               valueFrom:
