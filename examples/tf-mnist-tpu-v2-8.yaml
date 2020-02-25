@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: "batch/v1beta1"
-kind: "CronJob"
+apiVersion: batch/v1beta1
+kind: CronJob
 metadata:
   # TODO: Change this to a unique name within your project.
-  name: "tf-mnist-tpu-v2-8"
+  name: tf-mnist-tpu-v2-8
 spec:
-  concurrencyPolicy: "Forbid"
+  concurrencyPolicy: Forbid
   jobTemplate:
     spec:
       # TODO: Set the number of retries before marking test as failed.
@@ -26,14 +26,19 @@ spec:
       template:
         metadata:
           annotations:
-            tf-version.cloud-tpus.google.com: "nightly-2.x"
+            tf-version.cloud-tpus.google.com: nightly-2.x
         spec:
           # TODO: Extend the timeout if your test takes longer.
           activeDeadlineSeconds: 3600
-          restartPolicy: "Never"
+          restartPolicy: Never
           containers:
           # TODO: Change this to the command to run your test.
-          - args:
+          - name: test-container
+            # TODO: Change this to your image if desired. See `images/README`
+            # for more on setting up images.
+            image: "gcr.io/xl-ml-test/model-garden:nightly"
+            imagePullPolicy: Always
+            args:
             - "python3"
             - "official/vision/image_classification/mnist_main.py"
             - "--data_dir=gs://xl-ml-test-us-central1/data/mnist"
@@ -42,11 +47,9 @@ spec:
             - "--train_epochs=1"
             - "--epochs_between_evals=1"
             - "--model_dir=$(MODEL_DIR)"
-            # TODO: Change this to your image if desired. See `images/README`
-            # for more on setting up images.
-            image: "gcr.io/xl-ml-test/model-garden:nightly"
-            imagePullPolicy: "Always"
-            name: "test-container"
+            resources:
+              limits:
+                cloud-tpus.google.com/preemptible-v2: 8
             env:
             - name: "POD_NAME"
               valueFrom:
@@ -114,9 +117,6 @@ spec:
                     }
                   }
                 }
-            resources:
-              limits:
-                cloud-tpus.google.com/preemptible-v2: 8
   # TODO: Update the timing of your test runs:
   # https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs/#schedule
   schedule: "0 */24 * * *"

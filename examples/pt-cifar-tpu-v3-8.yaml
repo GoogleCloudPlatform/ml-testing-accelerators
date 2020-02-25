@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: "batch/v1beta1"
-kind: "CronJob"
+apiVersion: batch/v1beta1
+kind: CronJob
 metadata:
   # TODO: Change this to a unique name within your project.
-  name: "pt-cifar-tpu-v3-8"
+  name: pt-cifar-tpu-v3-8
 spec:
-  concurrencyPolicy: "Forbid"
+  concurrencyPolicy: Forbid
   jobTemplate:
     spec:
       # TODO: Set the number of retries before marking test as failed.
@@ -26,13 +26,18 @@ spec:
       template:
         metadata:
           annotations:
-            tf-version.cloud-tpus.google.com: "pytorch-nightly"
+            tf-version.cloud-tpus.google.com: pytorch-nightly
         spec:
           # TODO: Extend the timeout if your test takes longer.
           activeDeadlineSeconds: 3600
-          restartPolicy: "Never"
+          restartPolicy: Never
           containers:
-          - args:
+          - name: "train-container"
+            # TODO: Change this to your image if desired. See `images/README`
+            # for more on setting up images.
+            image: "gcr.io/xl-ml-test/pytorch-xla:nightly"
+            imagePullPolicy: Always
+            args:
             # TODO: Change this to the command to run your test.
             - "python3"
             - "pytorch/xla/test/test_train_cifar.py"
@@ -40,11 +45,9 @@ spec:
             - "--target_accuracy=72"
             - "--datadir=/datasets/cifar-data"
             - "--logdir=$(MODEL_DIR)"
-            # TODO: Change this to your image if desired. See `images/README`
-            # for more on setting up images.
-            image: "gcr.io/xl-ml-test/pytorch-xla:nightly"
-            imagePullPolicy: "Always"
-            name: "train-container"
+            resources:
+              limits:
+                cloud-tpus.google.com/preemptible-v3: 8
             env:
             - name: "POD_NAME"
               valueFrom:
@@ -108,27 +111,24 @@ spec:
                     }
                   }
                 }
-            resources:
-              limits:
-                cloud-tpus.google.com/preemptible-v3: 8
             volumeMounts:
-            - mountPath: "/dev/shm"
-              name: "dshm"
-            - mountPath: "/datasets"
-              # TODO: This should match `name` of the gcePersistentDisk below.
-              name: "cifar-pd"
+            - name: dshm
+              mountPath: "/dev/shm"
+            # TODO: This should match `name` of the gcePersistentDisk below.
+            - name: cifar-pd
+              mountPath: "/datasets"
               readOnly: true
           volumes:
-          - emptyDir:
-              medium: "Memory"
-            name: "dshm"
-          - gcePersistentDisk:
-              fsType: "ext4"
+          # TODO: This should match `name` under volumeMounts above.
+          - name: "dshm"
+            emptyDir:
+              medium: Memory
+          - name: cifar-pd
+            gcePersistentDisk:
               # TODO: Change this to the name of your Cloud persistent disk.
               pdName: "cifar-pd-central1-b"
+              fsType: "ext4"
               readOnly: true
-            # TODO: This should match `name` under volumeMounts above.
-            name: "cifar-pd"
   # TODO: Update the timing of your test runs:
   # https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs/#schedule
   schedule: "0 */24 * * *"
