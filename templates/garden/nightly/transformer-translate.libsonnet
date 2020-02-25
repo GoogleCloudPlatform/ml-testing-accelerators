@@ -22,7 +22,7 @@ local tpus = import "../../tpus.libsonnet";
     modelName: "transformer-translate",
     command: [
       "python3",
-      "official/transformer/v2/transformer_main.py",
+      "official/nlp/transformer/transformer_main.py",
       "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
       "--steps_between_evals=10000",
       "--static_batch=true",
@@ -37,6 +37,7 @@ local tpus = import "../../tpus.libsonnet";
       "--vocab_file=gs://xl-ml-test-us-central1/data/transformer/vocab.ende.32768",
       "--bleu_source=gs://xl-ml-test-us-central1/data/transformer/newstest2014.en",
       "--bleu_ref=gs://xl-ml-test-us-central1/data/transformer/newstest2014.de",
+      "--enable_tensorboard",
     ],
   },
   local functional = mixins.Functional {
