@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/tpu-pytorch/xla:nightly
+echo "Teading down TPU Pod: ${TPU_POD_NAME}"
+gcloud -q compute --project="${PROJECT}" \
+  tpus \
+  delete \
+  "${TPU_POD_NAME}" \
+  --zone="${ZONE}" \
+  --async
 
-RUN curl -sSL https://sdk.cloud.google.com | bash
+echo "Tearing down GCE Instance Group: ${INSTANCE_GROUP_NAME}"
+gcloud -q compute --project="${PROJECT}" instance-groups managed \
+  delete \
+  "${INSTANCE_GROUP_NAME}"
 
-COPY images/setup.sh /
-COPY images/publish.sh /
-COPY images/pytorch/entrypoint.sh /
-ENTRYPOINT ["/entrypoint.sh"]
+echo "Tearing down GCE Instance Template: ${INSTANCE_TEMPLATE_NAME}"
+gcloud -q compute --project="${PROJECT}" instance-templates \
+  delete \
+  "${INSTANCE_TEMPLATE_NAME}"

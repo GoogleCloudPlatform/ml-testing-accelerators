@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/tpu-pytorch/xla:nightly
 
-RUN curl -sSL https://sdk.cloud.google.com | bash
+source /setup.sh
 
-COPY images/setup.sh /
-COPY images/publish.sh /
-COPY images/pytorch/entrypoint.sh /
-ENTRYPOINT ["/entrypoint.sh"]
+
+# TODO: Make these arguments piped through from jsonnet
+export MACHINE_TYPE=n1-standard-16
+export ACCELERATOR_TYPE=v3-32
+export RUNTIME_VERSION=pytorch-nightly
+export RESOURCE_SUFFIX=$POD_UID
+source /setup-pytorch-pods.sh
+
+set -u
+set -x
+
+source /publish.sh
+
+# "$@" should look like python -m torch_xla.distributed.xla_dist --tpu=...
+docker-entrypoint.sh "$@"
+
+# Teardown resources
+/teardown-pytorch-pods.sh
