@@ -1,40 +1,26 @@
+# Docker Images
+
 All tests must point to a Docker Image that encapsulates the environment in which you want that test to run.
 
-Your image's `cloudbuild.yaml` contains the push location of your image.
+Your image's `cloudbuild.yaml` contains the push location of your image. This is what you will refer to in your test config when setting the `image` for a test. By default, our Cloud Build configs will push to [GCR](gcr.io) under the project specified by the `--project` flag (or your default `gcloud` project if none is provided). For example, to build our TensorFlow Model Garden image, run the following command:
 
-This is what you will refer to in your test config when setting the `image` for a test.
+```bash
+gcloud builds submit --config images/garden/cloudbuild.yaml
+```
 
-Look in `cloudbuild.yaml` for the `push` arg to find the push location or check the [images page](https://console.cloud.google.com/gcr/images/xl-ml-test) once you've built the image at least once.
+Once the build completes, you can find the image at [gcr.io/$PROJECT_NAME/], where `$PROJECT_NAME` is the unique name of your Google Cloud Platform project.
 
-Quick tip:
-Build an image from command line example: `gcloud builds submit --config images/garden/cloudbuild.yaml`.
+If you don't have an existing CI/CD workflow, we recommend using Cloud Build and Cloud Scheduler to set up an automatic build cycle.
 
+## Step 1: Choose an existing image or make your own.
 
-# Step 1: Choose an existing image or make your own.
+We currently provide the following pre-made Docker build configurations:
 
+- [**TF Model Garden**](garden): Use this image for Tensorflow officially-supported models running on TPU or GPU.
+- [**PyTorch on TPU**](pytorch): Use this image for PyTorch models on TPUs.
+- [**PyTorch Examples GPU**](pytorch-examples-gpu): An example image based on the [PyTorch Examples](https://github.com/pytorch/examples) repo. Supports running on GPUs.
 
-## TF Model Garden
-
-Use this image for Tensorflow officially-supported models running on TPU or GPU.
-
-`images/garden`
-
-
-## PyTorch on TPU
-
-Use this image for PyTorch models on TPUs. You may need to add additional `pip3 install` commands to the Dockerfile.
-
-`images/pytorch`
-
-
-## PyTorch Examples GPU
-
-An example image based on the [PyTorch Examples](https://github.com/pytorch/examples) repo. Supports running on GPUs.
-
-`images/pytorch-examples-gpu`
-
-
-# Make your own image
+### (Optional) Make your own image
 
 Follow the pattern shown in `pytorch/`, `garden/`, or `pytorch-examples-gpu/` to create a `Dockerfile`, a `cloudbuild.yaml`, and an `entrypoint.sh`.
 
@@ -48,14 +34,13 @@ Some more tips:
 * Once you've made your `Dockerfile`, `cloudbuild.yaml`, and `entrypoint.sh` files, use this command to test building your image: `gcloud builds submit --config images/garden/cloudbuild.yaml`.
     * NOTE: This will upload the image to your Google Cloud Platform project under Container Registry > Images.
 
-
-# Step 2: Set up a trigger
+## Step 2: Set up an automated trigger
 
 Once your image is able to build, you'll probaby want to automated the process of creating it rather than repeatedly manually running `gcloud builds submit`.
 
 To do this, we will build a Cloud Build Trigger plus a Cloud Scheduler.
 
-## Cloud Build Trigger
+### Cloud Build Trigger
 
 Here is how you would create a trigger that fires whenever you update `images/pytorch-examples-gpu` on your repo's master branch. This trigger would also fire if you updated the shared image files.
 
@@ -69,9 +54,9 @@ Once your code is checked into your Cloud Source Repository under `images/` (see
 * Under "Build configuration", choose "Cloud Build configuration file (yaml or json)" and change the path to `/images/pytorch-examples-gpu/cloudbuild.yaml`
 * Under "Substitution variables", add one key:value pair where "Variable" = `_VERSION` and "Value" = `master`.
 
-## Scheduler
+### Cloud Scheduler
 
-You can already run your trigger manually as a one-off and it will fire automatically if you change the image code.
+You can already run your trigger manually as a one-off and it will fire automatically if you push a change to the master branch of your repository.
 
 If you want to set your trigger to run on an automated schedule (e.g. if you wanted to build a new image daily since your image tracks a repo under active development), you can set up a Cloud Scheduler to kick off the trigger.
 
