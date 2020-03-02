@@ -92,32 +92,11 @@ spec:
               # name away from `xl-ml-test-us-central1` since you won't have
               # write access to that bucket.
               value: "gs://xl-ml-test-us-central1/k8s/imagenet/functional/gpu/$(JOB_NAME)"
-            - name: "TEST_NAME"
-              # TODO: Recommended to match with `name` from `metadata` above.
-              value: "pt-imagenet-mini-gpu"
-              # TODO: See `metrics_handler/README` if you want to change these
-              # configs. These are used to determine how metrics are collected
-              # for your test and how alerts will be generated.
-            - name: "METRIC_COLLECTION_CONFIG"
-              value: |
-                {
-                  "write_to_bigquery": "True",
-                  "default_aggregation_strategies": ["final"]
-                }
-            - name: "REGRESSION_TEST_CONFIG"
-              value: |
-                {
-                  "write_to_error_reporting": "True",
-                  "metric_success_conditions": {
-                    "total_wall_time": {
-                      "comparison": "less",
-                      "success_threshold": {
-                        "stddevs_from_mean": 4.0
-                      },
-                      "wait_for_n_points_of_history": 10
-                    }
-                  }
-                }
+            - name: METRIC_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: metrics-config
+                  key: pt-imagenet-mini-gpu.json
   # TODO: Update the timing of your test runs:
   # https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs/#schedule
   schedule: "0 */24 * * *"

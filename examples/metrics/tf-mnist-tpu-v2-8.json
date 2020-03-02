@@ -1,0 +1,37 @@
+{
+  "test_name": "tf-mnist-tpu-v2-8",
+  "metric_collection_config": {
+    "write_to_bigquery": "True",
+    "tags_to_ignore": ["LearningRate"],
+    "default_aggregation_strategies": ["final"],
+    "metric_to_aggregation_strategies": {
+      "epoch_loss": ["final", "min"]
+    },
+    "time_to_accuracy": {
+      "accuracy_threshold": 99.0,
+      "accuracy_tag": "epoch_sparse_categorical_accuracy"
+    }
+  },
+  "regression_test_config": {
+    "write_to_error_reporting": "True",
+    "metric_subset_to_alert": [
+      "total_wall_time",
+      "epoch_sparse_categorical_accuracy"
+    ],
+    "metric_success_conditions": {
+      "epoch_sparse_categorical_accuracy": {
+        "comparison": "greater",
+        "success_threshold": {
+          "fixed_value": 99.0
+        }
+      },
+      "total_wall_time": {
+        "comparison": "less",
+        "success_threshold": {
+          "stddevs_from_mean": 4.0
+        },
+        "wait_for_n_points_of_history": 10
+      }
+    }
+  }
+}

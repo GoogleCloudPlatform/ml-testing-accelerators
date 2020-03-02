@@ -14,7 +14,7 @@
 
 FROM tensorflow/tensorflow:nightly-gpu-py3
 
-RUN apt-get update && apt-get install -y --no-install-recommends git
+RUN apt-get update && apt-get install -y --no-install-recommends jq
 RUN curl -sSL https://sdk.cloud.google.com | bash
 
 RUN pip3 install cloud-tpu-client pyyaml

@@ -14,6 +14,7 @@
 
 FROM gcr.io/tpu-pytorch/xla:nightly
 
+RUN apt-get update && apt-get install -y --no-install-recommends jq
 RUN curl -sSL https://sdk.cloud.google.com | bash
 
 COPY images/setup.sh /

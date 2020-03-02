@@ -40,13 +40,13 @@ local tpus = import "tpus.libsonnet";
     regressionTestConfig: {
       write_to_error_reporting: true,
       metric_success_conditions: {
-	"total_wall_time": {
-	  success_threshold: {
+        total_wall_time: {
+          success_threshold: {
             stddevs_from_mean: 5.0,
-	  },
-	  comparison: "less",
-	  wait_for_n_points_of_history: 10,
-	},
+          },
+          comparison: "less",
+          wait_for_n_points_of_history: 10,
+        },
       },
     },
 
@@ -75,13 +75,13 @@ local tpus = import "tpus.libsonnet";
               args: config.command,
 
               envMap:: {
-                TEST_NAME: config.testName,
                 MODEL_DIR:
                   "gs://xl-ml-test-us-central1/k8s/%(modelName)s/%(mode)s/%(acceleratorName)s/$(JOB_NAME)" % config,
-                METRIC_COLLECTION_CONFIG:
-                  std.manifestJsonEx(config.metricCollectionConfig, " "),
-                REGRESSION_TEST_CONFIG:
-                  std.manifestJsonEx(config.regressionTestConfig, " "),
+                METRIC_CONFIG: std.manifestJsonEx({
+                  test_name: config.testName,
+                  metric_collection_config: config.metricCollectionConfig,
+                  regression_test_config: config.regressionTestConfig,
+                }, " "),
               },
               env: [
                 {
