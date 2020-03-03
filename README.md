@@ -1,6 +1,4 @@
-# XL ML Test
-
-Cloud **Accel**erated **M**achine **L**earning **Test**s
+# ML Testing Accelerators
 
 A set of tools and examples to run machine learning tests on ML hardware
 accelerators (TPUs or GPUs) using Google Cloud Platform.
@@ -17,4 +15,4 @@ This is not an officially supported Google product.
     * See [`examples`](examples/README.md) directory if you will have a relatively small number of tests and don't need inheritance in your tests.
     * See [`templates`](templates/README.md) directory for a more powerful templating engine to generate test config files programmatically.
 
-Are you interested in using XL ML Test? E-mail [xl-ml-test-users@googlegroups.com](mailto:xl-ml-test-users@googlegroups.com) and tell us about your use-case. We're happy to help you get started.
+Are you interested in using ML Testing Accelerators? E-mail [ml-testing-accelerators-users@googlegroups.com](mailto:ml-testing-accelerators-users@googlegroups.com) and tell us about your use-case. We're happy to help you get started.
