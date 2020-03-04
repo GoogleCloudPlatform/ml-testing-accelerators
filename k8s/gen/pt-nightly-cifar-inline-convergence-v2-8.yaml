@@ -84,4 +84,4 @@
               "pdName": "cifar-pd-central1-b"
               "readOnly": true
             "name": "cifar-pd"
-  "schedule": "30 7 * * */2"
+  "schedule": "0 6 * * 0,5"

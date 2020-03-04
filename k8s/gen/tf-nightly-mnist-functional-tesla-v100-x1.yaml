@@ -67,4 +67,4 @@
           "nodeSelector":
             "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
           "restartPolicy": "Never"
-  "schedule": "0 */12 * * *"
+  "schedule": "0 8 * * *"
