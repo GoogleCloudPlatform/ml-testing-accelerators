@@ -630,7 +630,7 @@ def run_main(event, context):
     all_msgs = subscriber.pull(subscription, 100).received_messages
   except google.api_core.exceptions.DeadlineExceeded:
     logging.info('No messages found for subscription: {}'.format(subscription))
-    exit(0)
+    return
 
   # Group messages by test. Each test might have made multiple attempts and
   # therefore could have multiple messages.
@@ -669,11 +669,15 @@ def run_main(event, context):
     subscriber.acknowledge(subscription, ids_to_ack)
     logging.info('Successful ack for ids: {}'.format(ids_to_ack))
 
-  # TODO: Consider adding these to the pubsub message and passing them in.
-  zone = 'us-central1-b'
-  cluster_id = 'xl-ml-test'
+  if not msgs_to_process:
+    logging.info('No messages to process. Stopping early.')
+    return
+
+  # TODO: Add support for multi-zone and/or multi-cluster setups.
+  zone = msgs_to_process[0].get('zone')
+  cluster = msgs_to_process[0].get('cluster_name')
   status_handler = job_status_handler.JobStatusHandler(
-      project_id, zone, cluster_id)
+      project_id, zone, cluster)
 
   # Handle the metrics for each test. Ack if the process was successful or if
   # the message is permanently invalid. Do not ack if the test is still running

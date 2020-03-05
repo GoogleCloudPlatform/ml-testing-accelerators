@@ -33,3 +33,8 @@ steps:
   env:
   - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
   - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test'
+- name: 'gcr.io/cloud-builders/gcloud'
+  args: ['functions', 'deploy', 'metrics_handler', '--runtime=python37', '--trigger-topic=begin-metrics-handler',  '--memory=1024MB', '--source=metrics_handler/', '--entry-point=run_main']
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test'
