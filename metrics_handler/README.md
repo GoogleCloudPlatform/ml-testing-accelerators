@@ -17,7 +17,7 @@ these commands:
 
 ## Config
 
-The behavior of the metrics handler is configurable on a per-test basis. See [examples/metrics](../examples/metrics) for some example config files, which are written in JSON. These are loaded into your test config via the `METRIC_CONFIG` key as shown in [examples/pt-cifar-tpu-v3-8.yaml](../examples/pt-cifar-tpu-v3-8.yaml)
+The behavior of the metrics handler is configurable on a per-test basis. See [examples/metrics](../examples/metrics) for some example config files, which are written in JSON. These are loaded into your test config with the `METRIC_CONFIG` key as shown in [examples/pt-cifar-tpu-v3-8.yaml](../examples/pt-cifar-tpu-v3-8.yaml)
 
 There are 2 areas to configure:
 1. `metric_collection_config` controls which training metrics are collected when your test runs and how those metrics are aggregated.
