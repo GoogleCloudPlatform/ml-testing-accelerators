@@ -18,7 +18,9 @@ runtime_vars="{
   \"model_dir\": \"$MODEL_DIR\",
   \"logs_link\": \"$STACKDRIVER_LOGS\",
   \"job_name\": \"$JOB_NAME\",
-  \"job_namespace\": \"$POD_NAMESPACE\"
+  \"job_namespace\": \"$POD_NAMESPACE\",
+  \"zone\": \"$ZONE\",
+  \"cluster_name\": \"$CLUSTER\"
 }"
 pubsub_message=`echo ${runtime_vars} | jq ". + ${METRIC_CONFIG}"`
 /root/google-cloud-sdk/bin/gcloud pubsub topics publish metrics-written --message "$pubsub_message"
