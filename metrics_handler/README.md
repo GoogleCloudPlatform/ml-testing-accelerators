@@ -7,8 +7,7 @@ Each time it runs, it checks for tests that have finished running and collects t
 
 ## Setup
 
-Once you have cloned the repo, create the Cloud Function + Cloud Scheduler with
-these commands:
+Once you have cloned the repo, create the Cloud Function + Cloud Scheduler with these commands:
 
 1. `cd metrics_handler`
 2. `gcloud functions deploy metrics_handler --runtime python37 --trigger-topic=begin-metrics-handler --memory=1024MB --entry-point=run_main --timeout=500s`
