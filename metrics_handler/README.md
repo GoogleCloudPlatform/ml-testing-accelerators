@@ -63,16 +63,14 @@ Full config options:
   },
 
   # (Optional) Defaults to True. Set to false to disable all Bigquery writes.
-  "write_to_bigquery": "True",
+  "write_to_bigquery": "True"
 }
 ```
 
 
 #### regression_test_config
 
-The metrics handler can send alerts if any training metrics regress. These
-alerts will appear in Stackdriver Error Reporting for your project, where you
-can ack, resolve, or link incidents to bugs. See [here](https://cloud.google.com/error-reporting/docs/notifications) for how to set up notifications for incidents.
+The metrics handler can send alerts if any training metrics regress. These alerts will appear in Stackdriver Error Reporting for your project, where you can ack, resolve, or link incidents to bugs. See [here](https://cloud.google.com/error-reporting/docs/notifications) for how to set up notifications for incidents.
 
 By default, no alerts will fire for regressions in training metrics but they will fire if any test crashes or times out.
 
@@ -127,6 +125,6 @@ Full config options:
 
   # (Optional) Defaults to True. Set to False to disable Stackdriver alerting
   # for training metrics of this test.
-  "write_to_error_reporting": "True",
+  "write_to_error_reporting": "True"
 }
 ```
