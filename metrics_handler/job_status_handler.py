@@ -29,15 +29,15 @@ TIMEOUT = 'timeout'
 
 
 class JobStatusHandler(object):
-  def __init__(self, project_id, zone, cluster_id):
+  def __init__(self, project_id, zone, cluster_name):
     """Query Kubernetes API to retrieve the status of Kubernetes Jobs.
 
     Args:
       project_id (string): Name of the Cloud project under which the
           Kubernetes Job(s) ran.
       zone (string): Zone where the Kubernetes Job(s) ran.
-      cluster_id (string): Name of the Kubernetes cluster where the
-          Job(s) ran.
+      cluster_name (string): Name of the Kubernetes cluster where the
+          Job(s) ran. Corresponds to the `cluster-name` attribute in GCP.
 
     Raises:
       Exception if unable to initialize the Kubernetes client.
@@ -50,7 +50,7 @@ class JobStatusHandler(object):
       # use this path by running `gcloud auth application-default login`.
       logging.info('Attempting to init k8s client from cluster response.')
       container_client = container_v1.ClusterManagerClient()
-      response = container_client.get_cluster(project_id, zone, cluster_id)
+      response = container_client.get_cluster(project_id, zone, cluster_name)
       credentials, project = google.auth.default(
           scopes=['https://www.googleapis.com/auth/cloud-platform'])
       creds, projects = google.auth.default()
