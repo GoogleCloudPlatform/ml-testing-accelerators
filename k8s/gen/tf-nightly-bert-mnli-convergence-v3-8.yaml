@@ -26,7 +26,7 @@
       "template":
         "metadata":
           "annotations":
-            "tf-version.cloud-tpus.google.com": "nightly-2.x"
+            "tf-version.cloud-tpus.google.com": "nightly"
         "spec":
           "containers":
           - "args":
