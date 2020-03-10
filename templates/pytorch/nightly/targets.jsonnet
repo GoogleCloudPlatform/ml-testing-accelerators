@@ -16,6 +16,7 @@ local cifarInline = import "cifar-inline.libsonnet";
 local cifarTorchvision = import "cifar-torchvision.libsonnet";
 local fairseqTransformer = import "fairseq-transformer.libsonnet";
 local mnist = import "mnist.libsonnet";
+local pythonOperations = import "python-operations.libsonnet";
 local resnet50 = import "resnet50.libsonnet";
 
 # Add new models here
@@ -24,5 +25,6 @@ std.flattenArrays([
   cifarTorchvision.configs,
   fairseqTransformer.configs,
   mnist.configs,
+  pythonOperations.configs,
   resnet50.configs,
 ])
