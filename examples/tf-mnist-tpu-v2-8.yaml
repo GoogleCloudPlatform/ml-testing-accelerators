@@ -26,7 +26,7 @@ spec:
       template:
         metadata:
           annotations:
-            tf-version.cloud-tpus.google.com: nightly-2.x
+            tf-version.cloud-tpus.google.com: nightly
         spec:
           # TODO: Extend the timeout if your test takes longer.
           activeDeadlineSeconds: 3600
