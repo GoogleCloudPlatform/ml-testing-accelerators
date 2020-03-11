@@ -13,11 +13,20 @@
 # limitations under the License.
 
 local base = import "../base.libsonnet";
+local mixins = import "../../mixins.libsonnet";
 
 {
   PyTorchTest:: base.PyTorchTest {
     frameworkPrefix: "pt-nightly",
     tpuVersion: "pytorch-nightly",
     imageTag: "nightly",
+  },
+  Functional:: mixins.Functional {
+    # Run at 6AM PST daily.
+    schedule: "0 14 * * *",
+  },
+  Convergence:: mixins.Convergence {
+    # Run at 22:00 PST on Monday and Thursday.
+    schedule: "0 6 * * 1,6",
   },
 }

@@ -13,7 +13,6 @@
 # limitations under the License.
 
 local base = import "base.libsonnet";
-local mixins = import "../../mixins.libsonnet";
 local timeouts = import "../../timeouts.libsonnet";
 local tpus = import "../../tpus.libsonnet";
 
@@ -54,7 +53,9 @@ local tpus = import "../../tpus.libsonnet";
       },
     },
   },
-  local convergence = mixins.Convergence {
+  local convergence = base.Convergence {
+    # Run at 6AM PST daily instead of 2x per week since convergence is fast.
+    schedule: "0 14 * * *",
     regressionTestConfig+: {
       metric_success_conditions+: {
         "Accuracy/test_final": {

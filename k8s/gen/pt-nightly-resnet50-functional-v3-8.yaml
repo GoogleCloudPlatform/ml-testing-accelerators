@@ -87,4 +87,4 @@
               "pdName": "imagenet-mini-pd-central1-b"
               "readOnly": true
             "name": "imagenet-mini-pd"
-  "schedule": "0 8 * * *"
+  "schedule": "0 14 * * *"
