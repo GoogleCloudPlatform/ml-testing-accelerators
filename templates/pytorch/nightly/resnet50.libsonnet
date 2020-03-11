@@ -13,7 +13,6 @@
 # limitations under the License.
 
 local base = import "base.libsonnet";
-local mixins = import "../../mixins.libsonnet";
 local timeouts = import "../../timeouts.libsonnet";
 local tpus = import "../../tpus.libsonnet";
 
@@ -46,7 +45,7 @@ local tpus = import "../../tpus.libsonnet";
       },
     },
   },
-  local functional = mixins.Functional {
+  local functional = base.Functional {
     command+: [
       "--num_epochs=2",
       "--datadir=/datasets/imagenet-mini",
@@ -77,7 +76,7 @@ local tpus = import "../../tpus.libsonnet";
       },
     },
   },
-  local convergence = mixins.Convergence {
+  local convergence = base.Convergence {
     accelerator+: tpus.Preemptible,
     command+: [
       "--num_epochs=90",
