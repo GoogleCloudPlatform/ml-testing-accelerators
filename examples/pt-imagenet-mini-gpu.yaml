@@ -45,7 +45,7 @@ spec:
           - name: "train-container"
             # TODO: Change this to your image if desired. See `images/README`
             # for more on setting up images.
-            image: "gcr.io/xl-ml-test/pytorch-examples-gpu:latest"
+            image: "gcr.io/xl-ml-test/pytorch-examples-gpu:nightly"
             imagePullPolicy: Always
             resources:
               limits:

@@ -67,5 +67,14 @@ Navigate to the [Cloud Schedulers page](https://console.cloud.google.com/cloudsc
 * For the "URL", use your trigger, e.g. `https://cloudbuild.googleapis.com/v1/projects/xl-ml-test/triggers/pytorch-examples-gpu-master:run`.
     * The format is `https://cloudbuild.googleapis.com/v1/projects/your-project-name/triggers/your-trigger-name:run`.
 * Use `POST` for the "HTTP method".
-* For "Body", use: `{"branchName": "master", "substitutions": {"_VERSION": "nightly"}}`
+* For "Body", use: `{"branchName": "master", "substitutions": {"_VERSION": "nightly"}}`.
+* Click "Show More" to add a few more things:
+    * "Auth header": `Add OAuth token`.
+    * "Service account": Find the email of the "Compute Engine default service account":
+        1. Go to the [IAM page](https://console.cloud.google.com/iam-admin/iam) for your project.
+        2. Find the row with "Name" = "Compute Engine default service account".
+        3. Copy the email address (i.e. the "Member" column).
+            * The Member field will be of the form: `1234567890123-compute@developer.gserviceaccount.com`.
+        4. Use this address for the "Service account" field of your Cloud Scheduler.
+    * "Scope": `https://www.googleapis.com/auth/cloud-platform`.
 
