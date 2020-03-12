@@ -23,7 +23,7 @@ local tpus = import "../../tpus.libsonnet";
       "bash",
       "pytorch/xla/test/cpp/run_tests.sh",
     ],
-    regressionTestConfig: {}
+    regressionTestConfig: null,
   },
   local v2_8 = {
     accelerator: tpus.v2_8,

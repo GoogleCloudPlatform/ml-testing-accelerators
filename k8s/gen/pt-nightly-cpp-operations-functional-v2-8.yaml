@@ -50,7 +50,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "METRIC_CONFIG"
-              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"tags_to_ignore\": [\n   \"LearningRate\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": {\n\n },\n \"test_name\": \"pt-nightly-cpp-operations-functional-v2-8\"\n}"
+              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"tags_to_ignore\": [\n   \"LearningRate\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": null,\n \"test_name\": \"pt-nightly-cpp-operations-functional-v2-8\"\n}"
             - "name": "MODEL_DIR"
               "value": "gs://xl-ml-test-us-central1/k8s/cpp-operations/functional/v2-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
