@@ -15,6 +15,7 @@
 local cifarInline = import "cifar-inline.libsonnet";
 local cifarTorchvision = import "cifar-torchvision.libsonnet";
 local cppOperations = import "cpp-operations.libsonnet";
+local fairseqRoberta = import "fairseq-roberta.libsonnet";
 local fairseqTransformer = import "fairseq-transformer.libsonnet";
 local mnist = import "mnist.libsonnet";
 local pythonOperations = import "python-operations.libsonnet";
@@ -25,6 +26,7 @@ std.flattenArrays([
   cifarInline.configs,
   cifarTorchvision.configs,
   cppOperations.configs,
+  fairseqRoberta.configs,
   fairseqTransformer.configs,
   mnist.configs,
   pythonOperations.configs,
