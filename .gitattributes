@@ -1,1 +1,2 @@
 k8s/gen/*.yaml linguist-generated=true
+docs/* linguist-documentation
