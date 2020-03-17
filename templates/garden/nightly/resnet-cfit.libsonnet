@@ -22,7 +22,7 @@ local tpus = import "../../tpus.libsonnet";
     modelName: "resnet-cfit",
     command: [
       "python3",
-      "official/vision/image_classification/resnet_imagenet_main.py",
+      "official/vision/image_classification/resnet/resnet_imagenet_main.py",
       "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
       "--data_dir=gs://imagenet-us-central1/train",
       "--batch_size=1024",
