@@ -1,1 +1,1 @@
-k8s/**.yaml linguist-generated=true
+k8s/gen/*.yaml linguist-generated=true
