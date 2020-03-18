@@ -4,6 +4,7 @@ google-cloud-container==0.3.0
 google-cloud-bigquery==1.23.1
 google-cloud-error-reporting==0.33.0
 google-cloud-pubsub==1.2.0
+google-cloud-secret-manager==0.1.1
 google-cloud-storage==1.23.0
+sendgrid==6.0.5
 tensorboard==2.0.1
-tensorflow==2.0.1
