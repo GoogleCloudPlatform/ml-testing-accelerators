@@ -52,7 +52,6 @@ class AlertHandler(object):
     self.write_to_error_reporting = write_to_error_reporting
     if write_to_error_reporting:
       self.error_reporter = error_reporting.Client()
-      self.log_level_to_report = log_level_to_report
     if write_to_email:
       try:
         secret_client = secretmanager.SecretManagerServiceClient()
@@ -64,7 +63,6 @@ class AlertHandler(object):
         self.sender_email = self._get_secret_value(
             _SENDER_EMAIL_SECRET_NAME, secret_client)
         self.messages_to_email = collections.defaultdict(list)
-        self.log_level_to_email = log_level_to_email
         self.write_to_email = True
       except Exception as e:
         self._log('Failed to initialize alert email client. See '
@@ -93,9 +91,9 @@ class AlertHandler(object):
   def _log_all(self, message, log_level, logs_link):
     if self.write_to_logging:
       self._log(message, log_level)
-    if self.write_to_error_reporting and log_level <= self.log_level_to_report:
+    if self.write_to_error_reporting and log_level <= logging.ERROR:
       self._report_error(message, logs_link)
-    if self.write_to_email and log_level <= self.log_level_to_email:
+    if self.write_to_email and log_level <= logging.ERROR:
       self._add_to_email(message, logs_link)
 
   def debug(self, message, logs_link=_NO_LOGS):
