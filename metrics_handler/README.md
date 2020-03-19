@@ -14,6 +14,35 @@ Once you have cloned the repo, create the Cloud Function + Cloud Scheduler with 
 3. `gcloud scheduler jobs create pubsub metrics-handler --schedule="*/15 * * * *" --topic=begin-metrics-handler --message-body="{}" --description="Kicks off the metric handler"`
 
 
+### (Optional) Set up notification emails
+
+After the basic setup above, you'll be able to see errors in Stackdriver Error Reporting and collect metrics such as job failures or accuracy of your models being tested. If you want better email notifications, follow these steps too:
+
+1. Set up a [SendGrid account](https://sendgrid.com/free/). Currently, this service is free for up to 100 emails sent per day.
+1. Create a SendGrid API key:
+    * Log in to your SendGrid account.
+    * Navigate to Settings > API Keys.
+    * Create a new API key with full access.
+    * Copy the API key when it is displayed.
+1. Navigate to the [Cloud Secrets page](https://console.cloud.google.com/security/secret-manager) for your project.
+1. Use the "Create Secret" button to create 3 Cloud Secrets:
+    * `alert-destination-email-address`: Your alerts will be sent to this email.
+    * `alert-sender-email-address`: The 'from' email used by Sendgrid for alerts.
+    * `sendgrid-api-key`: Sendgrid API key that you copied in step 2.
+1. Give permission to your metrics handler Cloud Function to read these 3 Secrets. Run these from command line:
+    * `gcloud beta secrets add-iam-policy-binding alert-destination-email-address \
+    --role roles/secretmanager.secretAccessor \
+    --member serviceAccount:YOUR-PROJECT-NAME@appspot.gserviceaccount.com`
+    * `gcloud beta secrets add-iam-policy-binding alert-sender-email-address \
+    --role roles/secretmanager.secretAccessor \
+    --member serviceAccount:YOUR-PROJECT-NAME@appspot.gserviceaccount.com`
+    * `gcloud beta secrets add-iam-policy-binding sendgrid-api-key \
+    --role roles/secretmanager.secretAccessor \
+    --member serviceAccount:YOUR-PROJECT-NAME@appspot.gserviceaccount.com`
+
+Once you've finished these steps, the metrics handler will send an alert email to the `alert-destination-email-address` whenever it finds errors in your tests.
+
+
 ## Config
 
 The behavior of the metrics handler is configurable on a per-test basis. See [examples/metrics](../examples/metrics) for some example config files, which are written in JSON. These are loaded into your test config with the `METRIC_CONFIG` key as shown in [examples/pt-cifar-tpu-v3-8.yaml](../examples/pt-cifar-tpu-v3-8.yaml)
