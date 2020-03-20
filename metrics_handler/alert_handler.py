@@ -96,21 +96,21 @@ class AlertHandler(object):
     if self.write_to_email and log_level <= logging.ERROR:
       self._add_to_email(message, logs_link)
 
-  def debug(self, message, logs_link=_NO_LOGS):
+  def debug(self, message):
     """Log a message at DEBUG level.
 
     Args:
       message (string): Message to log.
     """
-    self._log_all(message, logging.DEBUG, logs_link=logs_link)
+    self._log_all(message, logging.DEBUG)
 
-  def info(self, message, logs_link=_NO_LOGS):
+  def info(self, message):
     """Log a message at INFO level.
 
     Args:
       message (string): Message to log.
     """
-    self._log_all(message, logging.INFO, logs_link=logs_link)
+    self._log_all(message, logging.INFO)
 
   def warning(self, message):
     """Log a message at WARNING level.
@@ -118,7 +118,7 @@ class AlertHandler(object):
     Args:
       message (string): Message to log.
     """
-    self._log_all(message, logging.WARNING, logs_link=logs_link)
+    self._log_all(message, logging.WARNING)
 
   def error(self, message, logs_link=_NO_LOGS):
     """Log a message at ERROR level.
