@@ -33,7 +33,7 @@ local tpus = import "../../tpus.libsonnet";
       metric_success_conditions+: {
         "Accuracy/test_final": {
           success_threshold: {
-            fixed_value: 99.0,
+            fixed_value: 98.0,
           },
           comparison: "greater",
         },
