@@ -121,7 +121,7 @@ class JobStatusHandler(object):
     self.logger.info('job_name: {}. status: {}'.format(job_name, status))
     start_time = status.start_time.timestamp()
     if status.active:
-      self.logger.error('Job is still active. Returning UNKNOWN_STATUS.')
+      self.logger.warning('Job is still active. Returning UNKNOWN_STATUS.')
       return UNKNOWN_STATUS, start_time, None, None
 
     # Interpret status and return the important parts.
