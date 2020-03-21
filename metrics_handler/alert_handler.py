@@ -88,7 +88,7 @@ class AlertHandler(object):
   def _add_to_email(self, message, logs_link):
     self.messages_to_email[logs_link].append(message)
 
-  def _log_all(self, message, log_level, logs_link):
+  def _log_all(self, message, log_level, logs_link=_NO_LOGS):
     if self.write_to_logging:
       self._log(message, log_level)
     if self.write_to_error_reporting and log_level <= logging.ERROR:
