@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#      http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,13 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-steps:
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/pytorch-xla:$_VERSION', '.', '-f', 'images/pytorch/Dockerfile', '--build-arg', '_VERSION=$_VERSION']
-- name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/$PROJECT_ID/pytorch-xla:$_VERSION']
-images: ['gcr.io/$PROJECT_ID/pytorch-xla:$_VERSION']
-substitutions:
-  _VERSION: 'latest'
-options:
-    substitution_option: 'ALLOW_LOOSE'
+local base = import "../base.libsonnet";
+local mixins = import "../../mixins.libsonnet";
+
+{
+  PyTorchTest:: base.PyTorchTest {
+    frameworkPrefix: "pt-pytorch-1.5",
+    tpuVersion: "pytorch-1.5",
+    imageTag: "r1.5",
+  },
+  Functional:: mixins.Functional {
+    # Run at 8AM PST daily.
+    schedule: "0 16 * * *",
+  },
+  Convergence:: mixins.Convergence {
+    # Run twice per week.
+    schedule: "0 20 * * 1,6",
+  },
+}
