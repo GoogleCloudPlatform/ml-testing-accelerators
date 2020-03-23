@@ -18,7 +18,7 @@ local tpus = import "../../tpus.libsonnet";
 
 {
   local transformer = base.PyTorchTest {
-    modelName: "fairseq-transformer",
+    modelName: "fs-transformer",
     command: [
       "python3",
       "/tpu-examples/deps/fairseq/train.py",

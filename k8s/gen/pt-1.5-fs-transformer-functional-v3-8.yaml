@@ -15,13 +15,13 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-pytorch-1.5-fairseq-transformer-convergence-v3-8"
+  "name": "pt-1.5-fs-transformer-functional-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 18000
+      "activeDeadlineSeconds": 3600
       "backoffLimit": 2
       "template":
         "metadata":
@@ -59,13 +59,11 @@
             - "--weight-decay=0.0"
             - "--valid-subset=valid"
             - "--num_cores=8"
-            - "--max-epoch=3"
-            - "--log_steps=100"
-            - "--train-subset=train"
+            - "--max-epoch=1"
+            - "--log_steps=10"
+            - "--train-subset=valid"
             - "--input_shapes"
-            - "64x64"
-            - "128x32"
-            - "256x16"
+            - "128x64"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -84,17 +82,17 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "METRIC_CONFIG"
-              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"tags_to_ignore\": [\n   \"LearningRate\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": {\n  \"metric_subset_to_alert\": [\n   \"ExecuteTime__Percentile_99_sec_final\",\n   \"CompileTime__Percentile_99_sec_final\",\n   \"total_wall_time\",\n   \"Accuracy/test_final\",\n   \"aten_ops_sum_final\"\n  ],\n  \"metric_success_conditions\": {\n   \"CompileTime__Percentile_99_sec_final\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 5\n    },\n    \"wait_for_n_points_of_history\": 10\n   },\n   \"ExecuteTime__Percentile_99_sec_final\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 5\n    },\n    \"wait_for_n_points_of_history\": 10\n   },\n   \"aten_ops_sum_final\": {\n    \"comparison\": \"less_or_equal\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 0\n    }\n   },\n   \"loss_final\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"fixed_value\": 4.5\n    }\n   },\n   \"total_wall_time\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 5\n    },\n    \"wait_for_n_points_of_history\": 10\n   }\n  },\n  \"write_to_error_reporting\": true\n },\n \"test_name\": \"pt-pytorch-1.5-fairseq-transformer-convergence-v3-8\"\n}"
+              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"tags_to_ignore\": [\n   \"LearningRate\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": {\n  \"metric_subset_to_alert\": [\n   \"ExecuteTime__Percentile_99_sec_final\",\n   \"CompileTime__Percentile_99_sec_final\",\n   \"total_wall_time\",\n   \"Accuracy/test_final\",\n   \"aten_ops_sum_final\"\n  ],\n  \"metric_success_conditions\": {\n   \"CompileTime__Percentile_99_sec_final\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 5\n    },\n    \"wait_for_n_points_of_history\": 10\n   },\n   \"ExecuteTime__Percentile_99_sec_final\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 5\n    },\n    \"wait_for_n_points_of_history\": 10\n   },\n   \"aten_ops_sum_final\": {\n    \"comparison\": \"less_or_equal\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 0\n    }\n   },\n   \"total_wall_time\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 5\n    },\n    \"wait_for_n_points_of_history\": 10\n   }\n  },\n  \"write_to_error_reporting\": true\n },\n \"test_name\": \"pt-1.5-fs-transformer-functional-v3-8\"\n}"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/fairseq-transformer/convergence/v3-8/$(JOB_NAME)"
+              "value": "gs://xl-ml-test-us-central1/k8s/fs-transformer/functional/v3-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
-              "value": "0"
+              "value": "1"
             "image": "gcr.io/xl-ml-test/pytorch-xla:r1.5"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v3": 8
+                "cloud-tpus.google.com/preemptible-v3": 8
               "requests":
                 "cpu": "9.0"
                 "memory": "30Gi"
@@ -114,4 +112,4 @@
               "pdName": "wmt18-en-de-pd-central1-b"
               "readOnly": true
             "name": "wmt18-pd"
-  "schedule": "0 20 * * 1,6"
+  "schedule": "0 16 * * *"

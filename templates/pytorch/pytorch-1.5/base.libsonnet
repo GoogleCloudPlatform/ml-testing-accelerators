@@ -17,7 +17,7 @@ local mixins = import "../../mixins.libsonnet";
 
 {
   PyTorchTest:: base.PyTorchTest {
-    frameworkPrefix: "pt-pytorch-1.5",
+    frameworkPrefix: "pt-1.5",
     tpuVersion: "pytorch-1.5",
     imageTag: "r1.5",
   },
