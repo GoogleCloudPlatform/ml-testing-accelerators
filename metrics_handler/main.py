@@ -89,9 +89,12 @@ class CloudMetricsHandler(object):
     self.bigquery_client = bigquery.Client()
     self.gcs_client = gcs.Client()
 
+    self.job_history_table_id = self._get_table_id(
+        BQ_DATASET_NAME, BQ_JOB_TABLE_NAME)
+    self.metric_history_table_id = self._get_table_id(
+        BQ_DATASET_NAME, BQ_METRIC_TABLE_NAME)
     if self.metric_collection_config.get('write_to_bigquery'):
-      self.job_history_table_id, self.metric_history_table_id = \
-          self._make_bigquery_tables()
+      self._make_bigquery_tables()
 
 
   @staticmethod
@@ -261,8 +264,6 @@ class CloudMetricsHandler(object):
     dataset = bigquery.Dataset(self.bigquery_client.dataset(BQ_DATASET_NAME))
     _ = self.bigquery_client.create_dataset(dataset, exists_ok=True)
 
-    job_history_table_id = self._get_table_id(
-        BQ_DATASET_NAME, BQ_JOB_TABLE_NAME)
     job_history_schema = [
         bigquery.SchemaField("uuid", "STRING", mode="REQUIRED"),
         bigquery.SchemaField("test_name", "STRING", mode="REQUIRED"),
@@ -277,11 +278,9 @@ class CloudMetricsHandler(object):
                              mode="REQUIRED"),
     ]
     job_history_table = bigquery.Table(
-        job_history_table_id, schema=job_history_schema)
+        self.job_history_table_id, schema=job_history_schema)
     _ = self.bigquery_client.create_table(job_history_table, exists_ok=True)
 
-    metric_history_table_id = self._get_table_id(
-        BQ_DATASET_NAME, BQ_METRIC_TABLE_NAME)
     metric_history_schema = [
         bigquery.SchemaField("uuid", "STRING", mode="REQUIRED"),
         bigquery.SchemaField("test_name", "STRING", mode="REQUIRED"),
@@ -292,10 +291,8 @@ class CloudMetricsHandler(object):
         bigquery.SchemaField("metric_upper_bound", "FLOAT64", mode="NULLABLE"),
     ]
     metric_history_table = bigquery.Table(
-        metric_history_table_id, schema=metric_history_schema)
+        self.metric_history_table_id, schema=metric_history_schema)
     _ = self.bigquery_client.create_table(metric_history_table, exists_ok=True)
-
-    return job_history_table_id, metric_history_table_id
 
 
   def add_status_and_metrics_to_bigquery(
@@ -703,3 +700,5 @@ def run_main(event, context):
   logger.info('Processed a message for each of the following tests: '
                '{}'.format([x['test_name'] for x in msgs_to_process]))
   logger.send_email()
+
+run_main(None, None)
