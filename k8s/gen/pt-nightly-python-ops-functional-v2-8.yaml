@@ -15,13 +15,13 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-cpp-operations-functional-v2-8"
+  "name": "pt-nightly-python-ops-functional-v2-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 14400
+      "activeDeadlineSeconds": 7200
       "backoffLimit": 2
       "template":
         "metadata":
@@ -31,7 +31,7 @@
           "containers":
           - "args":
             - "bash"
-            - "pytorch/xla/test/cpp/run_tests.sh"
+            - "pytorch/xla/test/run_tests.sh"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -50,9 +50,9 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "METRIC_CONFIG"
-              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"tags_to_ignore\": [\n   \"LearningRate\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": null,\n \"test_name\": \"pt-nightly-cpp-operations-functional-v2-8\"\n}"
+              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"tags_to_ignore\": [\n   \"LearningRate\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": null,\n \"test_name\": \"pt-nightly-python-ops-functional-v2-8\"\n}"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/cpp-operations/functional/v2-8/$(JOB_NAME)"
+              "value": "gs://xl-ml-test-us-central1/k8s/python-ops/functional/v2-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
               "value": "0"
             "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"

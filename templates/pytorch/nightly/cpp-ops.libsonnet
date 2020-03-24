@@ -18,10 +18,10 @@ local tpus = import "../../tpus.libsonnet";
 
 {
   local operations = base.PyTorchTest {
-    modelName: "python-operations",
+    modelName: "cpp-ops",
     command: [
       "bash",
-      "pytorch/xla/test/run_tests.sh",
+      "pytorch/xla/test/cpp/run_tests.sh",
     ],
     regressionTestConfig: null,
   },
@@ -33,7 +33,7 @@ local tpus = import "../../tpus.libsonnet";
   },
 
   configs: [
-    operations + v2_8 + base.Functional + timeouts.Hours(2),
-    operations + v3_8 + base.Functional + timeouts.Hours(2),
+    operations + v2_8 + base.Functional + timeouts.Hours(4),
+    operations + v3_8 + base.Functional + timeouts.Hours(4),
   ],
 }
