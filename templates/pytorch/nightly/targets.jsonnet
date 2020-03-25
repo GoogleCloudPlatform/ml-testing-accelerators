@@ -13,12 +13,12 @@
 # limitations under the License.
 
 local cifarInline = import "cifar-inline.libsonnet";
-local cifarTorchvision = import "cifar-torchvision.libsonnet";
-local cppOperations = import "cpp-operations.libsonnet";
-local fairseqRobertaPretrain = import "fairseq-roberta-pretrain.libsonnet";
-local fairseqTransformer = import "fairseq-transformer.libsonnet";
+local cifarTorchvision = import "cifar-tv.libsonnet";
+local cppOperations = import "cpp-ops.libsonnet";
+local fairseqRobertaPretrain = import "roberta-pre.libsonnet";
+local fairseqTransformer = import "fs-transformer.libsonnet";
 local mnist = import "mnist.libsonnet";
-local pythonOperations = import "python-operations.libsonnet";
+local pythonOperations = import "python-ops.libsonnet";
 local resnet50 = import "resnet50.libsonnet";
 
 # Add new models here
