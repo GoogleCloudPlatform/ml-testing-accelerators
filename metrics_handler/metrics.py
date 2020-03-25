@@ -23,7 +23,7 @@ def read_metrics_from_events_dir(events_dir, tags_to_ignore=None):
     tags_to_ignore: set of TensorBoard tag names to skip.
 
   Returns:
-    Dict mapping TensorBoard tags to list of MetricPoint.
+    dict mapping TensorBoard tags to list of MetricPoint.
   """
   tags_to_ignore = tags_to_ignore or set()
 
@@ -71,6 +71,9 @@ def aggregate_metrics(raw_metrics, default_strategies, metric_strategies=None):
     raw_metrics: dict mapping TensorBoard tags to list of MetricPoint.
     default_strategies: list of aggregation strategies to use as the default.
     metric_strategies: dict mapping tags to aggregation strategies.
+
+  Returns:
+    dict mapping metric name to MetricPoint.
   """
   if not raw_metrics:
     raise ValueError('`raw_metrics` cannot be empty.')
@@ -114,7 +117,14 @@ def aggregate_metrics(raw_metrics, default_strategies, metric_strategies=None):
 
 
 def total_wall_time(raw_metrics):
-  """Calculate the total wall time from TensorBoard summaries."""
+  """Calculate the total wall time from TensorBoard summaries.
+  
+  Args:
+    raw_metrics: dict mapping TensorBoard tags to list of MetricPoint.
+
+  Returns:
+    float, difference in wall time between first and last summaries.
+  """
   values = list(itertools.chain.from_iterable(raw_metrics.values()))
   min_wall_time = min(v.wall_time for v in values)
   max_wall_time = max(v.wall_time for v in values)
@@ -123,6 +133,16 @@ def total_wall_time(raw_metrics):
 
 
 def time_to_accuracy(raw_metrics, tag, threshold):
+  """Calculate the amount of time for accuracy to cross a given threshold.
+
+  Args:
+    raw_metrics: dict mapping TensorBoard tags to list of MetricPoint.
+    tag: string name of accuracy metric.
+    threshold: the desired model accuracy.
+  
+  Returns:
+    float, amount of time in seconds to reach the desired accuracy.
+  """
   values = raw_metrics.get(tag)
   if not values:
     raise ValueError('No values found for time to accuracy tag: {}. '
@@ -144,13 +164,15 @@ def time_to_accuracy(raw_metrics, tag, threshold):
             tag, max_accuracy, threshold)
     )
 
+
 def metric_bounds(value_history, threshold, comparison):
   """Compute upper/lower bounds and whether metric is within those bounds.
 
   Args:
-    metric_name (string): Name of the metric to check.
     value_history (list of floats): History of values for this metric. These
       should be ordered so the most recent value is the last in the list.
+    threshold: Threshold, desired metric threshold.
+    comparison: string, comparison to given threshold.
 
   Returns:
     tuple(is_within_bounds (bool), lower_bound (float), upper_bound (float)).
@@ -205,7 +227,19 @@ def metric_bounds(value_history, threshold, comparison):
 
   return lower_bound, upper_bound
 
+
 def within_bounds(value, lower_bound, upper_bound, inclusive=False):
+  """Determine whether given value is within bounds.
+
+  Args:
+    value: float, value to test.
+    lower_bound: float, minimum acceptable value.
+    upper_bound: float, maximum acceptable value.
+    inclusive: optional float, whether to check if metric is close to bounds.
+
+  Returns:
+    boolean, whether metric is within the given bounds.
+  """
   if inclusive and (
       math.isclose(value, lower_bound) or math.isclose(value, upper_bound)):
     return True

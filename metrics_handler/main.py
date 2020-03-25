@@ -251,6 +251,7 @@ class CloudMetricsHandler(object):
             logs_link=self.stackdriver_logs_link)
 
   def get_metrics_history_from_bigquery(self):
+    """Returns the historic values of each metric for a given model."""
     query_result = self.bigquery_client.query(
         'SELECT * FROM `{}` WHERE test_name like \"{}\"'.format(
             self.metric_history_table_id, self.test_name)).result()
@@ -272,6 +273,7 @@ class CloudMetricsHandler(object):
 
     Args:
       job_status (dict): Contains information about the Kubernetes Job.
+      metrics_history(dict): Historic values of each metric.
       new_metrics(dict): Key is metric name and value is MetricPoint containing
         the latest aggregated value for that metric.
 
