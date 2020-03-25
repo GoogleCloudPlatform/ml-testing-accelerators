@@ -24,6 +24,7 @@ import uuid
 
 import alert_handler
 import job_status_handler
+import metrics
 
 import google.api_core.exceptions
 from google.cloud import bigquery
@@ -34,7 +35,6 @@ from tensorboard.backend.event_processing import event_multiplexer
 import tensorflow as tf
 
 
-ALLOWED_COMPARISONS = ['greater', 'less', 'equal', 'less_or_equal']
 BQ_DATASET_NAME = 'metrics_handler_dataset'
 BQ_JOB_TABLE_NAME = 'job_history'
 BQ_METRIC_TABLE_NAME = 'metric_history'
@@ -71,8 +71,6 @@ class CloudMetricsHandler(object):
         to organize metrics in Bigquery.
       logger (`AlertHandler` instance): Used to write logs and alert emails.
     """
-    self.MetricPoint = collections.namedtuple(
-        'MetricPoint', ['metric_value', 'wall_time'])
     self.test_name = test_name
 
     self.events_dir = events_dir
@@ -84,117 +82,25 @@ class CloudMetricsHandler(object):
     self.framework_version = framework_version
     self.logger = logger
 
-    # Initalize clients to interact with various Cloud APIs.
-    self.project = google.auth.default()[1]
-    self.bigquery_client = bigquery.Client()
-    self.gcs_client = gcs.Client()
-
-    self.job_history_table_id = self._get_table_id(
-        BQ_DATASET_NAME, BQ_JOB_TABLE_NAME)
-    self.metric_history_table_id = self._get_table_id(
-        BQ_DATASET_NAME, BQ_METRIC_TABLE_NAME)
     if self.metric_collection_config.get('write_to_bigquery'):
-      self._make_bigquery_tables()
+      # Initalize clients to interact with various Cloud APIs.
+      self.project = google.auth.default()[1]
+      self.bigquery_client = bigquery.Client()
+      self.gcs_client = gcs.Client()
 
+      self.job_history_table_id = self._get_table_id(
+        BQ_DATASET_NAME, BQ_JOB_TABLE_NAME)
+      self.metric_history_table_id = self._get_table_id(
+          BQ_DATASET_NAME, BQ_METRIC_TABLE_NAME)
+      self._make_bigquery_tables()
 
   @staticmethod
   def _wall_time_to_sql_timestamp(wall_time):
     return datetime.datetime.fromtimestamp(wall_time).strftime(
         '%Y-%m-%d %H:%M:%S')
 
-
   def _get_table_id(self, dataset_name, table_name):
-     return '{}.{}.{}'.format(self.project, dataset_name, table_name)
-
-
-  def add_point_to_metrics(self, metrics, metric_name, metric_value, wall_time):
-    """Adds a metric data point to `metrics`.
-
-    Args:
-      metrics (dict): Key is metric name is value is a MetricPoint.
-      metric_name (string): Name of the metric being added.
-      metric_value (*): Value to assign to this metric.
-      wall_time (int): Seconds since epoch.
-
-    Raises:
-      ValueError if `metric_name` is already in `metrics`.
-    """
-    if metric_name in metrics:
-      raise ValueError('{} was already in metrics with value {}.'.format(
-          metric_name, metrics[metric_name]))
-    metrics[metric_name] = self.MetricPoint(
-        metric_value=metric_value,
-        wall_time=wall_time)
-
-
-  def _add_time_to_accuracy_to_metrics(self, raw_metrics, metrics_to_update):
-    tta_config = self.metric_collection_config['time_to_accuracy']
-    if 'accuracy_tag' not in tta_config or \
-        'accuracy_threshold' not in tta_config:
-      raise ValueError('Invalid `time_to_accuracy` portion of config. '
-                       'See README for how to set up the config.')
-    values = raw_metrics.get(tta_config['accuracy_tag'], [])
-    if not values:
-      raise ValueError('No values found for time to accuracy tag: {}. '
-          'Possible tags were: {}'.format(
-          tta_config['accuracy_tag'], raw_metrics.keys()))
-
-    # MetricPoints should be sorted by timestamp with earlier events first.
-    start_wall_time = values[0].wall_time
-    try:
-      end_wall_time = next(
-          v.wall_time for v in values
-          if v.metric_value >= tta_config['accuracy_threshold'])
-      self.add_point_to_metrics(
-          metrics_to_update, 'time_to_accuracy',
-          (end_wall_time - start_wall_time), end_wall_time)
-    except StopIteration:
-      max_accuracy = max(v.metric_value for v in values)
-      self.logger.error(
-          'Accuracy was never high enough to satisfy the `time_to_accuracy` '
-          'settings from the config. Max accuracy: {}. Config for '
-          '`time_to_accuracy`: {}'.format(
-              max_accuracy, tta_config),
-          logs_link=self.stackdriver_logs_link)
-
-
-  def _add_total_wall_time_to_metrics(self, raw_metrics, metrics_to_update):
-    if not raw_metrics:
-      self.logger.warning('Empty raw_metrics; skipping total_wall_time')
-      return
-    values = list(itertools.chain.from_iterable(raw_metrics.values()))
-    min_wall_time = min(v.wall_time for v in values)
-    max_wall_time = max(v.wall_time for v in values)
-    self.add_point_to_metrics(
-        metrics_to_update, 'total_wall_time', (max_wall_time - min_wall_time),
-        max_wall_time)
-
-
-  def _aggregate_metrics(self, metrics, strategy):
-    if strategy == 'final':
-      # Take the MetricPoint with the latest wall_time.
-      latest_metric = metrics[0]
-      for metric in metrics[1:]:
-        if metric.wall_time > latest_metric.wall_time:
-          latest_metric = metric
-      return latest_metric
-    elif strategy == 'max':
-      # Take the MetricPoint with the maximum metric value.
-      max_metric = metrics[0]
-      for metric in metrics[1:]:
-        if metric.metric_value > max_metric.metric_value:
-          max_metric = metric
-      return max_metric
-    elif strategy == 'min':
-      # Take the MetricPoint with the minimum metric value.
-      min_metric = metrics[0]
-      for metric in metrics[1:]:
-        if metric.metric_value < min_metric.metric_value:
-          min_metric = metric
-      return min_metric
-    else:
-      raise ValueError('Unknown aggregation strategy: {}'.format(strategy))
-
+    return '{}.{}.{}'.format(self.project, dataset_name, table_name)
 
   def get_metrics_from_events_dir(self):
     """Retrieves and aggregates metrics from Tensorboard Summary file.
@@ -205,58 +111,34 @@ class CloudMetricsHandler(object):
     """
     tags_to_ignore = set(
         self.metric_collection_config.get('tags_to_ignore', []))
+    raw_metrics = metrics.read_metrics_from_events_dir(
+        self.events_dir, tags_to_ignore)
 
-    em = event_multiplexer.EventMultiplexer()
-    em.AddRunsFromDirectory(self.events_dir)
-    em.Reload()
+    default_aggregation_strategies = self.metric_collection_config.get(
+        'default_aggregation_strategies')
+    metric_to_aggregation_strategies = self.metric_collection_config.get(
+        'metric_to_aggregation_strategies')
+    final_metrics = metrics.aggregate_metrics(
+        raw_metrics,
+        default_aggregation_strategies,
+        metric_to_aggregation_strategies
+    )
 
-    # First pass: collect the values for each metric.
-    raw_metrics = collections.defaultdict(list)
-    for run, tags in em.Runs().items():
-      # 'Old-style' runs have a simple format and store values directly.
-      for tag in tags['scalars']:
-        if tag in tags_to_ignore:
-          continue
-        raw_metrics[tag].extend(
-            [self.MetricPoint(metric_value=x.value, wall_time=x.wall_time)
-            for x in em.Scalars(run, tag)])
-      # 'New-style' runs stores values inside of Tensor protos.
-      for tag in tags['tensors']:
-        if tag in tags_to_ignore:
-          continue
-        for t in em.Tensors(run, tag):
-          tensor_dtype = tf.dtypes.as_dtype(t.tensor_proto.dtype)
-          try:
-            val = np.frombuffer(
-                t.tensor_proto.tensor_content,
-                tensor_dtype.as_numpy_dtype).tolist()
-            assert len(val) == 1  # There should be 1 value per tensor.
-            raw_metrics[tag].append(
-                self.MetricPoint(metric_value=val[0], wall_time=t.wall_time))
-          except ValueError as e:
-            self.logger.warning(
-                'Unable to parse tag: `{}` from tensor_content: {}. '
-                'Error: {}. Consider adding this tag to tags_to_ignore '
-                'in config.'.format(tag, t.tensor_proto.tensor_content, e))
+    final_metrics['total_wall_time'] = metrics.total_wall_time(raw_metrics)
 
-    # Second pass: aggregate values for each metric based on the config.
-    final_metrics = {}
-    tag_to_custom_aggregation_strategies = self.metric_collection_config.get(
-        'metric_to_aggregation_strategies', {})
-    for tag, metrics in raw_metrics.items():
-      strategies = tag_to_custom_aggregation_strategies.get(
-          tag, self.metric_collection_config['default_aggregation_strategies'])
-      for strategy in strategies:
-        final_metrics['{}_{}'.format(tag, strategy)] = self._aggregate_metrics(
-            metrics, strategy)
-
+    tta_config = self.metric_collection_config.get('time_to_accuracy')
     # Compute time_to_accuracy if requested in the config.
-    if 'time_to_accuracy' in self.metric_collection_config:
-      self._add_time_to_accuracy_to_metrics(raw_metrics, final_metrics)
+    if tta_config:
+      if 'accuracy_tag' not in tta_config or \
+          'accuracy_threshold' not in tta_config:
+        raise ValueError('Invalid `time_to_accuracy` portion of config. '
+                         'See README for how to set up the config.')
+      tag = tta_config['accuracy_tag']
+      threshold = tta_config['accuracy_threshold']
+      final_metrics['time_to_accuracy'] = metrics.time_to_accuracy(
+          raw_metrics, tag, threshold)
 
-    self._add_total_wall_time_to_metrics(raw_metrics, final_metrics)
     return final_metrics
-
 
   def _make_bigquery_tables(self):
     if not self.metric_collection_config.get('write_to_bigquery'):
@@ -368,114 +250,18 @@ class CloudMetricsHandler(object):
             'Failed to add rows to Bigquery. Errors: {}'.format(errors),
             logs_link=self.stackdriver_logs_link)
 
-
-  def _get_metrics_history_from_bigquery(self):
+  def get_metrics_history_from_bigquery(self):
     query_result = self.bigquery_client.query(
         'SELECT * FROM `{}` WHERE test_name like \"{}\"'.format(
             self.metric_history_table_id, self.test_name)).result()
     metrics_history = collections.defaultdict(list)
     for row in query_result:
-      metrics_history[row['metric_name']].append(self.MetricPoint(
+      metrics_history[row['metric_name']].append(metrics.MetricPoint(
           metric_value=row['metric_value'],
           wall_time=row['timestamp'].timestamp()))
     return metrics_history
 
-
-  def _metric_bounds(self, metric_name, value_history):
-    """Compute upper/lower bounds and whether metric is within those bounds.
-
-    Args:
-      metric_name (string): Name of the metric to check.
-      value_history (list of floats): History of values for this metric. These
-        should be ordered so the most recent value is the last in the list.
-
-    Returns:
-      tuple(is_within_bounds (bool), lower_bound (float), upper_bound (float)).
-        lower_bound and/or upper_bound can be None.
-
-    Raises:
-      ValueError if the regression test config is invalid.
-    """
-    success_conditions = self.regression_test_config.get(
-        'metric_success_conditions', {})
-    success_condition = success_conditions.get(metric_name) or \
-        success_conditions.get('default')
-    if not success_condition:
-      self.logger.warning(
-          'metric: `{}` has an empty success condition in metric_opt_in_dict '
-          'but there is no default condition provided in the regression '
-          'test config. No bounds or alerts will be computed'.format(
-              metric_name))
-      return True, None, None
-    if len(value_history) <= success_condition.get(
-        'wait_for_n_points_of_history', -1):
-      self.logger.info(
-          'Metric: {} had only {} points of history. Skipping bounds '
-          'enforcement. Success condition: {}'.format(
-              metric_name, len(value_history), success_condition))
-      return True, None, None
-
-    metric_value = value_history[-1]
-    comparison = success_condition.get('comparison')
-    if not comparison or comparison not in ALLOWED_COMPARISONS:
-      raise ValueError(
-          'A metric success condition must set the `comparison` field to '
-          'one of {}. Condition was: {}'.format(
-              ALLOWED_COMPARISONS, success_condition))
-    thresholds = [x for x in success_condition['success_threshold'].items()]
-    if len(thresholds) != 1:
-      raise ValueError('Each metric success condition should have exactly '
-                       '1 success_threshold. Condition was: {}'.format(
-                           success_condition))
-
-    threshold_type, threshold_value = thresholds[0]
-
-    if threshold_type == 'fixed_value':
-      if comparison == 'greater':
-        visual_lower_bound = threshold_value
-        visual_upper_bound = None
-        within_bounds = metric_value > threshold_value
-      elif comparison == 'less':
-        visual_lower_bound = None
-        visual_upper_bound = threshold_value
-        within_bounds = metric_value < threshold_value
-      elif comparison == 'equal':
-        visual_lower_bound = threshold_value
-        visual_upper_bound = threshold_value
-        within_bounds = math.isclose(metric_value, threshold_value)
-      elif comparison == 'less_or_equal':
-        visual_lower_bound = None
-        visual_upper_bound = threshold_value
-        within_bounds = math.isclose(metric_value, threshold_value) or \
-            metric_value < threshold_value
-      return within_bounds, visual_lower_bound, visual_upper_bound
-
-    if threshold_type == 'stddevs_from_mean':
-      v_mean = np.mean(value_history)
-      v_stddev = np.std(value_history)
-      visual_lower_bound = max(v_mean - (v_stddev * threshold_value), 0)
-      visual_upper_bound = v_mean + (v_stddev * threshold_value)
-      if comparison == 'greater':
-        within_bounds = metric_value > visual_lower_bound
-      elif comparison == 'less':
-        within_bounds = metric_value < visual_upper_bound
-      elif comparison == 'less_or_equal':
-        within_bounds = math.isclose(metric_value, visual_upper_bound) or \
-            metric_value < visual_upper_bound
-      else:
-        raise ValueError(
-            'A metric success condition using a `stddevs_from_mean`-type '
-            'threshold must use `greater`, `less`, or `less_or_equal` for the '
-            'comparison. The condition was: {}'.format(success_condition))
-      return within_bounds, visual_lower_bound, visual_upper_bound
-
-    raise ValueError(
-        'The threshold type of a metric success condition should be either '
-        '`fixed_value` or `stddevs_from_mean`. Condition was: {}'.format(
-            success_condition))
-
-
-  def compute_bounds_and_report_errors(self, job_status, new_metrics):
+  def compute_bounds_and_report_errors(self, job_status, metrics_history, new_metrics):
     """Compute the bounds for metrics and report abnormal values.
 
     Any metric that is currently outside the expected bounds is reported to
@@ -493,7 +279,7 @@ class CloudMetricsHandler(object):
       metric_name_to_visual_bounds (dict): Key is metric name and value is a
         tuple of floats of the form (lower_bound, upper_bound).
     """
-    metrics_history = self._get_metrics_history_from_bigquery()
+    metrics_history = metrics_history.copy()
 
     # Add the metrics from the latest run. These aren't in Bigquery yet.
     for metric_name, metric_value in new_metrics.items():
@@ -508,33 +294,50 @@ class CloudMetricsHandler(object):
     metric_name_to_visual_bounds = {}
     metric_subset_to_report = set(
         self.regression_test_config.get('metric_subset_to_alert', []))
-    for metric_name, metric_value_list in metrics_history.items():
+    for metric_name, value_history in metrics_history.items():
       if metric_subset_to_report and metric_name not in metric_subset_to_report:
         self.logger.info(
             'Skipping alerts and bounds for metric `{}` since '
             'it does not appear in `metric_subset_to_report` in your '
             'regression test config.'.format(metric_name))
         continue
-      value_history = [v.metric_value for v in metric_value_list]
-      within_bounds, lower_bound, upper_bound = self._metric_bounds(
-          metric_name, value_history)
-      if lower_bound is not None or upper_bound is not None:
-        metric_name_to_visual_bounds[metric_name] = (lower_bound, upper_bound)
+      success_conditions = self.regression_test_config.get(
+        'metric_success_conditions')
+      success_condition = success_conditions.get(metric_name) or \
+        success_conditions.get('default')
+      if not success_condition:
+        self.logger.warning(
+            'metric: `{}` has an empty success condition in metric_opt_in_dict '
+            'but there is no default condition provided in the regression '
+            'test config. No bounds or alerts will be computed'.format(
+                metric_name))
+        continue
+      elif len(value_history) <= success_condition.get(
+        'wait_for_n_points_of_history', -1):
+        self.logger.info(
+            'Metric: {} had only {} points of history. Skipping bounds '
+            'enforcement. Success condition: {}'.format(
+                metric_name, len(value_history), success_condition))
+        continue
 
+      threshold_type, threshold_value = list(success_condition.get('success_threshold').items())[0]
+      threshold = metrics.Threshold(threshold_type, threshold_value)
+      comparison = success_condition.get('comparison')
+      lower_bound, upper_bound = metrics.metric_bounds(
+          value_history, threshold, comparison)
+      metric_name_to_visual_bounds[metric_name] = (lower_bound, upper_bound)
+
+      metric_value = value_history[-1].metric_value
+      within_bounds = metrics.within_bounds(metric_value, lower_bound, upper_bound, inclusive=('equal' in comparison))
       # Report out-of-bounds metrics to Stackdriver unless disabled by config.
       if within_bounds or not self.regression_test_config.get(
           'write_to_error_reporting', True):
         continue
-      lower_bound = '-inf' if lower_bound is None else '{:.2f}'.format(
-          lower_bound)
-      upper_bound = 'inf' if upper_bound is None else '{:.2f}'.format(
-          upper_bound)
       self.logger.error(
           'Metric `{}` was out of bounds for test `{}`. Bounds were '
-          '({}, {}) and value was {}'.format(
+          '({}, {}) and value was {:.2f}'.format(
               metric_name, self.test_name, lower_bound, upper_bound,
-              '{:.2f}'.format(value_history[-1])),
-          logs_link=self.stackdriver_logs_link)
+              metric_value))
 
     return metric_name_to_visual_bounds
 
@@ -600,8 +403,9 @@ def _process_pubsub_message(msg, status_handler, logger):
       regression_test_config, test_type, accelerator, framework_version, logger)
 
   new_metrics = handler.get_metrics_from_events_dir()
+  metrics_history = handler.get_metrics_history_from_bigquery()
   metric_name_to_visual_bounds = handler.compute_bounds_and_report_errors(
-      job_status, new_metrics)
+      job_status, metrics_history, new_metrics)
   handler.add_status_and_metrics_to_bigquery(
       job_status, new_metrics, metric_name_to_visual_bounds)
   return True  # Ack the message.
@@ -698,5 +502,5 @@ def run_main(event, context):
     else:
       logger.info('Finished processing message. Will not ack')
   logger.info('Processed a message for each of the following tests: '
-               '{}'.format([x['test_name'] for x in msgs_to_process]))
+              '{}'.format([x['test_name'] for x in msgs_to_process]))
   logger.send_email()
