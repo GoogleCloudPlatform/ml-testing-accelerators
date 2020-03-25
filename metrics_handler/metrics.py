@@ -54,7 +54,7 @@ def read_metrics_from_events_dir(events_dir, tags_to_ignore=None):
           raw_metrics[tag].append(
               MetricPoint(metric_value=val[0], wall_time=t.wall_time))
         except ValueError as e:
-          logging.warning(
+          raise ValueError(
               'Unable to parse tag: `{}` from tensor_content: {}. '
               'Error: {}. Consider adding this tag to tags_to_ignore '
               'in config.'.format(tag, t.tensor_proto.tensor_content, e))
@@ -157,12 +157,11 @@ def time_to_accuracy(raw_metrics, tag, threshold):
     return MetricPoint(end_wall_time - start_wall_time, end_wall_time)
   except StopIteration:
     max_accuracy = max(v.metric_value for v in values)
-    logging.error(
+    raise ValueError(
         'Accuracy metric `{}` was never high enough to satisfy the '
         '`time_to_accuracy` settings from the config. Max accuracy: {}. '
         'Target accuracy: {}. Config for `time_to_accuracy`: {}'.format(
-            tag, max_accuracy, threshold)
-    )
+            tag, max_accuracy, threshold))
 
 
 def metric_bounds(value_history, threshold, comparison):

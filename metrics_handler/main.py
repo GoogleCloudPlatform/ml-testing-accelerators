@@ -111,8 +111,11 @@ class CloudMetricsHandler(object):
     """
     tags_to_ignore = set(
         self.metric_collection_config.get('tags_to_ignore', []))
-    raw_metrics = metrics.read_metrics_from_events_dir(
-        self.events_dir, tags_to_ignore)
+    try:
+      raw_metrics = metrics.read_metrics_from_events_dir(
+          self.events_dir, tags_to_ignore)
+    except:
+      self.logger.warn(str(e))
 
     default_aggregation_strategies = self.metric_collection_config.get(
         'default_aggregation_strategies')
@@ -135,8 +138,11 @@ class CloudMetricsHandler(object):
                          'See README for how to set up the config.')
       tag = tta_config['accuracy_tag']
       threshold = tta_config['accuracy_threshold']
-      final_metrics['time_to_accuracy'] = metrics.time_to_accuracy(
-          raw_metrics, tag, threshold)
+      try: 
+        final_metrics['time_to_accuracy'] = metrics.time_to_accuracy(
+            raw_metrics, tag, threshold)
+      except ValueError as e:
+        self.logger.error(str(e))
 
     return final_metrics
 
