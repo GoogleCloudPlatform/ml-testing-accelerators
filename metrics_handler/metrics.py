@@ -54,7 +54,7 @@ def read_metrics_from_events_dir(events_dir, tags_to_ignore=None):
           raw_metrics[tag].append(
               MetricPoint(metric_value=val[0], wall_time=t.wall_time))
         except ValueError as e:
-          raise ValueError(
+          logging.warning(
               'Unable to parse tag: `{}` from tensor_content: {}. '
               'Error: {}. Consider adding this tag to tags_to_ignore '
               'in config.'.format(tag, t.tensor_proto.tensor_content, e))
