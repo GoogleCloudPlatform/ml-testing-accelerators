@@ -116,7 +116,7 @@ class CloudMetricsHandler(object):
       raw_metrics = metrics.read_metrics_from_events_dir(
           self.events_dir, tags_to_ignore)
     except:
-      self.logger.warning(str(e))
+      self.logger.warning(str(e), logs_link=self.stackdriver_logs_link)
 
     default_aggregation_strategies = self.metric_collection_config.get(
         'default_aggregation_strategies')
@@ -143,7 +143,7 @@ class CloudMetricsHandler(object):
         final_metrics['time_to_accuracy'] = metrics.time_to_accuracy(
             raw_metrics, tag, threshold)
       except ValueError as e:
-        self.logger.error(str(e))
+        self.logger.error(str(e), logs_link=self.stackdriver_logs_link)
 
     return final_metrics
 
@@ -320,7 +320,8 @@ class CloudMetricsHandler(object):
             'metric: `{}` has an empty success condition in metric_opt_in_dict '
             'but there is no default condition provided in the regression '
             'test config. No bounds or alerts will be computed'.format(
-                metric_name))
+                metric_name),
+            logs_link=self.stackdriver_logs_link)
         continue
       elif len(value_history) <= success_condition.get(
         'wait_for_n_points_of_history', -1):
@@ -347,7 +348,8 @@ class CloudMetricsHandler(object):
           'Metric `{}` was out of bounds for test `{}`. Bounds were '
           '({}, {}) and value was {:.2f}'.format(
               metric_name, self.test_name, lower_bound, upper_bound,
-              metric_value))
+              metric_value),
+          logs_link=self.stackdriver_logs_link)
 
     return metric_name_to_visual_bounds
 

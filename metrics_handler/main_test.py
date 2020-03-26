@@ -1,12 +1,19 @@
 from absl import logging
 from absl.testing import absltest
-
 import tensorflow as tf
+
+import alert_handler
 import main
 import metrics
 
-class CloudMetricsHandlerTest(tf.test.TestCase):
+class CloudMetricsHandlerTest(absltest.TestCase):
   def setUp(self):
+    self.logger = alert_handler.AlertHandler(
+      project_id=None,
+      write_to_logging=True,
+      write_to_error_reporting=False,
+      write_to_email=False)
+
     self.temp_dir = self.create_tempdir().full_path
     self.summary_writer = tf.summary.create_file_writer(self.temp_dir)
 
@@ -17,9 +24,6 @@ class CloudMetricsHandlerTest(tf.test.TestCase):
       tf.summary.scalar("foo", 2, 100)
       tf.summary.scalar("bar", tf.convert_to_tensor(2), 100)
 
-    self.summary_writer.flush()
-
-  def tearDown(self):
     self.summary_writer.close()
 
   def test_get_metrics_from_event_dir(self):
@@ -34,7 +38,7 @@ class CloudMetricsHandlerTest(tf.test.TestCase):
       test_type=None,
       accelerator=None,
       framework_version=None,
-      logger=logging, # pass in absl logging module
+      logger=self.logger, # pass in absl logging module
     )
 
     final_metrics = metrics_handler.get_metrics_from_events_dir()
@@ -65,7 +69,7 @@ class CloudMetricsHandlerTest(tf.test.TestCase):
       test_type=None,
       accelerator=None,
       framework_version=None,
-      logger=logging, # pass in absl logging module
+      logger=self.logger, # pass in absl logging module
     )
 
     final_metrics = metrics_handler.get_metrics_from_events_dir()
