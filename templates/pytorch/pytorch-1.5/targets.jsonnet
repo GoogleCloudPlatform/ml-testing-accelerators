@@ -15,20 +15,20 @@
 local cifarInline = import "cifar-inline.libsonnet";
 local cifarTorchvision = import "cifar-tv.libsonnet";
 local cppOperations = import "cpp-ops.libsonnet";
-local fairseqRobertaPretrain = import "roberta-pre.libsonnet";
 local fairseqTransformer = import "fs-transformer.libsonnet";
 local mnist = import "mnist.libsonnet";
 local pythonOperations = import "python-ops.libsonnet";
 local resnet50 = import "resnet50.libsonnet";
+local robertaPretrain = import "roberta-pre.libsonnet";
 
 # Add new models here
 std.flattenArrays([
   cifarInline.configs,
   cifarTorchvision.configs,
   cppOperations.configs,
-  fairseqRobertaPretrain.configs,
   fairseqTransformer.configs,
   mnist.configs,
   pythonOperations.configs,
   resnet50.configs,
+  robertaPretrain.configs,
 ])

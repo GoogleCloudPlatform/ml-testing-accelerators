@@ -18,7 +18,7 @@ local tpus = import "../../tpus.libsonnet";
 
 {
   local cifar = base.PyTorchTest {
-    modelName: "cifar-torchvision",
+    modelName: "cifar-tv",
     command: [
       "python3",
       "pytorch/xla/test/test_train_cifar.py",

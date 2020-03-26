@@ -373,6 +373,7 @@ def _process_pubsub_message(msg, status_handler, logger):
     raise ValueError('Pubsub message must contain 4 required fields: '
                      'events_dir, test_name, logs_link, and job_name. '
                      'Message was: {}'.format(event))
+  logs_link = util.add_unbound_time_to_logs_link(logs_link)
   if not regression_test_config and not metric_collection_config:
     raise ValueError('metric_collection_config and regression_test_config '
                      'were both null; stopping early. See README for '

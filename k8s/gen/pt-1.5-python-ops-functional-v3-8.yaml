@@ -15,7 +15,7 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-python-operations-functional-v2-8"
+  "name": "pt-1.5-python-ops-functional-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
@@ -26,7 +26,7 @@
       "template":
         "metadata":
           "annotations":
-            "tf-version.cloud-tpus.google.com": "pytorch-nightly"
+            "tf-version.cloud-tpus.google.com": "pytorch-1.5"
         "spec":
           "containers":
           - "args":
@@ -50,17 +50,17 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "METRIC_CONFIG"
-              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"tags_to_ignore\": [\n   \"LearningRate\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": null,\n \"test_name\": \"pt-nightly-python-operations-functional-v2-8\"\n}"
+              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"tags_to_ignore\": [\n   \"LearningRate\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": null,\n \"test_name\": \"pt-1.5-python-ops-functional-v3-8\"\n}"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/python-operations/functional/v2-8/$(JOB_NAME)"
+              "value": "gs://xl-ml-test-us-central1/k8s/python-ops/functional/v3-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
               "value": "0"
-            "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
+            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.5"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v2": 8
+                "cloud-tpus.google.com/preemptible-v3": 8
               "requests":
                 "cpu": "4.5"
                 "memory": "8Gi"
@@ -72,4 +72,4 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-  "schedule": "0 14 * * *"
+  "schedule": "0 16 * * *"

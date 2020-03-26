@@ -18,7 +18,7 @@ local tpus = import "../../tpus.libsonnet";
 
 {
   local operations = base.PyTorchTest {
-    modelName: "cpp-operations",
+    modelName: "cpp-ops",
     command: [
       "bash",
       "pytorch/xla/test/cpp/run_tests.sh",

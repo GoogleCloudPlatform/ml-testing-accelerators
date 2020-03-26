@@ -12,11 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local nightly = import "nightly/targets.jsonnet";
-local pytorch_1_5 = import "pytorch-1.5/targets.jsonnet";
+local base = import "base.libsonnet";
+local timeouts = import "../../timeouts.libsonnet";
+local tpus = import "../../tpus.libsonnet";
 
-// Add new versions here
-std.flattenArrays([
-  nightly,
-  pytorch_1_5,
-])
+{
+  local operations = base.PyTorchTest {
+    modelName: "cpp-ops",
+    command: [
+      "bash",
+      "pytorch/xla/test/cpp/run_tests.sh",
+    ],
+    regressionTestConfig: null,
+  },
+  local v2_8 = {
+    accelerator: tpus.v2_8,
+  },
+  local v3_8 = {
+    accelerator: tpus.v3_8,
+  },
+
+  configs: [
+    operations + v2_8 + base.Functional + timeouts.Hours(4),
+    operations + v3_8 + base.Functional + timeouts.Hours(4),
+  ],
+}

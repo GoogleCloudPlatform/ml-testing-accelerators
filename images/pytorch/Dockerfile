@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/tpu-pytorch/xla:nightly
+ARG _VERSION=nightly
+FROM gcr.io/tpu-pytorch/xla:$_VERSION
 
 RUN apt-get update && apt-get install -y --no-install-recommends jq
 RUN curl -sSL https://sdk.cloud.google.com | bash

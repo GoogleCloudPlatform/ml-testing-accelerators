@@ -14,7 +14,7 @@
 
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/pytorch-xla:$_VERSION', '.', '-f', 'images/pytorch/Dockerfile']
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/pytorch-xla:$_VERSION', '.', '-f', 'images/pytorch/Dockerfile', '--build-arg', '_VERSION=$_VERSION']
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'gcr.io/$PROJECT_ID/pytorch-xla:$_VERSION']
 images: ['gcr.io/$PROJECT_ID/pytorch-xla:$_VERSION']
