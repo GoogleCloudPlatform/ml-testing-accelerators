@@ -115,7 +115,7 @@ class CloudMetricsHandler(object):
       raw_metrics = metrics.read_metrics_from_events_dir(
           self.events_dir, tags_to_ignore)
     except:
-      self.logger.warn(str(e))
+      self.logger.warning(str(e))
 
     default_aggregation_strategies = self.metric_collection_config.get(
         'default_aggregation_strategies')
