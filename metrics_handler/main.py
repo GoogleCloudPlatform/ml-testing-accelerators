@@ -25,6 +25,7 @@ import uuid
 import alert_handler
 import job_status_handler
 import metrics
+import util
 
 import google.api_core.exceptions
 from google.cloud import bigquery
@@ -246,7 +247,8 @@ class CloudMetricsHandler(object):
           'Inserting {} rows into BigQuery table `{}`'.format(
               len(rows), table_id))
       table = self.bigquery_client.get_table(table_id)
-      errors = self.bigquery_client.insert_rows(table, rows)
+      clean_rows = [util.replace_invalid_values(row) for row in rows]
+      errors = self.bigquery_client.insert_rows(table, clean_rows)
       if errors == []:
         self.logger.info('Successfully added rows to Bigquery.')
       else:
