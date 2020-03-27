@@ -24,8 +24,8 @@ local timeouts = import "timeouts.libsonnet";
       preemptible: true,
     },
   },
-  Unit:: {
-    mode: "unit",
+  Micro:: {
+    mode: "micro",
     timeout: timeouts.one_hour,
     # Run at 2AM PST daily
     schedule: "0 10 * * *",

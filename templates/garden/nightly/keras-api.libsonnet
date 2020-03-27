@@ -35,47 +35,47 @@ local tpus = import "../../tpus.libsonnet";
     ],
   },
 
-  local connection = mixins.Unit {
+  local connection = mixins.Micro {
     mode: "connection",
     testFeature:: "aaa_connection",
   },
 
-  local custom_layers = mixins.Unit {
+  local custom_layers = mixins.Micro {
     mode: "custom-layers",
     testFeature:: "custom_layers_model"
   },
 
-  local custom_training_loop = mixins.Unit {
+  local custom_training_loop = mixins.Micro {
     mode: "custom-training-loop",
     testFeature:: "custom_training_loop",
   },
 
-  local feature_column = mixins.Unit {
+  local feature_column = mixins.Micro {
     mode: "feature-column",
     testFeature:: "feature_column",
   },
 
-  local rnn = mixins.Unit {
+  local rnn = mixins.Micro {
     mode: "rnn",
     testFeature:: "rnn",
   },
 
-  local save_and_load = mixins.Unit {
+  local save_and_load = mixins.Micro {
     mode: "save-and-load",
     testFeature:: "save_and_load",
   },
 
-  local train_and_evaluate = mixins.Unit {
+  local train_and_evaluate = mixins.Micro {
     mode: "train-and-evaluate",
     testFeature:: "train_and_evaluate",
   },
 
-  local train_validation_dataset = mixins.Unit {
+  local train_validation_dataset = mixins.Micro {
     mode: "train-validation-dataset",
     testFeature:: "train_validation_dataset",
   },
 
-  local transfer_learning = mixins.Unit {
+  local transfer_learning = mixins.Micro {
     mode: "transfer-learning",
     testFeature:: "transfer_learning",
   },
