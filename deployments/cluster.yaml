@@ -18,7 +18,7 @@ resources:
   properties:
     zone: us-central1-b
     cluster:
-      initialClusterVersion: "1.14"
+      initialClusterVersion: "1.15"
       enableTpu: true
       ipAllocationPolicy:
         useIpAliases: true
@@ -30,14 +30,14 @@ resources:
           minNodeCount: 1
           maxNodeCount: 10
         config:
-          machineType: n1-standard-8
+          machineType: n1-highmem-16
           oauthScopes:
           - https://www.googleapis.com/auth/cloud-platform
       - name: huge-pool
         initialNodeCount: 0
         autoscaling:
           enabled: true
-          minNodeCount: 0
+          minNodeCount: 1
           maxNodeCount: 10
         config:
           machineType: n1-highmem-96

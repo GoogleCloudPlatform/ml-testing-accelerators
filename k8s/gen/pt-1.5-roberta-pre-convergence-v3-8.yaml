@@ -1,0 +1,84 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "name": "pt-1.5-roberta-pre-convergence-v3-8"
+  "namespace": "automated"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "spec":
+      "activeDeadlineSeconds": 7200
+      "backoffLimit": 2
+      "template":
+        "metadata":
+          "annotations":
+            "tf-version.cloud-tpus.google.com": "pytorch-1.5"
+        "spec":
+          "containers":
+          - "args":
+            - "/bin/bash"
+            - "-c"
+            - "pip install --editable tpu-examples/deps/fairseq && python3 /tpu-examples/deps/fairseq/train.py /datasets/wikitext-103 --tensorboard-logdir=$(MODEL_DIR) --task=masked_lm --criterion=masked_lm --arch=roberta_base --sample-break-mode=complete --tokens-per-sample=512 --optimizer=adam --adam-betas='(0.9,0.98)' --adam-eps=1e-6 --clip-norm=0.0 --lr-scheduler=polynomial_decay --lr=0.0005 --warmup-updates=10000 --dropout=0.1 --attention-dropout=0.1 --weight-decay=0.01 --update-freq=16 --log-format=simple --train-subset=train --valid-subset=valid --num_cores=8 --metrics_debug --save-dir=checkpoints --log_steps=30 --skip-invalid-size-inputs-valid-test --suppress_loss_report --input_shapes 16x512 18x480 21x384 --max-epoch=5"
+            "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "METRIC_CONFIG"
+              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"tags_to_ignore\": [\n   \"LearningRate\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": {\n  \"metric_subset_to_alert\": [\n   \"ExecuteTime__Percentile_99_sec_final\",\n   \"CompileTime__Percentile_99_sec_final\",\n   \"total_wall_time\",\n   \"Accuracy/test_final\",\n   \"aten_ops_sum_final\"\n  ],\n  \"metric_success_conditions\": {\n   \"CompileTime__Percentile_99_sec_final\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 5\n    },\n    \"wait_for_n_points_of_history\": 10\n   },\n   \"ExecuteTime__Percentile_99_sec_final\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 5\n    },\n    \"wait_for_n_points_of_history\": 10\n   },\n   \"aten_ops_sum_final\": {\n    \"comparison\": \"less_or_equal\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 0\n    }\n   },\n   \"total_wall_time\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 5\n    },\n    \"wait_for_n_points_of_history\": 10\n   }\n  },\n  \"write_to_error_reporting\": true\n },\n \"test_name\": \"pt-1.5-roberta-pre-convergence-v3-8\"\n}"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/roberta-pre/convergence/v3-8/$(JOB_NAME)"
+            - "name": "XLA_USE_BF16"
+              "value": "0"
+            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.5"
+            "imagePullPolicy": "Always"
+            "name": "train"
+            "resources":
+              "limits":
+                "cloud-tpus.google.com/v3": 8
+              "requests":
+                "cpu": "9.0"
+                "memory": "30Gi"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+            - "mountPath": "/datasets"
+              "name": "wikitext-pd"
+              "readOnly": true
+          "restartPolicy": "Never"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+          - "gcePersistentDisk":
+              "fsType": "ext4"
+              "pdName": "wikitext-103-pd-central1-b"
+              "readOnly": true
+            "name": "wikitext-pd"
+  "schedule": "0 20 * * 1,6"

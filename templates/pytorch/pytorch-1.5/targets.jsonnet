@@ -12,23 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local bert_mnli = import "bert-mnli.libsonnet";
-local bert_squad = import "bert-squad.libsonnet";
+local cifarInline = import "cifar-inline.libsonnet";
+local cifarTorchvision = import "cifar-tv.libsonnet";
+local cppOperations = import "cpp-ops.libsonnet";
+local fairseqTransformer = import "fs-transformer.libsonnet";
 local mnist = import "mnist.libsonnet";
-local resnet_ctl = import "resnet-ctl.libsonnet";
-local resnet_cfit = import "resnet-cfit.libsonnet";
-local retinanet = import "retinanet.libsonnet";
-local transformer_translate = import "transformer-translate.libsonnet";
-local keras_api = import "keras-api.libsonnet";
+local pythonOperations = import "python-ops.libsonnet";
+local resnet50 = import "resnet50.libsonnet";
+local robertaPretrain = import "roberta-pre.libsonnet";
 
 # Add new models here
 std.flattenArrays([
-  bert_mnli.configs,
-  bert_squad.configs,
+  cifarInline.configs,
+  cifarTorchvision.configs,
+  cppOperations.configs,
+  fairseqTransformer.configs,
   mnist.configs,
-  resnet_ctl.configs,
-  resnet_cfit.configs,
-  retinanet.configs,
-  transformer_translate.configs,
-  keras_api.configs,
+  pythonOperations.configs,
+  resnet50.configs,
+  robertaPretrain.configs,
 ])

@@ -1,0 +1,65 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "name": "tf-nightly-keras-api-custom-training-loop-v3-8"
+  "namespace": "automated"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "spec":
+      "activeDeadlineSeconds": 3600
+      "backoffLimit": 2
+      "template":
+        "metadata":
+          "annotations":
+            "tf-version.cloud-tpus.google.com": "nightly"
+        "spec":
+          "containers":
+          - "args":
+            - "/bin/bash"
+            - "-c"
+            - "export PATH=$PATH:/root/google-cloud-sdk/bin &&\ngcloud source repos clone cloudtpu-tf20-api-tests --project=gcp-tpupods-demo &&\ncd cloudtpu-tf20-api-tests &&\npip3 install behave &&\n behave -e ipynb_checkpoints --tags=-fails -i custom_training_loop"
+            - "--model_dir=$(MODEL_DIR)"
+            "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "METRIC_CONFIG"
+              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": {\n  \"metric_success_conditions\": {\n   \"total_wall_time\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 5\n    },\n    \"wait_for_n_points_of_history\": 10\n   }\n  },\n  \"write_to_error_reporting\": true\n },\n \"test_name\": \"tf-nightly-keras-api-custom-training-loop-v3-8\"\n}"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/keras-api/custom-training-loop/v3-8/$(JOB_NAME)"
+            "image": "gcr.io/xl-ml-test/model-garden:nightly"
+            "imagePullPolicy": "Always"
+            "name": "train"
+            "resources":
+              "limits":
+                "cloud-tpus.google.com/preemptible-v3": 8
+          "restartPolicy": "Never"
+  "schedule": "0 10 * * *"

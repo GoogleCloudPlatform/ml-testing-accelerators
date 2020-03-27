@@ -15,13 +15,13 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-fairseq-roberta-pretrain-functional-v3-8"
+  "name": "pt-nightly-python-ops-functional-v2-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 3600
+      "activeDeadlineSeconds": 7200
       "backoffLimit": 2
       "template":
         "metadata":
@@ -30,9 +30,8 @@
         "spec":
           "containers":
           - "args":
-            - "/bin/bash"
-            - "-c"
-            - "pip install --editable tpu-examples/deps/fairseq && python3 /tpu-examples/deps/fairseq/train.py /datasets/wikitext-103 --tensorboard-logdir=$(MODEL_DIR) --task=masked_lm --criterion=masked_lm --arch=roberta_base --sample-break-mode=complete --tokens-per-sample=512 --optimizer=adam --adam-betas='(0.9,0.98)' --adam-eps=1e-6 --clip-norm=0.0 --lr-scheduler=polynomial_decay --lr=0.0005 --warmup-updates=10000 --dropout=0.1 --attention-dropout=0.1 --weight-decay=0.01 --update-freq=16 --log-format=simple --train-subset=train --valid-subset=valid --num_cores=8 --metrics_debug --save-dir=checkpoints --log_steps=30 --skip-invalid-size-inputs-valid-test --suppress_loss_report --input_shapes 16x512 18x480 21x384 --max-epoch=1"
+            - "bash"
+            - "pytorch/xla/test/run_tests.sh"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -51,9 +50,9 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "METRIC_CONFIG"
-              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"tags_to_ignore\": [\n   \"LearningRate\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": null,\n \"test_name\": \"pt-nightly-fairseq-roberta-pretrain-functional-v3-8\"\n}"
+              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"tags_to_ignore\": [\n   \"LearningRate\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": null,\n \"test_name\": \"pt-nightly-python-ops-functional-v2-8\"\n}"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/fairseq-roberta-pretrain/functional/v3-8/$(JOB_NAME)"
+              "value": "gs://xl-ml-test-us-central1/k8s/python-ops/functional/v2-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
               "value": "0"
             "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
@@ -61,24 +60,16 @@
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v3": 8
+                "cloud-tpus.google.com/preemptible-v2": 8
               "requests":
-                "cpu": "9.0"
-                "memory": "30Gi"
+                "cpu": "4.5"
+                "memory": "8Gi"
             "volumeMounts":
             - "mountPath": "/dev/shm"
               "name": "dshm"
-            - "mountPath": "/datasets"
-              "name": "wikitext-pd"
-              "readOnly": true
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-          - "gcePersistentDisk":
-              "fsType": "ext4"
-              "pdName": "wikitext-103-pd-central1-b"
-              "readOnly": true
-            "name": "wikitext-pd"
   "schedule": "0 14 * * *"

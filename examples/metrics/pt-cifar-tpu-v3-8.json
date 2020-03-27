@@ -8,7 +8,7 @@
       "epoch_loss": ["final", "min"]
     },
     "time_to_accuracy": {
-      "accuracy_threshold": 99.0,
+      "accuracy_threshold": 80.0,
       "accuracy_tag": "Accuracy/test"
     }
   },
@@ -18,7 +18,7 @@
       "Accuracy/test_final": {
         "comparison": "greater",
         "success_threshold": {
-          "fixed_value": 99.0
+          "fixed_value": 80.0
         }
       },
       "total_wall_time": {

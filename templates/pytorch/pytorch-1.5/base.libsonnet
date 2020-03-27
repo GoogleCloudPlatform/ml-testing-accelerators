@@ -12,28 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
-local timeouts = import "../../timeouts.libsonnet";
-local tpus = import "../../tpus.libsonnet";
+local base = import "../base.libsonnet";
+local mixins = import "../../mixins.libsonnet";
 
 {
-  local operations = base.PyTorchTest {
-    modelName: "python-operations",
-    command: [
-      "bash",
-      "pytorch/xla/test/run_tests.sh",
-    ],
-    regressionTestConfig: null,
+  PyTorchTest:: base.PyTorchTest {
+    frameworkPrefix: "pt-1.5",
+    tpuVersion: "pytorch-1.5",
+    imageTag: "r1.5",
   },
-  local v2_8 = {
-    accelerator: tpus.v2_8,
+  Functional:: mixins.Functional {
+    # Run at 8AM PST daily.
+    schedule: "0 16 * * *",
   },
-  local v3_8 = {
-    accelerator: tpus.v3_8,
+  Convergence:: mixins.Convergence {
+    # Run twice per week.
+    schedule: "0 20 * * 1,6",
   },
-
-  configs: [
-    operations + v2_8 + base.Functional + timeouts.Hours(2),
-    operations + v3_8 + base.Functional + timeouts.Hours(2),
-  ],
 }

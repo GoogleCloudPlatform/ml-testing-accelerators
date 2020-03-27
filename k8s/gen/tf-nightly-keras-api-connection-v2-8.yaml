@@ -15,23 +15,25 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-python-operations-functional-v3-8"
+  "name": "tf-nightly-keras-api-connection-v2-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 7200
+      "activeDeadlineSeconds": 3600
       "backoffLimit": 2
       "template":
         "metadata":
           "annotations":
-            "tf-version.cloud-tpus.google.com": "pytorch-nightly"
+            "tf-version.cloud-tpus.google.com": "nightly"
         "spec":
           "containers":
           - "args":
-            - "bash"
-            - "pytorch/xla/test/run_tests.sh"
+            - "/bin/bash"
+            - "-c"
+            - "export PATH=$PATH:/root/google-cloud-sdk/bin &&\ngcloud source repos clone cloudtpu-tf20-api-tests --project=gcp-tpupods-demo &&\ncd cloudtpu-tf20-api-tests &&\npip3 install behave &&\n behave -e ipynb_checkpoints --tags=-fails -i aaa_connection"
+            - "--model_dir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -50,26 +52,14 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "METRIC_CONFIG"
-              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"tags_to_ignore\": [\n   \"LearningRate\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": null,\n \"test_name\": \"pt-nightly-python-operations-functional-v3-8\"\n}"
+              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": {\n  \"metric_success_conditions\": {\n   \"total_wall_time\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 5\n    },\n    \"wait_for_n_points_of_history\": 10\n   }\n  },\n  \"write_to_error_reporting\": true\n },\n \"test_name\": \"tf-nightly-keras-api-connection-v2-8\"\n}"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/python-operations/functional/v3-8/$(JOB_NAME)"
-            - "name": "XLA_USE_BF16"
-              "value": "0"
-            "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
+              "value": "gs://xl-ml-test-us-central1/k8s/keras-api/connection/v2-8/$(JOB_NAME)"
+            "image": "gcr.io/xl-ml-test/model-garden:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v3": 8
-              "requests":
-                "cpu": "4.5"
-                "memory": "8Gi"
-            "volumeMounts":
-            - "mountPath": "/dev/shm"
-              "name": "dshm"
+                "cloud-tpus.google.com/preemptible-v2": 8
           "restartPolicy": "Never"
-          "volumes":
-          - "emptyDir":
-              "medium": "Memory"
-            "name": "dshm"
-  "schedule": "0 14 * * *"
+  "schedule": "0 10 * * *"
