@@ -19,6 +19,7 @@ local resnet_ctl = import "resnet-ctl.libsonnet";
 local resnet_cfit = import "resnet-cfit.libsonnet";
 local retinanet = import "retinanet.libsonnet";
 local transformer_translate = import "transformer-translate.libsonnet";
+local keras_api = import "keras-api.libsonnet";
 
 # Add new models here
 std.flattenArrays([
@@ -29,4 +30,5 @@ std.flattenArrays([
   resnet_cfit.configs,
   retinanet.configs,
   transformer_translate.configs,
+  keras_api.configs,
 ])
