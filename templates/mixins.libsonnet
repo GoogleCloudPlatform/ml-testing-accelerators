@@ -24,6 +24,15 @@ local timeouts = import "timeouts.libsonnet";
       preemptible: true,
     },
   },
+  Unit:: {
+    mode: "unit",
+    timeout: timeouts.one_hour,
+    # Run at 2AM PST daily
+    schedule: "0 10 * * *",
+    accelerator+: {
+      preemptible: true,
+    },
+  },
   Convergence:: {
     mode: "convergence",
     timeout: timeouts.ten_hours,
