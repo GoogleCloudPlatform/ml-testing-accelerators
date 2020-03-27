@@ -62,4 +62,4 @@
               "limits":
                 "cloud-tpus.google.com/preemptible-v2": 8
           "restartPolicy": "Never"
-  "schedule": "0 8 * * *"
+  "schedule": "0 10 30 * *"

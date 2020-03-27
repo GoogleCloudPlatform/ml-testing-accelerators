@@ -35,49 +35,67 @@ local tpus = import "../../tpus.libsonnet";
     ],
   },
 
-  local connection = mixins.Functional {
+  local API = {
+    mode: "api",
+    timeout: timeouts.one_hour,
+    # Run at 2AM PST daily
+    schedule: "0 10 * * *",
+    accelerator+: {
+      preemptible: true,
+    },
+  },
+
+  local connection = API {
     mode: "connection",
     testFeature:: "aaa_connection",
   },
 
-  local custom_layers = mixins.Functional {
+  local custom_layers = API {
     mode: "custom-layers",
     testFeature:: "custom_layers_model"
   },
 
-  local custom_training_loop = mixins.Functional {
+  local custom_training_loop = API {
     mode: "custom-training-loop",
     testFeature:: "custom_training_loop",
   },
 
-  local feature_column = mixins.Functional {
+  local feature_column = API {
     mode: "feature-column",
     testFeature:: "feature_column",
   },
 
-  local rnn = mixins.Functional {
+  local rnn = API {
     mode: "rnn",
     testFeature:: "rnn",
   },
 
-  local save_and_load = mixins.Functional {
+  local save_and_load = API {
     mode: "save-and-load",
     testFeature:: "save_and_load",
+    # Run at 2:30AM PST daily
+    schedule: "0 10 30 * *",
   },
 
-  local train_and_evaluate = mixins.Functional {
+  local train_and_evaluate = API {
     mode: "train-and-evaluate",
     testFeature:: "train_and_evaluate",
+    # Run at 2:30AM PST daily
+    schedule: "0 10 30 * *",
   },
 
-  local train_validation_dataset = mixins.Functional {
+  local train_validation_dataset = API {
     mode: "train-validation-dataset",
     testFeature:: "train_validation_dataset",
+    # Run at 2:30AM PST daily
+    schedule: "0 10 30 * *",
   },
 
-  local transfer_learning = mixins.Functional {
+  local transfer_learning = API {
     mode: "transfer-learning",
     testFeature:: "transfer_learning",
+    # Run at 2:30AM PST daily
+    schedule: "0 10 30 * *",
   },
 
   local v2_8 = {
