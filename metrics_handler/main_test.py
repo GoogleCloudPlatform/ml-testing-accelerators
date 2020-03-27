@@ -52,7 +52,7 @@ class CloudMetricsHandlerTest(absltest.TestCase):
       test_type=None,
       accelerator=None,
       framework_version=None,
-      logger=self.logger, # pass in absl logging module
+      logger=self.logger,
     )
 
     final_metrics = metrics_handler.get_metrics_from_events_dir()
@@ -83,7 +83,7 @@ class CloudMetricsHandlerTest(absltest.TestCase):
       test_type=None,
       accelerator=None,
       framework_version=None,
-      logger=self.logger, # pass in absl logging module
+      logger=self.logger,
     )
 
     final_metrics = metrics_handler.get_metrics_from_events_dir()

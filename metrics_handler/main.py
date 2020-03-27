@@ -119,11 +119,14 @@ class CloudMetricsHandler(object):
         'default_aggregation_strategies')
     metric_to_aggregation_strategies = self.metric_collection_config.get(
         'metric_to_aggregation_strategies')
-    final_metrics = metrics.aggregate_metrics(
-        raw_metrics,
-        default_aggregation_strategies,
-        metric_to_aggregation_strategies
-    )
+    try:
+      final_metrics = metrics.aggregate_metrics(
+          raw_metrics,
+          default_aggregation_strategies,
+          metric_to_aggregation_strategies
+      )
+    except ValueError as e:
+      raise ValueError("Error during metric aggregation: {}".format(e))
 
     final_metrics['total_wall_time'] = metrics.total_wall_time(raw_metrics)
 

@@ -88,9 +88,14 @@ def aggregate_metrics(raw_metrics, default_strategies, metric_strategies=None):
 
   Returns:
     dict mapping metric name to MetricPoint.
+  
+  Raises:
+    ValueError: If `default_strategies` is empty or an invalid strategy is
+      provided.
   """
   if not raw_metrics:
-    raise ValueError('`raw_metrics` cannot be empty.')
+    logging.warning('`raw_metrics` is empty, skipping metric aggregation.')
+    return {}
   if not default_strategies:
     raise ValueError('`default_strategies` cannot be empty.')
   metric_strategies = metric_strategies or {}
@@ -230,7 +235,7 @@ def metric_bounds(value_history, threshold, comparison):
       lower_bound = -math.inf
       upper_bound = mean + (stddev * threshold.value)
     elif 'greater' in comparison:
-      lower_bound = max(mean - (stddev * threshold.value), 0)
+      lower_bound = mean - (stddev * threshold.value)
       upper_bound = math.inf
   else:
     raise ValueError(
