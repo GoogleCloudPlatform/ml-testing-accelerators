@@ -25,11 +25,11 @@ local tpus = import "../../tpus.libsonnet";
         epochs: error "Must set `train.epochs`",
       },
       train_dataset: {
-        use_per_replica_batch_size: False,
+        use_per_replica_batch_size: false,
         batch_size: error "Must set `train_dataset.batch_size`",
       },
       eval_dataset: {
-        use_per_replica_batch_size: False,
+        use_per_replica_batch_size: false,
         batch_size: error "Must set `eval_dataset.batch_size`",
       },
     },
@@ -43,41 +43,41 @@ local tpus = import "../../tpus.libsonnet";
       "--dataset=imagenet",
       "--mode=train_and_eval",
       "--data_dir=gs://imagenet-us-central1/train",
-      "--params_override=%s" % std.manifestYamldoc(self.paramsOverride)
+      "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride)
     ],
   },
   local functional = mixins.Functional {
     paramsOverride+: {
-      train+{
+      train+: {
         epochs: 3, 
       },
     },
   },
   local convergence = mixins.Convergence {
     paramsOverride+: {
-      train+{
+      train+: {
         epochs: 90, 
       },
     },
   },
   local v2_8 = {
     accelerator: tpus.v2_8,
-    paramsOverride+ {
-      train_dataset+ {
+    paramsOverride+: {
+      train_dataset+: {
         batch_size: 1024,
       },
-      eval_dataset+ {
+      eval_dataset+: {
         batch_size: 1024,
       },
     },
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
-    paramsOverride+ {
-      train_dataset+ {
+    paramsOverride+: {
+      train_dataset+: {
         batch_size: 1024,
       },
-      eval_dataset+ {
+      eval_dataset+: {
         batch_size: 1024,
       },
     },
