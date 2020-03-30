@@ -117,7 +117,7 @@ class CloudMetricsHandler(object):
         self.events_dir, tags_to_ignore)
 
     if not raw_metrics:
-      self.logger.warn("No metrics found in {}".format(self.events_dir))
+      self.logger.warning("No metrics found in {}".format(self.events_dir))
       return {}
 
     default_aggregation_strategies = self.metric_collection_config.get(
