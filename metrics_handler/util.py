@@ -15,10 +15,11 @@
 # Lint as: python3
 """Util methods used by the Cloud Accelerators Testing metrics handler."""
 
+import math
 import re
 
 
-LOGS_DOWNLOAD_COMMAND = """gcloud logging read 'resource.type=k8s_container resource.labels.project_id={project} resource.labels.location={zone} resource.labels.cluster_name={cluster} resource.labels.namespace_name={namespace} resource.labels.pod_name:{pod}' --limit 10000000000000 --order asc --format 'value(textPayload)' > {pod}_logs.txt && sed -i '/^$/d' {pod}_logs.txt"""
+LOGS_DOWNLOAD_COMMAND = """gcloud logging read 'resource.type=k8s_container resource.labels.project_id={project} resource.labels.location={zone} resource.labels.cluster_name={cluster} resource.labels.namespace_name={namespace} resource.labels.pod_name:{pod}' --limit 10000000000000 --order asc --format 'value(textPayload)' --project={project} > {pod}_logs.txt && sed -i '/^$/d' {pod}_logs.txt"""
 LOG_LINK_REGEX = re.compile('https://console\.cloud\.google\.com/logs\?project=(\S+)\&advancedFilter=resource\.type\%3Dk8s_container\%0Aresource\.labels\.project_id\%3D(?P<project>\S+)\%0Aresource\.labels\.location=(?P<zone>\S+)\%0Aresource\.labels\.cluster_name=(?P<cluster>\S+)\%0Aresource\.labels\.namespace_name=(?P<namespace>\S+)\%0Aresource\.labels\.pod_name:(?P<pod>[a-zA-Z0-9\-\.]+)')
 UNBOUND_DATE_RANGE = '&dateRangeUnbound=backwardInTime'
 
@@ -75,3 +76,16 @@ def test_name_from_logs_link(logs_link):
     raise ValueError('Unable to parse test name from logs link: {}'.format(
         logs_link))
   return test_name
+
+
+def replace_invalid_values(row):
+  """Replace float values that are not available in BigQuery.
+
+  Args:
+    row: List of values to insert into BigQuery.
+
+  Returns:
+    List, `row` with invalid values replaced with `None`.
+  """
+  invalid_values = [math.inf, -math.inf, math.nan]
+  return [x if x not in invalid_values else None for x in row]

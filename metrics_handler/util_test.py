@@ -14,18 +14,20 @@
 
 # Lint as: python3
 """Tests for util."""
+import math
 
-import unittest
+from absl.testing import absltest
+from absl.testing import parameterized
 
 import util
 
 
 VALID_LOGS_LINK = 'https://console.cloud.google.com/logs?project=xl-ml-test&advancedFilter=resource.type%3Dk8s_container%0Aresource.labels.project_id%3Dxl-ml-test%0Aresource.labels.location=us-central1-b%0Aresource.labels.cluster_name=xl-ml-test%0Aresource.labels.namespace_name=automated%0Aresource.labels.pod_name:pt-1.5-resnet50-functional-v3-8-1584453600&extra_junk&dateRangeUnbound=backwardInTime'
-VALID_DOWNLOAD_COMMAND = """gcloud logging read 'resource.type=k8s_container resource.labels.project_id=xl-ml-test resource.labels.location=us-central1-b resource.labels.cluster_name=xl-ml-test resource.labels.namespace_name=automated resource.labels.pod_name:pt-1.5-resnet50-functional-v3-8-1584453600' --limit 10000000000000 --order asc --format 'value(textPayload)' > pt-1.5-resnet50-functional-v3-8-1584453600_logs.txt && sed -i '/^$/d' pt-1.5-resnet50-functional-v3-8-1584453600_logs.txt"""
+VALID_DOWNLOAD_COMMAND = """gcloud logging read 'resource.type=k8s_container resource.labels.project_id=xl-ml-test resource.labels.location=us-central1-b resource.labels.cluster_name=xl-ml-test resource.labels.namespace_name=automated resource.labels.pod_name:pt-1.5-resnet50-functional-v3-8-1584453600' --limit 10000000000000 --order asc --format 'value(textPayload)' --project=xl-ml-test > pt-1.5-resnet50-functional-v3-8-1584453600_logs.txt && sed -i '/^$/d' pt-1.5-resnet50-functional-v3-8-1584453600_logs.txt"""
 VALID_TEST_NAME = 'pt-1.5-resnet50-functional-v3-8-1584453600'
 
 
-class UtilTest(unittest.TestCase):
+class UtilTest(parameterized.TestCase):
   def test_add_unbound_time_to_logs_link_already_exists(self):
     self.assertEqual(
         VALID_LOGS_LINK,
@@ -53,7 +55,19 @@ class UtilTest(unittest.TestCase):
     self.assertEqual(
         VALID_TEST_NAME,
         util.test_name_from_logs_link(VALID_LOGS_LINK))
+  
+  @parameterized.named_parameters(
+    ('inf', [1, 2, 3, math.inf, 4, 5], [1, 2, 3, None, 4, 5]),
+    ('-inf', [1, 2, 3, -math.inf, 4, 5], [1, 2, 3, None, 4, 5]),
+    ('nan', [1, 2, 3, math.nan, 4, 5], [1, 2, 3, None, 4, 5]),
+    ('all', [math.inf, -math.inf, math.nan], [None, None, None]),
+    ('one_element', [math.inf], [None]),
+    ('empty', [], []),
+  )
+  def test_replace_invalid_values(self, row, expected_row):
+    clean_row = util.replace_invalid_values(row)
+    self.assertSequenceEqual(clean_row, expected_row)
 
 
 if __name__ == '__main__':
-  unittest.main()
+  absltest.main()
