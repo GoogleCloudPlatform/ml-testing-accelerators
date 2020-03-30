@@ -85,7 +85,8 @@ local tpus = import "../../tpus.libsonnet";
 
   configs: [
     efficientnet + v2_8 + functional,
-    efficientnet + v3_8 + functional, efficientnet + v2_8 + convergence,
+    efficientnet + v3_8 + functional,
+    efficientnet + v2_8 + convergence,
     efficientnet + v3_8 + convergence,
   ],
 }
