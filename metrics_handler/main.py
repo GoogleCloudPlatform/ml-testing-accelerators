@@ -186,7 +186,7 @@ class CloudMetricsHandler(object):
 
   def add_status_and_metrics_to_bigquery(
       self, job_status, aggregated_metrics_dict,
-      metric_name_to_visual_bounds={}):
+      metric_name_to_visual_bounds=None):
     """Adds job_status and metrics to their respective BigQuery tables.
 
     Args:
@@ -202,6 +202,9 @@ class CloudMetricsHandler(object):
     if not self.metric_collection_config.get('write_to_bigquery', True):
       self.logger.info('Skipping writing metrics and job_status to BigQuery.')
       return
+
+    if not metric_name_to_visual_bounds:
+      metric_name_to_visual_bounds = {}
 
     # Compute the join key to link together job_history and metric_history.
     unique_key = str(uuid.uuid4())
@@ -397,7 +400,7 @@ def _process_pubsub_message(msg, status_handler, logger):
     logger.error(
         'job_status was `{}` for test `{}`'.format(
             job_status['final_status'], self.test_name),
-        logs_link=self.stackdriver_logs_link)
+        logs_link=logs_link)
 
   # TODO: pass these in the pubsub message and remove this block.
   if not test_type:
@@ -417,6 +420,8 @@ def _process_pubsub_message(msg, status_handler, logger):
     metrics_history = handler.get_metrics_history_from_bigquery()
     metric_name_to_visual_bounds = handler.compute_bounds_and_report_errors(
         metrics_history, new_metrics)
+  else:
+    metric_name_to_visual_bounds = None
 
   handler.add_status_and_metrics_to_bigquery(
       job_status, new_metrics, metric_name_to_visual_bounds)
