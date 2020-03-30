@@ -132,7 +132,8 @@ class JobStatusHandler(object):
         stop_time = status.completion_time.timestamp()
       else:
         self.logger.error(
-            'No completion_time in success status: {}'.format(status))
+            'No completion_time in success status for job: {}. '
+            'Status: {}'.format(job_name, status))
         if status.conditions and len(status.conditions) == 1 and \
             status.conditions[0].last_transition_time:
           stop_time = status.conditions[0].last_transition_time.timestamp()
@@ -140,7 +141,9 @@ class JobStatusHandler(object):
           stop_time = time.time()
     else:
       if len(status.conditions) != 1:
-        self.logger.error('Expected exactly 1 `condition` element in status.')
+        self.logger.error(
+            'Expected exactly 1 `condition` element in status. '
+            'Status was: {}'.format(status))
         completion_code = FAILURE
         stop_time = status.start_time.timestamp()
       else:
