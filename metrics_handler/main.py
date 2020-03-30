@@ -20,6 +20,7 @@ import itertools
 import json
 import math
 import time
+import traceback
 import uuid
 
 import alert_handler
@@ -115,6 +116,10 @@ class CloudMetricsHandler(object):
     raw_metrics = metrics.read_metrics_from_events_dir(
         self.events_dir, tags_to_ignore)
 
+    if not raw_metrics:
+      self.logger.warning("No metrics found in {}".format(self.events_dir))
+      return {}
+
     default_aggregation_strategies = self.metric_collection_config.get(
         'default_aggregation_strategies')
     metric_to_aggregation_strategies = self.metric_collection_config.get(
@@ -143,7 +148,7 @@ class CloudMetricsHandler(object):
         final_metrics['time_to_accuracy'] = metrics.time_to_accuracy(
             raw_metrics, tag, threshold)
       except ValueError as e:
-        self.logger.error(str(e))
+        raise ValueError('Error computing time to accuracy: {}'.format(e))
 
     return final_metrics
 
@@ -501,11 +506,11 @@ def run_main(event, context):
     try:
       logger.info('Pubsub message to process: {}'.format(msg))
       should_ack = _process_pubsub_message(msg, status_handler, logger)
-    except Exception as e:
+    except Exception:
       logger.error(
-          'Encountered exception `{}` while attempting to '
-          'process message. The message will be acknowledged to prevent more '
-          'crashes. The message was: {}'.format(e, msg))
+          'Encountered exception while attempting to process message {}. '
+          'The message will be acknowledged to prevent more crashes. '
+          'Exception: {}'.format(msg, traceback.format_exc()))
       should_ack = True
     if should_ack:
       logger.info('Finished processing message. Will ack')
