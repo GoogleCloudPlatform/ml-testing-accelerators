@@ -15,6 +15,7 @@
 # Lint as: python3
 """Util methods used by the Cloud Accelerators Testing metrics handler."""
 
+import math
 import re
 
 
@@ -75,3 +76,16 @@ def test_name_from_logs_link(logs_link):
     raise ValueError('Unable to parse test name from logs link: {}'.format(
         logs_link))
   return test_name
+
+
+def replace_invalid_values(row):
+  """Replace float values that are not available in BigQuery.
+
+  Args:
+    row: List of values to insert into BigQuery.
+
+  Returns:
+    List, `row` with invalid values replaced with `None`.
+  """
+  invalid_values = [math.inf, -math.inf, math.nan]
+  return [x if x not in invalid_values else None for x in row]

@@ -50,9 +50,10 @@ class AlertHandler(object):
     self.project_id = project_id
     self.write_to_logging = write_to_logging
     self.write_to_error_reporting = write_to_error_reporting
+    self.write_to_email = write_to_email
     if write_to_error_reporting:
       self.error_reporter = error_reporting.Client()
-    if write_to_email:
+    if self.write_to_email:
       try:
         secret_client = secretmanager.SecretManagerServiceClient()
         api_key = self._get_secret_value(

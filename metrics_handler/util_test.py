@@ -14,8 +14,10 @@
 
 # Lint as: python3
 """Tests for util."""
+import math
 
-import unittest
+from absl.testing import absltest
+from absl.testing import parameterized
 
 import util
 
@@ -25,7 +27,7 @@ VALID_DOWNLOAD_COMMAND = """gcloud logging read 'resource.type=k8s_container res
 VALID_TEST_NAME = 'pt-1.5-resnet50-functional-v3-8-1584453600'
 
 
-class UtilTest(unittest.TestCase):
+class UtilTest(parameterized.TestCase):
   def test_add_unbound_time_to_logs_link_already_exists(self):
     self.assertEqual(
         VALID_LOGS_LINK,
@@ -53,7 +55,19 @@ class UtilTest(unittest.TestCase):
     self.assertEqual(
         VALID_TEST_NAME,
         util.test_name_from_logs_link(VALID_LOGS_LINK))
+  
+  @parameterized.named_parameters(
+    ('inf', [1, 2, 3, math.inf, 4, 5], [1, 2, 3, None, 4, 5]),
+    ('-inf', [1, 2, 3, -math.inf, 4, 5], [1, 2, 3, None, 4, 5]),
+    ('nan', [1, 2, 3, math.nan, 4, 5], [1, 2, 3, None, 4, 5]),
+    ('all', [math.inf, -math.inf, math.nan], [None, None, None]),
+    ('one_element', [math.inf], [None]),
+    ('empty', [], []),
+  )
+  def test_replace_invalid_values(self, row, expected_row):
+    clean_row = util.replace_invalid_values(row)
+    self.assertSequenceEqual(clean_row, expected_row)
 
 
 if __name__ == '__main__':
-  unittest.main()
+  absltest.main()
