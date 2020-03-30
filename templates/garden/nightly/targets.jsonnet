@@ -14,6 +14,8 @@
 
 local bert_mnli = import "bert-mnli.libsonnet";
 local bert_squad = import "bert-squad.libsonnet";
+local classifier_resnet = import "classifier-resnet.libsonnet";
+local classifier_efficientnet = import "classifier-efficientnet.libsonnet";
 local mnist = import "mnist.libsonnet";
 local resnet_ctl = import "resnet-ctl.libsonnet";
 local resnet_cfit = import "resnet-cfit.libsonnet";
@@ -25,6 +27,8 @@ local keras_api = import "keras-api.libsonnet";
 std.flattenArrays([
   bert_mnli.configs,
   bert_squad.configs,
+  classifier_resnet.configs,
+  classifier_efficientnet.configs,
   mnist.configs,
   resnet_ctl.configs,
   resnet_cfit.configs,
