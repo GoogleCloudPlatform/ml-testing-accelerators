@@ -56,7 +56,17 @@ local tpus = import "../../tpus.libsonnet";
   local convergence = mixins.Convergence {
     paramsOverride+: {
       train+: {
-        epochs: 90, 
+        epochs: 350, 
+      },
+    },
+    regressionTestConfig+: {
+      metric_success_conditions+: {
+        "Accuracy/test_final": {
+          success_threshold: {
+            fixed_value: 76.0,
+          },
+          comparison: "greater",
+        },
       },
     },
   },

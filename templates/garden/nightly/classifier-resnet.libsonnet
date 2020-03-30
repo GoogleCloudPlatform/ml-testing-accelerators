@@ -59,6 +59,16 @@ local tpus = import "../../tpus.libsonnet";
         epochs: 90, 
       },
     },
+    regressionTestConfig+: {
+      metric_success_conditions+: {
+        "Accuracy/test_final": {
+          success_threshold: {
+            fixed_value: 76.0,
+          },
+          comparison: "greater",
+        },
+      },
+    },
   },
   local v2_8 = {
     accelerator: tpus.v2_8,

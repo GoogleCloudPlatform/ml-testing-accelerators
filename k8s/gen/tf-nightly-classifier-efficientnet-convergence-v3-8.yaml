@@ -39,7 +39,7 @@
             - "--dataset=imagenet"
             - "--mode=train_and_eval"
             - "--data_dir=gs://imagenet-us-central1/train"
-            - "--params_override=\"eval_dataset\":\n  \"batch_size\": 1024\n  \"use_per_replica_batch_size\": false\n\"train\":\n  \"epochs\": 90\n\"train_dataset\":\n  \"batch_size\": 1024\n  \"use_per_replica_batch_size\": false"
+            - "--params_override=\"eval_dataset\":\n  \"batch_size\": 1024\n  \"use_per_replica_batch_size\": false\n\"train\":\n  \"epochs\": 350\n\"train_dataset\":\n  \"batch_size\": 1024\n  \"use_per_replica_batch_size\": false"
             - "--model_dir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
@@ -59,7 +59,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "METRIC_CONFIG"
-              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": {\n  \"metric_success_conditions\": {\n   \"total_wall_time\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 5\n    },\n    \"wait_for_n_points_of_history\": 10\n   }\n  },\n  \"write_to_error_reporting\": true\n },\n \"test_name\": \"tf-nightly-classifier-efficientnet-convergence-v3-8\"\n}"
+              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": {\n  \"metric_success_conditions\": {\n   \"Accuracy/test_final\": {\n    \"comparison\": \"greater\",\n    \"success_threshold\": {\n     \"fixed_value\": 76\n    }\n   },\n   \"total_wall_time\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 5\n    },\n    \"wait_for_n_points_of_history\": 10\n   }\n  },\n  \"write_to_error_reporting\": true\n },\n \"test_name\": \"tf-nightly-classifier-efficientnet-convergence-v3-8\"\n}"
             - "name": "MODEL_DIR"
               "value": "gs://xl-ml-test-us-central1/k8s/classifier-efficientnet/convergence/v3-8/$(JOB_NAME)"
             "image": "gcr.io/xl-ml-test/model-garden:nightly"
