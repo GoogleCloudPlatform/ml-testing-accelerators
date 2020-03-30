@@ -270,7 +270,7 @@ class CloudMetricsHandler(object):
           wall_time=row['timestamp'].timestamp()))
     return metrics_history
 
-  def compute_bounds_and_report_errors(self, job_status, metrics_history, new_metrics):
+  def compute_bounds_and_report_errors(self, metrics_history, new_metrics):
     """Compute the bounds for metrics and report abnormal values.
 
     Any metric that is currently outside the expected bounds is reported to
@@ -280,7 +280,6 @@ class CloudMetricsHandler(object):
     to BigQuery as a visual aid when rendering metrics history into charts.
 
     Args:
-      job_status (dict): Contains information about the Kubernetes Job.
       metrics_history(dict): Historic values of each metric.
       new_metrics(dict): Key is metric name and value is MetricPoint containing
         the latest aggregated value for that metric.
@@ -294,12 +293,6 @@ class CloudMetricsHandler(object):
     # Add the metrics from the latest run. These aren't in Bigquery yet.
     for metric_name, metric_value in new_metrics.items():
       metrics_history[metric_name].append(metric_value)
-
-    if job_status['final_status'] != job_status_handler.SUCCESS:
-      self.logger.error(
-          'job_status was `{}` for test `{}`'.format(
-              job_status['final_status'], self.test_name),
-          logs_link=self.stackdriver_logs_link)
 
     metric_name_to_visual_bounds = {}
     metric_subset_to_report = set(
@@ -400,6 +393,11 @@ def _process_pubsub_message(msg, status_handler, logger):
       'stop_time': stop_time,
       'num_failures': num_failures,
   }
+  if job_status['final_status'] != job_status_handler.SUCCESS:
+    self.logger.error(
+        'job_status was `{}` for test `{}`'.format(
+            job_status['final_status'], self.test_name),
+        logs_link=self.stackdriver_logs_link)
 
   # TODO: pass these in the pubsub message and remove this block.
   if not test_type:
@@ -415,9 +413,11 @@ def _process_pubsub_message(msg, status_handler, logger):
       regression_test_config, test_type, accelerator, framework_version, logger)
 
   new_metrics = handler.get_metrics_from_events_dir()
-  metrics_history = handler.get_metrics_history_from_bigquery()
-  metric_name_to_visual_bounds = handler.compute_bounds_and_report_errors(
-      job_status, metrics_history, new_metrics)
+  if self.regression_test_config:
+    metrics_history = handler.get_metrics_history_from_bigquery()
+    metric_name_to_visual_bounds = handler.compute_bounds_and_report_errors(
+        metrics_history, new_metrics)
+
   handler.add_status_and_metrics_to_bigquery(
       job_status, new_metrics, metric_name_to_visual_bounds)
   return True  # Ack the message.
