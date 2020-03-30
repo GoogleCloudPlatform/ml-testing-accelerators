@@ -394,7 +394,7 @@ def _process_pubsub_message(msg, status_handler, logger):
       'num_failures': num_failures,
   }
   if job_status['final_status'] != job_status_handler.SUCCESS:
-    self.logger.error(
+    logger.error(
         'job_status was `{}` for test `{}`'.format(
             job_status['final_status'], self.test_name),
         logs_link=self.stackdriver_logs_link)
