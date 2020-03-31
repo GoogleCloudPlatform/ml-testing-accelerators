@@ -50,7 +50,20 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "METRIC_CONFIG"
-              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"tags_to_ignore\": [\n   \"LearningRate\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": null,\n \"test_name\": \"pt-1.5-python-ops-functional-v2-8\"\n}"
+              "value": |
+                {
+                 "metric_collection_config": {
+                  "default_aggregation_strategies": [
+                   "final"
+                  ],
+                  "tags_to_ignore": [
+                   "LearningRate"
+                  ],
+                  "write_to_bigquery": true
+                 },
+                 "regression_test_config": null,
+                 "test_name": "pt-1.5-python-ops-functional-v2-8"
+                }
             - "name": "MODEL_DIR"
               "value": "gs://xl-ml-test-us-central1/k8s/python-ops/functional/v2-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
