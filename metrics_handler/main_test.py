@@ -89,7 +89,6 @@ class CloudMetricsHandlerTest(absltest.TestCase):
     final_metrics = metrics_handler.get_metrics_from_events_dir()
     with self.assertLogs(level='ERROR'):
       metrics_handler.compute_bounds_and_report_errors(
-          {'final_status': 'success'},
           {'foo_final': [], 'total_wall_time': []},
           final_metrics
       )
