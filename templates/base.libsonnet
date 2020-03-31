@@ -81,7 +81,7 @@ local tpus = import "tpus.libsonnet";
                   test_name: config.testName,
                   metric_collection_config: config.metricCollectionConfig,
                   regression_test_config: config.regressionTestConfig,
-                }, " "),
+                }, " ") + "\n",  // Add newline to make JSonnet generate a multi-line YAML string
               },
               env: [
                 {

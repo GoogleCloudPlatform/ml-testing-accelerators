@@ -54,7 +54,64 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "METRIC_CONFIG"
-              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"tags_to_ignore\": [\n   \"LearningRate\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": {\n  \"metric_subset_to_alert\": [\n   \"ExecuteTime__Percentile_99_sec_final\",\n   \"CompileTime__Percentile_99_sec_final\",\n   \"total_wall_time\",\n   \"Accuracy/test_final\",\n   \"aten_ops_sum_final\"\n  ],\n  \"metric_success_conditions\": {\n   \"Accuracy/test_final\": {\n    \"comparison\": \"greater\",\n    \"success_threshold\": {\n     \"fixed_value\": 72\n    }\n   },\n   \"CompileTime__Percentile_99_sec_final\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 5\n    },\n    \"wait_for_n_points_of_history\": 10\n   },\n   \"ExecuteTime__Percentile_99_sec_final\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 5\n    },\n    \"wait_for_n_points_of_history\": 10\n   },\n   \"aten_ops_sum_final\": {\n    \"comparison\": \"less_or_equal\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 0\n    }\n   },\n   \"total_wall_time\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 5\n    },\n    \"wait_for_n_points_of_history\": 10\n   }\n  },\n  \"write_to_error_reporting\": true\n },\n \"test_name\": \"pt-1.5-cifar-inline-convergence-v3-8\"\n}"
+              "value": |
+                {
+                 "metric_collection_config": {
+                  "default_aggregation_strategies": [
+                   "final"
+                  ],
+                  "tags_to_ignore": [
+                   "LearningRate"
+                  ],
+                  "write_to_bigquery": true
+                 },
+                 "regression_test_config": {
+                  "metric_subset_to_alert": [
+                   "ExecuteTime__Percentile_99_sec_final",
+                   "CompileTime__Percentile_99_sec_final",
+                   "total_wall_time",
+                   "Accuracy/test_final",
+                   "aten_ops_sum_final"
+                  ],
+                  "metric_success_conditions": {
+                   "Accuracy/test_final": {
+                    "comparison": "greater",
+                    "success_threshold": {
+                     "fixed_value": 72
+                    }
+                   },
+                   "CompileTime__Percentile_99_sec_final": {
+                    "comparison": "less",
+                    "success_threshold": {
+                     "stddevs_from_mean": 5
+                    },
+                    "wait_for_n_points_of_history": 10
+                   },
+                   "ExecuteTime__Percentile_99_sec_final": {
+                    "comparison": "less",
+                    "success_threshold": {
+                     "stddevs_from_mean": 5
+                    },
+                    "wait_for_n_points_of_history": 10
+                   },
+                   "aten_ops_sum_final": {
+                    "comparison": "less_or_equal",
+                    "success_threshold": {
+                     "stddevs_from_mean": 0
+                    }
+                   },
+                   "total_wall_time": {
+                    "comparison": "less",
+                    "success_threshold": {
+                     "stddevs_from_mean": 5
+                    },
+                    "wait_for_n_points_of_history": 10
+                   }
+                  },
+                  "write_to_error_reporting": true
+                 },
+                 "test_name": "pt-1.5-cifar-inline-convergence-v3-8"
+                }
             - "name": "MODEL_DIR"
               "value": "gs://xl-ml-test-us-central1/k8s/cifar-inline/convergence/v3-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"

@@ -7,7 +7,7 @@ See [our developing doc](../doc/developing) for build pre-requisites.
 To run a single test, run the following:
 
 ```bash
-jsonnet templates/oneshot.jsonnet --tla-str test=$TEST_NAME | kubectl create -f -
+jsonnet templates/oneshot.jsonnet -S --tla-str test=$TEST_NAME | kubectl create -f -
 ```
 
 `$TEST_NAME` is the generated name of a test, such as `tf-nightly-mnist-functional-v2-8`.
