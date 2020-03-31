@@ -33,6 +33,9 @@ local tpus = import "../../tpus.libsonnet";
       "-c",
       base_command + " behave -e ipynb_checkpoints --tags=-fails -i %s" % self.testFeature,
     ],
+    regressionTestConfig: {
+      alert_for_failed_jobs: false,
+    },
   },
 
   local API = {
