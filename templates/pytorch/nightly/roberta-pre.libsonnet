@@ -21,7 +21,7 @@ local utils = import "../../utils.libsonnet";
   local roberta = base.PyTorchTest {
     modelName: "roberta-pre",
     paramsOverride: {
-      maxEpochs: error "Must set `maxEpoch`",
+      maxEpoch: error "Must set `maxEpoch`",
     },
     command: utils.scriptCommand(
       |||

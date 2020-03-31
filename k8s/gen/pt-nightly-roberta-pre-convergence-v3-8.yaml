@@ -33,9 +33,9 @@
             - "/bin/bash"
             - "-c"
             - |
-              set -x
               set -u
               set -e
+              set -x
               
               pip install --editable tpu-examples/deps/fairseq
               python3 \

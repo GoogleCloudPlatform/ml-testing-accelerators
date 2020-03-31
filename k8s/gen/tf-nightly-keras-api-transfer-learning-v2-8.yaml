@@ -33,9 +33,9 @@
             - "/bin/bash"
             - "-c"
             - |
-              set -x
               set -u
               set -e
+              set -x
               
               export PATH=$PATH:/root/google-cloud-sdk/bin
               gcloud source repos clone cloudtpu-tf20-api-tests --project=gcp-tpupods-demo
