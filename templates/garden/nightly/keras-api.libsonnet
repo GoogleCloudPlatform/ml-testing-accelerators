@@ -16,23 +16,21 @@ local base = import "base.libsonnet";
 local timeouts = import "../../timeouts.libsonnet";
 local mixins = import "../../mixins.libsonnet";
 local tpus = import "../../tpus.libsonnet";
+local utils = import "../../utils.libsonnet";
 
 {
-  local base_command = ||| 
-    export PATH=$PATH:/root/google-cloud-sdk/bin &&
-    gcloud source repos clone cloudtpu-tf20-api-tests --project=gcp-tpupods-demo &&
-    cd cloudtpu-tf20-api-tests &&
-    pip3 install behave &&
-  |||,
-
   local keras_test = base.GardenTest {
-    testFeature:: "aaa",
+    testFeature:: error "Must override `testFeature`",
     modelName: "keras-api",
-    command: [
-      "/bin/bash",
-      "-c",
-      base_command + " behave -e ipynb_checkpoints --tags=-fails -i %s" % self.testFeature,
-    ],
+    command: utils.scriptCommand(
+      |||
+        export PATH=$PATH:/root/google-cloud-sdk/bin
+        gcloud source repos clone cloudtpu-tf20-api-tests --project=gcp-tpupods-demo
+        cd cloudtpu-tf20-api-tests
+        pip3 install behave
+        behave -e ipynb_checkpoints --tags=-fails -i %s
+      ||| % self.testFeature
+    ),
     regressionTestConfig: {
       alert_for_failed_jobs: false,
     },

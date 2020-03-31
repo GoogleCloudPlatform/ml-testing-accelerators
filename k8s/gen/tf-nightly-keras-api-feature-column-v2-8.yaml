@@ -32,7 +32,17 @@
           - "args":
             - "/bin/bash"
             - "-c"
-            - "export PATH=$PATH:/root/google-cloud-sdk/bin &&\ngcloud source repos clone cloudtpu-tf20-api-tests --project=gcp-tpupods-demo &&\ncd cloudtpu-tf20-api-tests &&\npip3 install behave &&\n behave -e ipynb_checkpoints --tags=-fails -i feature_column"
+            - |
+              set -x
+              set -u
+              set -e
+              
+              export PATH=$PATH:/root/google-cloud-sdk/bin
+              gcloud source repos clone cloudtpu-tf20-api-tests --project=gcp-tpupods-demo
+              cd cloudtpu-tf20-api-tests
+              pip3 install behave
+              behave -e ipynb_checkpoints --tags=-fails -i feature_column
+              
             - "--model_dir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
