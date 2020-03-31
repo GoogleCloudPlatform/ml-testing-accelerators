@@ -104,11 +104,15 @@ class CloudMetricsHandler(object):
   def _get_table_id(self, dataset_name, table_name):
     return '{}.{}.{}'.format(self.project, dataset_name, table_name)
 
-  def get_metrics_from_events_dir(self):
+  def get_metrics_from_events_dir(self, job_status_dict):
     """Retrieves and aggregates metrics from Tensorboard Summary file.
 
+    Args:
+      job_status_dict (dict): Should contain `job_status`, `start_time`,
+        and `stop_time` as keys.
+
     Returns:
-      final_metrics(dict): Key is metric name and value is a MetricPoint
+      final_metrics (dict): Key is metric name and value is a MetricPoint
         containing the aggregated value for that metric.
     """
     tags_to_ignore = set(
@@ -133,7 +137,10 @@ class CloudMetricsHandler(object):
     except ValueError as e:
       raise ValueError("Error during metric aggregation: {}".format(e))
 
-    final_metrics['total_wall_time'] = metrics.total_wall_time(raw_metrics)
+    start_time = job_status_dict['start_time']
+    stop_time = job_status_dict['stop_time']
+    final_metrics['total_wall_time'] = metrics.MetricPoint(
+        stop_time - start_time, stop_time)
 
     tta_config = self.metric_collection_config.get('time_to_accuracy')
     # Compute time_to_accuracy if requested in the config.
@@ -144,7 +151,7 @@ class CloudMetricsHandler(object):
                          'See README for how to set up the config.')
       tag = tta_config['accuracy_tag']
       threshold = tta_config['accuracy_threshold']
-      try: 
+      try:
         final_metrics['time_to_accuracy'] = metrics.time_to_accuracy(
             raw_metrics, tag, threshold)
       except ValueError as e:
@@ -389,7 +396,7 @@ def _process_pubsub_message(msg, status_handler, logger):
                      'were both null; stopping early. See README for '
                      'documentation on writing these configs.')
 
-  status, start_time, stop_time, num_failures = status_handler.get_job_status(
+  status, stop_time, num_failures = status_handler.get_job_status(
       job_name, job_namespace)
   if status == job_status_handler.UNKNOWN_STATUS:
     logger.warning(
@@ -403,7 +410,7 @@ def _process_pubsub_message(msg, status_handler, logger):
     return True  # Ack the message.
   job_status = {
       'final_status': status,
-      'start_time': start_time,
+      'start_time': msg['publish_time'],
       'stop_time': stop_time,
       'num_failures': num_failures,
   }

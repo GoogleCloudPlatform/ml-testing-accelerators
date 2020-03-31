@@ -42,7 +42,14 @@ class JobStatusHandler(object):
     Raises:
       Exception if unable to initialize the Kubernetes client.
     """
+    self.project_id = project_id
+    self.zone = zone
+    self.cluster_name = cluster_name
     self.logger = logger
+    self.k8s_client = None
+
+
+  def _init_k8s_client(self):
     # Attempt to initialize a Kubernetes client to retrieve Job statuses.
     # Different methods are used depending on where this code runs.
     try:
@@ -51,7 +58,8 @@ class JobStatusHandler(object):
       # use this path by running `gcloud auth application-default login`.
       self.logger.info('Attempting to init k8s client from cluster response.')
       container_client = container_v1.ClusterManagerClient()
-      response = container_client.get_cluster(project_id, zone, cluster_name)
+      response = container_client.get_cluster(
+          self.project_id, self.zone, self.cluster_name)
       credentials, project = google.auth.default(
           scopes=['https://www.googleapis.com/auth/cloud-platform'])
       creds, projects = google.auth.default()
@@ -89,19 +97,9 @@ class JobStatusHandler(object):
         raise
 
 
-  def get_job_status(self, job_name, namespace):
-    """Returns key information about the status of a Kubernetes Job.
-
-    Args:
-      job_name (string): Name of the job.
-      namespace (string): Name of the Kubernetes namespace where the job ran.
-
-    Returns:
-      completion_code (string): The current status of the Job.
-      start_time (timestamp): Time at which the Job began.
-      stop_time (timestamp): Time at which the Job completed or fully failed.
-      num_failures (int): Number of unsuccessful attempts of this Job.
-    """
+  def _query_for_status(self, job_name, namespace):
+    if not self.k8s_client:
+      self._init_k8s_client()
     try:
       status = self.k8s_client.read_namespaced_job_status(
           job_name, namespace).status
@@ -111,33 +109,49 @@ class JobStatusHandler(object):
         self.logger.error(
             'Job with job_name: {} no longer exists in namespace: '
             '{}.  Error was: {}'.format(job_name, namespace, e))
-        return DOES_NOT_EXIST, None, None, None
+        return DOES_NOT_EXIST, None
       else:
         self.logger.error(
             'Failed to get job status for job_name: {} and '
             'namespace: {}.  Error was: {}'.format(
                 job_name, namespace, e))
-        return UNKNOWN_STATUS, None, None, None
+        return FAILURE, None
+    return SUCCESS, status
+
+
+  def interpret_status(self, status, job_name):
+    """Interprets the status of a Kubernetes job.
+
+    Args:
+      status (Status): Return value of e.g. `read_namespaced_job_status`.
+      job_name (string): Name of the job to use in logging.
+
+    Returns:
+      completion_code (string): State that the Job ended in.
+      stop_time (timestamp): Time at which the Job completed or fully failed.
+      num_failures (int): Number of unsuccessful attempts of this Job.
+    """
     self.logger.info('job_name: {}. status: {}'.format(job_name, status))
-    start_time = status.start_time.timestamp()
     if status.active:
       self.logger.warning('Job is still active. Returning UNKNOWN_STATUS.')
-      return UNKNOWN_STATUS, start_time, None, None
+      return UNKNOWN_STATUS, None, None
 
-    # Interpret status and return the important parts.
     completion_code = UNKNOWN_STATUS
     if status.succeeded:
       completion_code = SUCCESS
       if status.completion_time:
         stop_time = status.completion_time.timestamp()
       else:
-        self.logger.error(
-            'No completion_time in success status for job: {}. '
-            'Status: {}'.format(job_name, status))
         if status.conditions and len(status.conditions) == 1 and \
             status.conditions[0].last_transition_time:
           stop_time = status.conditions[0].last_transition_time.timestamp()
+          self.logger.error(
+              'No completion_time in success status for job: {}. Using '
+              'last_transition_time. Status: {}'.format(job_name, status))
         else:
+          self.logger.error(
+              'No completion_time or transition time in success status for '
+              'job: {}. Using time.time(). Status: {}'.format(job_name, status))
           stop_time = time.time()
     else:
       if len(status.conditions) != 1:
@@ -152,4 +166,27 @@ class JobStatusHandler(object):
         stop_time = status.conditions[0].last_transition_time.timestamp()
 
     num_failures = status.failed or 0
-    return completion_code, start_time, stop_time, num_failures
+    return completion_code, stop_time, num_failures
+
+
+  def get_job_status(self, job_name, namespace):
+    """Returns key information about the status of a Kubernetes Job.
+
+    Args:
+      job_name (string): Name of the job.
+      namespace (string): Name of the Kubernetes namespace where the job ran.
+
+    Returns:
+      completion_code (string): The current status of the Job.
+      stop_time (timestamp): Time at which the Job completed or fully failed.
+      num_failures (int): Number of unsuccessful attempts of this Job.
+    """
+    status, retrieval_status = self._query_for_status(job_name, namespace)
+    if retrieval_status == DOES_NOT_EXIST:
+      return DOES_NOT_EXIST, None, None
+    elif retrieval_status == FAILURE:
+      return UNKNOWN_STATUS, None, None
+
+    completion_code, stop_time, num_failures = self.interpret_status(
+        status, job_name)
+    return completion_code, stop_time, num_failures
