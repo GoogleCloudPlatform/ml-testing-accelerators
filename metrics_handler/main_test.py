@@ -40,6 +40,12 @@ class CloudMetricsHandlerTest(absltest.TestCase):
 
     self.summary_writer.close()
 
+    self.job_status_dict = {
+      'job_status': 'SUCCESS',
+      'stop_time': 1000,
+      'start_time': 2000,
+    }
+
   def test_get_metrics_from_event_dir(self):
     metrics_handler = main.CloudMetricsHandler(
       test_name="test",
@@ -55,9 +61,11 @@ class CloudMetricsHandlerTest(absltest.TestCase):
       logger=self.logger,
     )
 
-    final_metrics = metrics_handler.get_metrics_from_events_dir()
-    self.assertContainsSubset(['foo_final', 'foo_min', 'bar_final', 'bar_min'],
-                              final_metrics.keys())
+    final_metrics = metrics_handler.get_metrics_from_events_dir(
+        self.job_status_dict)
+    self.assertContainsSubset(
+        ['foo_final', 'foo_min', 'bar_final', 'bar_min', 'total_wall_time'],
+        final_metrics.keys())
 
   def test_compute_bounds_and_report_errors_fixed_value(self):
     metrics_handler = main.CloudMetricsHandler(
@@ -86,7 +94,8 @@ class CloudMetricsHandlerTest(absltest.TestCase):
       logger=self.logger,
     )
 
-    final_metrics = metrics_handler.get_metrics_from_events_dir()
+    final_metrics = metrics_handler.get_metrics_from_events_dir(
+        self.job_status_dict)
     with self.assertLogs(level='ERROR'):
       metrics_handler.compute_bounds_and_report_errors(
           {'foo_final': [], 'total_wall_time': []},

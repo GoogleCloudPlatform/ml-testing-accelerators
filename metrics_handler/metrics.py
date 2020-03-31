@@ -135,22 +135,6 @@ def aggregate_metrics(raw_metrics, default_strategies, metric_strategies=None):
   return final_metrics
 
 
-def total_wall_time(raw_metrics):
-  """Calculate the total wall time from TensorBoard summaries.
-  
-  Args:
-    raw_metrics: dict mapping TensorBoard tags to list of MetricPoint.
-
-  Returns:
-    float, difference in wall time between first and last summaries.
-  """
-  values = list(itertools.chain.from_iterable(raw_metrics.values()))
-  min_wall_time = min(v.wall_time for v in values)
-  max_wall_time = max(v.wall_time for v in values)
-
-  return MetricPoint(max_wall_time - min_wall_time, max_wall_time)
-
-
 def time_to_accuracy(raw_metrics, tag, threshold):
   """Calculate the amount of time for accuracy to cross a given threshold.
 
