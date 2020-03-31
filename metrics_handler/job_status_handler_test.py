@@ -82,7 +82,6 @@ class JobStatusHandlerTest(parameterized.TestCase):
     self.assertEqual(stop_time, expected_datetime.timestamp())
     self.assertEqual(num_failures, args_dict.get('num_failures', 0))
 
-
   def test_interpret_status_success_without_completion_or_transition(self):
     expected_num_failures = 1
     now = time.time()
