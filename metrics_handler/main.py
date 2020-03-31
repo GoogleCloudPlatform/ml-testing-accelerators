@@ -296,6 +296,13 @@ class CloudMetricsHandler(object):
       metric_name_to_visual_bounds (dict): Key is metric name and value is a
         tuple of floats of the form (lower_bound, upper_bound).
     """
+    if not self.regression_test_config:
+      return {}
+    success_conditions = self.regression_test_config.get(
+        'metric_success_conditions')
+    if not success_conditions:
+      return {}
+
     metrics_history = metrics_history.copy()
 
     # Add the metrics from the latest run. These aren't in Bigquery yet.
@@ -312,15 +319,14 @@ class CloudMetricsHandler(object):
             'it does not appear in `metric_subset_to_report` in your '
             'regression test config.'.format(metric_name))
         continue
-      success_conditions = self.regression_test_config.get(
-        'metric_success_conditions')
       success_condition = success_conditions.get(metric_name) or \
         success_conditions.get('default')
       if not success_condition:
         self.logger.warning(
-            'metric: `{}` has an empty success condition in metric_opt_in_dict '
-            'but there is no default condition provided in the regression '
-            'test config. No bounds or alerts will be computed'.format(
+            'metric: `{}` has an empty success condition in the '
+            '`metric_success_conditions` dict in the regression_test_config '
+            'but there is no default condition provided. No bounds or '
+            'alerts will be computed. See README for config details.'.format(
                 metric_name))
         continue
       elif len(value_history) <= success_condition.get(
@@ -401,7 +407,11 @@ def _process_pubsub_message(msg, status_handler, logger):
       'stop_time': stop_time,
       'num_failures': num_failures,
   }
-  if job_status['final_status'] != job_status_handler.SUCCESS:
+  # Alert for failing jobs unless the user has explicitly added a config
+  # that disables alerts for this test.
+  if job_status['final_status'] != job_status_handler.SUCCESS and (
+      not regression_test_config or regression_test_config.get(
+          'alert_for_failed_jobs', True)):
     logger.error(
         'job_status was `{}` for test `{}`'.format(
             job_status['final_status'], self.test_name),

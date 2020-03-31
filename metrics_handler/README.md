@@ -151,8 +151,12 @@ Full config options:
     "Accuracy/test_final"
   ],
 
-  # (Optional) Defaults to True. Set to False to disable Stackdriver alerting
-  # for training metrics of this test.
-  "write_to_error_reporting": "True"
+  # (Optional) Defaults to True. If set to false, this test will not write
+  # any errors to Stackdriver Error Reporting for out-of-bounds metrics.
+  "write_to_error_reporting": "True",
+
+  # (Optional) Defaults to True. If set to false, this test will not send
+  # any alerts emails if the test crashes or times out.
+  "alert_for_failed_jobs": "True"
 }
 ```
