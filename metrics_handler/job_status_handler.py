@@ -181,7 +181,7 @@ class JobStatusHandler(object):
       stop_time (timestamp): Time at which the Job completed or fully failed.
       num_failures (int): Number of unsuccessful attempts of this Job.
     """
-    status, retrieval_status = self._query_for_status(job_name, namespace)
+    retrieval_status, status = self._query_for_status(job_name, namespace)
     if retrieval_status == DOES_NOT_EXIST:
       return DOES_NOT_EXIST, None, None
     elif retrieval_status == FAILURE:
