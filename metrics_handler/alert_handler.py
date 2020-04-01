@@ -149,10 +149,14 @@ class AlertHandler(object):
     """
     self._log_all(message, logging.FATAL, logs_link=logs_link)
 
-  def send_email(self):
-    """Sends alert email and clears the current email draft."""
-    if not self.write_to_email or not self.messages_to_email:
-      return
+  def generate_email_body(self):
+    """Generate the HTML body of email based on the messages logged so far.
+
+    Returns:
+      html_message_body (string): HTML body of the email as a string.
+    """
+    if not self.messages_to_email:
+      return ''
     html_message_body = 'New errors in test suite for {}:'.format(
         self.project_id)
     html_message_body += '<ul>'
@@ -169,6 +173,9 @@ class AlertHandler(object):
       if logs_link != _NO_LOGS:
         html_message_body += '<li><a href="{}">Stackdriver logs for this ' \
                              'run of the test</a></li>'.format(logs_link)
+        html_message_body += '<li><a href="{}">Kubernetes workload for this ' \
+                             'run of the test</a></li>'.format(
+                                 util.workload_link_from_logs_link(logs_link))
         html_message_body += '<li>Command to download plaintext logs: ' \
                              '<code style="background-color:#e3e3e3;">' \
                              '{}</code></li>'.format(
@@ -177,6 +184,13 @@ class AlertHandler(object):
       html_message_body += '</ul>'
       html_message_body += '</li>'
     html_message_body += '</ul>'
+    return html_message_body
+
+  def send_email(self):
+    """Sends alert email and clears the current email draft."""
+    if not self.write_to_email or not self.messages_to_email:
+      return
+    html_message_body = self.generate_email_body()
     message = Mail(
         from_email=From(self.sender_email,
                         'Cloud Accelerators Alert Manager'),
