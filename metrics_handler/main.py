@@ -74,7 +74,6 @@ class CloudMetricsHandler(object):
       logger (`AlertHandler` instance): Used to write logs and alert emails.
     """
     self.test_name = test_name
-
     self.events_dir = events_dir
     self.stackdriver_logs_link = stackdriver_logs_link
     self.metric_collection_config = metric_collection_config or {}
@@ -421,7 +420,7 @@ def _process_pubsub_message(msg, status_handler, logger):
           'alert_for_failed_jobs', True)):
     logger.error(
         'job_status was `{}` for test `{}`'.format(
-            job_status['final_status'], self.test_name),
+            job_status['final_status'], test_name),
         logs_link=logs_link)
 
   # TODO: pass these in the pubsub message and remove this block.
@@ -437,8 +436,8 @@ def _process_pubsub_message(msg, status_handler, logger):
       test_name, events_dir, logs_link, metric_collection_config,
       regression_test_config, test_type, accelerator, framework_version, logger)
 
-  new_metrics = handler.get_metrics_from_events_dir()
-  if self.regression_test_config:
+  new_metrics = handler.get_metrics_from_events_dir(job_status)
+  if regression_test_config:
     metrics_history = handler.get_metrics_history_from_bigquery()
     metric_name_to_visual_bounds = handler.compute_bounds_and_report_errors(
         metrics_history, new_metrics)
