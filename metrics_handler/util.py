@@ -22,6 +22,7 @@ import re
 LOGS_DOWNLOAD_COMMAND = """gcloud logging read 'resource.type=k8s_container resource.labels.project_id={project} resource.labels.location={zone} resource.labels.cluster_name={cluster} resource.labels.namespace_name={namespace} resource.labels.pod_name:{pod}' --limit 10000000000000 --order asc --format 'value(textPayload)' --project={project} > {pod}_logs.txt && sed -i '/^$/d' {pod}_logs.txt"""
 LOG_LINK_REGEX = re.compile('https://console\.cloud\.google\.com/logs\?project=(\S+)\&advancedFilter=resource\.type\%3Dk8s_container\%0Aresource\.labels\.project_id\%3D(?P<project>\S+)\%0Aresource\.labels\.location=(?P<zone>\S+)\%0Aresource\.labels\.cluster_name=(?P<cluster>\S+)\%0Aresource\.labels\.namespace_name=(?P<namespace>\S+)\%0Aresource\.labels\.pod_name:(?P<pod>[a-zA-Z0-9\-\.]+)')
 UNBOUND_DATE_RANGE = '&dateRangeUnbound=backwardInTime'
+WORKLOAD_LINK = """https://console.cloud.google.com/kubernetes/job/us-central1-b/{cluster}/{namespace}/{pod}?project={project}&{pod}_events_tablesize=50&tab=events&duration=P30D&pod_summary_list_tablesize=20&service_list_datatablesize=20"""
 
 def _parse_logs_link(logs_link):
   log_pieces = LOG_LINK_REGEX.match(logs_link)
@@ -58,6 +59,21 @@ def download_command_from_logs_link(logs_link):
   log_pieces_dict = _parse_logs_link(logs_link)
   command = LOGS_DOWNLOAD_COMMAND.format(**log_pieces_dict)
   return command
+
+
+def workload_link_from_logs_link(logs_link):
+  """Generate a link to the Kubernetes workload based on `logs_link`.
+
+  Args:
+    logs_link (string): Link to the logs of a Kubernetes pod.
+
+  Returns:
+    link (string): A link to the Kubernetes workload page for the workload
+      that was referenced in `logs_link`.
+  """
+  log_pieces_dict = _parse_logs_link(logs_link)
+  link = WORKLOAD_LINK.format(**log_pieces_dict)
+  return link
 
 
 def test_name_from_logs_link(logs_link):
