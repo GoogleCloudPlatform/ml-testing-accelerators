@@ -18,7 +18,7 @@ local tpus = import "../../tpus.libsonnet";
 
 {
   local resnet50_MP = base.PyTorchTest {
-    modelName: "resnet50-MP",
+    modelName: "resnet50-mp",
     command: [
       "python3",
       "pytorch/xla/test/test_train_mp_imagenet.py",

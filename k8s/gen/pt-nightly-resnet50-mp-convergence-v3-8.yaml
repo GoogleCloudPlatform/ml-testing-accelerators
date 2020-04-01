@@ -15,13 +15,13 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-resnet50-MP-functional-v3-8"
+  "name": "pt-nightly-resnet50-mp-convergence-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 7200
+      "activeDeadlineSeconds": 93600
       "backoffLimit": 2
       "template":
         "metadata":
@@ -37,8 +37,8 @@
             - "--num_workers=8"
             - "--batch_size=128"
             - "--log_steps=200"
-            - "--num_epochs=2"
-            - "--datadir=/datasets/imagenet-mini"
+            - "--num_epochs=90"
+            - "--datadir=/datasets/imagenet"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -77,6 +77,12 @@
                    "aten_ops_sum_final"
                   ],
                   "metric_success_conditions": {
+                   "Accuracy/test_final": {
+                    "comparison": "greater",
+                    "success_threshold": {
+                     "fixed_value": 75
+                    }
+                   },
                    "CompileTime__Percentile_99_sec_final": {
                     "comparison": "less",
                     "success_threshold": {
@@ -107,10 +113,10 @@
                   },
                   "write_to_error_reporting": true
                  },
-                 "test_name": "pt-nightly-resnet50-MP-functional-v3-8"
+                 "test_name": "pt-nightly-resnet50-mp-convergence-v3-8"
                 }
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/resnet50-MP/functional/v3-8/$(JOB_NAME)"
+              "value": "gs://xl-ml-test-us-central1/k8s/resnet50-mp/convergence/v3-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
               "value": "0"
             "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
@@ -126,7 +132,7 @@
             - "mountPath": "/dev/shm"
               "name": "dshm"
             - "mountPath": "/datasets"
-              "name": "imagenet-mini-pd"
+              "name": "imagenet-pd"
               "readOnly": true
           "restartPolicy": "Never"
           "volumes":
@@ -135,7 +141,7 @@
             "name": "dshm"
           - "gcePersistentDisk":
               "fsType": "ext4"
-              "pdName": "imagenet-mini-pd-central1-b"
+              "pdName": "imagenet-pd-central1-b"
               "readOnly": true
-            "name": "imagenet-mini-pd"
-  "schedule": "0 14 * * *"
+            "name": "imagenet-pd"
+  "schedule": "0 6 * * 1,6"
