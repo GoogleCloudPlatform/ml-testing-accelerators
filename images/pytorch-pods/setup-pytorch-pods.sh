@@ -13,11 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -u
+set -e
+set -x
+
 NUM_CORES=$(echo "${ACCELERATOR_TYPE}" | egrep -o "[0-9]*" | tail -1)
 NUM_CORES_PER_HOST=8
 INSTANCE_GROUP_SIZE=$(expr "${NUM_CORES}" / "${NUM_CORES_PER_HOST}")
 
-export INSTANCE_TEMPLATE_NAME="instance-template-${RESOURCE_SUFFIX}"
 echo "Creating GCE Instance Template: ${INSTANCE_TEMPLATE_NAME}"
 # Make sure it has PD with the dataset
 gcloud compute --project="${PROJECT}" \
@@ -32,9 +35,9 @@ gcloud compute --project="${PROJECT}" \
   --boot-disk-size=200GB \
   --boot-disk-type=pd-standard \
   --boot-disk-device-name="${INSTANCE_TEMPLATE_NAME}" \
-  --reservation-affinity=any
+  --reservation-affinity=any \
+  --metadata=enable-oslogin=TRUE
 
-export TPU_POD_NAME="tpu-pod-${RESOURCE_SUFFIX}"
 echo "Creating TPU Pod: ${TPU_POD_NAME}"
 gcloud compute --project="${PROJECT}" \
   tpus \
@@ -43,12 +46,10 @@ gcloud compute --project="${PROJECT}" \
   --network=default \
   --accelerator-type="${ACCELERATOR_TYPE}" \
   --version="${RUNTIME_VERSION}" \
-  --zone="${ZONE}" \
+  --zone="${POD_ZONE}" \
   --async
 
-export INSTANCE_GROUP_NAME="instance-group-${RESOURCE_SUFFIX}"
 echo "Creating GCE Instance Group: ${INSTANCE_GROUP_NAME}"
-
 gcloud compute --project="${PROJECT}" \
   instance-groups \
   managed \
@@ -57,7 +58,7 @@ gcloud compute --project="${PROJECT}" \
   --base-instance-name="${INSTANCE_GROUP_NAME}" \
   --template="${INSTANCE_TEMPLATE_NAME}" \
   --size="${INSTANCE_GROUP_SIZE}" \
-  --zone="${ZONE}"
+  --zone="${POD_ZONE}"
 
 echo "Waiting for TPU Pod ${TPU_POD_NAME} to become healthy"
 WFH_TIMEOUT=600
@@ -71,11 +72,6 @@ PROJECT=${PROJECT} TPU_POD_NAME=${TPU_POD_NAME} ZONE=${ZONE} \
       tpus \
       describe \
       ${TPU_POD_NAME} \
-      --zone=${ZONE} \
+      --zone=${POD_ZONE} \
       --format="value(health)") && \
     echo "Waiting for healthy TPU (current health ${health:-NONE})..."; done'
-
-
-if [[ $? -ne 0 ]]; then
-  echo "TPU failed to become healthy."
-fi

@@ -19,7 +19,7 @@ RUN curl -sSL https://sdk.cloud.google.com | bash
 
 COPY images/setup.sh /
 COPY images/publish.sh /
-COPY images/setup-pytorch-pods.sh /
-COPY images/teardown-pytorch-pods.sh /
-COPY images/pytorch/entrypoint.sh /
+COPY images/pytorch-pods/setup-pytorch-pods.sh /
+COPY images/pytorch-pods/teardown-pytorch-pods.sh /
+COPY images/pytorch-pods/entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]

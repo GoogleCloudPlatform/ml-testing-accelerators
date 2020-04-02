@@ -13,24 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 source /setup.sh
-
-
-# TODO: Make these arguments piped through from jsonnet
-export MACHINE_TYPE=n1-standard-16
-export ACCELERATOR_TYPE=v3-32
-export RUNTIME_VERSION=pytorch-nightly
-export RESOURCE_SUFFIX=$POD_UID
-source /setup-pytorch-pods.sh
 
 set -u
 set -x
 
-source /publish.sh
+export RESOURCE_SUFFIX=$POD_UID
+export INSTANCE_TEMPLATE_NAME="instance-template-${RESOURCE_SUFFIX}"
+export TPU_POD_NAME="tpu-pod-${RESOURCE_SUFFIX}"
+export INSTANCE_GROUP_NAME="instance-group-${RESOURCE_SUFFIX}"
 
-# "$@" should look like python -m torch_xla.distributed.xla_dist --tpu=...
-docker-entrypoint.sh "$@"
+# source /publish.sh
 
-# Teardown resources
+/setup-pytorch-pods.sh && \
+export master=$(/root/google-cloud-sdk/bin/gcloud compute instance-groups \
+  list-instances \
+  ${INSTANCE_GROUP_NAME} \
+  --zone=${POD_ZONE} \
+  --format="value(NAME)" \
+  --limit=1) && \
+echo "Instance group master: ${master}" && \
+docker-entrypoint.sh gcloud -q compute ssh --internal-ip --zone=$POD_ZONE $master \
+  --command "source /anaconda3/etc/profile.d/conda.sh && \
+  conda activate torch-xla-nightly && \
+  python -m torch_xla.distributed.xla_dist --tpu=$TPU_POD_NAME --conda-env=torch-xla-nightly -- $@"
+exit_code=$?
+
 /teardown-pytorch-pods.sh
+exit $exit_code

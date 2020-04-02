@@ -1,0 +1,11 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/pytorch-pods:$_VERSION', '.', '-f', 'images/pytorch-pods/Dockerfile']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/$PROJECT_ID/pytorch-pods:$_VERSION']
+images: ['gcr.io/$PROJECT_ID/pytorch-pods:$_VERSION']
+timeout: 1200s  # 20 minutes
+substitutions:
+  _VERSION: 'latest'
+options:
+    substitution_option: 'ALLOW_LOOSE'
