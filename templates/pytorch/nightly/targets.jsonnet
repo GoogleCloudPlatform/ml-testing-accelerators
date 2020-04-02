@@ -18,6 +18,7 @@ local cppOperations = import "cpp-ops.libsonnet";
 local fairseqRobertaPretrain = import "roberta-pre.libsonnet";
 local fairseqTransformer = import "fs-transformer.libsonnet";
 local mnist = import "mnist.libsonnet";
+local mnistPods = import "mnist-pods.libsonnet";
 local pythonOperations = import "python-ops.libsonnet";
 local resnet50 = import "resnet50.libsonnet";
 local resnet50_MP = import "resnet50-MP.libsonnet";
@@ -30,6 +31,7 @@ std.flattenArrays([
   fairseqRobertaPretrain.configs,
   fairseqTransformer.configs,
   mnist.configs,
+  mnistPods.configs,
   pythonOperations.configs,
   resnet50.configs,
   resnet50_MP.configs,
