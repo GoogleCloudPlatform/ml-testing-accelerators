@@ -289,9 +289,6 @@ class CloudMetricsHandler(object):
   def get_existing_row(self):
     """Returns any existing row in job_history that is for the current test.
 
-    Args:
-      logs_link (string): The `logs_link` column as it appears in Bigquery.
-
     Returns:
       uuid (string): The `uuid` column for the row. If no row exists,
         this will be None.
@@ -315,14 +312,19 @@ class CloudMetricsHandler(object):
       publish_time = row['msg_publish_time']
     return uuid, publish_time
 
-  def delete_outdated_rows(self, uuid):
+  def delete_rows_for_uuid(self, uuid):
+    """Delete all rows in job_history and metric_history for a given uuid.
+
+    Args:
+      uuid (string): Unique identifier for the job run, i.e. the uuid column
+        of one row in the job_history table.
+    """
     delete_job_row_result = self.bigquery_client.query(
         'DELETE FROM `{}` WHERE uuid=\"{}\"'.format(
             self.job_history_table_id, uuid)).result()
     delete_metric_rows_result = self.bigquery_client.query(
         'DELETE FROM `{}` WHERE uuid=\"{}\"'.format(
             self.metric_history_table_id, uuid)).result()
-
 
   def compute_bounds_and_report_errors(self, metrics_history, new_metrics):
     """Compute the bounds for metrics and report abnormal values.
@@ -436,9 +438,8 @@ def _process_pubsub_message(msg, status_handler, logger):
                      'were both null; stopping early. See README for '
                      'documentation on writing these configs.')
 
-  status, stop_time, num_failures = job_status_handler.FAILURE, 111, 3
-  #status, stop_time, num_failures = status_handler.get_job_status(
-  #    job_name, job_namespace)
+  status, stop_time, num_failures = status_handler.get_job_status(
+      job_name, job_namespace)
   if status == job_status_handler.UNKNOWN_STATUS:
     logger.warning(
         'Unknown status for job_name: {}. Message will be '
@@ -477,12 +478,12 @@ def _process_pubsub_message(msg, status_handler, logger):
   if existing_row_publish_time:
     # If the current message is for an earlier attempt than the existing row,
     # we can stop early since we want to write metrics for the latest attempt.
-    if existing_row_publish_time >= publish_time:
+    if publish_time <= existing_row_publish_time:
       return True  # Ack the message.
     # If the current message is for a later attempt than the existing row,
     # clean up the existing rows and proceed with processing current message.
     else:
-      handler.delete_outdated_rows(existing_row_uuid)
+      handler.delete_rows_for_uuid(existing_row_uuid)
 
   # Alert for failing jobs unless the user has explicitly added a config
   # that disables alerts for this test.
