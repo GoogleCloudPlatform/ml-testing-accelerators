@@ -39,7 +39,7 @@
             - "--dataset=imagenet"
             - "--mode=train_and_eval"
             - "--data_dir=gs://imagenet-us-central1/train"
-            - "--params_override=\"eval_dataset\":\n  \"batch_size\": 1024\n  \"use_per_replica_batch_size\": false\n\"train\":\n  \"epochs\": 350\n\"train_dataset\":\n  \"batch_size\": 1024\n  \"use_per_replica_batch_size\": false"
+            - "--params_override=\"eval_dataset\":\n  \"batch_size\": 1024\n  \"use_per_replica_batch_size\": false\n\"train\":\n  \"epochs\": 500\n\"train_dataset\":\n  \"batch_size\": 1024\n  \"use_per_replica_batch_size\": false"
             - "--model_dir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
