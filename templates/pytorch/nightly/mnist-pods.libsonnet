@@ -31,6 +31,7 @@ local utils = import "../../utils.libsonnet";
       PodSpec:: {},
     },
     jobSpec+:: {
+      backoffLimit: 0,
       template+: {
         spec+: {
           containerMap+: {
