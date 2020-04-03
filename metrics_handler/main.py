@@ -300,7 +300,6 @@ class CloudMetricsHandler(object):
     """
     uuid = None
     publish_time = None
-    import pdb; pdb.set_trace()
     if not self.metric_collection_config.get('write_to_bigquery', True):
       self.logger.info('Skipping check for existing Bigquery rows.')
       return uuid, publish_time
@@ -314,21 +313,15 @@ class CloudMetricsHandler(object):
     for row in query_result:
       uuid = row['uuid']
       publish_time = row['msg_publish_time']
-    raise ValueError("stopping early")
     return uuid, publish_time
 
   def delete_outdated_rows(self, uuid):
-    import pdb; pdb.set_trace()
-    x = 1
-    return
     delete_job_row_result = self.bigquery_client.query(
         'DELETE FROM `{}` WHERE uuid=\"{}\"'.format(
             self.job_history_table_id, uuid)).result()
     delete_metric_rows_result = self.bigquery_client.query(
         'DELETE FROM `{}` WHERE uuid=\"{}\"'.format(
             self.metric_history_table_id, uuid)).result()
-    # do more stuff
-    x=1
 
 
   def compute_bounds_and_report_errors(self, metrics_history, new_metrics):
@@ -564,6 +557,7 @@ def run_main(event, context):
   # and all other messages for that test will be ack'ed without being processed.
   msgs_to_process = []
   msgs_to_process = [{'model_dir': 'gs://xl-ml-test-us-central1/k8s/python-ops/functional/v2-8/pt-nightly-python-ops-functional-v2-8-1585922400', 'logs_link': 'https://console.cloud.google.com/logs?project=xl-ml-test&advancedFilter=resource.type%3Dk8s_container%0Aresource.labels.project_id%3Dxl-ml-test%0Aresource.labels.location=us-central1-b%0Aresource.labels.cluster_name=xl-ml-test%0Aresource.labels.namespace_name=automated%0Aresource.labels.pod_name:pt-nightly-python-ops-functional-v2-8-1585922400', 'job_name': 'pt-nightly-python-ops-functional-v2-8-1585922400', 'job_namespace': 'automated', 'zone': 'us-central1-b', 'cluster_name': 'xl-ml-test', 'metric_collection_config': {'default_aggregation_strategies': ['final'], 'tags_to_ignore': ['LearningRate'], 'write_to_bigquery': True}, 'regression_test_config': None, 'test_name': 'pt-nightly-python-ops-functional-v2-8', 'publish_time': 1585926077, 'ack_id': 'IT4wPkVTRFAGFixdRkhRNxkIaFEOT14jPzUgKEUVBAgUBXx9cEFFdV9bdmhRDRlyfWBya14TCVBAAi9WURoHaE5tdSVxDBl6eWF8YlkTBQNHVHhbUjPWxYOG7ui-PANORfiHx54mIbf7lrhuZiU9XxJLLD5-LyJFQV5AEkwkF0RJUytDCypYEU4EIQ'}]
+  msgs_to_process = [{'model_dir': 'gs://xl-ml-test-us-central1/k8s/python-ops/functional/v2-8/pt-nightly-python-ops-functional-v2-8-1585922400', 'logs_link': 'https://console.cloud.google.com/logs?project=xl-ml-test&advancedFilter=resource.type%3Dk8s_container%0Aresource.labels.project_id%3Dxl-ml-test%0Aresource.labels.location=us-central1-b%0Aresource.labels.cluster_name=xl-ml-test%0Aresource.labels.namespace_name=automated%0Aresource.labels.pod_name:pt-nightly-mnist-convergence-v3-8-1582356600', 'job_name': 'pt-nightly-python-ops-functional-v2-8-1585922400', 'job_namespace': 'automated', 'zone': 'us-central1-b', 'cluster_name': 'xl-ml-test', 'metric_collection_config': {'default_aggregation_strategies': ['final'], 'tags_to_ignore': ['LearningRate'], 'write_to_bigquery': True}, 'regression_test_config': None, 'test_name': 'pt-nightly-python-ops-functional-v2-8', 'publish_time': 1585926077, 'ack_id': 'IT4wPkVTRFAGFixdRkhRNxkIaFEOT14jPzUgKEUVBAgUBXx9cEFFdV9bdmhRDRlyfWBya14TCVBAAi9WURoHaE5tdSVxDBl6eWF8YlkTBQNHVHhbUjPWxYOG7ui-PANORfiHx54mIbf7lrhuZiU9XxJLLD5-LyJFQV5AEkwkF0RJUytDCypYEU4EIQ'}]
   for test_name, msgs in test_name_to_msgs.items():
     sorted_msgs = sorted(msgs, key = lambda x: x['publish_time'])
     ids_to_ack.extend([msg['ack_id'] for msg in msgs[:-1]])
@@ -609,5 +603,3 @@ def run_main(event, context):
   logger.info('Processed a message for each of the following tests: '
               '{}'.format([x['test_name'] for x in msgs_to_process]))
   logger.send_email()
-
-run_main(None, None)
