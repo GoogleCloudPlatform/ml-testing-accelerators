@@ -25,8 +25,8 @@ local utils = import "../../utils.libsonnet";
     command: utils.scriptCommand(
       |||
         export PATH=$PATH:/root/google-cloud-sdk/bin
-        gcloud source repos clone cloudtpu-tf20-api-tests --project=gcp-tpupods-demo
-        cd cloudtpu-tf20-api-tests
+        gcloud source repos clone tf2-api-tests --project=xl-ml-test
+        cd tf2-api-tests
         pip3 install behave
         behave -e ipynb_checkpoints --tags=-fails -i %s
       ||| % self.testFeature
