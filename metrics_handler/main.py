@@ -510,7 +510,7 @@ def _process_pubsub_message(msg, status_handler, logger):
 
 def run_main(event, context):
   project_id = google.auth.default()[1]
-  logger = alert_handler.AlertHandler(project_id, write_to_email=False)
+  logger = alert_handler.AlertHandler(project_id)
 
   # Retrieve pubsub messages for all the tests that have been kicked off by
   # the test runner.
