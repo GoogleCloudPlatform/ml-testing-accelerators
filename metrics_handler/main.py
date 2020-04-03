@@ -527,8 +527,7 @@ def run_main(event, context):
     subscription = subscriber.create_subscription(
         subscription_id, topic, ack_deadline_seconds=300).name
   try:
-    #all_msgs = subscriber.pull(subscription, 100).received_messages
-    all_msgs = []
+    all_msgs = subscriber.pull(subscription, 100).received_messages
   except google.api_core.exceptions.DeadlineExceeded:
     logger.info(
         'No messages found for subscription: {}'.format(subscription))
@@ -556,8 +555,6 @@ def run_main(event, context):
   # Grab the latest message for each test. We will process only that message
   # and all other messages for that test will be ack'ed without being processed.
   msgs_to_process = []
-  msgs_to_process = [{'model_dir': 'gs://xl-ml-test-us-central1/k8s/python-ops/functional/v2-8/pt-nightly-python-ops-functional-v2-8-1585922400', 'logs_link': 'https://console.cloud.google.com/logs?project=xl-ml-test&advancedFilter=resource.type%3Dk8s_container%0Aresource.labels.project_id%3Dxl-ml-test%0Aresource.labels.location=us-central1-b%0Aresource.labels.cluster_name=xl-ml-test%0Aresource.labels.namespace_name=automated%0Aresource.labels.pod_name:pt-nightly-python-ops-functional-v2-8-1585922400', 'job_name': 'pt-nightly-python-ops-functional-v2-8-1585922400', 'job_namespace': 'automated', 'zone': 'us-central1-b', 'cluster_name': 'xl-ml-test', 'metric_collection_config': {'default_aggregation_strategies': ['final'], 'tags_to_ignore': ['LearningRate'], 'write_to_bigquery': True}, 'regression_test_config': None, 'test_name': 'pt-nightly-python-ops-functional-v2-8', 'publish_time': 1585926077, 'ack_id': 'IT4wPkVTRFAGFixdRkhRNxkIaFEOT14jPzUgKEUVBAgUBXx9cEFFdV9bdmhRDRlyfWBya14TCVBAAi9WURoHaE5tdSVxDBl6eWF8YlkTBQNHVHhbUjPWxYOG7ui-PANORfiHx54mIbf7lrhuZiU9XxJLLD5-LyJFQV5AEkwkF0RJUytDCypYEU4EIQ'}]
-  msgs_to_process = [{'model_dir': 'gs://xl-ml-test-us-central1/k8s/python-ops/functional/v2-8/pt-nightly-python-ops-functional-v2-8-1585922400', 'logs_link': 'https://console.cloud.google.com/logs?project=xl-ml-test&advancedFilter=resource.type%3Dk8s_container%0Aresource.labels.project_id%3Dxl-ml-test%0Aresource.labels.location=us-central1-b%0Aresource.labels.cluster_name=xl-ml-test%0Aresource.labels.namespace_name=automated%0Aresource.labels.pod_name:pt-nightly-mnist-convergence-v3-8-1582356600', 'job_name': 'pt-nightly-python-ops-functional-v2-8-1585922400', 'job_namespace': 'automated', 'zone': 'us-central1-b', 'cluster_name': 'xl-ml-test', 'metric_collection_config': {'default_aggregation_strategies': ['final'], 'tags_to_ignore': ['LearningRate'], 'write_to_bigquery': True}, 'regression_test_config': None, 'test_name': 'pt-nightly-python-ops-functional-v2-8', 'publish_time': 1585926077, 'ack_id': 'IT4wPkVTRFAGFixdRkhRNxkIaFEOT14jPzUgKEUVBAgUBXx9cEFFdV9bdmhRDRlyfWBya14TCVBAAi9WURoHaE5tdSVxDBl6eWF8YlkTBQNHVHhbUjPWxYOG7ui-PANORfiHx54mIbf7lrhuZiU9XxJLLD5-LyJFQV5AEkwkF0RJUytDCypYEU4EIQ'}]
   for test_name, msgs in test_name_to_msgs.items():
     sorted_msgs = sorted(msgs, key = lambda x: x['publish_time'])
     ids_to_ack.extend([msg['ack_id'] for msg in msgs[:-1]])
