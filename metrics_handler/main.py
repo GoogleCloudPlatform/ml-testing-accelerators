@@ -286,6 +286,51 @@ class CloudMetricsHandler(object):
           wall_time=row['timestamp'].timestamp()))
     return metrics_history
 
+  def get_existing_row(self):
+    """Returns any existing row in job_history that is for the current test.
+
+    Args:
+      logs_link (string): The `logs_link` column as it appears in Bigquery.
+
+    Returns:
+      uuid (string): The `uuid` column for the row. If no row exists,
+        this will be None.
+      publish_time (int): The `publish_time` column for the row. If no row
+        exists, this will be None.
+    """
+    uuid = None
+    publish_time = None
+    import pdb; pdb.set_trace()
+    if not self.metric_collection_config.get('write_to_bigquery', True):
+      self.logger.info('Skipping check for existing Bigquery rows.')
+      return uuid, publish_time
+    query_result = self.bigquery_client.query(
+        'SELECT * FROM `{}` WHERE stackdriver_logs_link=\"{}\"'.format(
+            self.job_history_table_id, self.stackdriver_logs_link)).result()
+    if query_result.total_rows > 1:
+      self.logger.error('Found more than 1 row in job_history for logs_link: '
+                        '{}'.format(logs_link),
+                        logs_link=self.stackdriver_logs_link)
+    for row in query_result:
+      uuid = row['uuid']
+      publish_time = row['publish_time']
+    raise ValueError("stopping early")
+    return uuid, publish_time
+
+  def delete_outdated_rows(self, uuid):
+    import pdb; pdb.set_trace()
+    x = 1
+    return
+    delete_job_row_result = self.bigquery_client.query(
+        'DELETE FROM `{}` WHERE uuid=\"{}\"'.format(
+            self.job_history_table_id, uuid)).result()
+    delete_metric_rows_result = self.bigquery_client.query(
+        'DELETE FROM `{}` WHERE uuid=\"{}\"'.format(
+            self.metric_history_table_id, uuid)).result()
+    # do more stuff
+    x=1
+
+
   def compute_bounds_and_report_errors(self, metrics_history, new_metrics):
     """Compute the bounds for metrics and report abnormal values.
 
@@ -369,7 +414,8 @@ class CloudMetricsHandler(object):
 
 
 def _process_pubsub_message(msg, status_handler, logger):
-  msg_age_sec = time.time() - msg['publish_time']
+  publish_time = msg['publish_time']
+  msg_age_sec = time.time() - publish_time
   if msg_age_sec < MIN_MSG_AGE_SEC:
     logger.warning('Message was {} seconds old, which is less than the '
                    'minimum of {}. Skipping for now but will retry on '
@@ -397,8 +443,9 @@ def _process_pubsub_message(msg, status_handler, logger):
                      'were both null; stopping early. See README for '
                      'documentation on writing these configs.')
 
-  status, stop_time, num_failures = status_handler.get_job_status(
-      job_name, job_namespace)
+  status, stop_time, num_failures = job_status_handler.FAILURE, 111, 3
+  #status, stop_time, num_failures = status_handler.get_job_status(
+  #    job_name, job_namespace)
   if status == job_status_handler.UNKNOWN_STATUS:
     logger.warning(
         'Unknown status for job_name: {}. Message will be '
@@ -411,19 +458,10 @@ def _process_pubsub_message(msg, status_handler, logger):
     return True  # Ack the message.
   job_status = {
       'final_status': status,
-      'start_time': msg['publish_time'],
+      'start_time': publish_time,
       'stop_time': stop_time,
       'num_failures': num_failures,
   }
-  # Alert for failing jobs unless the user has explicitly added a config
-  # that disables alerts for this test.
-  if job_status['final_status'] != job_status_handler.SUCCESS and (
-      not regression_test_config or regression_test_config.get(
-          'alert_for_failed_jobs', True)):
-    logger.error(
-        'job_status was `{}` for test `{}`'.format(
-            job_status['final_status'], test_name),
-        logs_link=logs_link)
 
   # TODO: pass these in the pubsub message and remove this block.
   if not test_type:
@@ -437,6 +475,30 @@ def _process_pubsub_message(msg, status_handler, logger):
   handler = CloudMetricsHandler(
       test_name, events_dir, logs_link, metric_collection_config,
       regression_test_config, test_type, accelerator, framework_version, logger)
+
+  # Sometimes pubsub messages get delayed. If we've already processed metrics
+  # for a different attempt of this test, we need to see if that attempt came
+  # before or after the current attempt.
+  existing_row_uuid, existing_row_publish_time = handler.get_existing_row()
+  if existing_row_publish_time:
+    # If the current message is for an earlier attempt than the existing row,
+    # we can stop early since we want to write metrics for the latest attempt.
+    if existing_row_publish_time >= publish_time:
+      return True  # Ack the message.
+    # If the current message is for a later attempt than the existing row,
+    # clean up the existing rows and proceed with processing current message.
+    else:
+      handler.delete_outdated_rows(existing_row_uuid)
+
+  # Alert for failing jobs unless the user has explicitly added a config
+  # that disables alerts for this test.
+  if job_status['final_status'] != job_status_handler.SUCCESS and (
+      not regression_test_config or regression_test_config.get(
+          'alert_for_failed_jobs', True)):
+    logger.error(
+        'job_status was `{}` for test `{}`'.format(
+            job_status['final_status'], test_name),
+        logs_link=logs_link)
 
   new_metrics = handler.get_metrics_from_events_dir(job_status)
   if regression_test_config:
@@ -453,7 +515,7 @@ def _process_pubsub_message(msg, status_handler, logger):
 
 def run_main(event, context):
   project_id = google.auth.default()[1]
-  logger = alert_handler.AlertHandler(project_id)
+  logger = alert_handler.AlertHandler(project_id, write_to_email=False)
 
   # Retrieve pubsub messages for all the tests that have been kicked off by
   # the test runner.
@@ -471,7 +533,8 @@ def run_main(event, context):
     subscription = subscriber.create_subscription(
         subscription_id, topic, ack_deadline_seconds=300).name
   try:
-    all_msgs = subscriber.pull(subscription, 100).received_messages
+    #all_msgs = subscriber.pull(subscription, 100).received_messages
+    all_msgs = []
   except google.api_core.exceptions.DeadlineExceeded:
     logger.info(
         'No messages found for subscription: {}'.format(subscription))
@@ -499,6 +562,7 @@ def run_main(event, context):
   # Grab the latest message for each test. We will process only that message
   # and all other messages for that test will be ack'ed without being processed.
   msgs_to_process = []
+  msgs_to_process = [{'model_dir': 'gs://xl-ml-test-us-central1/k8s/python-ops/functional/v2-8/pt-nightly-python-ops-functional-v2-8-1585922400', 'logs_link': 'https://console.cloud.google.com/logs?project=xl-ml-test&advancedFilter=resource.type%3Dk8s_container%0Aresource.labels.project_id%3Dxl-ml-test%0Aresource.labels.location=us-central1-b%0Aresource.labels.cluster_name=xl-ml-test%0Aresource.labels.namespace_name=automated%0Aresource.labels.pod_name:pt-nightly-python-ops-functional-v2-8-1585922400', 'job_name': 'pt-nightly-python-ops-functional-v2-8-1585922400', 'job_namespace': 'automated', 'zone': 'us-central1-b', 'cluster_name': 'xl-ml-test', 'metric_collection_config': {'default_aggregation_strategies': ['final'], 'tags_to_ignore': ['LearningRate'], 'write_to_bigquery': True}, 'regression_test_config': None, 'test_name': 'pt-nightly-python-ops-functional-v2-8', 'publish_time': 1585926077, 'ack_id': 'IT4wPkVTRFAGFixdRkhRNxkIaFEOT14jPzUgKEUVBAgUBXx9cEFFdV9bdmhRDRlyfWBya14TCVBAAi9WURoHaE5tdSVxDBl6eWF8YlkTBQNHVHhbUjPWxYOG7ui-PANORfiHx54mIbf7lrhuZiU9XxJLLD5-LyJFQV5AEkwkF0RJUytDCypYEU4EIQ'}]
   for test_name, msgs in test_name_to_msgs.items():
     sorted_msgs = sorted(msgs, key = lambda x: x['publish_time'])
     ids_to_ack.extend([msg['ack_id'] for msg in msgs[:-1]])
@@ -544,3 +608,5 @@ def run_main(event, context):
   logger.info('Processed a message for each of the following tests: '
               '{}'.format([x['test_name'] for x in msgs_to_process]))
   logger.send_email()
+
+run_main(None, None)
