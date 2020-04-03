@@ -234,7 +234,7 @@ class CloudMetricsHandler(object):
         int(job_status['stop_time'] - job_status['start_time']),
         self._wall_time_to_sql_timestamp(job_status['stop_time']),
         self.stackdriver_logs_link,
-        None,  # TODO: Pass int for msg_publish_time.
+        job_status['publish_time'],
     ]
 
     # Create rows to represent the computed metrics for this job.
@@ -313,7 +313,7 @@ class CloudMetricsHandler(object):
                         logs_link=self.stackdriver_logs_link)
     for row in query_result:
       uuid = row['uuid']
-      publish_time = row['publish_time']
+      publish_time = row['msg_publish_time']
     raise ValueError("stopping early")
     return uuid, publish_time
 
@@ -459,6 +459,7 @@ def _process_pubsub_message(msg, status_handler, logger):
   job_status = {
       'final_status': status,
       'start_time': publish_time,
+      'publish_time': publish_time,
       'stop_time': stop_time,
       'num_failures': num_failures,
   }
