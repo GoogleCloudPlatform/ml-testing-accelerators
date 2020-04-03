@@ -176,6 +176,7 @@ class CloudMetricsHandler(object):
         bigquery.SchemaField("timestamp", "TIMESTAMP", mode="REQUIRED"),
         bigquery.SchemaField("stackdriver_logs_link", "STRING",
                              mode="REQUIRED"),
+        bigquery.SchemaField("msg_publish_time", "INT64", mode="NULLABLE"),
     ]
     job_history_table = bigquery.Table(
         self.job_history_table_id, schema=job_history_schema)
@@ -233,6 +234,7 @@ class CloudMetricsHandler(object):
         int(job_status['stop_time'] - job_status['start_time']),
         self._wall_time_to_sql_timestamp(job_status['stop_time']),
         self.stackdriver_logs_link,
+        None,  # TODO: Pass int for msg_publish_time.
     ]
 
     # Create rows to represent the computed metrics for this job.
