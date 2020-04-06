@@ -32,5 +32,8 @@ local timeouts = import "timeouts.libsonnet";
     accelerator+: {
       preemptible: false,
     },
-  }
+  },
+  Experimental:: {
+    schedule: null,
+  },
 }

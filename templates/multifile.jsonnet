@@ -35,5 +35,5 @@ local copyrightHeader = |||
 {
   [name + ".yaml"]: copyrightHeader + std.manifestYamlDoc(
     targets[name].cronJob
-  ) for name in std.objectFields(targets)
+  ) for name in std.objectFields(targets) if targets[name].schedule != null
 }

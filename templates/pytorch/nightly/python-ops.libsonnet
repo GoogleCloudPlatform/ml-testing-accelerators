@@ -13,6 +13,7 @@
 # limitations under the License.
 
 local base = import "base.libsonnet";
+local mixins = import "../../mixins.libsonnet";
 local timeouts = import "../../timeouts.libsonnet";
 local tpus = import "../../tpus.libsonnet";
 
@@ -33,7 +34,7 @@ local tpus = import "../../tpus.libsonnet";
   },
 
   configs: [
-    operations + v2_8 + base.Functional + timeouts.Hours(2),
-    operations + v3_8 + base.Functional + timeouts.Hours(2),
+    operations + v2_8 + base.Functional + timeouts.Hours(2) + mixins.Experimental,
+    operations + v3_8 + base.Functional + timeouts.Hours(2) + mixins.Experimental,
   ],
 }
