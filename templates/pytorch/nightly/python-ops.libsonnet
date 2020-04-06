@@ -34,7 +34,7 @@ local tpus = import "../../tpus.libsonnet";
   },
 
   configs: [
-    operations + v2_8 + base.Functional + timeouts.Hours(2) + mixins.Experimental,
-    operations + v3_8 + base.Functional + timeouts.Hours(2) + mixins.Experimental,
+    operations + v2_8 + base.Functional + timeouts.Hours(2),
+    operations + v3_8 + base.Functional + timeouts.Hours(2),
   ],
 }
