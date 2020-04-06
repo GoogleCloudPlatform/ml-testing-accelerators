@@ -52,8 +52,9 @@ local tpus = import "tpus.libsonnet";
 
     testName:: "%(frameworkPrefix)s-%(modelName)s-%(mode)s-%(acceleratorName)s" % config,
     jobSpec:: {
-      # Try 3 times before giving up
-      backoffLimit: 2,
+      # Try 1 times before giving up
+      backoffLimit: 1,
+      successfulJobsHistoryLimit: 1,
       activeDeadlineSeconds: config.timeout,
       template: {
         metadata: {
