@@ -103,7 +103,7 @@
                 --input_shapes=128x64 \
                 --max-epoch=2 \
                 --save-dir=$(savedir)s
-              gsutil rm $MODEL_DIR/checkpoints
+              gsutil rm -r $MODEL_DIR/checkpoints
               
             "env":
             - "name": "POD_NAME"

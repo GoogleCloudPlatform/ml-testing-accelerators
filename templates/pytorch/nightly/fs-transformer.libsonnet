@@ -106,7 +106,7 @@ local utils = import "../../utils.libsonnet";
           --save-dir=$(savedir)s
         %(common)s  --max-epoch=2 \
           --save-dir=$(savedir)s
-        gsutil rm %(savedir)s
+        gsutil rm -r %(savedir)s
       ||| % {common: chpt_command_common, savedir: "$MODEL_DIR/checkpoints"}
     ),
   },
