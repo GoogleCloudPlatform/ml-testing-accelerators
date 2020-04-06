@@ -2,7 +2,7 @@
 
 Deployment Manager docs: https://cloud.google.com/deployment-manager/docs/
 
-To create testing cluster, run one of the followiing commands:
+To create testing cluster, run one of the following commands:
 
 ```bash
 # Minimal cluster, compatible with most TensorFlow TPU models
