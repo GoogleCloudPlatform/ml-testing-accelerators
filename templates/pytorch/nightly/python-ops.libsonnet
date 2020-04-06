@@ -13,7 +13,6 @@
 # limitations under the License.
 
 local base = import "base.libsonnet";
-local mixins = import "../../mixins.libsonnet";
 local timeouts = import "../../timeouts.libsonnet";
 local tpus = import "../../tpus.libsonnet";
 
