@@ -22,7 +22,7 @@
   "jobTemplate":
     "spec":
       "activeDeadlineSeconds": 36000
-      "backoffLimit": 2
+      "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
@@ -96,3 +96,4 @@
                 "cloud-tpus.google.com/v2": 8
           "restartPolicy": "Never"
   "schedule": "0 6 * * 0,5"
+  "successfulJobsHistoryLimit": 1

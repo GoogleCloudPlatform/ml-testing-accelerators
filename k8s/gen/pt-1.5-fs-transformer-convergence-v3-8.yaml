@@ -22,7 +22,7 @@
   "jobTemplate":
     "spec":
       "activeDeadlineSeconds": 18000
-      "backoffLimit": 2
+      "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
@@ -172,3 +172,4 @@
               "readOnly": true
             "name": "wmt18-pd"
   "schedule": "0 20 * * 1,6"
+  "successfulJobsHistoryLimit": 1

@@ -22,7 +22,7 @@
   "jobTemplate":
     "spec":
       "activeDeadlineSeconds": 3600
-      "backoffLimit": 2
+      "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
@@ -130,3 +130,4 @@
               "readOnly": true
             "name": "wikitext-pd"
   "schedule": "0 16 * * *"
+  "successfulJobsHistoryLimit": 1

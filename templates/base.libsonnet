@@ -54,7 +54,6 @@ local tpus = import "tpus.libsonnet";
     jobSpec:: {
       # Try 1 times before giving up
       backoffLimit: 1,
-      successfulJobsHistoryLimit: 1,
       activeDeadlineSeconds: config.timeout,
       template: {
         metadata: {
@@ -161,6 +160,7 @@ local tpus = import "tpus.libsonnet";
       spec: {
         schedule: config.schedule,
         concurrencyPolicy: "Forbid",
+        successfulJobsHistoryLimit: 1,
         jobTemplate: {
           spec: config.jobSpec,
         },
