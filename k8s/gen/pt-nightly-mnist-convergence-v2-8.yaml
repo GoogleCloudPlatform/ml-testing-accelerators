@@ -22,7 +22,7 @@
   "jobTemplate":
     "spec":
       "activeDeadlineSeconds": 3600
-      "backoffLimit": 2
+      "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
@@ -131,3 +131,4 @@
               "medium": "Memory"
             "name": "dshm"
   "schedule": "0 14 * * *"
+  "successfulJobsHistoryLimit": 1

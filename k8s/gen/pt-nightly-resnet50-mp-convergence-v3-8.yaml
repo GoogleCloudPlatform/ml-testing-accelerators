@@ -22,7 +22,7 @@
   "jobTemplate":
     "spec":
       "activeDeadlineSeconds": 93600
-      "backoffLimit": 2
+      "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
@@ -145,3 +145,4 @@
               "readOnly": true
             "name": "imagenet-pd"
   "schedule": "0 6 * * 1,6"
+  "successfulJobsHistoryLimit": 1
