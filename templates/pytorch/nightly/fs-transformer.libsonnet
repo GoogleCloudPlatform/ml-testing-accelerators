@@ -15,41 +15,11 @@
 local base = import "base.libsonnet";
 local timeouts = import "../../timeouts.libsonnet";
 local tpus = import "../../tpus.libsonnet";
+local utils = import "../../utils.libsonnet";
 
 {
   local transformer = base.PyTorchTest {
     modelName: "fs-transformer",
-    command: [
-      "python3",
-      "/tpu-examples/deps/fairseq/train.py",
-      "/datasets/wmt18_en_de_bpej32k",
-      "--tensorboard-logdir=$(MODEL_DIR)",
-      "--metrics_debug",
-      "--arch=transformer_vaswani_wmt_en_de_big",
-      "--max-target-positions=64",
-      "--attention-dropout=0.1",
-      "--no-progress-bar",
-      "--no-save",
-      "--save-interval=1",
-      "--criterion=label_smoothed_cross_entropy",
-      "--source-lang=en",
-      "--lr-scheduler=inverse_sqrt",
-      "--min-lr=1e-09",
-      "--skip-invalid-size-inputs-valid-test",
-      "--target-lang=de",
-      "--label-smoothing=0.1",
-      "--update-freq=1",
-      "--optimizer=adam",
-      "--adam-betas=(0.9,0.98)",
-      "--warmup-init-lr=1e-07",
-      "--lr=0.0005",
-      "--warmup-updates=4000",
-      "--share-all-embeddings",
-      "--dropout=0.3",
-      "--weight-decay=0.0",
-      "--valid-subset=valid",
-      "--num_cores=8",
-    ],
     jobSpec+:: {
       template+: {
         spec+: {
@@ -83,13 +53,90 @@ local tpus = import "../../tpus.libsonnet";
     },
   },
   local functional = base.Functional {
-    command+: [
-      "--max-epoch=1",
-      "--log_steps=10",
-      "--train-subset=valid",
-      "--input_shapes",
-      "128x64",
-    ],
+    command: utils.scriptCommand(
+      |||
+        python3 \
+          /tpu-examples/deps/fairseq/train.py \
+          /datasets/wmt18_en_de_bpej32k \
+          --tensorboard-logdir=$(MODEL_DIR) \
+          --metrics_debug \
+          --arch=transformer_vaswani_wmt_en_de_big \
+          --max-target-positions=64 \
+          --attention-dropout=0.1 \
+          --no-progress-bar \
+          --criterion=label_smoothed_cross_entropy \
+          --source-lang=en \
+          --lr-scheduler=inverse_sqrt  \
+          --min-lr=1e-09 \
+          --skip-invalid-size-inputs-valid-test \
+          --target-lang=de \
+          --label-smoothing=0.1 \
+          --update-freq=1 \
+          --optimizer=adam \
+          --adam-betas='(0.9,0.98)' \
+          --warmup-init-lr=1e-07 \
+          --lr=0.0005 \
+          --warmup-updates=4000 \
+          --share-all-embeddings \
+          --dropout=0.3 \
+          --weight-decay=0.0 \
+          --num_cores=8 \
+          --no-save \
+          --max-epoch=1 \
+          --log_steps=10 \
+          --train-subset=valid \
+          --valid-subset=test \
+          --input_shapes=128x64
+      |||
+    ),
+  },
+  local convergence = base.Convergence {
+    command: utils.scriptCommand(
+      |||
+        pip install --editable /tpu-examples/deps/fairseq
+        python3 \
+          /tpu-examples/deps/fairseq/train.py \
+          /datasets/wmt18_en_de_bpej32k  \
+          --tensorboard-logdir=$(MODEL_DIR)  \
+          --metrics_debug \
+          --arch=transformer_vaswani_wmt_en_de_big \
+          --max-target-positions=64  \
+          --attention-dropout=0.1 \
+          --no-progress-bar  \
+          --save-interval=5  \
+          --save-dir=/tmp/checkpoints \
+          --criterion=label_smoothed_cross_entropy \
+          --source-lang=en \
+          --lr-scheduler=inverse_sqrt \
+          --min-lr=1e-09 \
+          --skip-invalid-size-inputs-valid-test  \
+          --target-lang=de \
+          --label-smoothing=0.1  \
+          --update-freq=1 \
+          --optimizer=adam \
+          --adam-betas='(0.9,0.98)' \
+          --warmup-init-lr=1e-07 \
+          --lr=0.0005 \
+          --warmup-updates=4000  \
+          --share-all-embeddings \
+          --dropout=0.3  \
+          --weight-decay=0.0 \
+          --num_cores=8  \
+          --max-epoch=25 \
+          --log_steps=200 \
+          --train-subset=train \
+          --valid-subset=valid \
+          --input_shapes 256x64 512x32 640x16
+        bleu=`fairseq-generate \
+           /datasets/wmt18_en_de_bpej32k \
+           --remove-bpe --quiet --lenpen 0.6 --beam 4 \
+           --path /tmp/checkpoints/checkpoint25.pt \
+           --skip-invalid-size-inputs-valid-test | grep BLEU \
+           | grep -v loadi | tail -1 | cut -d '=' -f 3| cut -d'.' -f 1`
+        echo 'BLEU score is' $bleu
+        test $bleu -gt 27
+      |||
+    ),
     jobSpec+:: {
       template+: {
         spec+: {
@@ -98,29 +145,18 @@ local tpus = import "../../tpus.libsonnet";
               envMap+: {
                 XLA_USE_BF16: "1",
               },
-	    },
+            },
           },
         },
       },
     },
-  },
-  local convergence = base.Convergence {
-    command+: [
-      "--max-epoch=3",
-      "--log_steps=100",
-      "--train-subset=train",
-      "--input_shapes",
-      "64x64",
-      "128x32",
-      "256x16",
-    ],
     regressionTestConfig+: {
       metric_success_conditions+: {
-        "loss_final": {
+        "train-wps_final": {
           success_threshold: {
-            fixed_value: 4.5,
+            fixed_value: 12000,
           },
-          comparison: "less",
+          comparison: "greater",
         },
       },
     },
@@ -130,6 +166,6 @@ local tpus = import "../../tpus.libsonnet";
   },
   configs: [
     transformer + v3_8 + functional + timeouts.Hours(1),
-    transformer + v3_8 + convergence + timeouts.Hours(5),
+    transformer + v3_8 + convergence + timeouts.Hours(25),
   ],
 }

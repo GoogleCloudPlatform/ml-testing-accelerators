@@ -21,7 +21,7 @@
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 18000
+      "activeDeadlineSeconds": 90000
       "backoffLimit": 1
       "template":
         "metadata":
@@ -30,42 +30,56 @@
         "spec":
           "containers":
           - "args":
-            - "python3"
-            - "/tpu-examples/deps/fairseq/train.py"
-            - "/datasets/wmt18_en_de_bpej32k"
-            - "--tensorboard-logdir=$(MODEL_DIR)"
-            - "--metrics_debug"
-            - "--arch=transformer_vaswani_wmt_en_de_big"
-            - "--max-target-positions=64"
-            - "--attention-dropout=0.1"
-            - "--no-progress-bar"
-            - "--no-save"
-            - "--save-interval=1"
-            - "--criterion=label_smoothed_cross_entropy"
-            - "--source-lang=en"
-            - "--lr-scheduler=inverse_sqrt"
-            - "--min-lr=1e-09"
-            - "--skip-invalid-size-inputs-valid-test"
-            - "--target-lang=de"
-            - "--label-smoothing=0.1"
-            - "--update-freq=1"
-            - "--optimizer=adam"
-            - "--adam-betas=(0.9,0.98)"
-            - "--warmup-init-lr=1e-07"
-            - "--lr=0.0005"
-            - "--warmup-updates=4000"
-            - "--share-all-embeddings"
-            - "--dropout=0.3"
-            - "--weight-decay=0.0"
-            - "--valid-subset=valid"
-            - "--num_cores=8"
-            - "--max-epoch=3"
-            - "--log_steps=100"
-            - "--train-subset=train"
-            - "--input_shapes"
-            - "64x64"
-            - "128x32"
-            - "256x16"
+            - "/bin/bash"
+            - "-c"
+            - |
+              set -u
+              set -e
+              set -x
+              
+              pip install --editable /tpu-examples/deps/fairseq
+              python3 \
+                /tpu-examples/deps/fairseq/train.py \
+                /datasets/wmt18_en_de_bpej32k  \
+                --tensorboard-logdir=$(MODEL_DIR)  \
+                --metrics_debug \
+                --arch=transformer_vaswani_wmt_en_de_big \
+                --max-target-positions=64  \
+                --attention-dropout=0.1 \
+                --no-progress-bar  \
+                --save-interval=5  \
+                --save-dir=/tmp/checkpoints \
+                --criterion=label_smoothed_cross_entropy \
+                --source-lang=en \
+                --lr-scheduler=inverse_sqrt \
+                --min-lr=1e-09 \
+                --skip-invalid-size-inputs-valid-test  \
+                --target-lang=de \
+                --label-smoothing=0.1  \
+                --update-freq=1 \
+                --optimizer=adam \
+                --adam-betas='(0.9,0.98)' \
+                --warmup-init-lr=1e-07 \
+                --lr=0.0005 \
+                --warmup-updates=4000  \
+                --share-all-embeddings \
+                --dropout=0.3  \
+                --weight-decay=0.0 \
+                --num_cores=8  \
+                --max-epoch=25 \
+                --log_steps=200 \
+                --train-subset=train \
+                --valid-subset=valid \
+                --input_shapes 256x64 512x32 640x16
+              bleu=`fairseq-generate \
+                 /datasets/wmt18_en_de_bpej32k \
+                 --remove-bpe --quiet --lenpen 0.6 --beam 4 \
+                 --path /tmp/checkpoints/checkpoint25.pt \
+                 --skip-invalid-size-inputs-valid-test | grep BLEU \
+                 | grep -v loadi | tail -1 | cut -d '=' -f 3| cut -d'.' -f 1`
+              echo 'BLEU score is' $bleu
+              test $bleu -gt 27
+              
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -124,18 +138,18 @@
                      "stddevs_from_mean": 0
                     }
                    },
-                   "loss_final": {
-                    "comparison": "less",
-                    "success_threshold": {
-                     "fixed_value": 4.5
-                    }
-                   },
                    "total_wall_time": {
                     "comparison": "less",
                     "success_threshold": {
                      "stddevs_from_mean": 5
                     },
                     "wait_for_n_points_of_history": 10
+                   },
+                   "train-wps_final": {
+                    "comparison": "greater",
+                    "success_threshold": {
+                     "fixed_value": 12000
+                    }
                    }
                   },
                   "write_to_error_reporting": true
@@ -145,7 +159,7 @@
             - "name": "MODEL_DIR"
               "value": "gs://xl-ml-test-us-central1/k8s/fs-transformer/convergence/v3-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
-              "value": "0"
+              "value": "1"
             "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
