@@ -154,7 +154,7 @@ local utils = import "../../utils.libsonnet";
       metric_success_conditions+: {
         "train-wps_final": {
           success_threshold: {
-            fixed_value: 12000,
+            fixed_value: 11700,
           },
           comparison: "greater",
         },
