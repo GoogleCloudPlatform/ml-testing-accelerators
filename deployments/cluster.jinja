@@ -13,10 +13,10 @@
 # limitations under the License.
 
 resources:
-- name: xl-ml-test
+- name: {{ env["deployment"] }}
   type: container.v1.cluster
   properties:
-    zone: us-central1-b
+    zone: {{ properties["zone"] }}
     cluster:
       initialClusterVersion: "1.15"
       enableTpu: true
@@ -33,13 +33,30 @@ resources:
           machineType: n1-highmem-16
           oauthScopes:
           - https://www.googleapis.com/auth/cloud-platform
+{% if properties["huge-pool"] %}
       - name: huge-pool
-        initialNodeCount: 0
+        initialNodeCount: 1
         autoscaling:
           enabled: true
           minNodeCount: 1
-          maxNodeCount: 10
+          maxNodeCount: 5
         config:
           machineType: n1-highmem-96
           oauthScopes:
           - https://www.googleapis.com/auth/cloud-platform
+{% endif %}
+{% if properties["double-v100"] %}
+      - name: double-v100
+        initialNodeCount: 1
+        autoscaling:
+          enabled: true
+          minNodeCount: 1
+          maxNodeCount: 5
+        config:
+          machineType: n1-standard-16
+          accelerators:
+          - acceleratorType: nvidia-tesla-v100
+            acceleratorCount: 2
+          oauthScopes:
+          - https://www.googleapis.com/auth/cloud-platform
+{% endif %}
