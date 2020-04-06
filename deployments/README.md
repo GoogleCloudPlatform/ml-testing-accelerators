@@ -2,10 +2,13 @@
 
 Deployment Manager docs: https://cloud.google.com/deployment-manager/docs/
 
-To create your testing cluster, run the following:
+To create testing cluster, run one of the followiing commands:
 
 ```bash
-gcloud deployment-manager deployments create testing-cluster --config deployments/cluster.yaml
+# Minimal cluster, compatible with most TensorFlow TPU models
+gcloud deployment-manager deployments create xl-ml-oneshots --template deployments/cluster.jinja
+# Larger cluster, with multi-GPU machines and large GCE VMs for PyTorch TPU models
+gcloud deployment-manager deployments create xl-ml-oneshots --template deployments/cluster.jinja --properties zone:us-central1-b,huge-pool:true,double-v100s:true
 ```
 
 If you're using GPUs, connect to your cluster, then run the following to install device drivers:
