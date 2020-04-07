@@ -69,7 +69,7 @@
                 --save-interval=1 \
                 --input_shapes=128x64 \
                 --max-epoch=1 \
-                --save-dir=$(savedir)s
+                --save-dir=$MODEL_DIR/checkpoints
               python3 \
                 /tpu-examples/deps/fairseq/train.py \
                 /datasets/wmt18_en_de_bpej32k \
@@ -102,7 +102,7 @@
                 --save-interval=1 \
                 --input_shapes=128x64 \
                 --max-epoch=2 \
-                --save-dir=$(savedir)s
+                --save-dir=$MODEL_DIR/checkpoints
               gsutil rm -r $MODEL_DIR/checkpoints
               
             "env":

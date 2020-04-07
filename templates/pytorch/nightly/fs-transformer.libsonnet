@@ -103,9 +103,9 @@ local utils = import "../../utils.libsonnet";
     command: utils.scriptCommand(
       |||
         %(common)s  --max-epoch=1 \
-          --save-dir=$(savedir)s
+          --save-dir=%(savedir)s
         %(common)s  --max-epoch=2 \
-          --save-dir=$(savedir)s
+          --save-dir=%(savedir)s
         gsutil rm -r %(savedir)s
       ||| % {common: chpt_command_common, savedir: "$MODEL_DIR/checkpoints"}
     ),
