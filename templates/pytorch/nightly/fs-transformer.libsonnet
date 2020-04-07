@@ -104,9 +104,12 @@ local utils = import "../../utils.libsonnet";
       |||
         %(common)s  --max-epoch=1 \
           --save-dir=%(savedir)s
+        set +e
         %(common)s  --max-epoch=2 \
           --save-dir=%(savedir)s
+        gsutil ls -l %(savedir)s
         gsutil rm -r %(savedir)s
+        gsutil ls -l %(savedir)s
       ||| % {common: chpt_command_common, savedir: "$MODEL_DIR/checkpoints"}
     ),
     jobSpec+:: {
