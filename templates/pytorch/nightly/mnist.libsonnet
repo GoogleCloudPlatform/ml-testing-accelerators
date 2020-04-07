@@ -13,6 +13,7 @@
 # limitations under the License.
 
 local base = import "base.libsonnet";
+local mixins = import "../../mixins.libsonnet";
 local timeouts = import "../../timeouts.libsonnet";
 local tpus = import "../../tpus.libsonnet";
 
@@ -25,10 +26,17 @@ local tpus = import "../../tpus.libsonnet";
       "--logdir=$(MODEL_DIR)",
     ],
   },
+  local mnist_pod = base.PyTorchPodTest {
+    modelName: "mnist",
+    imageTag: "latest",
+    command: [
+      "python /usr/share/torch-xla-nightly/pytorch/xla/test/test_train_mp_mnist.py",
+    ],
+  },
+
   local convergence = base.Convergence {
     # Run at 6AM PST daily instead of 2x per week since convergence is fast.
     schedule: "0 14 * * *",
-    accelerator+: tpus.Preemptible,
     regressionTestConfig+: {
       metric_success_conditions+: {
         "Accuracy/test_final": {
@@ -40,15 +48,24 @@ local tpus = import "../../tpus.libsonnet";
       },
     },
   },
+
   local v2_8 = {
     accelerator: tpus.v2_8,
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
+  local v2_32 = {
+    accelerator: tpus.v2_32,
+  },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+  },
 
   configs: [
     mnist + v2_8 + convergence + timeouts.Hours(1),
     mnist + v3_8 + convergence + timeouts.Hours(1),
+    mnist_pod + v2_32 + convergence + mixins.Experimental,
+    mnist_pod + v3_32 + convergence + mixins.Experimental,
   ],
 }
