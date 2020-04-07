@@ -22,18 +22,18 @@ export RESOURCE_SUFFIX=$POD_UID
 export INSTANCE_TEMPLATE_NAME="instance-template-${RESOURCE_SUFFIX}"
 export TPU_POD_NAME="tpu-pod-${RESOURCE_SUFFIX}"
 export INSTANCE_GROUP_NAME="instance-group-${RESOURCE_SUFFIX}"
+export TPU_POD_NAME=$(echo ${TPU_NAME} | awk -F'/' '{print $2}')
 
 # source /publish.sh
 
 /setup-pytorch-pods.sh && \
-export master=$(/root/google-cloud-sdk/bin/gcloud compute instance-groups \
+export master=$(gcloud compute instance-groups \
   list-instances \
   ${INSTANCE_GROUP_NAME} \
-  --zone=${POD_ZONE} \
+  --zone=${ZONE} \
   --format="value(NAME)" \
   --limit=1) && \
-echo "Instance group master: ${master}" && \
-docker-entrypoint.sh gcloud -q compute ssh --internal-ip --zone=$POD_ZONE $master \
+gcloud -q compute ssh --internal-ip --zone=$ZONE $master \
   --command "source /anaconda3/etc/profile.d/conda.sh && \
   conda activate torch-xla-nightly && \
   python -m torch_xla.distributed.xla_dist --tpu=$TPU_POD_NAME --conda-env=torch-xla-nightly -- $@"

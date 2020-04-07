@@ -15,44 +15,44 @@
 local base = import "../base.libsonnet";
 
 {
-  PyTorchTest:: base.BaseTest {
-
+  local PyTorchBaseTest = base.BaseTest {
     regressionTestConfig+: {
       metric_subset_to_alert: [
         "ExecuteTime__Percentile_99_sec_final",
-	"CompileTime__Percentile_99_sec_final",
-	"total_wall_time",
-	"Accuracy/test_final",
-	"aten_ops_sum_final",
+        "CompileTime__Percentile_99_sec_final",
+        "total_wall_time",
+        "Accuracy/test_final",
+        "aten_ops_sum_final",
       ],
       metric_success_conditions+: {
         "ExecuteTime__Percentile_99_sec_final": {
-	  success_threshold: {
-            stddevs_from_mean: 5.0,
-	  },
-	  comparison: "less",
-	  wait_for_n_points_of_history: 10,
-	},
+          success_threshold: {
+                  stddevs_from_mean: 5.0,
+          },
+          comparison: "less",
+          wait_for_n_points_of_history: 10,
+        },
         "CompileTime__Percentile_99_sec_final": {
-	  success_threshold: {
-            stddevs_from_mean: 5.0,
-	  },
-	  comparison: "less",
-	  wait_for_n_points_of_history: 10,
-	},
+          success_threshold: {
+                  stddevs_from_mean: 5.0,
+          },
+          comparison: "less",
+          wait_for_n_points_of_history: 10,
+        },
         "aten_ops_sum_final": {
-	  success_threshold: {
-            stddevs_from_mean: 0.0,
-	  },
-	  comparison: "less_or_equal",
-	},
+          success_threshold: {
+                  stddevs_from_mean: 0.0,
+          },
+          comparison: "less_or_equal",
+        },
       },
     },
 
     metricCollectionConfig+: {
       "tags_to_ignore": ["LearningRate"]
     },
-
+  },
+  PyTorchTest:: PyTorchBaseTest {
     image: "gcr.io/xl-ml-test/pytorch-xla",
 
     jobSpec+:: {
@@ -84,6 +84,29 @@ local base = import "../base.libsonnet";
               },
             },
           ],
+        },
+      },
+    },
+  },
+  # Pod tests are run by creating an instance group to feed the TPU Pods
+  PyTorchPodTest:: PyTorchBaseTest {
+    local config = self,
+
+    image: "gcr.io/xl-ml-test/pytorch-pods",
+    instanceType: "n1-standard-8",
+
+    jobSpec+:: {
+      backoffLimit: 0,
+      template+: {
+        spec+: {
+          containerMap+: {
+            train+: {
+              envMap+: {
+                MACHINE_TYPE: config.instanceType,
+                ACCELERATOR_TYPE: config.acceleratorName,
+              },
+            },
+          },
         },
       },
     },

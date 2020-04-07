@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/tpu-pytorch/xla:nightly
+FROM google/cloud-sdk:slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends jq
-RUN curl -sSL https://sdk.cloud.google.com | bash
+
+RUN mkdir -p /root/google-cloud-sdk/bin/
+RUN ln -s /usr/bin/gcloud /root/google-cloud-sdk/bin/gcloud
 
 COPY images/setup.sh /
 COPY images/publish.sh /

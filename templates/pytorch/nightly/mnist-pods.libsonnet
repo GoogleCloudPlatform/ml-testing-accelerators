@@ -13,12 +13,13 @@
 # limitations under the License.
 
 local base = import "base.libsonnet";
+local mixins = import "../../mixins.libsonnet";
 local timeouts = import "../../timeouts.libsonnet";
 local tpus = import "../../tpus.libsonnet";
 local utils = import "../../utils.libsonnet";
 
 {
-  local mnist = base.PyTorchTest {
+  local mnist = base.PyTorchPodTest {
     image: "gcr.io/xl-ml-test/pytorch-pods",
     imageTag: "latest",
     modelName: "mnist-pods",
@@ -26,36 +27,12 @@ local utils = import "../../utils.libsonnet";
       "python /usr/share/torch-xla-nightly/pytorch/xla/test/test_train_mp_mnist.py",
     ],
     
-    accelerator: {
-      name: "pods",
-      PodSpec:: {},
-    },
-    jobSpec+:: {
-      backoffLimit: 0,
-      template+: {
-        spec+: {
-          containerMap+: {
-            train+: {
-              envMap+: {
-                POD_ZONE: "europe-west4-a",
-                MACHINE_TYPE: "n1-standard-16",
-                ACCELERATOR_TYPE: "v3-32",
-                RUNTIME_VERSION: "pytorch-nightly",
-              },
-            },
-          },
-        },
-      },
-    },
+    accelerator: tpus.v3_32,
   },
-  local functional = base.Functional {
-    mode: "experimental",
+  local convergence = base.Convergence {
     regressionTestConfig: null,
-    paramsOverride: {
-      maxEpoch: 1
-    },
   },
   configs: [
-    mnist + functional,
+    mnist + convergence + mixins.Experimental,
   ],
 }

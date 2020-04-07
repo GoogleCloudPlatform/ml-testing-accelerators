@@ -21,6 +21,11 @@ local mixins = import "../../mixins.libsonnet";
     tpuVersion: "pytorch-nightly",
     imageTag: "nightly",
   },
+  PyTorchPodTest:: base.PyTorchPodTest {
+    frameworkPrefix: "pt-nightly",
+    tpuVersion: "pytorch-nightly",
+    imageTag: "nightly",
+  },
   Functional:: mixins.Functional {
     # Run at 6AM PST daily.
     schedule: "0 14 * * *",

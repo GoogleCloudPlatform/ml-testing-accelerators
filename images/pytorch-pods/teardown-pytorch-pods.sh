@@ -15,19 +15,11 @@
 
 set -x
 
-echo "Teading down TPU Pod: ${TPU_POD_NAME}"
-gcloud -q compute --project="${PROJECT}" \
-  tpus \
-  delete \
-  "${TPU_POD_NAME}" \
-  --zone="${POD_ZONE}" \
-  --async
-
 echo "Tearing down GCE Instance Group: ${INSTANCE_GROUP_NAME}"
 gcloud -q compute --project="${PROJECT}" instance-groups managed \
   delete \
   "${INSTANCE_GROUP_NAME}" \
-  --zone="${POD_ZONE}"
+  --zone="${ZONE}"
 
 echo "Tearing down GCE Instance Template: ${INSTANCE_TEMPLATE_NAME}"
 gcloud -q compute --project="${PROJECT}" instance-templates \
