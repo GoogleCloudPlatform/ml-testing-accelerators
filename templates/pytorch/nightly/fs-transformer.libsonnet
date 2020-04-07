@@ -48,8 +48,8 @@ local utils = import "../../utils.libsonnet";
   |||,
   local chpt_command_common = |||
       %(command_common)s  --log_steps=10 \
-        --train-subset=valid \
-        --valid-subset=test \
+        --train-subset=test \
+        --valid-subset=valid \
         --save-interval=1 \
         --input_shapes=128x64 \
   ||| % command_common,
@@ -109,6 +109,19 @@ local utils = import "../../utils.libsonnet";
         gsutil rm -r %(savedir)s
       ||| % {common: chpt_command_common, savedir: "$MODEL_DIR/checkpoints"}
     ),
+    jobSpec+:: {
+      template+: {
+        spec+: {
+          containerMap+: {
+            train+: {
+              envMap+: {
+                XLA_USE_BF16: "1",
+              },
+            },
+          },
+        },
+      },
+    },
   },
   local functional = base.Functional {
     command: utils.scriptCommand(

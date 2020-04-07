@@ -64,8 +64,8 @@
                 --weight-decay=0.0 \
                 --num_cores=8 \
                 --log_steps=10 \
-                --train-subset=valid \
-                --valid-subset=test \
+                --train-subset=test \
+                --valid-subset=valid \
                 --save-interval=1 \
                 --input_shapes=128x64 \
                 --max-epoch=1 \
@@ -97,8 +97,8 @@
                 --weight-decay=0.0 \
                 --num_cores=8 \
                 --log_steps=10 \
-                --train-subset=valid \
-                --valid-subset=test \
+                --train-subset=test \
+                --valid-subset=valid \
                 --save-interval=1 \
                 --input_shapes=128x64 \
                 --max-epoch=2 \
