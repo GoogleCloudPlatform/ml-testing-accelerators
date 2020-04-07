@@ -15,14 +15,14 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-resnet50-MP-convergence-v3-8"
+  "name": "pt-nightly-fs-checkpoint-gcs-functional-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 93600
-      "backoffLimit": 2
+      "activeDeadlineSeconds": 7200
+      "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
@@ -30,15 +30,84 @@
         "spec":
           "containers":
           - "args":
-            - "python3"
-            - "pytorch/xla/test/test_train_mp_imagenet.py"
-            - "--logdir=$(MODEL_DIR)"
-            - "--model=resnet50"
-            - "--num_workers=8"
-            - "--batch_size=128"
-            - "--log_steps=200"
-            - "--num_epochs=90"
-            - "--datadir=/datasets/imagenet"
+            - "/bin/bash"
+            - "-c"
+            - |
+              set -u
+              set -e
+              set -x
+              
+              python3 \
+                /tpu-examples/deps/fairseq/train.py \
+                /datasets/wmt18_en_de_bpej32k \
+                --tensorboard-logdir=$(MODEL_DIR) \
+                --metrics_debug \
+                --arch=transformer_vaswani_wmt_en_de_big \
+                --max-target-positions=64 \
+                --attention-dropout=0.1 \
+                --no-progress-bar \
+                --criterion=label_smoothed_cross_entropy \
+                --source-lang=en \
+                --lr-scheduler=inverse_sqrt  \
+                --min-lr=1e-09 \
+                --skip-invalid-size-inputs-valid-test \
+                --target-lang=de \
+                --label-smoothing=0.1 \
+                --update-freq=1 \
+                --optimizer=adam \
+                --adam-betas='(0.9,0.98)' \
+                --warmup-init-lr=1e-07 \
+                --lr=0.0005 \
+                --warmup-updates=4000 \
+                --share-all-embeddings \
+                --dropout=0.3 \
+                --weight-decay=0.0 \
+                --num_cores=8 \
+                --log_steps=10 \
+                --train-subset=test \
+                --valid-subset=valid \
+                --save-interval=1 \
+                --input_shapes=128x64 \
+                --max-epoch=1 \
+                --save-dir=$MODEL_DIR/checkpoints
+              set +e
+              python3 \
+                /tpu-examples/deps/fairseq/train.py \
+                /datasets/wmt18_en_de_bpej32k \
+                --tensorboard-logdir=$(MODEL_DIR) \
+                --metrics_debug \
+                --arch=transformer_vaswani_wmt_en_de_big \
+                --max-target-positions=64 \
+                --attention-dropout=0.1 \
+                --no-progress-bar \
+                --criterion=label_smoothed_cross_entropy \
+                --source-lang=en \
+                --lr-scheduler=inverse_sqrt  \
+                --min-lr=1e-09 \
+                --skip-invalid-size-inputs-valid-test \
+                --target-lang=de \
+                --label-smoothing=0.1 \
+                --update-freq=1 \
+                --optimizer=adam \
+                --adam-betas='(0.9,0.98)' \
+                --warmup-init-lr=1e-07 \
+                --lr=0.0005 \
+                --warmup-updates=4000 \
+                --share-all-embeddings \
+                --dropout=0.3 \
+                --weight-decay=0.0 \
+                --num_cores=8 \
+                --log_steps=10 \
+                --train-subset=test \
+                --valid-subset=valid \
+                --save-interval=1 \
+                --input_shapes=128x64 \
+                --max-epoch=2 \
+                --save-dir=$MODEL_DIR/checkpoints
+              gsutil ls -l $MODEL_DIR/checkpoints
+              gsutil rm -r $MODEL_DIR/checkpoints
+              gsutil ls -l $MODEL_DIR/checkpoints
+              
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -77,12 +146,6 @@
                    "aten_ops_sum_final"
                   ],
                   "metric_success_conditions": {
-                   "Accuracy/test_final": {
-                    "comparison": "greater",
-                    "success_threshold": {
-                     "fixed_value": 75
-                    }
-                   },
                    "CompileTime__Percentile_99_sec_final": {
                     "comparison": "less",
                     "success_threshold": {
@@ -113,12 +176,12 @@
                   },
                   "write_to_error_reporting": true
                  },
-                 "test_name": "pt-nightly-resnet50-MP-convergence-v3-8"
+                 "test_name": "pt-nightly-fs-checkpoint-gcs-functional-v3-8"
                 }
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/resnet50-MP/convergence/v3-8/$(JOB_NAME)"
+              "value": "gs://xl-ml-test-us-central1/k8s/fs-checkpoint-gcs/functional/v3-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
-              "value": "0"
+              "value": "1"
             "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
@@ -126,13 +189,13 @@
               "limits":
                 "cloud-tpus.google.com/preemptible-v3": 8
               "requests":
-                "cpu": "90.0"
-                "memory": "400Gi"
+                "cpu": "9.0"
+                "memory": "30Gi"
             "volumeMounts":
             - "mountPath": "/dev/shm"
               "name": "dshm"
             - "mountPath": "/datasets"
-              "name": "imagenet-pd"
+              "name": "wmt18-pd"
               "readOnly": true
           "restartPolicy": "Never"
           "volumes":
@@ -141,7 +204,8 @@
             "name": "dshm"
           - "gcePersistentDisk":
               "fsType": "ext4"
-              "pdName": "imagenet-pd-central1-b"
+              "pdName": "wmt18-en-de-pd-central1-b"
               "readOnly": true
-            "name": "imagenet-pd"
-  "schedule": "0 6 * * 1,6"
+            "name": "wmt18-pd"
+  "schedule": "0 14 * * *"
+  "successfulJobsHistoryLimit": 1

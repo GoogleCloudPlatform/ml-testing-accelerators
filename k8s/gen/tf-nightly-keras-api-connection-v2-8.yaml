@@ -22,7 +22,7 @@
   "jobTemplate":
     "spec":
       "activeDeadlineSeconds": 3600
-      "backoffLimit": 2
+      "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
@@ -38,8 +38,8 @@
               set -x
               
               export PATH=$PATH:/root/google-cloud-sdk/bin
-              gcloud source repos clone cloudtpu-tf20-api-tests --project=gcp-tpupods-demo
-              cd cloudtpu-tf20-api-tests
+              gcloud source repos clone tf2-api-tests --project=xl-ml-test
+              cd tf2-api-tests
               pip3 install behave
               behave -e ipynb_checkpoints --tags=-fails -i aaa_connection
               
@@ -85,3 +85,4 @@
                 "cloud-tpus.google.com/preemptible-v2": 8
           "restartPolicy": "Never"
   "schedule": "0 10 * * *"
+  "successfulJobsHistoryLimit": 1

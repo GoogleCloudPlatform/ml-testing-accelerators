@@ -21,7 +21,7 @@ local mnist = import "mnist.libsonnet";
 local mnistPods = import "mnist-pods.libsonnet";
 local pythonOperations = import "python-ops.libsonnet";
 local resnet50 = import "resnet50.libsonnet";
-local resnet50_MP = import "resnet50-MP.libsonnet";
+local resnet50_mp = import "resnet50-mp.libsonnet";
 
 # Add new models here
 std.flattenArrays([
@@ -34,5 +34,5 @@ std.flattenArrays([
   mnistPods.configs,
   pythonOperations.configs,
   resnet50.configs,
-  resnet50_MP.configs,
+  resnet50_mp.configs,
 ])

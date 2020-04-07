@@ -15,16 +15,48 @@
 local base = import "base.libsonnet";
 local timeouts = import "../../timeouts.libsonnet";
 local tpus = import "../../tpus.libsonnet";
+local utils = import "../../utils.libsonnet";
 
 {
-  local base_command = "pip install --editable tpu-examples/deps/fairseq && python3 /tpu-examples/deps/fairseq/train.py /datasets/wikitext-103 --tensorboard-logdir=$(MODEL_DIR) --task=masked_lm --criterion=masked_lm --arch=roberta_base --sample-break-mode=complete --tokens-per-sample=512 --optimizer=adam --adam-betas='(0.9,0.98)' --adam-eps=1e-6 --clip-norm=0.0 --lr-scheduler=polynomial_decay --lr=0.0005 --warmup-updates=10000 --dropout=0.1 --attention-dropout=0.1 --weight-decay=0.01 --update-freq=16 --log-format=simple --train-subset=train --valid-subset=valid --num_cores=8 --metrics_debug --save-dir=checkpoints --log_steps=30 --skip-invalid-size-inputs-valid-test --suppress_loss_report --input_shapes 16x512 18x480 21x384",
-
   local roberta = base.PyTorchTest {
     modelName: "roberta-pre",
-    command: [
-      "/bin/bash",
-      "-c",
-    ],
+    paramsOverride: {
+      maxEpoch: error "Must set `maxEpoch`",
+    },
+    command: utils.scriptCommand(
+      |||
+        pip install --editable tpu-examples/deps/fairseq
+        python3 \
+          /tpu-examples/deps/fairseq/train.py \
+          /datasets/wikitext-103 \
+          --tensorboard-logdir=$(MODEL_DIR) \
+          --task=masked_lm --criterion=masked_lm \
+          --arch=roberta_base --sample-break-mode=complete \
+          --tokens-per-sample=512 \
+          --optimizer=adam \
+          --adam-betas='(0.9,0.98)' \
+          --adam-eps=1e-6 \
+          --clip-norm=0.0 \
+          --lr-scheduler=polynomial_decay \
+          --lr=0.0005 \
+          --warmup-updates=10000 \
+          --dropout=0.1 \
+          --attention-dropout=0.1 \
+          --weight-decay=0.01 \
+          --update-freq=16 \
+          --log-format=simple \
+          --train-subset=train \
+          --valid-subset=valid \
+          --num_cores=8 \
+          --metrics_debug \
+          --save-dir=checkpoints \
+          --log_steps=30 \
+          --skip-invalid-size-inputs-valid-test \
+          --suppress_loss_report \
+          --input_shapes 16x512 18x480 21x384 \
+          --max-epoch=%(maxEpoch)d
+      ||| % self.paramsOverride,
+    ),
     jobSpec+:: {
       template+: {
         spec+: {
@@ -59,14 +91,14 @@ local tpus = import "../../tpus.libsonnet";
   },
   local functional = base.Functional {
     regressionTestConfig: null,
-    command+: [
-      base_command + " --max-epoch=1",
-    ],
+    paramsOverride: {
+      maxEpoch: 1
+    },
   },
   local convergence = base.Convergence {
-    command+: [
-      base_command + " --max-epoch=5",
-    ],
+    paramsOverride: {
+      maxEpoch: 5,
+    },
   },
   local v3_8 = {
     accelerator: tpus.v3_8,

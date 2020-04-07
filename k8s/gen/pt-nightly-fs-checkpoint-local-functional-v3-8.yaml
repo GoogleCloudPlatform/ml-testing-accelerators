@@ -15,24 +15,95 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-1.5-mnist-convergence-v2-8"
+  "name": "pt-nightly-fs-checkpoint-local-functional-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 3600
+      "activeDeadlineSeconds": 7200
       "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
-            "tf-version.cloud-tpus.google.com": "pytorch-1.5"
+            "tf-version.cloud-tpus.google.com": "pytorch-nightly"
         "spec":
           "containers":
           - "args":
-            - "python3"
-            - "pytorch/xla/test/test_train_mp_mnist.py"
-            - "--logdir=$(MODEL_DIR)"
+            - "/bin/bash"
+            - "-c"
+            - |
+              set -u
+              set -e
+              set -x
+              
+              python3 \
+                /tpu-examples/deps/fairseq/train.py \
+                /datasets/wmt18_en_de_bpej32k \
+                --tensorboard-logdir=$(MODEL_DIR) \
+                --metrics_debug \
+                --arch=transformer_vaswani_wmt_en_de_big \
+                --max-target-positions=64 \
+                --attention-dropout=0.1 \
+                --no-progress-bar \
+                --criterion=label_smoothed_cross_entropy \
+                --source-lang=en \
+                --lr-scheduler=inverse_sqrt  \
+                --min-lr=1e-09 \
+                --skip-invalid-size-inputs-valid-test \
+                --target-lang=de \
+                --label-smoothing=0.1 \
+                --update-freq=1 \
+                --optimizer=adam \
+                --adam-betas='(0.9,0.98)' \
+                --warmup-init-lr=1e-07 \
+                --lr=0.0005 \
+                --warmup-updates=4000 \
+                --share-all-embeddings \
+                --dropout=0.3 \
+                --weight-decay=0.0 \
+                --num_cores=8 \
+                --log_steps=10 \
+                --train-subset=test \
+                --valid-subset=valid \
+                --save-interval=1 \
+                --input_shapes=128x64 \
+                --max-epoch=1 \
+                --save-dir=/tmp/checkpoints
+              python3 \
+                /tpu-examples/deps/fairseq/train.py \
+                /datasets/wmt18_en_de_bpej32k \
+                --tensorboard-logdir=$(MODEL_DIR) \
+                --metrics_debug \
+                --arch=transformer_vaswani_wmt_en_de_big \
+                --max-target-positions=64 \
+                --attention-dropout=0.1 \
+                --no-progress-bar \
+                --criterion=label_smoothed_cross_entropy \
+                --source-lang=en \
+                --lr-scheduler=inverse_sqrt  \
+                --min-lr=1e-09 \
+                --skip-invalid-size-inputs-valid-test \
+                --target-lang=de \
+                --label-smoothing=0.1 \
+                --update-freq=1 \
+                --optimizer=adam \
+                --adam-betas='(0.9,0.98)' \
+                --warmup-init-lr=1e-07 \
+                --lr=0.0005 \
+                --warmup-updates=4000 \
+                --share-all-embeddings \
+                --dropout=0.3 \
+                --weight-decay=0.0 \
+                --num_cores=8 \
+                --log_steps=10 \
+                --train-subset=test \
+                --valid-subset=valid \
+                --save-interval=1 \
+                --input_shapes=128x64 \
+                --max-epoch=2 \
+                --save-dir=/tmp/checkpoints
+              
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -71,12 +142,6 @@
                    "aten_ops_sum_final"
                   ],
                   "metric_success_conditions": {
-                   "Accuracy/test_final": {
-                    "comparison": "greater",
-                    "success_threshold": {
-                     "fixed_value": 98
-                    }
-                   },
                    "CompileTime__Percentile_99_sec_final": {
                     "comparison": "less",
                     "success_threshold": {
@@ -107,28 +172,36 @@
                   },
                   "write_to_error_reporting": true
                  },
-                 "test_name": "pt-1.5-mnist-convergence-v2-8"
+                 "test_name": "pt-nightly-fs-checkpoint-local-functional-v3-8"
                 }
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/mnist/convergence/v2-8/$(JOB_NAME)"
+              "value": "gs://xl-ml-test-us-central1/k8s/fs-checkpoint-local/functional/v3-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
               "value": "0"
-            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.5"
+            "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v2": 8
+                "cloud-tpus.google.com/preemptible-v3": 8
               "requests":
-                "cpu": "4.5"
-                "memory": "8Gi"
+                "cpu": "9.0"
+                "memory": "30Gi"
             "volumeMounts":
             - "mountPath": "/dev/shm"
               "name": "dshm"
+            - "mountPath": "/datasets"
+              "name": "wmt18-pd"
+              "readOnly": true
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
+          - "gcePersistentDisk":
+              "fsType": "ext4"
+              "pdName": "wmt18-en-de-pd-central1-b"
+              "readOnly": true
+            "name": "wmt18-pd"
   "schedule": "0 14 * * *"
   "successfulJobsHistoryLimit": 1

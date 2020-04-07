@@ -26,11 +26,13 @@ local tpus = import "../../tpus.libsonnet";
       },
       train_dataset: {
         use_per_replica_batch_size: false,
+        builder: "records",
         batch_size: error "Must set `train_dataset.batch_size`",
       },
-      eval_dataset: {
+      validation_dataset: {
         use_per_replica_batch_size: false,
-        batch_size: error "Must set `eval_dataset.batch_size`",
+        builder: "records",
+        batch_size: error "Must set `validation_dataset.batch_size`",
       },
     },
     command: [
@@ -42,7 +44,6 @@ local tpus = import "../../tpus.libsonnet";
       "--model_type=efficientnet",
       "--dataset=imagenet",
       "--mode=train_and_eval",
-      "--data_dir=gs://imagenet-us-central1/train",
       "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride)
     ],
   },
@@ -56,7 +57,7 @@ local tpus = import "../../tpus.libsonnet";
   local convergence = mixins.Convergence {
     paramsOverride+: {
       train+: {
-        epochs: 350, 
+        epochs: 500, 
       },
     },
     regressionTestConfig+: {
@@ -76,7 +77,7 @@ local tpus = import "../../tpus.libsonnet";
       train_dataset+: {
         batch_size: 1024,
       },
-      eval_dataset+: {
+      validation_dataset+: {
         batch_size: 1024,
       },
     },
@@ -87,7 +88,7 @@ local tpus = import "../../tpus.libsonnet";
       train_dataset+: {
         batch_size: 1024,
       },
-      eval_dataset+: {
+      validation_dataset+: {
         batch_size: 1024,
       },
     },

@@ -25,8 +25,8 @@ local utils = import "../../utils.libsonnet";
     command: utils.scriptCommand(
       |||
         export PATH=$PATH:/root/google-cloud-sdk/bin
-        gcloud source repos clone cloudtpu-tf20-api-tests --project=gcp-tpupods-demo
-        cd cloudtpu-tf20-api-tests
+        gcloud source repos clone tf2-api-tests --project=xl-ml-test
+        cd tf2-api-tests
         pip3 install behave
         behave -e ipynb_checkpoints --tags=-fails -i %s
       ||| % self.testFeature
@@ -112,8 +112,8 @@ local utils = import "../../utils.libsonnet";
     keras_test + v2_8 + custom_training_loop,
     keras_test + v2_8 + feature_column,
     keras_test + v2_8 + rnn,
-    keras_test + v2_8 + save_and_load,
-    keras_test + v2_8 + train_and_evaluate,
+    keras_test + v2_8 + save_and_load + mixins.Experimental,
+    keras_test + v2_8 + train_and_evaluate + mixins.Experimental,
     keras_test + v2_8 + train_validation_dataset,
     keras_test + v2_8 + transfer_learning,
     keras_test + v3_8 + connection,
@@ -121,9 +121,9 @@ local utils = import "../../utils.libsonnet";
     keras_test + v3_8 + custom_training_loop,
     keras_test + v3_8 + feature_column,
     keras_test + v3_8 + rnn,
-    keras_test + v3_8 + save_and_load,
+    keras_test + v3_8 + save_and_load + mixins.Experimental,
     keras_test + v3_8 + train_and_evaluate,
-    keras_test + v3_8 + train_validation_dataset,
+    keras_test + v3_8 + train_validation_dataset + mixins.Experimental,
     keras_test + v3_8 + transfer_learning,
   ],
 }

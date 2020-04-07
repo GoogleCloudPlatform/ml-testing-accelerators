@@ -52,8 +52,8 @@ local tpus = import "tpus.libsonnet";
 
     testName:: "%(frameworkPrefix)s-%(modelName)s-%(mode)s-%(acceleratorName)s" % config,
     jobSpec:: {
-      # Try 3 times before giving up
-      backoffLimit: 2,
+      # Try 2 times before giving up.
+      backoffLimit: 1,
       activeDeadlineSeconds: config.timeout,
       template: {
         metadata: {
@@ -160,6 +160,7 @@ local tpus = import "tpus.libsonnet";
       spec: {
         schedule: config.schedule,
         concurrencyPolicy: "Forbid",
+        successfulJobsHistoryLimit: 1,
         jobTemplate: {
           spec: config.jobSpec,
         },

@@ -176,6 +176,7 @@ class CloudMetricsHandler(object):
         bigquery.SchemaField("timestamp", "TIMESTAMP", mode="REQUIRED"),
         bigquery.SchemaField("stackdriver_logs_link", "STRING",
                              mode="REQUIRED"),
+        bigquery.SchemaField("msg_publish_time", "INT64", mode="NULLABLE"),
     ]
     job_history_table = bigquery.Table(
         self.job_history_table_id, schema=job_history_schema)
@@ -233,6 +234,7 @@ class CloudMetricsHandler(object):
         int(job_status['stop_time'] - job_status['start_time']),
         self._wall_time_to_sql_timestamp(job_status['stop_time']),
         self.stackdriver_logs_link,
+        job_status['publish_time'],
     ]
 
     # Create rows to represent the computed metrics for this job.
@@ -283,6 +285,46 @@ class CloudMetricsHandler(object):
           metric_value=row['metric_value'],
           wall_time=row['timestamp'].timestamp()))
     return metrics_history
+
+  def get_existing_row(self):
+    """Returns any existing row in job_history that is for the current test.
+
+    Returns:
+      uuid (string): The `uuid` column for the row. If no row exists,
+        this will be None.
+      publish_time (int): The `publish_time` column for the row. If no row
+        exists, this will be None.
+    """
+    uuid = None
+    publish_time = None
+    if not self.metric_collection_config.get('write_to_bigquery', True):
+      self.logger.info('Skipping check for existing Bigquery rows.')
+      return uuid, publish_time
+    query_result = self.bigquery_client.query(
+        'SELECT * FROM `{}` WHERE stackdriver_logs_link=\"{}\"'.format(
+            self.job_history_table_id, self.stackdriver_logs_link)).result()
+    if query_result.total_rows > 1:
+      self.logger.error('Found more than 1 row in job_history for logs_link: '
+                        '{}'.format(logs_link),
+                        logs_link=self.stackdriver_logs_link)
+    for row in query_result:
+      uuid = row['uuid']
+      publish_time = row['msg_publish_time']
+    return uuid, publish_time
+
+  def delete_rows_for_uuid(self, uuid):
+    """Delete all rows in job_history and metric_history for a given uuid.
+
+    Args:
+      uuid (string): Unique identifier for the job run, i.e. the uuid column
+        of one row in the job_history table.
+    """
+    delete_job_row_result = self.bigquery_client.query(
+        'DELETE FROM `{}` WHERE uuid=\"{}\"'.format(
+            self.job_history_table_id, uuid)).result()
+    delete_metric_rows_result = self.bigquery_client.query(
+        'DELETE FROM `{}` WHERE uuid=\"{}\"'.format(
+            self.metric_history_table_id, uuid)).result()
 
   def compute_bounds_and_report_errors(self, metrics_history, new_metrics):
     """Compute the bounds for metrics and report abnormal values.
@@ -367,7 +409,8 @@ class CloudMetricsHandler(object):
 
 
 def _process_pubsub_message(msg, status_handler, logger):
-  msg_age_sec = time.time() - msg['publish_time']
+  publish_time = msg['publish_time']
+  msg_age_sec = time.time() - publish_time
   if msg_age_sec < MIN_MSG_AGE_SEC:
     logger.warning('Message was {} seconds old, which is less than the '
                    'minimum of {}. Skipping for now but will retry on '
@@ -409,19 +452,11 @@ def _process_pubsub_message(msg, status_handler, logger):
     return True  # Ack the message.
   job_status = {
       'final_status': status,
-      'start_time': msg['publish_time'],
+      'start_time': publish_time,
+      'publish_time': publish_time,
       'stop_time': stop_time,
       'num_failures': num_failures,
   }
-  # Alert for failing jobs unless the user has explicitly added a config
-  # that disables alerts for this test.
-  if job_status['final_status'] != job_status_handler.SUCCESS and (
-      not regression_test_config or regression_test_config.get(
-          'alert_for_failed_jobs', True)):
-    logger.error(
-        'job_status was `{}` for test `{}`'.format(
-            job_status['final_status'], test_name),
-        logs_link=logs_link)
 
   # TODO: pass these in the pubsub message and remove this block.
   if not test_type:
@@ -435,6 +470,30 @@ def _process_pubsub_message(msg, status_handler, logger):
   handler = CloudMetricsHandler(
       test_name, events_dir, logs_link, metric_collection_config,
       regression_test_config, test_type, accelerator, framework_version, logger)
+
+  # Sometimes pubsub messages get delayed. If we've already processed metrics
+  # for a different attempt of this test, we need to see if that attempt came
+  # before or after the current attempt.
+  existing_row_uuid, existing_row_publish_time = handler.get_existing_row()
+  if existing_row_publish_time:
+    # If the current message is for an earlier attempt than the existing row,
+    # we can stop early since we want to write metrics for the latest attempt.
+    if publish_time <= existing_row_publish_time:
+      return True  # Ack the message.
+    # If the current message is for a later attempt than the existing row,
+    # clean up the existing rows and proceed with processing current message.
+    else:
+      handler.delete_rows_for_uuid(existing_row_uuid)
+
+  # Alert for failing jobs unless the user has explicitly added a config
+  # that disables alerts for this test.
+  if job_status['final_status'] != job_status_handler.SUCCESS and (
+      not regression_test_config or regression_test_config.get(
+          'alert_for_failed_jobs', True)):
+    logger.error(
+        'job_status was `{}` for test `{}`'.format(
+            job_status['final_status'], test_name),
+        logs_link=logs_link)
 
   new_metrics = handler.get_metrics_from_events_dir(job_status)
   if regression_test_config:

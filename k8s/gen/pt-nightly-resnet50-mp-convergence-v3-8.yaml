@@ -15,24 +15,30 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-1.5-mnist-convergence-v2-8"
+  "name": "pt-nightly-resnet50-mp-convergence-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 3600
+      "activeDeadlineSeconds": 93600
       "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
-            "tf-version.cloud-tpus.google.com": "pytorch-1.5"
+            "tf-version.cloud-tpus.google.com": "pytorch-nightly"
         "spec":
           "containers":
           - "args":
             - "python3"
-            - "pytorch/xla/test/test_train_mp_mnist.py"
+            - "pytorch/xla/test/test_train_mp_imagenet.py"
             - "--logdir=$(MODEL_DIR)"
+            - "--model=resnet50"
+            - "--num_workers=8"
+            - "--batch_size=128"
+            - "--log_steps=200"
+            - "--num_epochs=90"
+            - "--datadir=/datasets/imagenet"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -74,7 +80,7 @@
                    "Accuracy/test_final": {
                     "comparison": "greater",
                     "success_threshold": {
-                     "fixed_value": 98
+                     "fixed_value": 75
                     }
                    },
                    "CompileTime__Percentile_99_sec_final": {
@@ -107,28 +113,36 @@
                   },
                   "write_to_error_reporting": true
                  },
-                 "test_name": "pt-1.5-mnist-convergence-v2-8"
+                 "test_name": "pt-nightly-resnet50-mp-convergence-v3-8"
                 }
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/mnist/convergence/v2-8/$(JOB_NAME)"
+              "value": "gs://xl-ml-test-us-central1/k8s/resnet50-mp/convergence/v3-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
               "value": "0"
-            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.5"
+            "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v2": 8
+                "cloud-tpus.google.com/preemptible-v3": 8
               "requests":
-                "cpu": "4.5"
-                "memory": "8Gi"
+                "cpu": "90.0"
+                "memory": "400Gi"
             "volumeMounts":
             - "mountPath": "/dev/shm"
               "name": "dshm"
+            - "mountPath": "/datasets"
+              "name": "imagenet-pd"
+              "readOnly": true
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-  "schedule": "0 14 * * *"
+          - "gcePersistentDisk":
+              "fsType": "ext4"
+              "pdName": "imagenet-pd-central1-b"
+              "readOnly": true
+            "name": "imagenet-pd"
+  "schedule": "0 6 * * 1,6"
   "successfulJobsHistoryLimit": 1

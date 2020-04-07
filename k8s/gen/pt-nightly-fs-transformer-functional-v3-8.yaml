@@ -22,7 +22,7 @@
   "jobTemplate":
     "spec":
       "activeDeadlineSeconds": 3600
-      "backoffLimit": 2
+      "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
@@ -30,40 +30,46 @@
         "spec":
           "containers":
           - "args":
-            - "python3"
-            - "/tpu-examples/deps/fairseq/train.py"
-            - "/datasets/wmt18_en_de_bpej32k"
-            - "--tensorboard-logdir=$(MODEL_DIR)"
-            - "--metrics_debug"
-            - "--arch=transformer_vaswani_wmt_en_de_big"
-            - "--max-target-positions=64"
-            - "--attention-dropout=0.1"
-            - "--no-progress-bar"
-            - "--no-save"
-            - "--save-interval=1"
-            - "--criterion=label_smoothed_cross_entropy"
-            - "--source-lang=en"
-            - "--lr-scheduler=inverse_sqrt"
-            - "--min-lr=1e-09"
-            - "--skip-invalid-size-inputs-valid-test"
-            - "--target-lang=de"
-            - "--label-smoothing=0.1"
-            - "--update-freq=1"
-            - "--optimizer=adam"
-            - "--adam-betas=(0.9,0.98)"
-            - "--warmup-init-lr=1e-07"
-            - "--lr=0.0005"
-            - "--warmup-updates=4000"
-            - "--share-all-embeddings"
-            - "--dropout=0.3"
-            - "--weight-decay=0.0"
-            - "--valid-subset=valid"
-            - "--num_cores=8"
-            - "--max-epoch=1"
-            - "--log_steps=10"
-            - "--train-subset=valid"
-            - "--input_shapes"
-            - "128x64"
+            - "/bin/bash"
+            - "-c"
+            - |
+              set -u
+              set -e
+              set -x
+              
+              python3 \
+                /tpu-examples/deps/fairseq/train.py \
+                /datasets/wmt18_en_de_bpej32k \
+                --tensorboard-logdir=$(MODEL_DIR) \
+                --metrics_debug \
+                --arch=transformer_vaswani_wmt_en_de_big \
+                --max-target-positions=64 \
+                --attention-dropout=0.1 \
+                --no-progress-bar \
+                --criterion=label_smoothed_cross_entropy \
+                --source-lang=en \
+                --lr-scheduler=inverse_sqrt  \
+                --min-lr=1e-09 \
+                --skip-invalid-size-inputs-valid-test \
+                --target-lang=de \
+                --label-smoothing=0.1 \
+                --update-freq=1 \
+                --optimizer=adam \
+                --adam-betas='(0.9,0.98)' \
+                --warmup-init-lr=1e-07 \
+                --lr=0.0005 \
+                --warmup-updates=4000 \
+                --share-all-embeddings \
+                --dropout=0.3 \
+                --weight-decay=0.0 \
+                --num_cores=8 \
+                --no-save \
+                --max-epoch=1 \
+                --log_steps=10 \
+                --train-subset=valid \
+                --valid-subset=test \
+                --input_shapes=128x64
+              
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -137,7 +143,7 @@
             - "name": "MODEL_DIR"
               "value": "gs://xl-ml-test-us-central1/k8s/fs-transformer/functional/v3-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
-              "value": "1"
+              "value": "0"
             "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
@@ -164,3 +170,4 @@
               "readOnly": true
             "name": "wmt18-pd"
   "schedule": "0 14 * * *"
+  "successfulJobsHistoryLimit": 1

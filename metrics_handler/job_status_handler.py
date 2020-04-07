@@ -154,9 +154,9 @@ class JobStatusHandler(object):
               'job: {}. Using time.time(). Status: {}'.format(job_name, status))
           stop_time = time.time()
     else:
-      if len(status.conditions) != 1:
+      if not status.conditions or len(status.conditions) != 1:
         self.logger.error(
-            'Expected exactly 1 `condition` element in status. '
+            'Expected exactly 1 `condition` element in non-success status. '
             'Status was: {}'.format(status))
         completion_code = FAILURE
         stop_time = status.start_time.timestamp()

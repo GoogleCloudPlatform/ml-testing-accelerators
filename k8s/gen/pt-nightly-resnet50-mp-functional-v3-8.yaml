@@ -15,14 +15,14 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-resnet50-MP-functional-v3-8"
+  "name": "pt-nightly-resnet50-mp-functional-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
       "activeDeadlineSeconds": 7200
-      "backoffLimit": 2
+      "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
@@ -107,10 +107,10 @@
                   },
                   "write_to_error_reporting": true
                  },
-                 "test_name": "pt-nightly-resnet50-MP-functional-v3-8"
+                 "test_name": "pt-nightly-resnet50-mp-functional-v3-8"
                 }
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/resnet50-MP/functional/v3-8/$(JOB_NAME)"
+              "value": "gs://xl-ml-test-us-central1/k8s/resnet50-mp/functional/v3-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
               "value": "0"
             "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
@@ -139,3 +139,4 @@
               "readOnly": true
             "name": "imagenet-mini-pd"
   "schedule": "0 14 * * *"
+  "successfulJobsHistoryLimit": 1
