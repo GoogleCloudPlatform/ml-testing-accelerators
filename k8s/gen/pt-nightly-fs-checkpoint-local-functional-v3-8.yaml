@@ -15,13 +15,13 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-fs-transformer-convergence-v3-8"
+  "name": "pt-nightly-fs-checkpoint-local-functional-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 90000
+      "activeDeadlineSeconds": 7200
       "backoffLimit": 1
       "template":
         "metadata":
@@ -37,7 +37,6 @@
               set -e
               set -x
               
-              pip install --editable /tpu-examples/deps/fairseq
               python3 \
                 /tpu-examples/deps/fairseq/train.py \
                 /datasets/wmt18_en_de_bpej32k \
@@ -64,21 +63,46 @@
                 --dropout=0.3 \
                 --weight-decay=0.0 \
                 --num_cores=8 \
-                --save-interval=5 \
-                --save-dir=/tmp/checkpoints \
-                --max-epoch=25 \
-                --log_steps=200 \
-                --train-subset=train \
+                --log_steps=10 \
+                --train-subset=test \
                 --valid-subset=valid \
-                --input_shapes 256x64 512x32 640x16
-              bleu=`fairseq-generate \
-                 /datasets/wmt18_en_de_bpej32k \
-                 --remove-bpe --quiet --lenpen 0.6 --beam 4 \
-                 --path /tmp/checkpoints/checkpoint25.pt \
-                 --skip-invalid-size-inputs-valid-test | grep BLEU \
-                 | grep -v loadi | tail -1 | cut -d '=' -f 3| cut -d'.' -f 1`
-              echo 'BLEU score is' $bleu
-              test $bleu -gt 27
+                --save-interval=1 \
+                --input_shapes=128x64 \
+                --max-epoch=1 \
+                --save-dir=/tmp/checkpoints
+              python3 \
+                /tpu-examples/deps/fairseq/train.py \
+                /datasets/wmt18_en_de_bpej32k \
+                --tensorboard-logdir=$(MODEL_DIR) \
+                --metrics_debug \
+                --arch=transformer_vaswani_wmt_en_de_big \
+                --max-target-positions=64 \
+                --attention-dropout=0.1 \
+                --no-progress-bar \
+                --criterion=label_smoothed_cross_entropy \
+                --source-lang=en \
+                --lr-scheduler=inverse_sqrt  \
+                --min-lr=1e-09 \
+                --skip-invalid-size-inputs-valid-test \
+                --target-lang=de \
+                --label-smoothing=0.1 \
+                --update-freq=1 \
+                --optimizer=adam \
+                --adam-betas='(0.9,0.98)' \
+                --warmup-init-lr=1e-07 \
+                --lr=0.0005 \
+                --warmup-updates=4000 \
+                --share-all-embeddings \
+                --dropout=0.3 \
+                --weight-decay=0.0 \
+                --num_cores=8 \
+                --log_steps=10 \
+                --train-subset=test \
+                --valid-subset=valid \
+                --save-interval=1 \
+                --input_shapes=128x64 \
+                --max-epoch=2 \
+                --save-dir=/tmp/checkpoints
               
             "env":
             - "name": "POD_NAME"
@@ -144,28 +168,22 @@
                      "stddevs_from_mean": 5
                     },
                     "wait_for_n_points_of_history": 10
-                   },
-                   "train-wps_final": {
-                    "comparison": "greater",
-                    "success_threshold": {
-                     "fixed_value": 11700
-                    }
                    }
                   },
                   "write_to_error_reporting": true
                  },
-                 "test_name": "pt-nightly-fs-transformer-convergence-v3-8"
+                 "test_name": "pt-nightly-fs-checkpoint-local-functional-v3-8"
                 }
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/fs-transformer/convergence/v3-8/$(JOB_NAME)"
+              "value": "gs://xl-ml-test-us-central1/k8s/fs-checkpoint-local/functional/v3-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
-              "value": "1"
+              "value": "0"
             "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v3": 8
+                "cloud-tpus.google.com/preemptible-v3": 8
               "requests":
                 "cpu": "9.0"
                 "memory": "30Gi"
@@ -185,5 +203,5 @@
               "pdName": "wmt18-en-de-pd-central1-b"
               "readOnly": true
             "name": "wmt18-pd"
-  "schedule": "0 6 * * 1,6"
+  "schedule": "0 14 * * *"
   "successfulJobsHistoryLimit": 1

@@ -18,6 +18,41 @@ local tpus = import "../../tpus.libsonnet";
 local utils = import "../../utils.libsonnet";
 
 {
+  local command_common = |||
+    python3 \
+      /tpu-examples/deps/fairseq/train.py \
+      /datasets/wmt18_en_de_bpej32k \
+      --tensorboard-logdir=$(MODEL_DIR) \
+      --metrics_debug \
+      --arch=transformer_vaswani_wmt_en_de_big \
+      --max-target-positions=64 \
+      --attention-dropout=0.1 \
+      --no-progress-bar \
+      --criterion=label_smoothed_cross_entropy \
+      --source-lang=en \
+      --lr-scheduler=inverse_sqrt  \
+      --min-lr=1e-09 \
+      --skip-invalid-size-inputs-valid-test \
+      --target-lang=de \
+      --label-smoothing=0.1 \
+      --update-freq=1 \
+      --optimizer=adam \
+      --adam-betas='(0.9,0.98)' \
+      --warmup-init-lr=1e-07 \
+      --lr=0.0005 \
+      --warmup-updates=4000 \
+      --share-all-embeddings \
+      --dropout=0.3 \
+      --weight-decay=0.0 \
+      --num_cores=8 \
+  |||,
+  local chpt_command_common = |||
+      %(command_common)s  --log_steps=10 \
+        --train-subset=test \
+        --valid-subset=valid \
+        --save-interval=1 \
+        --input_shapes=128x64 \
+  ||| % command_common,
   local transformer = base.PyTorchTest {
     modelName: "fs-transformer",
     jobSpec+:: {
@@ -52,76 +87,63 @@ local utils = import "../../utils.libsonnet";
       },
     },
   },
+  local checkpoint_local = base.Functional {
+    modelName: "fs-checkpoint-local",
+    command: utils.scriptCommand(
+      |||
+        %(common)s  --max-epoch=1 \
+          --save-dir=/tmp/checkpoints
+        %(common)s  --max-epoch=2 \
+          --save-dir=/tmp/checkpoints
+      ||| % {common: chpt_command_common}
+    ),
+  },
+  local checkpoint_gcs = base.Functional {
+    modelName: "fs-checkpoint-gcs",
+    command: utils.scriptCommand(
+      |||
+        %(common)s  --max-epoch=1 \
+          --save-dir=%(savedir)s
+        set +e
+        %(common)s  --max-epoch=2 \
+          --save-dir=%(savedir)s
+        gsutil ls -l %(savedir)s
+        gsutil rm -r %(savedir)s
+        gsutil ls -l %(savedir)s
+      ||| % {common: chpt_command_common, savedir: "$MODEL_DIR/checkpoints"}
+    ),
+    jobSpec+:: {
+      template+: {
+        spec+: {
+          containerMap+: {
+            train+: {
+              envMap+: {
+                XLA_USE_BF16: "1",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   local functional = base.Functional {
     command: utils.scriptCommand(
       |||
-        python3 \
-          /tpu-examples/deps/fairseq/train.py \
-          /datasets/wmt18_en_de_bpej32k \
-          --tensorboard-logdir=$(MODEL_DIR) \
-          --metrics_debug \
-          --arch=transformer_vaswani_wmt_en_de_big \
-          --max-target-positions=64 \
-          --attention-dropout=0.1 \
-          --no-progress-bar \
-          --criterion=label_smoothed_cross_entropy \
-          --source-lang=en \
-          --lr-scheduler=inverse_sqrt  \
-          --min-lr=1e-09 \
-          --skip-invalid-size-inputs-valid-test \
-          --target-lang=de \
-          --label-smoothing=0.1 \
-          --update-freq=1 \
-          --optimizer=adam \
-          --adam-betas='(0.9,0.98)' \
-          --warmup-init-lr=1e-07 \
-          --lr=0.0005 \
-          --warmup-updates=4000 \
-          --share-all-embeddings \
-          --dropout=0.3 \
-          --weight-decay=0.0 \
-          --num_cores=8 \
-          --no-save \
+        %(command_common)s  --no-save \
           --max-epoch=1 \
           --log_steps=10 \
           --train-subset=valid \
           --valid-subset=test \
           --input_shapes=128x64
-      |||
+      ||| % command_common
     ),
   },
   local convergence = base.Convergence {
     command: utils.scriptCommand(
       |||
         pip install --editable /tpu-examples/deps/fairseq
-        python3 \
-          /tpu-examples/deps/fairseq/train.py \
-          /datasets/wmt18_en_de_bpej32k  \
-          --tensorboard-logdir=$(MODEL_DIR)  \
-          --metrics_debug \
-          --arch=transformer_vaswani_wmt_en_de_big \
-          --max-target-positions=64  \
-          --attention-dropout=0.1 \
-          --no-progress-bar  \
-          --save-interval=5  \
+        %(command_common)s  --save-interval=5 \
           --save-dir=/tmp/checkpoints \
-          --criterion=label_smoothed_cross_entropy \
-          --source-lang=en \
-          --lr-scheduler=inverse_sqrt \
-          --min-lr=1e-09 \
-          --skip-invalid-size-inputs-valid-test  \
-          --target-lang=de \
-          --label-smoothing=0.1  \
-          --update-freq=1 \
-          --optimizer=adam \
-          --adam-betas='(0.9,0.98)' \
-          --warmup-init-lr=1e-07 \
-          --lr=0.0005 \
-          --warmup-updates=4000  \
-          --share-all-embeddings \
-          --dropout=0.3  \
-          --weight-decay=0.0 \
-          --num_cores=8  \
           --max-epoch=25 \
           --log_steps=200 \
           --train-subset=train \
@@ -135,7 +157,7 @@ local utils = import "../../utils.libsonnet";
            | grep -v loadi | tail -1 | cut -d '=' -f 3| cut -d'.' -f 1`
         echo 'BLEU score is' $bleu
         test $bleu -gt 27
-      |||
+      ||| % command_common
     ),
     jobSpec+:: {
       template+: {
@@ -167,5 +189,7 @@ local utils = import "../../utils.libsonnet";
   configs: [
     transformer + v3_8 + functional + timeouts.Hours(1),
     transformer + v3_8 + convergence + timeouts.Hours(25),
+    transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
+    transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
   ],
 }
