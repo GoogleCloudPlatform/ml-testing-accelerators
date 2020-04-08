@@ -22,11 +22,16 @@ export RESOURCE_SUFFIX=$POD_UID
 export INSTANCE_TEMPLATE_NAME="instance-template-${RESOURCE_SUFFIX}"
 export TPU_POD_NAME="tpu-pod-${RESOURCE_SUFFIX}"
 export INSTANCE_GROUP_NAME="instance-group-${RESOURCE_SUFFIX}"
+
+# zone/name -> name
 export TPU_POD_NAME=$(echo ${TPU_NAME} | awk -F'/' '{print $2}')
 
-# source /publish.sh
+# HACK: create symlink where other images have `gcloud` installed
+mkdir -p /root/google-cloud-sdk/bin/
+ln -s $(which gcloud) /root/google-cloud-sdk/bin/gcloud
+source /publish.sh
 
-timeout 180 /setup-pytorch-pods.sh && \
+timeout 180 /setup-instances.sh && \
 export master=$(gcloud compute instance-groups \
   list-instances \
   ${INSTANCE_GROUP_NAME} \
@@ -39,5 +44,5 @@ gcloud -q compute ssh --internal-ip --zone=$ZONE $master \
   python -m torch_xla.distributed.xla_dist --tpu=$TPU_POD_NAME --conda-env=torch-xla-nightly -- $*"
 exit_code=$?
 
-/teardown-pytorch-pods.sh
+/teardown-instances.sh
 exit $exit_code

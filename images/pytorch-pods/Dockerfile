@@ -21,7 +21,7 @@ RUN ln -s /usr/bin/gcloud /root/google-cloud-sdk/bin/gcloud
 
 COPY images/setup.sh /
 COPY images/publish.sh /
-COPY images/pytorch-pods/setup-pytorch-pods.sh /
-COPY images/pytorch-pods/teardown-pytorch-pods.sh /
+COPY images/pytorch-pods/setup-instances.sh /
+COPY images/pytorch-pods/teardown-instances.sh /
 COPY images/pytorch-pods/entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
