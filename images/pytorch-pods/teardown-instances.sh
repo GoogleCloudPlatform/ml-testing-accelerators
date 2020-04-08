@@ -13,18 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-echo "Teading down TPU Pod: ${TPU_POD_NAME}"
-gcloud -q compute --project="${PROJECT}" \
-  tpus \
-  delete \
-  "${TPU_POD_NAME}" \
-  --zone="${ZONE}" \
-  --async
+set -x
 
 echo "Tearing down GCE Instance Group: ${INSTANCE_GROUP_NAME}"
 gcloud -q compute --project="${PROJECT}" instance-groups managed \
   delete \
-  "${INSTANCE_GROUP_NAME}"
+  "${INSTANCE_GROUP_NAME}" \
+  --zone="${ZONE}"
 
 echo "Tearing down GCE Instance Template: ${INSTANCE_TEMPLATE_NAME}"
 gcloud -q compute --project="${PROJECT}" instance-templates \

@@ -13,24 +13,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 source /setup.sh
-
-
-# TODO: Make these arguments piped through from jsonnet
-export MACHINE_TYPE=n1-standard-16
-export ACCELERATOR_TYPE=v3-32
-export RUNTIME_VERSION=pytorch-nightly
-export RESOURCE_SUFFIX=$POD_UID
-source /setup-pytorch-pods.sh
 
 set -u
 set -x
 
+export RESOURCE_SUFFIX=$POD_UID
+export INSTANCE_TEMPLATE_NAME="instance-template-${RESOURCE_SUFFIX}"
+export TPU_POD_NAME="tpu-pod-${RESOURCE_SUFFIX}"
+export INSTANCE_GROUP_NAME="instance-group-${RESOURCE_SUFFIX}"
+
+# zone/name -> name
+export TPU_POD_NAME=$(echo ${TPU_NAME} | awk -F'/' '{print $2}')
+
+# HACK: create symlink where other images have `gcloud` installed
+mkdir -p /root/google-cloud-sdk/bin/
+ln -s $(which gcloud) /root/google-cloud-sdk/bin/gcloud
 source /publish.sh
 
-# "$@" should look like python -m torch_xla.distributed.xla_dist --tpu=...
-docker-entrypoint.sh "$@"
+timeout 180 /setup-instances.sh && \
+export master=$(gcloud compute instance-groups \
+  list-instances \
+  ${INSTANCE_GROUP_NAME} \
+  --zone=${ZONE} \
+  --format="value(NAME)" \
+  --limit=1) && \
+gcloud -q compute ssh --internal-ip --zone=$ZONE $master \
+  --command "source /anaconda3/etc/profile.d/conda.sh && \
+  conda activate ${CONDA_ENV} && \
+  python -m torch_xla.distributed.xla_dist --tpu=${TPU_POD_NAME} --conda-env=${CONDA_ENV} ${XLA_DIST_FLAGS} -- $*"
+exit_code=$?
 
-# Teardown resources
-/teardown-pytorch-pods.sh
+/teardown-instances.sh
+exit $exit_code
