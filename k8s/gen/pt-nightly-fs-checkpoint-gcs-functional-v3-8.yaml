@@ -106,7 +106,6 @@
                 --save-dir=$MODEL_DIR/checkpoints
               gsutil ls -l $MODEL_DIR/checkpoints
               gsutil rm -r $MODEL_DIR/checkpoints
-              gsutil ls -l $MODEL_DIR/checkpoints
               
             "env":
             - "name": "POD_NAME"
