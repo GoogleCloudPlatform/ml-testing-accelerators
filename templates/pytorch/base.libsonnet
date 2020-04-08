@@ -94,6 +94,8 @@ local base = import "../base.libsonnet";
 
     image: "gcr.io/xl-ml-test/pytorch-pods",
     instanceType: "n1-standard-8",
+    condaEnv: "torch-xla-nightly",
+    xlaDistFlags: "",
 
     jobSpec+:: {
       backoffLimit: 0,
@@ -104,6 +106,8 @@ local base = import "../base.libsonnet";
               envMap+: {
                 MACHINE_TYPE: config.instanceType,
                 ACCELERATOR_TYPE: config.acceleratorName,
+                CONDA_ENV: config.condaEnv,
+                XLA_DIST_FLAGS: config.xlaDistFlags,
               },
             },
           },

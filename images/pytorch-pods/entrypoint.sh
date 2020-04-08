@@ -40,8 +40,8 @@ export master=$(gcloud compute instance-groups \
   --limit=1) && \
 gcloud -q compute ssh --internal-ip --zone=$ZONE $master \
   --command "source /anaconda3/etc/profile.d/conda.sh && \
-  conda activate torch-xla-nightly && \
-  python -m torch_xla.distributed.xla_dist --tpu=$TPU_POD_NAME --conda-env=torch-xla-nightly -- $*"
+  conda activate ${CONDA_ENV} && \
+  python -m torch_xla.distributed.xla_dist --tpu=${TPU_POD_NAME} --conda-env=${CONDA_ENV} ${XLA_DIST_FLAGS} -- $*"
 exit_code=$?
 
 /teardown-instances.sh
