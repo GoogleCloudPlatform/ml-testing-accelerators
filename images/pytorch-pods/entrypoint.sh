@@ -26,7 +26,7 @@ export TPU_POD_NAME=$(echo ${TPU_NAME} | awk -F'/' '{print $2}')
 
 # source /publish.sh
 
-/setup-pytorch-pods.sh && \
+timeout 180 /setup-pytorch-pods.sh && \
 export master=$(gcloud compute instance-groups \
   list-instances \
   ${INSTANCE_GROUP_NAME} \
@@ -36,7 +36,7 @@ export master=$(gcloud compute instance-groups \
 gcloud -q compute ssh --internal-ip --zone=$ZONE $master \
   --command "source /anaconda3/etc/profile.d/conda.sh && \
   conda activate torch-xla-nightly && \
-  python -m torch_xla.distributed.xla_dist --tpu=$TPU_POD_NAME --conda-env=torch-xla-nightly -- $@"
+  python -m torch_xla.distributed.xla_dist --tpu=$TPU_POD_NAME --conda-env=torch-xla-nightly -- $*"
 exit_code=$?
 
 /teardown-pytorch-pods.sh

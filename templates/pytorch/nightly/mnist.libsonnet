@@ -28,9 +28,10 @@ local tpus = import "../../tpus.libsonnet";
   },
   local mnist_pod = base.PyTorchPodTest {
     modelName: "mnist",
-    imageTag: "latest",
     command: [
-      "python /usr/share/torch-xla-nightly/pytorch/xla/test/test_train_mp_mnist.py",
+      "python3",
+      "/usr/share/torch-xla-nightly/pytorch/xla/test/test_train_mp_mnist.py",
+      "--logdir=$(MODEL_DIR)",
     ],
   },
 
