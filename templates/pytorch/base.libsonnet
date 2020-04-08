@@ -27,21 +27,21 @@ local base = import "../base.libsonnet";
       metric_success_conditions+: {
         "ExecuteTime__Percentile_99_sec_final": {
           success_threshold: {
-                  stddevs_from_mean: 5.0,
+            stddevs_from_mean: 5.0,
           },
           comparison: "less",
           wait_for_n_points_of_history: 10,
         },
         "CompileTime__Percentile_99_sec_final": {
           success_threshold: {
-                  stddevs_from_mean: 5.0,
+            stddevs_from_mean: 5.0,
           },
           comparison: "less",
           wait_for_n_points_of_history: 10,
         },
         "aten_ops_sum_final": {
           success_threshold: {
-                  stddevs_from_mean: 0.0,
+            stddevs_from_mean: 0.0,
           },
           comparison: "less_or_equal",
         },
