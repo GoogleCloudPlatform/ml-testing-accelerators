@@ -118,7 +118,7 @@
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v2": 8
+                "cloud-tpus.google.com/v2": 8
               "requests":
                 "cpu": "4.5"
                 "memory": "8Gi"
