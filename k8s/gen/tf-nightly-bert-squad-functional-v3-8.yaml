@@ -42,6 +42,7 @@
             - "--learning_rate=8e-5"
             - "--do_lower_case=true"
             - "--distribution_strategy=tpu"
+            - "--steps_per_loop=500"
             - "--train_batch_size=32"
             - "--mode=train"
             - "--num_train_epochs=1"

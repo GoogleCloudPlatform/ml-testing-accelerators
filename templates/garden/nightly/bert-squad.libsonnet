@@ -33,18 +33,13 @@ local tpus = import "../../tpus.libsonnet";
       "--learning_rate=8e-5",
       "--do_lower_case=true",
       "--distribution_strategy=tpu",
+      "--steps_per_loop=500",
     ],
   },
   local functional = mixins.Functional {
     command+: [
       "--mode=train",
       "--num_train_epochs=1",
-    ],
-  },
-  local convergence = mixins.Convergence {
-    command+: [
-      "--mode=train_and_predict",
-      "--num_train_epochs=2",
     ],
   },
   local v2_8 = {
