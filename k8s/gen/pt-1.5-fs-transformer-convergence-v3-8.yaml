@@ -83,6 +83,45 @@
               "valueFrom":
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/fs-transformer/convergence/v3-8/$(JOB_NAME)"
+            - "name": "XLA_USE_BF16"
+              "value": "0"
+            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.5"
+            "imagePullPolicy": "Always"
+            "name": "train"
+            "resources":
+              "limits":
+                "cloud-tpus.google.com/v3": 8
+              "requests":
+                "cpu": "9.0"
+                "memory": "30Gi"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+            - "mountPath": "/datasets"
+              "name": "wmt18-pd"
+              "readOnly": true
+          "initContainers":
+          - "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/fs-transformer/convergence/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -142,25 +181,8 @@
                  },
                  "test_name": "pt-1.5-fs-transformer-convergence-v3-8"
                 }
-            - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/fs-transformer/convergence/v3-8/$(JOB_NAME)"
-            - "name": "XLA_USE_BF16"
-              "value": "0"
-            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.5"
-            "imagePullPolicy": "Always"
-            "name": "train"
-            "resources":
-              "limits":
-                "cloud-tpus.google.com/v3": 8
-              "requests":
-                "cpu": "9.0"
-                "memory": "30Gi"
-            "volumeMounts":
-            - "mountPath": "/dev/shm"
-              "name": "dshm"
-            - "mountPath": "/datasets"
-              "name": "wmt18-pd"
-              "readOnly": true
+            "image": "gcr.io/xl-ml-test/publisher:stable"
+            "name": "publisher"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":
