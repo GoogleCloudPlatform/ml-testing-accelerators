@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local timeouts = import "timeouts.libsonnet";
-local tpus = import "tpus.libsonnet";
-
 {
   BaseTest:: {
     local config = self,
@@ -50,7 +47,17 @@ local tpus = import "tpus.libsonnet";
       },
     },
 
-    testName:: "%(frameworkPrefix)s-%(modelName)s-%(mode)s-%(acceleratorName)s" % config,
+    # Kubernetes Pods have a character limit. Ensure that jobs generated from
+    # CronJobs are short enough.
+    local fullTestName =
+        "%(frameworkPrefix)s-%(modelName)s-%(mode)s-%(acceleratorName)s" % config,
+    local fullTestNameLen = std.length(fullTestName),
+    testName: if fullTestNameLen <= 46 then
+        fullTestName
+      else
+        error "Test name %s has %d characters. The limit is 46 characters." % 
+            [fullTestName, fullTestNameLen],
+
     jobSpec:: {
       # Try 2 times before giving up.
       backoffLimit: 1,

@@ -16,7 +16,7 @@ local timeouts = import "timeouts.libsonnet";
 
 {
   Functional:: {
-    mode: "functional",
+    mode: "func",
     timeout: timeouts.one_hour,
     # Run at midnight PST daily
     schedule: "0 8 * * *",
@@ -25,7 +25,7 @@ local timeouts = import "timeouts.libsonnet";
     },
   },
   Convergence:: {
-    mode: "convergence",
+    mode: "conv",
     timeout: timeouts.ten_hours,
     # Run at 22:00 PST on Sunday and Wednesday
     schedule: "0 6 * * 0,5",
