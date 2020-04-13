@@ -1,0 +1,15 @@
+bokeh>=1.4.0
+tornado>=5.0.0
+pandas==0.23.4
+pandas-gbq==0.6.0
+google-api-python-client>=1.6.2
+pymemcache>=1.4.3
+scipy>=0.19.0
+PyYAML>=3.10
+python-dateutil>=2.1
+Jinja2>=2.7
+numpy>=1.11.3
+pillow>=4.0
+packaging>=16.8
+typing_extensions>=3.7.4
+

@@ -19,6 +19,7 @@ import google.auth
 #logging.error(os.environ['GOOGLE_APPLICATION_CREDENTIALS'])
 #logging.error(type(os.environ['GOOGLE_APPLICATION_CREDENTIALS']))
 #logging.error(json.loads(base64.b64decode(os.environ['GOOGLE_APPLICATION_CREDENTIALS'])))
+#credentials = service_account.Credentials.from_service_account_info(json.loads(base64.b64decode(os.environ['GOOGLE_APPLICATION_CREDENTIALS'])))
 #credentials = service_account.Credentials.from_service_account_info(json.loads(os.environ['GOOGLE_APPLICATION_CREDENTIALS']))
 ####
 

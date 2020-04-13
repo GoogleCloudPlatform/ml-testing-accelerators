@@ -16,6 +16,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID --member="serviceAccount:${SE
 echo "Creating service account key..."
 gcloud iam service-accounts keys create --iam-account "${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" service-account-key.json
 #gcloud iam service-accounts keys create --iam-account "1030754782689-compute@developer.gserviceaccount.com" uber-service-account-key.json
+
 echo "Creating kubernetes cluster..."
 gcloud container clusters create "${DASHBOARD_NAME_PREFIX}-cluster" --tags "${DASHBOARD_NAME_PREFIX}-node" --num-nodes=1
 
