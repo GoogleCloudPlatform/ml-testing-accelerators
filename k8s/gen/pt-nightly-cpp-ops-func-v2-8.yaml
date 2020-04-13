@@ -49,21 +49,6 @@
               "valueFrom":
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
-            - "name": "METRIC_CONFIG"
-              "value": |
-                {
-                 "metric_collection_config": {
-                  "default_aggregation_strategies": [
-                   "final"
-                  ],
-                  "tags_to_ignore": [
-                   "LearningRate"
-                  ],
-                  "write_to_bigquery": true
-                 },
-                 "regression_test_config": null,
-                 "test_name": "pt-nightly-cpp-ops-func-v2-8"
-                }
             - "name": "MODEL_DIR"
               "value": "gs://xl-ml-test-us-central1/k8s/cpp-ops/func/v2-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
@@ -80,6 +65,43 @@
             "volumeMounts":
             - "mountPath": "/dev/shm"
               "name": "dshm"
+          "initContainers":
+          - "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/cpp-ops/func/v2-8/$(JOB_NAME)"
+            - "name": "METRIC_CONFIG"
+              "value": |
+                {
+                 "metric_collection_config": {
+                  "default_aggregation_strategies": [
+                   "final"
+                  ],
+                  "tags_to_ignore": [
+                   "LearningRate"
+                  ],
+                  "write_to_bigquery": true
+                 },
+                 "regression_test_config": null,
+                 "test_name": "pt-nightly-cpp-ops-func-v2-8"
+                }
+            "image": "gcr.io/xl-ml-test/publisher:stable"
+            "name": "publisher"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":

@@ -1,4 +1,3 @@
-#!/bin/bash
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,14 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+FROM google/cloud-sdk:slim
 
-runtime_vars="{
-  \"model_dir\": \"$MODEL_DIR\",
-  \"logs_link\": \"$STACKDRIVER_LOGS\",
-  \"job_name\": \"$JOB_NAME\",
-  \"job_namespace\": \"$POD_NAMESPACE\",
-  \"zone\": \"$ZONE\",
-  \"cluster_name\": \"$CLUSTER\"
-}"
-pubsub_message=`echo ${runtime_vars} | jq ". + ${METRIC_CONFIG}"`
-/root/google-cloud-sdk/bin/gcloud pubsub topics publish metrics-written --message "$pubsub_message"
+RUN apt-get update && apt-get install -y --no-install-recommends jq
+
+ENTRYPOINT ["bash"]
+CMD ["/publish.sh"]
+COPY images/setup.sh /
+COPY images/publisher/publish.sh /

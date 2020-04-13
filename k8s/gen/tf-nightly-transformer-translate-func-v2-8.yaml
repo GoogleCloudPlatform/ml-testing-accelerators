@@ -67,6 +67,34 @@
               "valueFrom":
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/transformer-translate/func/v2-8/$(JOB_NAME)"
+            "image": "gcr.io/xl-ml-test/model-garden:nightly"
+            "imagePullPolicy": "Always"
+            "name": "train"
+            "resources":
+              "limits":
+                "cloud-tpus.google.com/v2": 8
+          "initContainers":
+          - "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/transformer-translate/func/v2-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -90,14 +118,8 @@
                  },
                  "test_name": "tf-nightly-transformer-translate-func-v2-8"
                 }
-            - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/transformer-translate/func/v2-8/$(JOB_NAME)"
-            "image": "gcr.io/xl-ml-test/model-garden:nightly"
-            "imagePullPolicy": "Always"
-            "name": "train"
-            "resources":
-              "limits":
-                "cloud-tpus.google.com/v2": 8
+            "image": "gcr.io/xl-ml-test/publisher:stable"
+            "name": "publisher"
           "restartPolicy": "Never"
   "schedule": "0 8 * * *"
   "successfulJobsHistoryLimit": 1

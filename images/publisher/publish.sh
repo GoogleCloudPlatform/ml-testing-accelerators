@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,10 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM google/cloud-sdk:slim
+source /setup.sh
 
-COPY images/setup.sh /
-COPY images/pytorch-pods/setup-instances.sh /
-COPY images/pytorch-pods/teardown-instances.sh /
-COPY images/pytorch-pods/entrypoint.sh /
-ENTRYPOINT ["/entrypoint.sh"]
+set -u
+set -e
+
+runtime_vars="{
+  \"model_dir\": \"$MODEL_DIR\",
+  \"logs_link\": \"$STACKDRIVER_LOGS\",
+  \"job_name\": \"$JOB_NAME\",
+  \"job_namespace\": \"$POD_NAMESPACE\",
+  \"zone\": \"$ZONE\",
+  \"cluster_name\": \"$CLUSTER\"
+}"
+pubsub_message=`echo ${runtime_vars} | jq ". + ${METRIC_CONFIG}"`
+echo "Pubsub message: ${pubsub_message}"
+
+set -x
+gcloud pubsub topics publish metrics-written --message "$pubsub_message"

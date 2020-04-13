@@ -54,6 +54,45 @@
               "valueFrom":
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/cifar-tv/conv/v2-8/$(JOB_NAME)"
+            - "name": "XLA_USE_BF16"
+              "value": "0"
+            "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
+            "imagePullPolicy": "Always"
+            "name": "train"
+            "resources":
+              "limits":
+                "cloud-tpus.google.com/v2": 8
+              "requests":
+                "cpu": "4.5"
+                "memory": "8Gi"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+            - "mountPath": "/datasets"
+              "name": "cifar-pd"
+              "readOnly": true
+          "initContainers":
+          - "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/cifar-tv/conv/v2-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -113,25 +152,8 @@
                  },
                  "test_name": "pt-nightly-cifar-tv-conv-v2-8"
                 }
-            - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/cifar-tv/conv/v2-8/$(JOB_NAME)"
-            - "name": "XLA_USE_BF16"
-              "value": "0"
-            "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
-            "imagePullPolicy": "Always"
-            "name": "train"
-            "resources":
-              "limits":
-                "cloud-tpus.google.com/v2": 8
-              "requests":
-                "cpu": "4.5"
-                "memory": "8Gi"
-            "volumeMounts":
-            - "mountPath": "/dev/shm"
-              "name": "dshm"
-            - "mountPath": "/datasets"
-              "name": "cifar-pd"
-              "readOnly": true
+            "image": "gcr.io/xl-ml-test/publisher:stable"
+            "name": "publisher"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":
