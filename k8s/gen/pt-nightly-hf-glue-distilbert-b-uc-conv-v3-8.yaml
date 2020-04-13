@@ -15,7 +15,7 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-hf-glue-bert-b-c-convergence-v2-8"
+  "name": "pt-nightly-hf-glue-distilbert-b-uc-conv-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
@@ -56,10 +56,10 @@
                 --num_cores=8 \
                 --only_log_master \
                 --metrics_debug \
-               --model_type bert \
-              --model_name_or_path bert-base-cased \
-              --train_batch_size 32 \
-              --eval_batch_size 32
+               --model_type distilbert \
+              --model_name_or_path distilbert-base-uncased \
+              --train_batch_size 512 \
+              --eval_batch_size 512
               
             "env":
             - "name": "POD_NAME"
@@ -78,6 +78,45 @@
               "valueFrom":
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/hf-glue-distilbert-b-uc/conv/v3-8/$(JOB_NAME)"
+            - "name": "XLA_USE_BF16"
+              "value": "0"
+            "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
+            "imagePullPolicy": "Always"
+            "name": "train"
+            "resources":
+              "limits":
+                "cloud-tpus.google.com/v3": 8
+              "requests":
+                "cpu": "12.0"
+                "memory": "80Gi"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+            - "mountPath": "/datasets"
+              "name": "nlp-finetuning-ds"
+              "readOnly": true
+          "initContainers":
+          - "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/hf-glue-distilbert-b-uc/conv/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -122,13 +161,13 @@
                    "mnli-mm/acc": {
                     "comparison": "greater",
                     "success_threshold": {
-                     "fixed_value": 0.75
+                     "fixed_value": 0.65000000000000002
                     }
                    },
                    "mnli/acc": {
                     "comparison": "greater",
                     "success_threshold": {
-                     "fixed_value": 0.75
+                     "fixed_value": 0.65000000000000002
                     }
                    },
                    "total_wall_time": {
@@ -141,27 +180,10 @@
                   },
                   "write_to_error_reporting": true
                  },
-                 "test_name": "pt-nightly-hf-glue-bert-b-c-convergence-v2-8"
+                 "test_name": "pt-nightly-hf-glue-distilbert-b-uc-conv-v3-8"
                 }
-            - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/hf-glue-bert-b-c/convergence/v2-8/$(JOB_NAME)"
-            - "name": "XLA_USE_BF16"
-              "value": "0"
-            "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
-            "imagePullPolicy": "Always"
-            "name": "train"
-            "resources":
-              "limits":
-                "cloud-tpus.google.com/v2": 8
-              "requests":
-                "cpu": "12.0"
-                "memory": "80Gi"
-            "volumeMounts":
-            - "mountPath": "/dev/shm"
-              "name": "dshm"
-            - "mountPath": "/datasets"
-              "name": "nlp-finetuning-ds"
-              "readOnly": true
+            "image": "gcr.io/xl-ml-test/publisher:stable"
+            "name": "publisher"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":
