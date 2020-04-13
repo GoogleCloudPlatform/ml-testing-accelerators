@@ -14,8 +14,7 @@
 
 FROM tensorflow/tensorflow:nightly-gpu-py3
 
-RUN apt-get update && apt-get install -y --no-install-recommends git jq
-RUN curl -sSL https://sdk.cloud.google.com | bash
+RUN apt-get update && apt-get install -y --no-install-recommends git
 
 RUN pip3 install cloud-tpu-client pyyaml
 
@@ -29,7 +28,6 @@ RUN pip3 install -r /garden/official/requirements.txt
 ENV PYTHONPATH /garden
 
 COPY images/setup.sh /
-COPY images/publish.sh /
 COPY images/garden/entrypoint.sh /
 
 WORKDIR /garden

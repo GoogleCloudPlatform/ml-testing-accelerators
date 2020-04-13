@@ -14,7 +14,7 @@
 
 FROM tensorflow/tensorflow:nightly-gpu-py3
 
-RUN apt-get update && apt-get install -y --no-install-recommends git jq
+RUN apt-get update && apt-get install -y --no-install-recommends git
 RUN curl -sSL https://sdk.cloud.google.com | bash
 
 # Checkout examples repo at HEAD.
@@ -23,7 +23,6 @@ RUN pip3 install torch torchvision
 RUN pip3 install -r /examples/imagenet/requirements.txt
 
 COPY images/setup.sh /
-COPY images/publish.sh /
 COPY images/pytorch-examples-gpu/entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]

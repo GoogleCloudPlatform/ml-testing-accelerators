@@ -63,8 +63,67 @@ local tpus = import "tpus.libsonnet";
         },
         spec: config.accelerator.PodSpec {
           local pod = self,
+          local commonEnv = [
+            {
+              name: "POD_NAME",
+              valueFrom: {
+                fieldRef: {
+                  fieldPath: "metadata.name"
+                },
+              },
+            },
+            {
+              name: "POD_UID",
+              valueFrom: {
+                fieldRef: {
+                  fieldPath: "metadata.uid"
+                },
+              },
+            },
+            {
+              name: "POD_NAMESPACE",
+              valueFrom: {
+                fieldRef: {
+                  fieldPath: "metadata.namespace"
+                },
+              },
+            },
+            {
+              name: "JOB_NAME",
+              valueFrom: {
+                fieldRef: {
+                  fieldPath: "metadata.labels['job-name']",
+                },
+              },
+            },
+            {
+              name: "MODEL_DIR",
+              value: 
+                "gs://xl-ml-test-us-central1/k8s/%(modelName)s/%(mode)s/%(acceleratorName)s/$(JOB_NAME)" % config,
+            },
+          ],
 
           restartPolicy: "Never",
+          initContainerMap:: {
+            publisher: {
+              image: "gcr.io/xl-ml-test/publisher:stable",
+              env: commonEnv + [
+                {
+                  name: "METRIC_CONFIG",
+                  value: std.manifestJsonEx({
+                    test_name: config.testName,
+                    metric_collection_config: config.metricCollectionConfig,
+                    regression_test_config: config.regressionTestConfig,
+                  }, " ") + "\n",  // Add newline to make JSonnet generate a multi-line YAML string.
+                }
+              ],
+            },
+          },
+          initContainers: [
+            { name: name } + pod.initContainerMap[name]
+              for name in std.objectFields(pod.initContainerMap)
+          ],
+
           containerMap+:: {
             train+: {
               local main = self,
@@ -74,49 +133,9 @@ local tpus = import "tpus.libsonnet";
               # Use Docker image's entrypoint wrapper
               args: config.command,
 
-              envMap:: {
-                MODEL_DIR:
-                  "gs://xl-ml-test-us-central1/k8s/%(modelName)s/%(mode)s/%(acceleratorName)s/$(JOB_NAME)" % config,
-                METRIC_CONFIG: std.manifestJsonEx({
-                  test_name: config.testName,
-                  metric_collection_config: config.metricCollectionConfig,
-                  regression_test_config: config.regressionTestConfig,
-                }, " ") + "\n",  // Add newline to make JSonnet generate a multi-line YAML string.
-              },
-              env: [
-                {
-                  name: "POD_NAME",
-                  valueFrom: {
-                    fieldRef: {
-                      fieldPath: "metadata.name"
-                    },
-                  },
-                },
-                {
-                  name: "POD_UID",
-                  valueFrom: {
-                    fieldRef: {
-                      fieldPath: "metadata.uid"
-                    },
-                  },
-                },
-                {
-                  name: "POD_NAMESPACE",
-                  valueFrom: {
-                    fieldRef: {
-                      fieldPath: "metadata.namespace"
-                    },
-                  },
-                },
-                {
-                  name: "JOB_NAME",
-                  valueFrom: {
-                    fieldRef: {
-                      fieldPath: "metadata.labels['job-name']",
-                    },
-                  },
-                },
-              ] + [
+              # Override this object to add environment variables to the container
+              envMap:: {},
+              env: commonEnv + [
                 {
                   name: key,
                   value: main.envMap[key],
