@@ -158,13 +158,13 @@
                      "stddevs_from_mean": 0
                     }
                    },
-                   "mnli-mm/acc": {
+                   "mnli-mm/acc_final": {
                     "comparison": "greater",
                     "success_threshold": {
                      "fixed_value": 0.84999999999999998
                     }
                    },
-                   "mnli/acc": {
+                   "mnli/acc_final": {
                     "comparison": "greater",
                     "success_threshold": {
                      "fixed_value": 0.84999999999999998
