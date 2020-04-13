@@ -78,6 +78,45 @@
               "valueFrom":
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/hf-glue-xlnet-l-c/convergence/v3-8/$(JOB_NAME)"
+            - "name": "XLA_USE_BF16"
+              "value": "0"
+            "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
+            "imagePullPolicy": "Always"
+            "name": "train"
+            "resources":
+              "limits":
+                "cloud-tpus.google.com/v3": 8
+              "requests":
+                "cpu": "12.0"
+                "memory": "80Gi"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+            - "mountPath": "/datasets"
+              "name": "nlp-finetuning-ds"
+              "readOnly": true
+          "initContainers":
+          - "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "gs://xl-ml-test-us-central1/k8s/hf-glue-xlnet-l-c/convergence/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -119,13 +158,13 @@
                      "stddevs_from_mean": 0
                     }
                    },
-                   "mnli-mm/acc": {
+                   "mnli-mm/acc_final": {
                     "comparison": "greater",
                     "success_threshold": {
                      "fixed_value": 0.84999999999999998
                     }
                    },
-                   "mnli/acc": {
+                   "mnli/acc_final": {
                     "comparison": "greater",
                     "success_threshold": {
                      "fixed_value": 0.84999999999999998
@@ -143,25 +182,8 @@
                  },
                  "test_name": "pt-nightly-hf-glue-xlnet-l-c-convergence-v3-8"
                 }
-            - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/hf-glue-xlnet-l-c/convergence/v3-8/$(JOB_NAME)"
-            - "name": "XLA_USE_BF16"
-              "value": "0"
-            "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
-            "imagePullPolicy": "Always"
-            "name": "train"
-            "resources":
-              "limits":
-                "cloud-tpus.google.com/v3": 8
-              "requests":
-                "cpu": "12.0"
-                "memory": "80Gi"
-            "volumeMounts":
-            - "mountPath": "/dev/shm"
-              "name": "dshm"
-            - "mountPath": "/datasets"
-              "name": "nlp-finetuning-ds"
-              "readOnly": true
+            "image": "gcr.io/xl-ml-test/publisher:stable"
+            "name": "publisher"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":

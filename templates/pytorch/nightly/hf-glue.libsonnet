@@ -51,13 +51,13 @@ local utils = import "../../utils.libsonnet";
     ),
     regressionTestConfig+: {
       metric_success_conditions+: {
-        "mnli/acc": {
+        "mnli/acc_final": {
           success_threshold: {
             fixed_value: 0.75,
           },
           comparison: "greater",
         },
-        "mnli-mm/acc": {
+        "mnli-mm/acc_final": {
           success_threshold: {
             fixed_value: 0.75,
           },
@@ -78,13 +78,13 @@ local utils = import "../../utils.libsonnet";
     ),
     regressionTestConfig+: {
       metric_success_conditions+: {
-        "mnli/acc": {
+        "mnli/acc_final": {
           success_threshold: {
             fixed_value: 0.85,
           },
           comparison: "greater",
         },
-        "mnli-mm/acc": {
+        "mnli-mm/acc_final": {
           success_threshold: {
             fixed_value: 0.85,
           },
@@ -105,13 +105,13 @@ local utils = import "../../utils.libsonnet";
     ),
     regressionTestConfig+: {
       metric_success_conditions+: {
-        "mnli/acc": {
+        "mnli/acc_final": {
           success_threshold: {
             fixed_value: 0.30,
           },
           comparison: "greater",
         },
-        "mnli-mm/acc": {
+        "mnli-mm/acc_final": {
           success_threshold: {
             fixed_value: 0.30,
           },
@@ -132,13 +132,13 @@ local utils = import "../../utils.libsonnet";
     ),
     regressionTestConfig+: {
       metric_success_conditions+: {
-        "mnli/acc": {
+        "mnli/acc_final": {
           success_threshold: {
             fixed_value: 0.80,
           },
           comparison: "greater",
         },
-        "mnli-mm/acc": {
+        "mnli-mm/acc_final": {
           success_threshold: {
             fixed_value: 0.80,
           },
@@ -159,13 +159,13 @@ local utils = import "../../utils.libsonnet";
     ),
     regressionTestConfig+: {
       metric_success_conditions+: {
-        "mnli/acc": {
+        "mnli/acc_final": {
           success_threshold: {
             fixed_value: 0.65,
           },
           comparison: "greater",
         },
-        "mnli-mm/acc": {
+        "mnli-mm/acc_final": {
           success_threshold: {
             fixed_value: 0.65,
           },
