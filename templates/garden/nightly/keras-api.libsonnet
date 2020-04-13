@@ -86,7 +86,7 @@ local utils = import "../../utils.libsonnet";
   },
 
   local train_validation_dataset = API {
-    mode: "train-validation-dataset",
+    mode: "train-eval-dataset",
     testFeature:: "train_validation_dataset",
     # Run at 2:30AM PST daily
     schedule: "0 10 30 * *",
