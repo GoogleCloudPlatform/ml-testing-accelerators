@@ -160,12 +160,15 @@
     },
 
     oneshotJob:: {
-      // Don't record metrics from oneshot jobs
+      // Don't publish PubSub message for oneshot jobs.
       local oneshotConfig = config {
-        metricCollectionConfig+: {
-          write_to_bigquery: false,
+        jobSpec+: {
+          template+: {
+            spec+: {
+              initContainerMap: {},
+            },
+          },
         },
-        regressionTestConfig: null,
       },
 
       apiVersion: "batch/v1",
