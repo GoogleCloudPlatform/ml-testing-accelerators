@@ -52,7 +52,7 @@ FROM (
     FROM
       `xl-ml-test.metrics_handler_dataset.metric_history`
     WHERE
-      test_name = '%(test_name)s' AND
+      test_name = @test_name AND
       (metric_name NOT LIKE '%%__Percentile_%%' OR metric_name LIKE '%%__Percentile_99%%')
     GROUP BY
       test_name, metric_name, run_date
@@ -70,10 +70,26 @@ ORDER BY
   run_date DESC
 """
 
+def _get_query_config(test_name):
+  return {
+    'query': {
+      'parameterMode': 'NAMED',
+      'queryParameters': [
+        {
+          'name': 'test_name',
+          'parameterType': {'type': 'STRING'},
+          'parameterValue': {'value': test_name},
+        },
+      ]
+    }
+  }
 
 def fetch_data(test_name):
-  dataframe = utils.run_query(QUERY % {'test_name': test_name},
-                              cache_key=('metrics-%s' % test_name))
+  dataframe = utils.run_query(
+    QUERY,
+    cache_key=('metrics-%s' % test_name),
+    config=_get_query_config(test_name))
+
   dataframe['logs_download_command'] = dataframe['logs_link'].apply(
       utils.get_download_command)
   return dataframe

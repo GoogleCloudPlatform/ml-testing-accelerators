@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO: Consider a templating engine like Jinja to generate these strings.
+
 BASE_MODAL_STRING = """
     var css_style = `
       body {font-family: Arial, Helvetica, sans-serif;}

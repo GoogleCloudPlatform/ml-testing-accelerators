@@ -44,10 +44,10 @@ FROM (
   FROM
     `xl-ml-test.metrics_handler_dataset.job_history`
   WHERE
-    test_name like '%(test_name_prefix)s%%'
+    test_name like @test_name_prefix
   GROUP BY
     test_name, run_date
-) AS y 
+) AS y
 INNER JOIN
   `xl-ml-test.metrics_handler_dataset.job_history` AS x
 ON
@@ -56,7 +56,6 @@ ON
 ORDER BY
   run_date DESC
 """
-
 
 METRIC_STATUS_QUERY = """
 SELECT
@@ -69,21 +68,37 @@ SELECT
 FROM
   `xl-ml-test.metrics_handler_dataset.metric_history`
 WHERE
-  test_name LIKE '%(test_name_prefix)s%%' AND
+  test_name LIKE @test_name_prefix AND
   (metric_lower_bound IS NOT NULL OR metric_upper_bound IS NOT NULL) AND
   (metric_value < metric_lower_bound OR metric_value > metric_upper_bound)
 LIMIT 1000
 """
 
+def _get_query_config(test_name_prefix):
+  return {
+    'query': {
+      'parameterMode': 'NAMED',
+      'queryParameters': [
+        {
+          'name': 'test_name_prefix',
+          'parameterType': {'type': 'STRING'},
+          'parameterValue': {'value': '{}%'.format(test_name_prefix)},
+        },
+      ]
+    }
+  }
+
 COLORS = {'success': '#02cf17', 'failure': '#a10606'}
 
 def fetch_data(test_name_prefix):
   dataframe = utils.run_query(
-    JOB_STATUS_QUERY % {'test_name_prefix': test_name_prefix},
-    cache_key=('job-status-%s' % test_name_prefix))
+    JOB_STATUS_QUERY,
+    cache_key=('job-status-%s' % test_name_prefix),
+    config=_get_query_config(test_name_prefix))
   metrics_dataframe = utils.run_query(
-    METRIC_STATUS_QUERY % {'test_name_prefix': test_name_prefix},
-    cache_key=('metric-status-%s' % test_name_prefix))
+    METRIC_STATUS_QUERY,
+    cache_key=('metric-status-%s' % test_name_prefix),
+    config=_get_query_config(test_name_prefix))
 
   # Collect all test+date combinations where metrics were out of bounds.
   oob_tests = collections.defaultdict(list)

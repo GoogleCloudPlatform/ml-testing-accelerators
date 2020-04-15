@@ -25,29 +25,34 @@ import redis
 
 redis_host = os.environ.get('REDISHOST', 'localhost')
 redis_port = int(os.environ.get('REDISPORT', 6379))
-redis_client = redis.StrictRedis(host=redis_host, port=redis_port)
+try:
+  redis_client = redis.StrictRedis(host=redis_host, port=redis_port)
+  redis_client.ping()
+except Exception as e:
+  logging.error('Error connecting to redis instance: {}'.format(e))
+  redis_client = None
 
 
-def _run(query):
-    return pd.read_gbq(
-        query,
-        project_id=google.auth.default()[1],
-        dialect='standard'
-    )
+def _run(query, config={}):
+  return pd.read_gbq(
+      query,
+      project_id=google.auth.default()[1],
+      dialect='standard',
+      configuration=config)
 
 
-def run_query(query, cache_key, expire=3600):
-    if not redis_client:
-      logging.error('\n\n\nno redis_client\n\n\n')
-      return _run(query)
+def run_query(query, cache_key, config={}, expire=3600):
+  if not redis_client:
+    logging.error('\n\n\nno redis_client\n\n\n')
+    return _run(query, config=config)
+  else:
+    json = redis_client.get(cache_key)
+    if json is not None:
+      df = pd.read_json(json, orient='records')
     else:
-      json = redis_client.get(cache_key)
-      if json is not None:
-        df = pd.read_json(json, orient='records')
-      else:
-        df = _run(query)
-        redis_client.set(cache_key, df.to_json(orient='records'), ex=expire)
-    return df
+      df = _run(query, config=config)
+      redis_client.set(cache_key, df.to_json(orient='records'), ex=expire)
+  return df
 
 
 # TODO: Reconcile this with the similar helper method under

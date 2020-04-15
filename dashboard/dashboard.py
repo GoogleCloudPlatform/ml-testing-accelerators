@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Run with:
-#   python3 -m bokeh serve --show dashboard/dashboard.py dashboard/metrics.py
+#   python3 -m bokeh serve --show dashboard.py metrics.py
 
 import logging
 import concurrent
