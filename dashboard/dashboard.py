@@ -25,9 +25,6 @@ from bokeh.models import Paragraph, Panel, Tabs
 
 import modules.main_heatmap
 
-# Hide some noisy warnings
-logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
-
 
 def parallel_fetch_data(test_name_prefixes):
   """Fetch data from BigQuery for each dashboard tab in parallel.
@@ -64,6 +61,7 @@ def parallel_fetch_data(test_name_prefixes):
 timer = Paragraph()
 
 all_tabs = []
+# TODO: Pass tabs/test prefix via config.
 test_name_prefixes = ['pt-nightly', 'pt-1.5', 'tf-nightly']
 all_data = parallel_fetch_data(test_name_prefixes)
 for test_prefix, data in all_data.items():
