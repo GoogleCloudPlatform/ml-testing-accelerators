@@ -64,8 +64,8 @@ class CloudMetricsHandler(object):
         README for documentation.
       regression_test_config (dict): Options for alerting in the event of
         metrics regressions. See README for documentation.
-      test_type (string): E.g. 'convergence' or 'functional'. Used to organize
-        metrics in Bigquery.
+      test_type (string): E.g. 'conv' or 'func'. Used to organize metrics in
+        Bigquery.
       accelerator (string): E.g. 'tpu-v2-8'. The type of accelerator used to
         run this test. Used to organize metrics in Bigquery.
       framework_version (string): E.g. 'pt-nightly' or 'tf-nightly'. The
@@ -460,7 +460,7 @@ def _process_pubsub_message(msg, status_handler, logger):
 
   # TODO: pass these in the pubsub message and remove this block.
   if not test_type:
-    test_type = 'functional' if 'functional' in test_name else 'convergence'
+    test_type = 'func' if 'func' in test_name else 'conv'
   if not accelerator:
     accelerator = 'tpu-v2-8' if 'v2-8' in test_name else 'tpu-v3-8'
   if not framework_version:
