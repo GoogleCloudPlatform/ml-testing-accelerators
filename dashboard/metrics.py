@@ -17,31 +17,31 @@ QUERY = """
 test_names = run_query(
     QUERY, cache_key=('xlmltest'))['test_name'].values.tolist()
 
-# Hide some noisy warnings
-logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
-
-timer = Paragraph()
-
 
 def update(attr, old, new):
   if old == new:
     return
   t0 = time.time()
+  timer = Paragraph()
   timer.text = '(Executing query...)'
+  test_name_para = Paragraph()
+  test_name_para.text = 'Metrics for: {}'.format(test_select.value)
   curdoc().clear()
+  base_rows = [row(test_name_para), row(test_select, metric_select, timer)]
   curdoc().add_root(
       column(
-          children=[row(test_select, metric_select, timer)],
+          children=base_rows,
       )
   )
   test_name = test_select.value
   metric_substr = metric_select.value
   data = metric_history.fetch_data(test_name)
   plots = metric_history.make_plots(test_name, metric_substr, data)
+  plot_rows = [row(p) for p in plots] if plots else []
   curdoc().clear()
   curdoc().add_root(
       column(
-          children=[row(test_select, metric_select, timer)] + [row(p) for p in plots],
+          children=base_rows + plot_rows,
       )
   )
   t1 = time.time()
@@ -52,8 +52,7 @@ args = curdoc().session_context.request.arguments
 current_test_name = test_names[1]
 if args and 'test_name' in args:
   passed_in_test_name = str(args['test_name'][0], 'utf-8')
-  if passed_in_test_name in test_names:
-    current_test_name = passed_in_test_name
+  current_test_name = passed_in_test_name
 
 test_select = Select(title='Select a test:', value=current_test_name, options=test_names)
 test_select.on_change('value', update)
