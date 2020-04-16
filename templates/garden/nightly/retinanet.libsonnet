@@ -47,7 +47,7 @@ local tpus = import "../../tpus.libsonnet";
       "official/vision/detection/main.py",
       "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
       "--strategy_type=tpu",
-      "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride)
+      "--params_override=%s" % (std.manifestYamlDoc(self.paramsOverride) + "\n")
     ],
   },
   local functional = mixins.Functional {
