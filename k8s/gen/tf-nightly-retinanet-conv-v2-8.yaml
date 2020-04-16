@@ -34,7 +34,22 @@
             - "official/vision/detection/main.py"
             - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
             - "--strategy_type=tpu"
-            - "--params_override=\"architecture\":\n  \"use_bfloat16\": true\n\"eval\":\n  \"batch_size\": 8\n  \"eval_file_pattern\": \"gs://xl-ml-test-us-central1/data/coco/val*\"\n  \"val_json_file\": \"gs://xl-ml-test-us-central1/data/coco/instances_val2017.json\"\n\"predict\":\n  \"predict_batch_size\": 8\n\"retinanet_parser\":\n  \"use_bfloat16\": true\n\"train\":\n  \"batch_size\": 64\n  \"checkpoint\":\n    \"path\": \"gs://xl-ml-test-us-central1/data/pretrain/resnet50-checkpoint-2018-02-07\"\n    \"prefix\": \"resnet50/\"\n  \"total_steps\": 22500\n  \"train_file_pattern\": \"gs://xl-ml-test-us-central1/data/coco/train*\""
+            - |
+              --params_override="architecture":
+                "use_bfloat16": true
+              "eval":
+                "batch_size": 8
+                "eval_file_pattern": "gs://xl-ml-test-us-central1/data/coco/val*"
+                "val_json_file": "gs://xl-ml-test-us-central1/data/coco/instances_val2017.json"
+              "predict":
+                "batch_size": 8
+              "train":
+                "batch_size": 64
+                "checkpoint":
+                  "path": "gs://xl-ml-test-us-central1/data/pretrain/resnet50-checkpoint-2018-02-07"
+                  "prefix": "resnet50/"
+                "total_steps": 22500
+                "train_file_pattern": "gs://xl-ml-test-us-central1/data/coco/train*"
             - "--mode=train"
             - "--model_dir=$(MODEL_DIR)"
             "env":

@@ -27,12 +27,9 @@ local tpus = import "../../tpus.libsonnet";
         val_json_file: "gs://xl-ml-test-us-central1/data/coco/instances_val2017.json",
       },
       predict: {
-        predict_batch_size: 8,
+        batch_size: 8,
       },
       architecture: {
-        use_bfloat16: true,
-      },
-      retinanet_parser: {
         use_bfloat16: true,
       },
       train: {
@@ -50,7 +47,7 @@ local tpus = import "../../tpus.libsonnet";
       "official/vision/detection/main.py",
       "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
       "--strategy_type=tpu",
-      "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride)
+      "--params_override=%s" % (std.manifestYamlDoc(self.paramsOverride) + "\n")
     ],
   },
   local functional = mixins.Functional {
