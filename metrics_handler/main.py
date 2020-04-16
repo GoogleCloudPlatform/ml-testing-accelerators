@@ -312,20 +312,6 @@ class CloudMetricsHandler(object):
       publish_time = row['msg_publish_time']
     return uuid, publish_time
 
-  def delete_rows_for_uuid(self, uuid):
-    """Delete all rows in job_history and metric_history for a given uuid.
-
-    Args:
-      uuid (string): Unique identifier for the job run, i.e. the uuid column
-        of one row in the job_history table.
-    """
-    delete_job_row_result = self.bigquery_client.query(
-        'DELETE FROM `{}` WHERE uuid=\"{}\"'.format(
-            self.job_history_table_id, uuid)).result()
-    delete_metric_rows_result = self.bigquery_client.query(
-        'DELETE FROM `{}` WHERE uuid=\"{}\"'.format(
-            self.metric_history_table_id, uuid)).result()
-
   def compute_bounds_and_report_errors(self, metrics_history, new_metrics):
     """Compute the bounds for metrics and report abnormal values.
 
@@ -478,12 +464,9 @@ def _process_pubsub_message(msg, status_handler, logger):
   if existing_row_publish_time:
     # If the current message is for an earlier attempt than the existing row,
     # we can stop early since we want to write metrics for the latest attempt.
+    # Otherwise, proceed with processing the current message.
     if publish_time <= existing_row_publish_time:
       return True  # Ack the message.
-    # If the current message is for a later attempt than the existing row,
-    # clean up the existing rows and proceed with processing current message.
-    else:
-      handler.delete_rows_for_uuid(existing_row_uuid)
 
   # Alert for failing jobs unless the user has explicitly added a config
   # that disables alerts for this test.
