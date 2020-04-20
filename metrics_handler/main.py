@@ -177,6 +177,10 @@ class CloudMetricsHandler(object):
         bigquery.SchemaField("stackdriver_logs_link", "STRING",
                              mode="REQUIRED"),
         bigquery.SchemaField("msg_publish_time", "INT64", mode="NULLABLE"),
+        bigquery.SchemaField("logs_download_command", "STRING",
+                             mode="NULLABLE"),
+        bigquery.SchemaField("kubernetes_workload_link", "STRING",
+                             mode="NULLABLE"),
     ]
     job_history_table = bigquery.Table(
         self.job_history_table_id, schema=job_history_schema)
@@ -235,6 +239,8 @@ class CloudMetricsHandler(object):
         self._wall_time_to_sql_timestamp(job_status['stop_time']),
         self.stackdriver_logs_link,
         job_status['publish_time'],
+        util.download_command_from_logs_link(self.stackdriver_logs_link),
+        util.workload_link_from_logs_link(self.stackdriver_logs_link),
     ]
 
     # Create rows to represent the computed metrics for this job.
