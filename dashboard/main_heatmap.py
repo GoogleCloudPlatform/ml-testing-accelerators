@@ -91,7 +91,7 @@ def _get_query_config(test_name_prefix):
 COLORS = {'success': '#02cf17', 'failure': '#a10606'}
 
 def fetch_data(test_name_prefix):
-  dataframe = utils.run_query(
+  job_status_dataframe = utils.run_query(
     JOB_STATUS_QUERY,
     cache_key=('job-status-%s' % test_name_prefix),
     config=_get_query_config(test_name_prefix))
@@ -99,7 +99,10 @@ def fetch_data(test_name_prefix):
     METRIC_STATUS_QUERY,
     cache_key=('metric-status-%s' % test_name_prefix),
     config=_get_query_config(test_name_prefix))
+  combined_dataframe = process_dataframes(
+      job_status_dataframe, metrics_dataframe)
 
+def process_dataframes(job_status_dataframe, metrics_dataframe):
   # Collect all test+date combinations where metrics were out of bounds.
   oob_tests = collections.defaultdict(list)
   def _test_date_key(test, date):
@@ -116,30 +119,29 @@ def fetch_data(test_name_prefix):
     oob_tests[_test_date_key(oob_test_name, oob_run_date)].append(
         failure_explanation)
 
-  dataframe['overall_status'] = dataframe['job_status'].apply(
-      lambda x: x)
+  job_status_dataframe['overall_status'] = job_status_dataframe[
+      'job_status'].apply(lambda x: x)
 
   # Record the status of the metrics for every test.
-  dataframe['failed_metrics'] = dataframe['job_status'].apply(
-    lambda x: [])
-  for row in dataframe.iterrows():
+  job_status_dataframe['failed_metrics'] = job_status_dataframe[
+      'job_status'].apply(lambda x: [])
+  for row in job_status_dataframe.iterrows():
     test_name = row[1]['test_name']
     failed_metrics = oob_tests.get(_test_date_key(
         test_name, row[1]['run_date'])) or []
     if failed_metrics:
-      dataframe['failed_metrics'][row[0]] = failed_metrics
-      dataframe['overall_status'][row[0]] = 'failure'
-            
+      job_status_dataframe['failed_metrics'][row[0]] = failed_metrics
+      job_status_dataframe['overall_status'][row[0]] = 'failure'
+
   # Create a few convenience columns to use in the dashboard.
-  dataframe['job_status_abbrev'] = dataframe['overall_status'].apply(
-      lambda x: '' if x.startswith('success') else x[:1].upper())
-  dataframe['metrics_link'] = dataframe['test_name'].apply(
-      lambda x: 'metrics?test_name={}'.format(x))
-  dataframe['logs_download_command'] = dataframe['logs_link'].apply(
-      utils.get_download_command)
-
-  return dataframe
-
+  job_status_dataframe['job_status_abbrev'] = job_status_dataframe[
+      'overall_status'].apply(
+          lambda x: '' if x.startswith('success') else x[:1].upper())
+  job_status_dataframe['metrics_link'] = job_status_dataframe[
+      'test_name'].apply(lambda x: 'metrics?test_name={}'.format(x))
+  job_status_dataframe['logs_download_command'] = job_status_dataframe[
+      'logs_link'].apply(utils.get_download_command)
+  return job_status_dataframe
 
 def make_plot(dataframe):
   logging.error('Len of dataframe: {}'.format(len(dataframe)))
