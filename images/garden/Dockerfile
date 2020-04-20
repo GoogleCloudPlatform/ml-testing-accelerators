@@ -30,5 +30,10 @@ ENV PYTHONPATH /garden
 COPY images/setup.sh /
 COPY images/garden/entrypoint.sh /
 
+RUN curl -sSO https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-289.0.0-linux-x86_64.tar.gz
+RUN tar -xvf google-cloud-sdk-*.tar.gz
+RUN rm google-cloud-sdk-*.tar.gz
+RUN ./google-cloud-sdk/install.sh
+
 WORKDIR /garden
 ENTRYPOINT ["/entrypoint.sh"]
