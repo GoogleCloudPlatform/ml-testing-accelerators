@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM tensorflow/tensorflow:nightly-gpu-py3
+ARG image_version=nightly
+FROM tensorflow/tensorflow:${image_version}-gpu
+
+ARG model_garden_branch=master
 
 RUN apt-get update && apt-get install -y --no-install-recommends git
 
@@ -20,10 +23,10 @@ RUN pip3 install cloud-tpu-client pyyaml
 
 # Checkout tensorflow/models at HEAD
 WORKDIR /
-RUN curl -LO https://github.com/tensorflow/models/archive/master.zip
-RUN unzip master.zip
-RUN rm master.zip
-RUN mv models-master garden/
+RUN curl -LO https://github.com/tensorflow/models/archive/${model_garden_branch}.zip
+RUN unzip ${model_garden_branch}.zip
+RUN rm ${model_garden_branch}.zip
+RUN mv models-${model_garden_branch} garden/
 RUN pip3 install -r /garden/official/requirements.txt
 ENV PYTHONPATH /garden
 
@@ -31,7 +34,7 @@ COPY images/setup.sh /
 COPY images/garden/entrypoint.sh /
 
 RUN curl -sSO https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-289.0.0-linux-x86_64.tar.gz
-RUN tar -xvf google-cloud-sdk-*.tar.gz
+RUN tar -xf google-cloud-sdk-*.tar.gz
 RUN rm google-cloud-sdk-*.tar.gz
 RUN ./google-cloud-sdk/install.sh
 
