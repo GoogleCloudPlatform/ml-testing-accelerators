@@ -13,10 +13,8 @@
 # limitations under the License.
 
 local nightly = import "nightly/targets.jsonnet";
-local pytorch_1_5 = import "pytorch-1.5/targets.jsonnet";
 
 // Add new versions here
 std.flattenArrays([
   nightly,
-  pytorch_1_5,
 ])
