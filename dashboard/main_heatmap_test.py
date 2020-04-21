@@ -78,6 +78,19 @@ class MainHeatmapTest(parameterized.TestCase):
     self.assertEqual(df['overall_status'].tolist(),
                      args_dict['expected_overall_statuses'])
 
+  def test_make_plot(self):
+    input_df = pd.DataFrame({
+        'test_name': pd.Series(['test1', 'test2', 'test3']),
+        'run_date': pd.Series(['2020-04-21', '2020-04-20', '2020-04-19']),
+        'job_status': pd.Series(['success', 'success', 'failure']),
+        'logs_link': pd.Series([SAMPLE_LOGS_LINK] * 3),
+        'job_status_abbrev': pd.Series(['f', 'f', '']),
+        'overall_status': pd.Series(['failure', 'success', 'failure']),
+    })
+    # Make sure nothing crashes and we are able generate some kind of plot.
+    plot = main_heatmap.make_plot(input_df)
+    self.assertTrue(plot is not None and len(plot.renderers) > 0)
+
 
 if __name__ == '__main__':
   absltest.main()

@@ -144,7 +144,6 @@ def process_dataframes(job_status_dataframe, metrics_dataframe):
   return job_status_dataframe
 
 def make_plot(dataframe):
-  logging.error('Len of dataframe: {}'.format(len(dataframe)))
   source = ColumnDataSource(data=dataframe)
   all_dates = np.unique(source.data['run_date']).tolist()
   MIN_DATES_TO_RENDER = 15
