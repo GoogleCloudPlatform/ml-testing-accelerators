@@ -14,7 +14,8 @@ import pandas as pd
 SAMPLE_LOGS_LINK = 'https://console.cloud.google.com/logs?project=xl-ml-test&advancedFilter=resource.type%3Dk8s_container%0Aresource.labels.project_id%3Dxl-ml-test%0Aresource.labels.location=us-central1-b%0Aresource.labels.cluster_name=xl-ml-test%0Aresource.labels.namespace_name=automated%0Aresource.labels.pod_name:pt-1.5-cpp-ops-func-v2-8-1587398400&dateRangeUnbound=backwardInTime'
 
 def _get_values_for_failures(values, statuses):
-  return [zipped[0] for zipped in zip(values, statuses) if zipped[1] == 'failure']
+  return [zipped[0] for zipped in zip(
+      values, statuses) if zipped[1] == 'failure']
 
 
 class MainHeatmapTest(parameterized.TestCase):
@@ -42,8 +43,10 @@ class MainHeatmapTest(parameterized.TestCase):
     metric_statuses = args_dict['metric_statuses']
     assert len(job_statuses) == len(metric_statuses)
     job_status_df = pd.DataFrame({
-        'test_name': pd.Series(['test{}'.format(n) for n in range(len(job_statuses))]),
-        'run_date': pd.Series(['2020-04-{:02d}'.format(n) for n in range(len(job_statuses))]),
+        'test_name': pd.Series(['test{}'.format(n) for n in range(
+            len(job_statuses))]),
+        'run_date': pd.Series(['2020-04-{:02d}'.format(n) for n in range(
+            len(job_statuses))]),
         'job_status': pd.Series(job_statuses),
         'logs_link': pd.Series([SAMPLE_LOGS_LINK for _ in job_statuses]),
     })
@@ -51,8 +54,10 @@ class MainHeatmapTest(parameterized.TestCase):
     # The SQL query in the real code only returns rows where metrics were
     # out of bounds. These oobs rows correspond to 'failure' for
     # metric_statuses in this test.
-    metric_names = ['acc' if n % 2 else 'loss' for n in range(len(job_status_df))]
-    metric_values = [98.0 if n % 2 else 0.6 for n in range(len(job_status_df))]
+    metric_names = ['acc' if n % 2 else 'loss' for n in range(
+        len(job_status_df))]
+    metric_values = [98.0 if n % 2 else 0.6 for n in range(
+        len(job_status_df))]
     metric_upper_bounds = [np.nan if n % 2 else 0.5 for n in range(
         len(job_status_df))]
     metric_lower_bounds = [99.0 if n % 2 else np.nan for n in range(
