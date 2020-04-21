@@ -15,14 +15,10 @@ jsonnet templates/oneshot.jsonnet -S --tla-str test=$TEST_NAME | kubectl create 
 To build all of the templates and output Kubernetes resources, run the following:
 
 ```bash
-jsonnet templates/multifile.jsonnet -S -m k8s/gen
+jsonnet templates/multifile.jsonnet -S -m k8s/
 ```
 
-This command will output Kubernetes `CronJob` resources into [`k8s/gen`](../k8s/gen) directory. You can deploy these resources by running the following command:
-
-```bash
-kubectl apply -f k8s/gen -f k8s/
-```
+This command will output Kubernetes `CronJob` resources into [`k8s/gen`](../k8s/gen) directory.
 
 Note: Googlers and contributors working out of this repository don't need to manually deploy generated Kubernetes resources with `kubectl`, since we have triggers set up to do that automatically.
 

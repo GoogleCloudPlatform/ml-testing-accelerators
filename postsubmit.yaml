@@ -19,7 +19,7 @@ steps:
   - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
   - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test'
 - name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', 'k8s/gen', '-f', 'k8s/', '-f', 'examples/', '--dry-run']
+  args: ['apply', '-f', 'k8s/us-central1/gen', '-f', 'k8s/us-central1/', '-f', 'examples/', '--dry-run']
   env:
   - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
   - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test'
@@ -29,12 +29,9 @@ steps:
   - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
   - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test'
 - name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', 'k8s/gen', '-f', 'k8s/', '-f',  'examples/']
+  args: ['apply', '-f', 'k8s/us-central1/gen', '-f', 'k8s/us-central1/', '-f',  'examples/']
   env:
   - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
   - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test'
 - name: 'gcr.io/cloud-builders/gcloud'
   args: ['functions', 'deploy', 'metrics_handler', '--runtime=python37', '--trigger-topic=begin-metrics-handler',  '--memory=1024MB', '--source=metrics_handler/', '--entry-point=run_main']
-  env:
-  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
-  - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test'

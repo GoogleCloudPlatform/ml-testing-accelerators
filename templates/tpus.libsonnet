@@ -20,6 +20,7 @@
     version: error "Must override `type`",
     size: error "Must override `size`",
     preemptible: false,
+    region: null,
 
     PodSpec:: {
       containerMap+: {
@@ -43,6 +44,6 @@
 
   v2_8: self.TpuSpec { version: 2, size: 8 },
   v3_8: self.TpuSpec { version: 3, size: 8 },
-  v2_32: self.TpuSpec { version: 2, size: 32 },
-  v3_32: self.TpuSpec { version: 3, size: 32 },
+  v2_32: self.TpuSpec { version: 2, size: 32, region: "europe-west4" },
+  v3_32: self.TpuSpec { version: 3, size: 32, region: "europe-west4" },
 }
