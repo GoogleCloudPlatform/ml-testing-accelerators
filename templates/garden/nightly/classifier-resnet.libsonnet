@@ -64,7 +64,7 @@ local tpus = import "../../tpus.libsonnet";
       metric_success_conditions+: {
         epoch_accuracy_final: {
           success_threshold: {
-            fixed_value: 76.0,
+            fixed_value: 0.76,
           },
           comparison: "greater",
         },
