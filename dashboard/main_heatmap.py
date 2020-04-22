@@ -33,13 +33,13 @@ JOB_STATUS_QUERY = """
 SELECT
   x.test_name,
   x.job_status,
-  SAFE_CAST(EXTRACT(date from x.timestamp) AS STRING) AS run_date,
+  SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
   x.stackdriver_logs_link AS logs_link,
   x.uuid
 FROM (
   SELECT
     test_name,
-    SAFE_CAST(EXTRACT(date from timestamp) AS STRING) as run_date,
+    SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
     max(farm_fingerprint(uuid)) as max_uuid,
   FROM
     `xl-ml-test.metrics_handler_dataset.job_history`
@@ -60,7 +60,7 @@ ORDER BY
 METRIC_STATUS_QUERY = """
 SELECT
   test_name,
-  SAFE_CAST(EXTRACT(date from timestamp) AS STRING) as run_date,
+  SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
   metric_name,
   metric_value,
   metric_upper_bound,
