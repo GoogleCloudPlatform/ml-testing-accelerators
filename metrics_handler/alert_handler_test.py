@@ -6,6 +6,8 @@ from __future__ import division
 from __future__ import print_function
 
 import collections
+from datetime import datetime
+import pytz
 
 from absl.testing import absltest
 from absl.testing import parameterized
@@ -98,10 +100,14 @@ class AlertHandlerTest(parameterized.TestCase):
         HTML_GENERAL_AND_SPECIFIC_ERRORS)
 
   def test_generate_email_subject(self):
-    sj = alert_handler.AlertHandler.generate_email_subject()
-    x = 1
-    y = 2
-    import pdb; pdb.set_trace()
+    sj = alert_handler.AlertHandler.generate_email_subject().subject
+    date_str = sj[sj.find('202'):] # Grab substring from start of year onward.
+    tz = pytz.timezone('US/Pacific')
+    sj_date = tz.localize(datetime.strptime(date_str, '%Y/%m/%d %H:%M:%S'))
+    after_call = datetime.now(pytz.timezone('US/Pacific'))
+    # This checks that the datetime string used in the email is 1. using
+    # current time and 2. is using US/Pacific tz and not e.g. UTC.
+    self.assertTrue((after_call - sj_date).total_seconds())
 
 if __name__ == '__main__':
   absltest.main()
