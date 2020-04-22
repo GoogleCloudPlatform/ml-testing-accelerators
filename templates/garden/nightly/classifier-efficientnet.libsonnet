@@ -73,11 +73,19 @@ local tpus = import "../../tpus.libsonnet";
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
+  local v2_32 = {
+    accelerator: tpus.v2_32,
+  },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+  },
 
   configs: [
     efficientnet + v2_8 + functional,
     efficientnet + v3_8 + functional,
     efficientnet + v2_8 + convergence,
     efficientnet + v3_8 + convergence,
+    efficientnet + v2_32 + convergence,
+    efficientnet + v3_32 + convergence,
   ],
 }
