@@ -38,6 +38,7 @@ local utils = import "../../utils.libsonnet";
       --num_cores=8 \
       --only_log_master \
       --metrics_debug \
+      --overwrite_cache \
   |||,
   local bert_base_cased = base.Convergence {
     modelName: "hf-glue-bert-b-c",

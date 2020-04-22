@@ -56,6 +56,7 @@
                 --num_cores=8 \
                 --only_log_master \
                 --metrics_debug \
+                --overwrite_cache \
                --model_type roberta \
               --model_name_or_path roberta-large \
               --train_batch_size 16 \
