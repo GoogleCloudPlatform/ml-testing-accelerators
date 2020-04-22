@@ -19,7 +19,7 @@ from bokeh.io import curdoc
 from bokeh.layouts import column, row
 from bokeh.models import Select, Paragraph, Panel, Tabs, TextInput
 
-import modules.metric_history as metric_history
+import metric_history as metric_history
 
 from utils import run_query
 QUERY = """

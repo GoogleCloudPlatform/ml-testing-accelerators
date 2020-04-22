@@ -101,6 +101,7 @@ def fetch_data(test_name_prefix):
     config=_get_query_config(test_name_prefix))
   combined_dataframe = process_dataframes(
       job_status_dataframe, metrics_dataframe)
+  return combined_dataframe
 
 def process_dataframes(job_status_dataframe, metrics_dataframe):
   # Collect all test+date combinations where metrics were out of bounds.
