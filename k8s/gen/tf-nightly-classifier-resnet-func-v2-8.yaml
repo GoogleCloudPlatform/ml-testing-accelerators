@@ -38,7 +38,7 @@
             - "--model_type=resnet"
             - "--dataset=imagenet"
             - "--mode=train_and_eval"
-            - "--params_override=\"train\":\n  \"epochs\": 3\n\"train_dataset\":\n  \"batch_size\": 1024\n  \"builder\": \"records\"\n  \"use_per_replica_batch_size\": false\n\"validation_dataset\":\n  \"batch_size\": 1024\n  \"builder\": \"records\"\n  \"use_per_replica_batch_size\": false"
+            - "--params_override=\"train\":\n  \"epochs\": 3\n\"train_dataset\":\n  \"builder\": \"records\"\n\"validation_dataset\":\n  \"builder\": \"records\""
             - "--model_dir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
