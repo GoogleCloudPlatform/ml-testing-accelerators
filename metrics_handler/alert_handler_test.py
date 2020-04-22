@@ -97,6 +97,11 @@ class AlertHandlerTest(parameterized.TestCase):
         self.handler.generate_email_body(),
         HTML_GENERAL_AND_SPECIFIC_ERRORS)
 
+  def test_generate_email_subject(self):
+    sj = alert_handler.AlertHandler.generate_email_subject()
+    x = 1
+    y = 2
+    import pdb; pdb.set_trace()
 
 if __name__ == '__main__':
   absltest.main()

@@ -14,6 +14,7 @@
 
 import collections
 from datetime import datetime
+import pytz
 
 import util
 
@@ -70,6 +71,12 @@ class AlertHandler(object):
                   'metrics_handler/README for setup steps. Error '
                   'was: {}'.format(e), logging.ERROR)
         self.write_to_email = False
+
+  @staticmethod
+  def generate_email_subject():
+    return Subject('Errors in ML Accelerators Tests at {}'.format(
+        datetime.now(pytz.timezone('US/Pacific')).strftime(
+            "%Y/%m/%d %H:%M:%S")))
 
   def _get_secret_value(self, secret_name, secret_client):
     secret_resource = \
@@ -195,8 +202,7 @@ class AlertHandler(object):
         from_email=From(self.sender_email,
                         'Cloud Accelerators Alert Manager'),
         to_emails=[To(self.recipient_email)],
-        subject=Subject('Errors in ML Accelerators Tests at {}'.format(
-            datetime.now().strftime("%Y/%m/%d %H:%M:%S"))),
+        subject=AlertHandler.generate_email_subject(),
         plain_text_content=PlainTextContent('empty'),
         html_content=HtmlContent(html_message_body))
     response = self.sendgrid.send(message)
