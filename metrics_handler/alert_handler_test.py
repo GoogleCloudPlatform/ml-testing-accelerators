@@ -107,7 +107,7 @@ class AlertHandlerTest(parameterized.TestCase):
     after_call = datetime.now(pytz.timezone('US/Pacific'))
     # This checks that the datetime string used in the email is 1. using
     # current time and 2. is using US/Pacific tz and not e.g. UTC.
-    self.assertTrue((after_call - sj_date).total_seconds())
+    self.assertTrue((after_call - sj_date).total_seconds() < 2.0)
 
 if __name__ == '__main__':
   absltest.main()
