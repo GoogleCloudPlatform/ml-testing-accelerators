@@ -57,9 +57,9 @@ local utils = import "../../utils.libsonnet";
           --max-epoch=%(maxEpoch)d
       ||| % self.paramsOverride,
     ),
-    containerVolumes+: [
-      base.datasetsVolume
-    ],
+    volumeMap+: {
+      datasets: base.datasetsVolume
+    },
     jobSpec+:: {
       template+: {
         spec+: {

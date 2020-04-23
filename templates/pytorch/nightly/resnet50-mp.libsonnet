@@ -28,6 +28,9 @@ local tpus = import "../../tpus.libsonnet";
       "--batch_size=128",
       "--log_steps=200",
     ],
+    volumeMap+: {
+      datasets: base.datasetsVolume
+    },
     jobSpec+:: {
       template+: {
         spec+: {
@@ -50,9 +53,6 @@ local tpus = import "../../tpus.libsonnet";
       "--num_epochs=2",
       "--datadir=/datasets/imagenet-mini",
     ],
-    containerVolumes+: [
-      base.datasetsVolume
-    ],
   },
   local convergence = base.Convergence {
     accelerator+: tpus.Preemptible,
@@ -70,9 +70,6 @@ local tpus = import "../../tpus.libsonnet";
         },
       },
     },
-    containerVolumes+: [
-      base.datasetsVolume
-    ],
   },
   local v3_8 = {
     accelerator: tpus.v3_8,

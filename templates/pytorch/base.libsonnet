@@ -55,12 +55,12 @@ local volumes = import "../volumes.libsonnet";
   },
   PyTorchTest:: PyTorchBaseTest {
     image: "gcr.io/xl-ml-test/pytorch-xla",
-    containerVolumes+: [
-      volumes.MemoryVolumeSpec {
+    volumeMap+: {
+      dshm: volumes.MemoryVolumeSpec {
         name: "dshm",
         mountPath: "/dev/shm",
       },
-    ],
+    },
 
     jobSpec+:: {
       template+: {

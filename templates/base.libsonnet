@@ -32,8 +32,8 @@ local volumes = import 'volumes.libsonnet';
     # Schedule for CronJob in UTC
     schedule: error "Must specify `schedule`",
 
-    # List of VolumeSpec
-    containerVolumes: [],
+    # Map of names to VolumeSpecs
+    volumeMap: { },
 
     metricCollectionConfig: {
       write_to_bigquery: true,
@@ -73,7 +73,7 @@ local volumes = import 'volumes.libsonnet';
             "tf-version.cloud-tpus.google.com": config.tpuVersion,
           },
         },
-        spec: config.accelerator.PodSpec + volumes.combinedMixin(config.containerVolumes) {
+        spec: config.accelerator.PodSpec + volumes.combinedMixin(config.volumeMap) {
           local pod = self,
           local commonEnv = [
             {
@@ -163,8 +163,6 @@ local volumes = import 'volumes.libsonnet';
         },
       },
     },
-
-    searchforme: config.accelerator.PodSpec + volumes.combinedMixin(config.containerVolumes),
 
     oneshotJob:: {
       // Don't publish PubSub message for oneshot jobs.

@@ -55,9 +55,9 @@ local utils = import "../../utils.libsonnet";
   ||| % command_common,
   local transformer = base.PyTorchTest {
     modelName: "fs-transformer",
-    containerVolumes+: [
-      base.datasetsVolume
-    ],
+    volumeMap+: {
+      datasets: base.datasetsVolume,
+    },
     jobSpec+:: {
       template+: {
         spec+: {

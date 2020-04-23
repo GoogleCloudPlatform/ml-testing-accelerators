@@ -42,10 +42,10 @@
     },
   },
 
-  // Combines an array of VolumeSpec into a single pod spec mixin.
-  combinedMixin(volumes): std.foldl(
-    function(next, rest) next + rest,
-    [v.PodSpecMixin for v in volumes],
+  // Combines a map of VolumeSpec into a single pod spec mixin.
+  combinedMixin(volumeMap): std.foldl(
+    function(next, rest) rest + next,
+    [volumeMap[v].PodSpecMixin for v in std.objectFields(volumeMap)],
     { }
   ),
 
