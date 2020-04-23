@@ -86,10 +86,11 @@ class MainHeatmapTest(parameterized.TestCase):
                      args_dict['expected_overall_statuses'])
 
     commands = df['logs_download_command'].tolist()
-    # If a command is already populated, it should be left alone.
+    # If the command is already populated, it should be left alone.
     self.assertEqual(commands[0], 'my command')
 
-    # Empty strings should be replaced by valid download commands.
+    # If the command is not populated, the empty string should be replaced
+    # by a valid download command.
     if len(args_dict['expected_overall_statuses']) > 1:
       for command in commands[1:]:
         self.assertTrue('gcloud' in command)
