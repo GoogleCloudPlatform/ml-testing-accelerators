@@ -18,7 +18,7 @@ To build all of the templates and output Kubernetes resources, run the following
 jsonnet templates/multifile.jsonnet -S -m k8s/
 ```
 
-This command will output Kubernetes `CronJob` resources into [`k8s/gen`](../k8s) directory.
+This command will output Kubernetes `CronJob` resources into [`k8s/`](../k8s) directory.
 
 Note: Googlers and contributors working out of this repository don't need to manually deploy generated Kubernetes resources with `kubectl`, since we have triggers set up to do that automatically.
 
