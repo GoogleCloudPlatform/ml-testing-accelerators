@@ -51,6 +51,7 @@ local utils = import "../../utils.libsonnet";
       ||| % {common: command_common}
     ),
     regressionTestConfig+: {
+      alert_for_failed_jobs: false,
       metric_success_conditions+: {
         "mnli/acc_final": {
           success_threshold: {
@@ -78,6 +79,7 @@ local utils = import "../../utils.libsonnet";
       ||| % {common: command_common}
     ),
     regressionTestConfig+: {
+      alert_for_failed_jobs: false,
       metric_success_conditions+: {
         "mnli/acc_final": {
           success_threshold: {
@@ -105,6 +107,7 @@ local utils = import "../../utils.libsonnet";
       ||| % {common: command_common}
     ),
     regressionTestConfig+: {
+      alert_for_failed_jobs: false,
       metric_success_conditions+: {
         "mnli/acc_final": {
           success_threshold: {
@@ -132,6 +135,7 @@ local utils = import "../../utils.libsonnet";
       ||| % {common: command_common}
     ),
     regressionTestConfig+: {
+      alert_for_failed_jobs: false,
       metric_success_conditions+: {
         "mnli/acc_final": {
           success_threshold: {
