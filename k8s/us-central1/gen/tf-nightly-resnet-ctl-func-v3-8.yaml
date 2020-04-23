@@ -33,7 +33,7 @@
             - "python3"
             - "official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py"
             - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--data_dir=gs://imagenet-us-central1/train"
+            - "--data_dir=$(IMAGENET_DIR)"
             - "--distribution_strategy=tpu"
             - "--batch_size=1024"
             - "--steps_per_loop=500"
@@ -66,7 +66,10 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/resnet-ctl/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/resnet-ctl/func/v3-8/$(JOB_NAME)"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/model-garden:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
@@ -92,7 +95,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/resnet-ctl/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/resnet-ctl/func/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -116,6 +119,9 @@
                  },
                  "test_name": "tf-nightly-resnet-ctl-func-v3-8"
                 }
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/publisher:stable"
             "name": "publisher"
           "restartPolicy": "Never"

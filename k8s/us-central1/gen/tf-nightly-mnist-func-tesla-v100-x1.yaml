@@ -32,7 +32,7 @@
           - "args":
             - "python3"
             - "official/vision/image_classification/mnist_main.py"
-            - "--data_dir=gs://xl-ml-test-us-central1/data/mnist"
+            - "--data_dir=$(MNIST_DIR)"
             - "--model_dir=$(MODEL_DIR)"
             - "--num_gpus=1"
             - "--train_epochs=1"
@@ -55,7 +55,10 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/mnist/func/tesla-v100-x1/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/mnist/func/tesla-v100-x1/$(JOB_NAME)"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/model-garden:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
@@ -81,7 +84,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/mnist/func/tesla-v100-x1/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/mnist/func/tesla-v100-x1/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -105,6 +108,9 @@
                  },
                  "test_name": "tf-nightly-mnist-func-tesla-v100-x1"
                 }
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/publisher:stable"
             "name": "publisher"
           "nodeSelector":
