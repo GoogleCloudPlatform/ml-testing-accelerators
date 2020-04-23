@@ -19,6 +19,7 @@
     name: "%(type)s-x%(number)d" % gpu,
     type: error "Must specify GPUSpec `type`",
     number: 1,
+    region: null,
 
     PodSpec:: {
       containerMap+: {
