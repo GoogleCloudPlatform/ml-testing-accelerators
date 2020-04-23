@@ -32,11 +32,11 @@ local copyrightHeader = |||
 |||;
 
 local defaultRegion = "us-central1";
-local getDirectory(target) = (if target.accelerator.region == null then defaultRegion else target.accelerator.region) + "/" + "gen/";
+local getDirectory(region) = (if region == null then defaultRegion else region) + "/gen/";
 
 # Outputs {filename: yaml_string} for each target
 {
-  [getDirectory(targets[name]) + name + ".yaml"]: copyrightHeader + std.manifestYamlDoc(
-    targets[name].cronJob
-  ) for name in std.objectFields(targets) if targets[name].schedule != null
+  [getDirectory(targets[name].accelerator.region) + name + ".yaml"]:
+      copyrightHeader + std.manifestYamlDoc(targets[name].cronJob)
+  for name in std.objectFields(targets) if targets[name].schedule != null
 }
