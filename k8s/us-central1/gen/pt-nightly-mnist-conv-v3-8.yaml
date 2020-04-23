@@ -66,6 +66,7 @@
             "volumeMounts":
             - "mountPath": "/dev/shm"
               "name": "dshm"
+              "readOnly": false
           "initContainers":
           - "env":
             - "name": "POD_NAME"

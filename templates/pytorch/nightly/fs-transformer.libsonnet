@@ -55,34 +55,22 @@ local utils = import "../../utils.libsonnet";
   ||| % command_common,
   local transformer = base.PyTorchTest {
     modelName: "fs-transformer",
+    containerVolumes+: [
+      base.datasetsVolume
+    ],
     jobSpec+:: {
       template+: {
         spec+: {
-          volumes+: [
-            {
-              name: "wmt18-pd",
-              gcePersistentDisk: {
-                pdName: "wmt18-en-de-pd-central1-b",
-                fsType: "ext4",
-                readOnly: true,
-              },
-            },
-          ],
-          containers: [
-            container {
-              volumeMounts+: [{
-                mountPath: "/datasets",
-                name: "wmt18-pd",
-                readOnly: true,
-              }],
+          containerMap+: {
+            train+: {
               resources+: {
                 requests: {
                   cpu: "9.0",
                   memory: "30Gi",
                 },
               },
-            } for container in super.containers
-          ],
+            },
+          },
         },
       },
     },

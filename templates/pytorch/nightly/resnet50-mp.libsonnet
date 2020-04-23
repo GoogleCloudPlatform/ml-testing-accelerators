@@ -31,16 +31,16 @@ local tpus = import "../../tpus.libsonnet";
     jobSpec+:: {
       template+: {
         spec+: {
-          containers: [
-            container {
+          containerMap+: {
+            train+: {
               resources+: {
                 requests: {
                   cpu: "90.0",
                   memory: "400Gi",
                 },
               },
-            } for container in super.containers
-          ],
+            },
+          },
         },
       },
     },
@@ -50,31 +50,9 @@ local tpus = import "../../tpus.libsonnet";
       "--num_epochs=2",
       "--datadir=/datasets/imagenet-mini",
     ],
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          volumes+: [
-            {
-              name: "imagenet-mini-pd",
-              gcePersistentDisk: {
-                pdName: "imagenet-mini-pd-central1-b",
-                fsType: "ext4",
-                readOnly: true,
-              },
-            },
-          ],
-          containers: [
-            container {
-              volumeMounts+: [{
-                mountPath: "/datasets",
-                name: "imagenet-mini-pd",
-                readOnly: true,
-              }],
-            } for container in super.containers
-          ],
-        },
-      },
-    },
+    containerVolumes+: [
+      base.datasetsVolume
+    ],
   },
   local convergence = base.Convergence {
     accelerator+: tpus.Preemptible,
@@ -92,31 +70,9 @@ local tpus = import "../../tpus.libsonnet";
         },
       },
     },
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          volumes+: [
-            {
-              name: "imagenet-pd",
-              gcePersistentDisk: {
-                pdName: "imagenet-pd-central1-b",
-                fsType: "ext4",
-                readOnly: true,
-              },
-            },
-          ],
-          containers: [
-            container {
-              volumeMounts+: [{
-                mountPath: "/datasets",
-                name: "imagenet-pd",
-                readOnly: true,
-              }],
-            } for container in super.containers
-          ],
-        },
-      },
-    },
+    containerVolumes+: [
+      base.datasetsVolume
+    ],
   },
   local v3_8 = {
     accelerator: tpus.v3_8,

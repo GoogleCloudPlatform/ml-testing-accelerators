@@ -140,8 +140,9 @@
             "volumeMounts":
             - "mountPath": "/dev/shm"
               "name": "dshm"
+              "readOnly": false
             - "mountPath": "/datasets"
-              "name": "wmt18-pd"
+              "name": "pytorch-datasets"
               "readOnly": true
           "initContainers":
           - "env":
@@ -223,10 +224,8 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-          - "gcePersistentDisk":
-              "fsType": "ext4"
-              "pdName": "wmt18-en-de-pd-central1-b"
-              "readOnly": true
-            "name": "wmt18-pd"
+          - "name": "pytorch-datasets"
+            "persistentVolumeClaim":
+              "claimName": "pytorch-datasets-claim"
   "schedule": "0 14 * * *"
   "successfulJobsHistoryLimit": 1

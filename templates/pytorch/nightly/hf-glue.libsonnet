@@ -176,34 +176,22 @@ local utils = import "../../utils.libsonnet";
   },
   local hf_glue = base.PyTorchTest {
     modelName: "hf-glue",
+    containerVolumes+: [
+      base.datasetsVolume
+    ],
     jobSpec+:: {
       template+: {
         spec+: {
-          volumes+: [
-            {
-              name: "nlp-finetuning-ds",
-              gcePersistentDisk: {
-                pdName: "nlp-finetuning-datasets-us-central1-b",
-                fsType: "ext4",
-                readOnly: true,
-              },
-            },
-          ],
-          containers: [
-            container {
-              volumeMounts+: [{
-                mountPath: "/datasets",
-                name: "nlp-finetuning-ds",
-                readOnly: true,
-              }],
+          containerMap+: {
+            train+: {
               resources+: {
                 requests: {
                   cpu: "12.0",
                   memory: "80Gi",
                 },
               },
-            } for container in super.containers
-          ],
+            },
+          },
         },
       },
     },

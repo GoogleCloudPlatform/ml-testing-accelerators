@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+local volumes = import 'volumes.libsonnet';
+
 {
   BaseTest:: {
     local config = self,
@@ -29,6 +31,9 @@
     timeout: error "Must specify `timeout`", # 1 hour
     # Schedule for CronJob in UTC
     schedule: error "Must specify `schedule`",
+
+    # List of VolumeSpec
+    containerVolumes: [],
 
     metricCollectionConfig: {
       write_to_bigquery: true,
@@ -68,7 +73,7 @@
             "tf-version.cloud-tpus.google.com": config.tpuVersion,
           },
         },
-        spec: config.accelerator.PodSpec {
+        spec: config.accelerator.PodSpec + volumes.combinedMixin(config.containerVolumes) {
           local pod = self,
           local commonEnv = [
             {
@@ -158,6 +163,8 @@
         },
       },
     },
+
+    searchforme: config.accelerator.PodSpec + volumes.combinedMixin(config.containerVolumes),
 
     oneshotJob:: {
       // Don't publish PubSub message for oneshot jobs.

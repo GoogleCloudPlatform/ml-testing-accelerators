@@ -57,34 +57,22 @@ local utils = import "../../utils.libsonnet";
           --max-epoch=%(maxEpoch)d
       ||| % self.paramsOverride,
     ),
+    containerVolumes+: [
+      base.datasetsVolume
+    ],
     jobSpec+:: {
       template+: {
         spec+: {
-          volumes+: [
-            {
-              name: "wikitext-pd",
-              gcePersistentDisk: {
-                pdName: "wikitext-103-pd-central1-b",
-                fsType: "ext4",
-                readOnly: true,
-              },
-            },
-          ],
-          containers: [
-            container {
-              volumeMounts+: [{
-                mountPath: "/datasets",
-                name: "wikitext-pd",
-                readOnly: true,
-              }],
+          containerMap+: {
+            train+: {
               resources+: {
                 requests: {
                   cpu: "9.0",
                   memory: "30Gi",
                 },
               },
-            } for container in super.containers
-          ],
+            },
+          },
         },
       },
     },

@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pytorch-datasets
+spec:
+  capacity:
+    storage: 1T
+  accessModes:
+  - ReadOnlyMany
+  nfs:
+    path: /pytorch_datasets
+    server: 10.166.46.250
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pytorch-datasets-claim
+spec:
+  accessModes:
+  - ReadOnlyMany
+  storageClassName: ""
+  volumeName: pytorch-datasets
+  resources:
+    requests:
+      storage: 1Ki
