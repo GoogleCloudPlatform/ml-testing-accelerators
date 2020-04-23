@@ -70,6 +70,7 @@
             "volumeMounts":
             - "mountPath": "/dev/shm"
               "name": "dshm"
+              "readOnly": false
             - "mountPath": "/datasets"
               "name": "cifar-pd"
               "readOnly": true

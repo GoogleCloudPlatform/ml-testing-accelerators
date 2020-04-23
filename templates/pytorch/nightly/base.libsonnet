@@ -14,6 +14,7 @@
 
 local base = import "../base.libsonnet";
 local mixins = import "../../mixins.libsonnet";
+local volumes = import "../../volumes.libsonnet";
 
 {
   PyTorchTest:: base.PyTorchTest {
@@ -33,5 +34,9 @@ local mixins = import "../../mixins.libsonnet";
   Convergence:: mixins.Convergence {
     # Run at 22:00 PST on Monday and Thursday.
     schedule: "0 6 * * 1,6",
+  },
+  datasetsVolume: volumes.PersistentVolumeSpec {
+    name: "pytorch-datasets",
+    mountPath: "/datasets",
   },
 }
