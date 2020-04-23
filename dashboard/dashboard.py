@@ -23,7 +23,7 @@ from bokeh.io import curdoc
 from bokeh.layouts import column, row
 from bokeh.models import Paragraph, Panel, Tabs
 
-import modules.main_heatmap
+import main_heatmap
 
 
 def parallel_fetch_data(test_name_prefixes):
@@ -44,7 +44,7 @@ def parallel_fetch_data(test_name_prefixes):
     # Prepare the thread tasks.
     tasks = {}
     for test_name_prefix in test_name_prefixes:
-      task = executor.submit(modules.main_heatmap.fetch_data, test_name_prefix)
+      task = executor.submit(main_heatmap.fetch_data, test_name_prefix)
       tasks[task] = test_name_prefix
 
     # Run the tasks and collect results as they arrive.
@@ -65,7 +65,7 @@ all_tabs = []
 test_name_prefixes = ['pt-nightly', 'pt-1.5', 'tf-nightly']
 all_data = parallel_fetch_data(test_name_prefixes)
 for test_prefix, data in all_data.items():
-  plot = modules.main_heatmap.make_plot(data)
+  plot = main_heatmap.make_plot(data)
   all_tabs.append(Panel(child=plot, title=test_prefix))
 
 curdoc().title = "Test pass/fail Dashboard"

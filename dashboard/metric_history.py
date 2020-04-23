@@ -28,7 +28,7 @@ QUERY = """
 SELECT
   metrics.test_name,
   metrics.metric_name,
-  SAFE_CAST(EXTRACT(date from metrics.timestamp) AS STRING) AS run_date,
+  SAFE_CAST(DATE(metrics.timestamp, 'US/Pacific') AS STRING) AS run_date,
   metrics.metric_value,
   metrics.metric_lower_bound,
   metrics.metric_upper_bound,
@@ -47,7 +47,7 @@ FROM (
     SELECT
       test_name,
       metric_name,
-      SAFE_CAST(EXTRACT(date from timestamp) AS STRING) as run_date,
+      SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
       min(timestamp) as min_timestamp
     FROM
       `xl-ml-test.metrics_handler_dataset.metric_history`

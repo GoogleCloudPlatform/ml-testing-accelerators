@@ -25,14 +25,10 @@ local tpus = import "../../tpus.libsonnet";
         epochs: error "Must set `train.epochs`",
       },
       train_dataset: {
-        use_per_replica_batch_size: false,
         builder: "records",
-        batch_size: error "Must set `train_dataset.batch_size`",
       },
       validation_dataset: {
-        use_per_replica_batch_size: false,
         builder: "records",
-        batch_size: error "Must set `validation_dataset.batch_size`",
       },
     },
     command: [
@@ -73,25 +69,9 @@ local tpus = import "../../tpus.libsonnet";
   },
   local v2_8 = {
     accelerator: tpus.v2_8,
-    paramsOverride+: {
-      train_dataset+: {
-        batch_size: 1024,
-      },
-      validation_dataset+: {
-        batch_size: 1024,
-      },
-    },
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
-    paramsOverride+: {
-      train_dataset+: {
-        batch_size: 1024,
-      },
-      validation_dataset+: {
-        batch_size: 1024,
-      },
-    },
   },
 
   configs: [
