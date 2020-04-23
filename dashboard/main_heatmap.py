@@ -125,8 +125,6 @@ def process_dataframes(job_status_dataframe, metrics_dataframe):
       'job_status'].apply(lambda x: x)
 
   # Record the status of the metrics for every test.
-  job_status_dataframe['logs_download_command'] = job_status_dataframe[
-      'logs_download_command'].apply(lambda x: x)
   job_status_dataframe['failed_metrics'] = job_status_dataframe[
       'job_status'].apply(lambda x: [])
   for row in job_status_dataframe.iterrows():
