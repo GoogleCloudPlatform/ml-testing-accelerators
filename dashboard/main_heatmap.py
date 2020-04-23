@@ -35,6 +35,7 @@ SELECT
   x.job_status,
   SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
   x.stackdriver_logs_link AS logs_link,
+  x.logs_download_command AS logs_download_command,
   x.uuid
 FROM (
   SELECT
@@ -124,6 +125,8 @@ def process_dataframes(job_status_dataframe, metrics_dataframe):
       'job_status'].apply(lambda x: x)
 
   # Record the status of the metrics for every test.
+  job_status_dataframe['logs_download_command'] = job_status_dataframe[
+      'logs_download_command'].apply(lambda x: x)
   job_status_dataframe['failed_metrics'] = job_status_dataframe[
       'job_status'].apply(lambda x: [])
   for row in job_status_dataframe.iterrows():
@@ -133,6 +136,11 @@ def process_dataframes(job_status_dataframe, metrics_dataframe):
     if failed_metrics:
       job_status_dataframe['failed_metrics'][row[0]] = failed_metrics
       job_status_dataframe['overall_status'][row[0]] = 'failure'
+    if not row[1]['logs_download_command']:
+      # If the job does not have any download command in Bigquery, attempt to
+      # create one by parsing the logs_link.
+      job_status_dataframe['logs_download_command'][
+          row[0]] = utils.get_download_command(row[1]['logs_link'])
 
   # Create a few convenience columns to use in the dashboard.
   job_status_dataframe['job_status_abbrev'] = job_status_dataframe[
@@ -140,8 +148,6 @@ def process_dataframes(job_status_dataframe, metrics_dataframe):
           lambda x: '' if x.startswith('success') else x[:1].upper())
   job_status_dataframe['metrics_link'] = job_status_dataframe[
       'test_name'].apply(lambda x: 'metrics?test_name={}'.format(x))
-  job_status_dataframe['logs_download_command'] = job_status_dataframe[
-      'logs_link'].apply(utils.get_download_command)
   return job_status_dataframe
 
 def make_plot(dataframe):

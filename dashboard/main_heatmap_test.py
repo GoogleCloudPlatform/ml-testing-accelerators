@@ -49,6 +49,8 @@ class MainHeatmapTest(parameterized.TestCase):
             len(job_statuses))]),
         'job_status': pd.Series(job_statuses),
         'logs_link': pd.Series([SAMPLE_LOGS_LINK for _ in job_statuses]),
+        'logs_download_command': pd.Series(
+            ['my command'] + ['' for _ in job_statuses[1:]]),
     })
 
     # The SQL query in the real code only returns rows where metrics were
@@ -82,6 +84,15 @@ class MainHeatmapTest(parameterized.TestCase):
     df = main_heatmap.process_dataframes(job_status_df, metric_status_df)
     self.assertEqual(df['overall_status'].tolist(),
                      args_dict['expected_overall_statuses'])
+
+    commands = df['logs_download_command'].tolist()
+    # If a command is already populated, it should be left alone.
+    self.assertEqual(commands[0], 'my command')
+
+    # Empty strings should be replaced by valid download commands.
+    if len(args_dict['expected_overall_statuses']) > 1:
+      for command in commands[1:]:
+        self.assertTrue('gcloud' in command)
 
   def test_make_plot(self):
     input_df = pd.DataFrame({
