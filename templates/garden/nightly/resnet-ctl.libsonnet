@@ -35,6 +35,7 @@ local tpus = import "../../tpus.libsonnet";
       "--log_steps=50",
       "--single_l2_loss_op=true",
       "--use_tf_function=true",
+      "--model_dir=$(MODEL_DIR)",
     ],
   },
   local functional = mixins.Functional {

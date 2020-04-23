@@ -38,6 +38,7 @@ local tpus = import "../../tpus.libsonnet";
       "--bleu_source=gs://xl-ml-test-us-central1/data/transformer/newstest2014.en",
       "--bleu_ref=gs://xl-ml-test-us-central1/data/transformer/newstest2014.de",
       "--enable_tensorboard",
+      "--model_dir=$(MODEL_DIR)",
     ],
   },
   local functional = mixins.Functional {

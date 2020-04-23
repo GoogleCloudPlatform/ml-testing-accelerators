@@ -32,6 +32,7 @@ local tpus = import "../../tpus.libsonnet";
       "--init_checkpoint=gs://cloud-tpu-checkpoints/bert/keras_bert/uncased_L-24_H-1024_A-16/bert_model.ckpt",
       "--learning_rate=3e-5",
       "--distribution_strategy=tpu",
+      "--model_dir=$(MODEL_DIR)",
     ],
   },
   local functional = mixins.Functional {

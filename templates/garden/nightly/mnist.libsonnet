@@ -24,6 +24,7 @@ local gpus = import "../../gpus.libsonnet";
       "python3",
       "official/vision/image_classification/mnist_main.py",
       "--data_dir=gs://xl-ml-test-us-central1/data/mnist",
+      "--model_dir=$(MODEL_DIR)",
     ],
   },
   local functional = mixins.Functional {
