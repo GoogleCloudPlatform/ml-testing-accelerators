@@ -43,10 +43,10 @@
             - "--do_lower_case=true"
             - "--distribution_strategy=tpu"
             - "--steps_per_loop=500"
+            - "--model_dir=$(MODEL_DIR)"
             - "--train_batch_size=16"
             - "--mode=train"
             - "--num_train_epochs=1"
-            - "--model_dir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
               "valueFrom":

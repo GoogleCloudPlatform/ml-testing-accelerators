@@ -50,8 +50,8 @@
                   "prefix": "resnet50/"
                 "total_steps": 1000
                 "train_file_pattern": "gs://xl-ml-test-us-central1/data/coco/train*"
-            - "--mode=train"
             - "--model_dir=$(MODEL_DIR)"
+            - "--mode=train"
             "env":
             - "name": "POD_NAME"
               "valueFrom":

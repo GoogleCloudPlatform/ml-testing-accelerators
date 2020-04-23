@@ -106,7 +106,7 @@
             {
               name: "MODEL_DIR",
               value: 
-                "gs://xl-ml-test-us-central1/k8s/%(modelName)s/%(mode)s/%(acceleratorName)s/$(JOB_NAME)" % config,
+                "$(OUTPUT_BUCKET)/%(modelName)s/%(mode)s/%(acceleratorName)s/$(JOB_NAME)" % config,
             },
           ],
 
@@ -114,6 +114,13 @@
           initContainerMap:: {
             publisher: {
               image: "gcr.io/xl-ml-test/publisher:stable",
+              envFrom: [
+                {
+                  configMapRef: {
+                    name: "gcs-buckets",
+                  },
+                },
+              ],
               env: commonEnv + [
                 {
                   name: "METRIC_CONFIG",
@@ -139,6 +146,14 @@
               imagePullPolicy: "Always",
               # Use Docker image's entrypoint wrapper
               args: config.command,
+
+              envFrom: [
+                {
+                  configMapRef: {
+                    name: "gcs-buckets",
+                  },
+                },
+              ],
 
               # Override this object to add environment variables to the container
               envMap:: {},

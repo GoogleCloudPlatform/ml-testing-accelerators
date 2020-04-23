@@ -33,11 +33,11 @@
             - "python3"
             - "official/vision/image_classification/mnist_main.py"
             - "--data_dir=gs://xl-ml-test-us-central1/data/mnist"
+            - "--model_dir=$(MODEL_DIR)"
             - "--distribution_strategy=tpu"
             - "--batch_size=2048"
             - "--train_epochs=1"
             - "--epochs_between_evals=1"
-            - "--model_dir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
               "valueFrom":

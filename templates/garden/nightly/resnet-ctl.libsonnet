@@ -24,7 +24,7 @@ local tpus = import "../../tpus.libsonnet";
       "python3",
       "official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py",
       "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-      "--data_dir=gs://imagenet-us-central1/train",
+      "--data_dir=$(IMAGENET_DIR)",
       "--distribution_strategy=tpu",
       "--batch_size=1024",
       "--steps_per_loop=500",

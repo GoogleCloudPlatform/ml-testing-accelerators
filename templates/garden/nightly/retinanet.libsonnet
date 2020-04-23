@@ -22,9 +22,9 @@ local tpus = import "../../tpus.libsonnet";
     modelName: "retinanet",
     paramsOverride:: {
       eval: {
-        eval_file_pattern: "gs://xl-ml-test-us-central1/data/coco/val*",
+        eval_file_pattern: "$(COCO_DIR)/val*",
         batch_size: 8,
-        val_json_file: "gs://xl-ml-test-us-central1/data/coco/instances_val2017.json",
+        val_json_file: "$(COCO_DIR)/instances_val2017.json",
       },
       predict: {
         batch_size: 8,
@@ -34,12 +34,12 @@ local tpus = import "../../tpus.libsonnet";
       },
       train: {
         checkpoint: {
-          path: "gs://xl-ml-test-us-central1/data/pretrain/resnet50-checkpoint-2018-02-07",
+          path: "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07",
           prefix: "resnet50/",
         },
         total_steps: error "Must set `train.total_steps`",
         batch_size: error "Must set `train.batch_size`",
-        train_file_pattern: "gs://xl-ml-test-us-central1/data/coco/train*",
+        train_file_pattern: "$(COCO_DIR)/train*",
       },
     },
     command: [

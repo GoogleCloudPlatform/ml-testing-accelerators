@@ -36,7 +36,7 @@ local tpus = import "../../tpus.libsonnet";
       "official/vision/image_classification/classifier_trainer.py",
       "--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/tpu.yaml",
       "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-      "--data_dir=gs://imagenet-us-central1/train",
+      "--data_dir=$(IMAGENET_DIR)",
       "--model_type=resnet",
       "--dataset=imagenet",
       "--mode=train_and_eval",

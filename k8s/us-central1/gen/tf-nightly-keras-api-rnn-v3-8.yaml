@@ -43,7 +43,6 @@
               pip3 install behave
               behave -e ipynb_checkpoints --tags=-fails -i rnn
               
-            - "--model_dir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
