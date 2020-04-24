@@ -79,9 +79,12 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/hf-glue-bert-b-c/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/hf-glue-bert-b-c/conv/v3-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
               "value": "0"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
@@ -117,7 +120,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/hf-glue-bert-b-c/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/hf-glue-bert-b-c/conv/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -183,6 +186,9 @@
                  },
                  "test_name": "pt-nightly-hf-glue-bert-b-c-conv-v3-8"
                 }
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/publisher:stable"
             "name": "publisher"
           "restartPolicy": "Never"

@@ -36,17 +36,17 @@
             - "--input_meta_data_path=gs://xl-ml-test-us-central1/data/squad/squad_v1.1_meta_data.json"
             - "--train_data_path=gs://xl-ml-test-us-central1/data/squad/squad_v1.1_train.tfrecord"
             - "--predict_file=gs://xl-ml-test-us-central1/data/squad/dev-v1.1.json"
-            - "--vocab_file=gs://cloud-tpu-checkpoints/bert/keras_bert/uncased_L-24_H-1024_A-16/vocab.txt"
-            - "--bert_config_file=gs://cloud-tpu-checkpoints/bert/keras_bert/uncased_L-24_H-1024_A-16/bert_config.json"
-            - "--init_checkpoint=gs://cloud-tpu-checkpoints/bert/keras_bert/uncased_L-24_H-1024_A-16/bert_model.ckpt"
+            - "--vocab_file=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/vocab.txt"
+            - "--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_config.json"
+            - "--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_model.ckpt"
             - "--learning_rate=8e-5"
             - "--do_lower_case=true"
             - "--distribution_strategy=tpu"
             - "--steps_per_loop=500"
+            - "--model_dir=$(MODEL_DIR)"
             - "--train_batch_size=32"
             - "--mode=train"
             - "--num_train_epochs=1"
-            - "--model_dir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -65,7 +65,10 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/bert-squad/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/bert-squad/func/v3-8/$(JOB_NAME)"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/model-garden:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
@@ -91,7 +94,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/bert-squad/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/bert-squad/func/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -115,6 +118,9 @@
                  },
                  "test_name": "tf-nightly-bert-squad-func-v3-8"
                 }
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/publisher:stable"
             "name": "publisher"
           "restartPolicy": "Never"

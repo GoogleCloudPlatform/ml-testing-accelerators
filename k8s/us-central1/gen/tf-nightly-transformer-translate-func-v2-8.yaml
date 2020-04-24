@@ -42,14 +42,14 @@
             - "--decode_max_length=97"
             - "--padded_decode=true"
             - "--distribution_strategy=tpu"
-            - "--data_dir=gs://xl-ml-test-us-central1/data/transformer"
-            - "--vocab_file=gs://xl-ml-test-us-central1/data/transformer/vocab.ende.32768"
-            - "--bleu_source=gs://xl-ml-test-us-central1/data/transformer/newstest2014.en"
-            - "--bleu_ref=gs://xl-ml-test-us-central1/data/transformer/newstest2014.de"
+            - "--data_dir=$(TRANSFORMER_DIR)"
+            - "--vocab_file=$(TRANSFORMER_DIR)/vocab.ende.32768"
+            - "--bleu_source=$(TRANSFORMER_DIR)/newstest2014.en"
+            - "--bleu_ref=$(TRANSFORMER_DIR)/newstest2014.de"
             - "--enable_tensorboard"
+            - "--model_dir=$(MODEL_DIR)"
             - "--train_steps=20000"
             - "--batch_size=6144"
-            - "--model_dir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -68,7 +68,10 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/transformer-translate/func/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/transformer-translate/func/v2-8/$(JOB_NAME)"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/model-garden:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
@@ -94,7 +97,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/transformer-translate/func/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/transformer-translate/func/v2-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -118,6 +121,9 @@
                  },
                  "test_name": "tf-nightly-transformer-translate-func-v2-8"
                 }
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/publisher:stable"
             "name": "publisher"
           "restartPolicy": "Never"

@@ -34,17 +34,17 @@
             - "official/nlp/bert/run_classifier.py"
             - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
             - "--steps_per_loop=1000"
-            - "--input_meta_data_path=gs://cloud-tpu-checkpoints/bert/classification/mnli_meta_data"
-            - "--train_data_path=gs://cloud-tpu-checkpoints/bert/classification/mnli_train.tf_record"
-            - "--eval_data_path=gs://cloud-tpu-checkpoints/bert/classification/mnli_eval.tf_record"
-            - "--bert_config_file=gs://cloud-tpu-checkpoints/bert/keras_bert/uncased_L-24_H-1024_A-16/bert_config.json"
-            - "--init_checkpoint=gs://cloud-tpu-checkpoints/bert/keras_bert/uncased_L-24_H-1024_A-16/bert_model.ckpt"
+            - "--input_meta_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_meta_data"
+            - "--train_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_train.tf_record"
+            - "--eval_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_eval.tf_record"
+            - "--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_config.json"
+            - "--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_model.ckpt"
             - "--learning_rate=3e-5"
             - "--distribution_strategy=tpu"
+            - "--model_dir=$(MODEL_DIR)"
             - "--train_batch_size=32"
             - "--eval_batch_size=32"
             - "--num_train_epochs=3"
-            - "--model_dir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -63,7 +63,10 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/bert-mnli/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/bert-mnli/conv/v3-8/$(JOB_NAME)"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/model-garden:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
@@ -89,7 +92,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/bert-mnli/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/bert-mnli/conv/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -113,6 +116,9 @@
                  },
                  "test_name": "tf-nightly-bert-mnli-conv-v3-8"
                 }
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/publisher:stable"
             "name": "publisher"
           "restartPolicy": "Never"

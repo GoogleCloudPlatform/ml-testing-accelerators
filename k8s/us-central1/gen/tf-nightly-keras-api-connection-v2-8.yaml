@@ -43,7 +43,6 @@
               pip3 install behave
               behave -e ipynb_checkpoints --tags=-fails -i aaa_connection
               
-            - "--model_dir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -62,7 +61,10 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/keras-api/connection/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/keras-api/connection/v2-8/$(JOB_NAME)"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/model-garden:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
@@ -88,7 +90,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/keras-api/connection/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/keras-api/connection/v2-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -103,6 +105,9 @@
                  },
                  "test_name": "tf-nightly-keras-api-connection-v2-8"
                 }
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/publisher:stable"
             "name": "publisher"
           "restartPolicy": "Never"

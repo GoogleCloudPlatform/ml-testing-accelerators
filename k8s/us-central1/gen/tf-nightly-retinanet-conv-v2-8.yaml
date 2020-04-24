@@ -39,19 +39,19 @@
                 "use_bfloat16": true
               "eval":
                 "batch_size": 8
-                "eval_file_pattern": "gs://xl-ml-test-us-central1/data/coco/val*"
-                "val_json_file": "gs://xl-ml-test-us-central1/data/coco/instances_val2017.json"
+                "eval_file_pattern": "$(COCO_DIR)/val*"
+                "val_json_file": "$(COCO_DIR)/instances_val2017.json"
               "predict":
                 "batch_size": 8
               "train":
                 "batch_size": 64
                 "checkpoint":
-                  "path": "gs://xl-ml-test-us-central1/data/pretrain/resnet50-checkpoint-2018-02-07"
+                  "path": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
                   "prefix": "resnet50/"
                 "total_steps": 22500
-                "train_file_pattern": "gs://xl-ml-test-us-central1/data/coco/train*"
-            - "--mode=train"
+                "train_file_pattern": "$(COCO_DIR)/train*"
             - "--model_dir=$(MODEL_DIR)"
+            - "--mode=train"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -70,7 +70,10 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/retinanet/conv/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/retinanet/conv/v2-8/$(JOB_NAME)"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/model-garden:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
@@ -96,7 +99,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "gs://xl-ml-test-us-central1/k8s/retinanet/conv/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/retinanet/conv/v2-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -120,6 +123,9 @@
                  },
                  "test_name": "tf-nightly-retinanet-conv-v2-8"
                 }
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/publisher:stable"
             "name": "publisher"
           "restartPolicy": "Never"
