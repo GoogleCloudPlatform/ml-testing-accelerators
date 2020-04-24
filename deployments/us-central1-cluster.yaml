@@ -1,0 +1,10 @@
+imports:
+- path: cluster.jinja
+
+resources:
+- name: us-central1-cluster
+  type: cluster.jinja
+  properties:
+    zone: us-central1-b
+    huge-pool: true
+    double-v100: true
