@@ -1,0 +1,10 @@
+imports:
+- path: cluster.jinja
+
+resources:
+- name: my-xl-ml-test-cluster
+  type: cluster.jinja
+  properties:
+    zone: us-central1-b
+    huge-pool: false
+    double-v100: false
