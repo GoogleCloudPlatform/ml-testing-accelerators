@@ -38,6 +38,7 @@ local utils = import "../../utils.libsonnet";
       --num_cores=8 \
       --only_log_master \
       --metrics_debug \
+      --overwrite_cache \
   |||,
   local bert_base_cased = base.Convergence {
     modelName: "hf-glue-bert-b-c",
@@ -50,6 +51,7 @@ local utils = import "../../utils.libsonnet";
       ||| % {common: command_common}
     ),
     regressionTestConfig+: {
+      alert_for_failed_jobs: false,
       metric_success_conditions+: {
         "mnli/acc_final": {
           success_threshold: {
@@ -77,6 +79,7 @@ local utils = import "../../utils.libsonnet";
       ||| % {common: command_common}
     ),
     regressionTestConfig+: {
+      alert_for_failed_jobs: false,
       metric_success_conditions+: {
         "mnli/acc_final": {
           success_threshold: {
@@ -104,6 +107,7 @@ local utils = import "../../utils.libsonnet";
       ||| % {common: command_common}
     ),
     regressionTestConfig+: {
+      alert_for_failed_jobs: false,
       metric_success_conditions+: {
         "mnli/acc_final": {
           success_threshold: {
@@ -131,6 +135,7 @@ local utils = import "../../utils.libsonnet";
       ||| % {common: command_common}
     ),
     regressionTestConfig+: {
+      alert_for_failed_jobs: false,
       metric_success_conditions+: {
         "mnli/acc_final": {
           success_threshold: {
@@ -158,6 +163,7 @@ local utils = import "../../utils.libsonnet";
       ||| % {common: command_common}
     ),
     regressionTestConfig+: {
+      alert_for_failed_jobs: false,
       metric_success_conditions+: {
         "mnli/acc_final": {
           success_threshold: {
