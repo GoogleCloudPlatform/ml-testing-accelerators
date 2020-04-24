@@ -66,7 +66,7 @@ local tpus = import "../../tpus.libsonnet";
   configs: [
     mnist + v2_8 + convergence + timeouts.Hours(1),
     mnist + v3_8 + convergence + timeouts.Hours(1),
-    mnist_pod + v2_32 + convergence + mixins.Experimental,
-    mnist_pod + v3_32 + convergence + mixins.Experimental,
+    mnist_pod + v2_32 + convergence,
+    mnist_pod + v3_32 + convergence,
   ],
 }
