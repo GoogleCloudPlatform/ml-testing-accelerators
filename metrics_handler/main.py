@@ -282,10 +282,20 @@ class CloudMetricsHandler(object):
 
   def get_metrics_history_from_bigquery(self):
     """Returns the historic values of each metric for a given model."""
-    query_result = self.bigquery_client.query(
-        'SELECT * FROM `{}` WHERE test_name like \"{}\"'.format(
-            self.metric_history_table_id, self.test_name)).result()
+    query_result = self.bigquery_client.query("""
+        SELECT *
+        FROM `{}`
+        WHERE test_name like \"{}\" AND uuid in (
+            SELECT uuid
+            FROM `{}`
+            WHERE test_name like \"{}\" AND job_status = \"success"\
+        )""".format(
+            self.metric_history_table_id,
+            self.test_name,
+            self.job_history_table_id,
+            self.test_name)).result()
     metrics_history = collections.defaultdict(list)
+    import pdb; pdb.set_trace()
     for row in query_result:
       metrics_history[row['metric_name']].append(metrics.MetricPoint(
           metric_value=row['metric_value'],
