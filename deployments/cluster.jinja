@@ -24,10 +24,10 @@ resources:
         useIpAliases: true
       nodePools:
       - name: default-pool
-        initialNodeCount: 1
+        initialNodeCount: 3
         autoscaling:
           enabled: true
-          minNodeCount: 1
+          minNodeCount: 3
           maxNodeCount: 10
         config:
           machineType: n1-highmem-16

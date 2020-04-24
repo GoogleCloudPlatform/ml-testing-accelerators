@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+local volumes = import 'volumes.libsonnet';
+
 {
   BaseTest:: {
     local config = self,
@@ -29,6 +31,9 @@
     timeout: error "Must specify `timeout`", # 1 hour
     # Schedule for CronJob in UTC
     schedule: error "Must specify `schedule`",
+
+    # Map of names to VolumeSpecs
+    volumeMap: { },
 
     metricCollectionConfig: {
       write_to_bigquery: true,
@@ -68,7 +73,7 @@
             "tf-version.cloud-tpus.google.com": config.tpuVersion,
           },
         },
-        spec: config.accelerator.PodSpec {
+        spec: config.accelerator.PodSpec + volumes.combinedMixin(config.volumeMap) {
           local pod = self,
           local commonEnv = [
             {
@@ -106,7 +111,7 @@
             {
               name: "MODEL_DIR",
               value: 
-                "gs://xl-ml-test-us-central1/k8s/%(modelName)s/%(mode)s/%(acceleratorName)s/$(JOB_NAME)" % config,
+                "$(OUTPUT_BUCKET)/%(modelName)s/%(mode)s/%(acceleratorName)s/$(JOB_NAME)" % config,
             },
           ],
 
@@ -114,6 +119,13 @@
           initContainerMap:: {
             publisher: {
               image: "gcr.io/xl-ml-test/publisher:stable",
+              envFrom: [
+                {
+                  configMapRef: {
+                    name: "gcs-buckets",
+                  },
+                },
+              ],
               env: commonEnv + [
                 {
                   name: "METRIC_CONFIG",
@@ -139,6 +151,14 @@
               imagePullPolicy: "Always",
               # Use Docker image's entrypoint wrapper
               args: config.command,
+
+              envFrom: [
+                {
+                  configMapRef: {
+                    name: "gcs-buckets",
+                  },
+                },
+              ],
 
               # Override this object to add environment variables to the container
               envMap:: {},

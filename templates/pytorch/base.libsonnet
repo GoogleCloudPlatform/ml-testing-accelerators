@@ -13,6 +13,7 @@
 # limitations under the License.
 
 local base = import "../base.libsonnet";
+local volumes = import "../volumes.libsonnet";
 
 {
   local PyTorchBaseTest = base.BaseTest {
@@ -54,6 +55,12 @@ local base = import "../base.libsonnet";
   },
   PyTorchTest:: PyTorchBaseTest {
     image: "gcr.io/xl-ml-test/pytorch-xla",
+    volumeMap+: {
+      dshm: volumes.MemoryVolumeSpec {
+        name: "dshm",
+        mountPath: "/dev/shm",
+      },
+    },
 
     jobSpec+:: {
       template+: {
@@ -69,21 +76,8 @@ local base = import "../base.libsonnet";
                   memory: "8Gi",
                 },
               },
-
-              volumeMounts: [{
-                mountPath: "/dev/shm",
-                name: "dshm",
-              }],
             },
           },
-          volumes: [
-            {
-              name: "dshm",
-              emptyDir: {
-                medium: "Memory",
-              },
-            },
-          ],
         },
       },
     },

@@ -5,6 +5,6 @@ cd $p
 set -e
 set -x
 which jsonnet &> /dev/null
-rm k8s/gen/*yaml
-jsonnet -S templates/multifile.jsonnet -m k8s/gen
+rm -f k8s/*/gen/*.yaml
+jsonnet -S templates/multifile.jsonnet -m k8s/
 cd -

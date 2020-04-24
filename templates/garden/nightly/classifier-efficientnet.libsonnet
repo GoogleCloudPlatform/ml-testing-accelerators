@@ -36,11 +36,12 @@ local tpus = import "../../tpus.libsonnet";
       "official/vision/image_classification/classifier_trainer.py",
       "--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-tpu.yaml",
       "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-      "--data_dir=gs://imagenet-us-central1/train",
+      "--data_dir=$(IMAGENET_DIR)",
       "--model_type=efficientnet",
       "--dataset=imagenet",
       "--mode=train_and_eval",
-      "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride)
+      "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride),
+      "--model_dir=$(MODEL_DIR)",
     ],
   },
   local functional = mixins.Functional {

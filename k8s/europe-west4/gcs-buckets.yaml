@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gcs-buckets
+data:
+  OUTPUT_BUCKET: gs://xl-ml-test-europe-west4/output
+  IMAGENET_DIR: gs://imagenet-europe-west4/train

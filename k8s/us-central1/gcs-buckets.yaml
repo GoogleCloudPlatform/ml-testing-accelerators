@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gcs-buckets
+data:
+  OUTPUT_BUCKET: gs://xl-ml-test-us-central1/output
+  MNIST_DIR: gs://xl-ml-test-us-central1/data/mnist
+  BERT_CLASSIFICATION_DIR: gs://cloud-tpu-checkpoints/bert/classification
+  BERT_SQUAD_DIR: gs://xl-ml-test-us-central1/data/squad
+  KERAS_BERT_DIR: gs://cloud-tpu-checkpoints/bert/keras_bert
+  IMAGENET_DIR: gs://imagenet-us-central1/train
+  COCO_DIR: gs://xl-ml-test-us-central1/data/coco
+  RESNET_PRETRAIN_DIR: gs://xl-ml-test-us-central1/data/pretrain
+  TRANSFORMER_DIR: gs://xl-ml-test-us-central1/data/transformer
