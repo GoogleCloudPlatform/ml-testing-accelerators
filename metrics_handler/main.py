@@ -295,7 +295,6 @@ class CloudMetricsHandler(object):
             self.job_history_table_id,
             self.test_name)).result()
     metrics_history = collections.defaultdict(list)
-    import pdb; pdb.set_trace()
     for row in query_result:
       metrics_history[row['metric_name']].append(metrics.MetricPoint(
           metric_value=row['metric_value'],
