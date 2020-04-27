@@ -24,6 +24,9 @@ local tpus = import "../../tpus.libsonnet";
       train: {
         epochs: error "Must set `train.epochs`",
       },
+      evaluation: {
+        epochs_between_evals: error "Must set `evaluation.epochs_between_evals`",
+      },
       train_dataset: {
         builder: "records",
       },
@@ -49,6 +52,9 @@ local tpus = import "../../tpus.libsonnet";
       train+: {
         epochs: 3, 
       },
+      evaluation+: {
+        epochs_between_evals: 3,
+      },
     },
   },
   local convergence = mixins.Convergence {
@@ -56,10 +62,13 @@ local tpus = import "../../tpus.libsonnet";
       train+: {
         epochs: 90, 
       },
+      evaluation+: {
+        epochs_between_evals: 90,
+      },
     },
     regressionTestConfig+: {
       metric_success_conditions+: {
-        epoch_accuracy_final: {
+        val_epoch_accuracy_final: {
           success_threshold: {
             fixed_value: 0.76,
           },
