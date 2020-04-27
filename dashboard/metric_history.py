@@ -97,7 +97,7 @@ def process_dataframe(dataframe):
     if not row[1]['logs_download_command']:
       # If the job does not have any download command in Bigquery, attempt to
       # create one by parsing the logs_link.
-      dataframe['logs_download_command'][
+      dataframe['logs_download_command'].iat[
           row[0]] = utils.get_download_command(row[1]['logs_link'])
   return dataframe
 
