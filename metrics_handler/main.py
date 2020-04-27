@@ -327,7 +327,8 @@ class CloudMetricsHandler(object):
       publish_time = row['msg_publish_time']
     return uuid, publish_time
 
-  def compute_bounds_and_report_errors(self, metrics_history, new_metrics):
+  def compute_bounds_and_report_errors(self, metrics_history, new_metrics,
+                                       job_status):
     """Compute the bounds for metrics and report abnormal values.
 
     Any metric that is currently outside the expected bounds is reported to
@@ -340,6 +341,8 @@ class CloudMetricsHandler(object):
       metrics_history(dict): Historic values of each metric.
       new_metrics(dict): Key is metric name and value is MetricPoint containing
         the latest aggregated value for that metric.
+      job_status(string): Final state of the job, should be one of the status
+        constants found in job_status_handler.py.
 
     Returns:
       metric_name_to_visual_bounds (dict): Key is metric name and value is a
@@ -395,9 +398,14 @@ class CloudMetricsHandler(object):
 
       metric_value = value_history[-1].metric_value
       within_bounds = metrics.within_bounds(metric_value, lower_bound, upper_bound, inclusive=('equal' in comparison))
-      # Report out-of-bounds metrics to Stackdriver unless disabled by config.
+
+      # Generate an alert unless one of these is True:
+      #   1. metrics are within bounds.
+      #   2. alerting is disabled by config.
+      #   3. the job failed and therefore metrics are unreliable.
       if within_bounds or not self.regression_test_config.get(
-          'write_to_error_reporting', True):
+          'write_to_error_reporting', True) or \
+              job_status != job_status_handler.SUCCESS:
         continue
       self.logger.error(
           'Metric `{}` was out of bounds for test `{}`. Bounds were '
@@ -497,7 +505,7 @@ def _process_pubsub_message(msg, status_handler, logger):
   if regression_test_config:
     metrics_history = handler.get_metrics_history_from_bigquery()
     metric_name_to_visual_bounds = handler.compute_bounds_and_report_errors(
-        metrics_history, new_metrics)
+        metrics_history, new_metrics, job_status['final_status'])
   else:
     metric_name_to_visual_bounds = None
 
