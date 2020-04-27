@@ -86,7 +86,7 @@ local tpus = import "../../tpus.libsonnet";
     efficientnet + v3_8 + functional,
     efficientnet + v2_8 + convergence + timeouts.Hours(31),
     efficientnet + v3_8 + convergence + timeouts.Hours(31),
-    efficientnet + v2_32 + convergence,
-    efficientnet + v3_32 + convergence,
+    efficientnet + v2_32 + convergence + timeouts.Hours(30),
+    efficientnet + v3_32 + convergence + timeouts.Hours(24),
   ],
 }
