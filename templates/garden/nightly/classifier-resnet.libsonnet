@@ -43,8 +43,8 @@ local tpus = import "../../tpus.libsonnet";
       "--model_type=resnet",
       "--dataset=imagenet",
       "--mode=train_and_eval",
-      "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride),
       "--model_dir=$(MODEL_DIR)",
+      "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride),
     ],
   },
   local functional = mixins.Functional {
