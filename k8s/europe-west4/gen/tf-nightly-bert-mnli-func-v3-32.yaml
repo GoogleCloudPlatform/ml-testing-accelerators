@@ -42,8 +42,8 @@
             - "--learning_rate=3e-5"
             - "--distribution_strategy=tpu"
             - "--model_dir=$(MODEL_DIR)"
-            - "--train_batch_size=128"
-            - "--eval_batch_size=128"
+            - "--train_batch_size=512"
+            - "--eval_batch_size=512"
             - "--num_train_epochs=1"
             "env":
             - "name": "POD_NAME"
