@@ -33,7 +33,8 @@ SELECT
   metrics.metric_lower_bound,
   metrics.metric_upper_bound,
   job.job_status,
-  job.stackdriver_logs_link AS logs_link
+  job.stackdriver_logs_link AS logs_link,
+  job.logs_download_command
 FROM (
   SELECT
     x.test_name,
@@ -89,11 +90,16 @@ def fetch_data(test_name):
     QUERY,
     cache_key=('metrics-%s' % test_name),
     config=_get_query_config(test_name))
+  return process_dataframe(dataframe)
 
-  dataframe['logs_download_command'] = dataframe['logs_link'].apply(
-      utils.get_download_command)
+def process_dataframe(dataframe):
+  for row in dataframe.iterrows():
+    if not row[1]['logs_download_command']:
+      # If the job does not have any download command in Bigquery, attempt to
+      # create one by parsing the logs_link.
+      dataframe['logs_download_command'][
+          row[0]] = utils.get_download_command(row[1]['logs_link'])
   return dataframe
-
 
 def make_plots(test_name, metric_name_substr, dataframe):
   if not dataframe['metric_name'].any():
