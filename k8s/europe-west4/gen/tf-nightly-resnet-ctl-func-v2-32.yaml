@@ -15,7 +15,7 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-nightly-resnet-ctl-func-v3-8"
+  "name": "tf-nightly-resnet-ctl-func-v2-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
@@ -44,7 +44,7 @@
             - "--single_l2_loss_op=true"
             - "--use_tf_function=true"
             - "--model_dir=$(MODEL_DIR)"
-            - "--batch_size=2048"
+            - "--batch_size=4096"
             - "--train_epochs=1"
             - "--epochs_between_evals=1"
             "env":
@@ -65,7 +65,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/resnet-ctl/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/resnet-ctl/func/v2-32/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
@@ -74,7 +74,7 @@
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v3": 8
+                "cloud-tpus.google.com/preemptible-v2": 32
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -94,7 +94,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/resnet-ctl/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/resnet-ctl/func/v2-32/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -116,7 +116,7 @@
                   },
                   "write_to_error_reporting": true
                  },
-                 "test_name": "tf-nightly-resnet-ctl-func-v3-8"
+                 "test_name": "tf-nightly-resnet-ctl-func-v2-32"
                 }
             "envFrom":
             - "configMapRef":
