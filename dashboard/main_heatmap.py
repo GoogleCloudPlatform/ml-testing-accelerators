@@ -113,11 +113,13 @@ def process_dataframes(job_status_dataframe, metrics_dataframe):
     oob_test_name = row[1]['test_name']
     oob_run_date = row[1]['run_date']
     oob_metric_name = row[1]['metric_name']
+    oob_metric_value = row[1]['metric_value']
     oob_upper_bound = row[1]['metric_upper_bound']
     oob_lower_bound = row[1]['metric_lower_bound']
     failure_explanation = (
         f'Metric `{oob_metric_name}` was outside expected bounds of: '
-        f'({oob_lower_bound}, {oob_upper_bound})')
+        f'({oob_lower_bound}, {oob_upper_bound}) with value of '
+        f'{oob_metric_value:.2f}')
     oob_tests[_test_date_key(oob_test_name, oob_run_date)].append(
         failure_explanation)
 
@@ -129,9 +131,10 @@ def process_dataframes(job_status_dataframe, metrics_dataframe):
       'job_status'].apply(lambda x: [])
   for row in job_status_dataframe.iterrows():
     test_name = row[1]['test_name']
+    job_status = row[1]['job_status']
     failed_metrics = oob_tests.get(_test_date_key(
         test_name, row[1]['run_date'])) or []
-    if failed_metrics:
+    if failed_metrics and job_status == 'success':
       job_status_dataframe['failed_metrics'][row[0]] = failed_metrics
       job_status_dataframe['overall_status'][row[0]] = 'failure'
     if not row[1]['logs_download_command']:
