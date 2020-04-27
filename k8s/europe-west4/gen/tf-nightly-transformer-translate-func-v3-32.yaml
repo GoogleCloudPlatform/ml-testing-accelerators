@@ -15,7 +15,7 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-nightly-resnet-ctl-func-v3-8"
+  "name": "tf-nightly-transformer-translate-func-v3-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
@@ -31,22 +31,25 @@
           "containers":
           - "args":
             - "python3"
-            - "official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py"
+            - "official/nlp/transformer/transformer_main.py"
             - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--data_dir=$(IMAGENET_DIR)"
+            - "--steps_between_evals=10000"
+            - "--static_batch=true"
+            - "--use_ctl=true"
+            - "--param_set=big"
+            - "--max_length=64"
+            - "--decode_batch_size=32"
+            - "--decode_max_length=97"
+            - "--padded_decode=true"
             - "--distribution_strategy=tpu"
-            - "--steps_per_loop=500"
-            - "--use_synthetic_data=false"
-            - "--dtype=fp32"
-            - "--enable_eager=true"
-            - "--enable_tensorboard=true"
-            - "--log_steps=50"
-            - "--single_l2_loss_op=true"
-            - "--use_tf_function=true"
+            - "--data_dir=$(TRANSFORMER_DIR)"
+            - "--vocab_file=$(TRANSFORMER_DIR)/vocab.ende.32768"
+            - "--bleu_source=$(TRANSFORMER_DIR)/newstest2014.en"
+            - "--bleu_ref=$(TRANSFORMER_DIR)/newstest2014.de"
+            - "--enable_tensorboard"
             - "--model_dir=$(MODEL_DIR)"
-            - "--batch_size=2048"
-            - "--train_epochs=1"
-            - "--epochs_between_evals=1"
+            - "--train_steps=20000"
+            - "--batch_size=24576"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -65,7 +68,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/resnet-ctl/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/transformer-translate/func/v3-32/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
@@ -74,7 +77,7 @@
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v3": 8
+                "cloud-tpus.google.com/v3": 32
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -94,7 +97,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/resnet-ctl/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/transformer-translate/func/v3-32/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -116,7 +119,7 @@
                   },
                   "write_to_error_reporting": true
                  },
-                 "test_name": "tf-nightly-resnet-ctl-func-v3-8"
+                 "test_name": "tf-nightly-transformer-translate-func-v3-32"
                 }
             "envFrom":
             - "configMapRef":

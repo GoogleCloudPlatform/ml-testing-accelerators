@@ -63,11 +63,26 @@ local tpus = import "../../tpus.libsonnet";
       "--batch_size=6144",
     ],
   },
-
+  local v2_32 = {
+    accelerator: tpus.v2_32,
+    command+: [
+      "--batch_size=24576",
+    ],
+  },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+    command+: [
+      "--batch_size=24576",
+    ],
+  },
   configs: [
     transformer + functional + v2_8,
     transformer + functional + v3_8,
     transformer + convergence + v2_8,
     transformer + convergence + v3_8,
+    transformer + functional + v2_32,
+    transformer + functional + v3_32,
+    transformer + convergence + v2_32,
+    transformer + convergence + v3_32,
   ],
 }

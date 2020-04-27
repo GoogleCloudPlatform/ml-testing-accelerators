@@ -87,11 +87,31 @@ local tpus = import "../../tpus.libsonnet";
       },
     },
   },
+  local v2_32 = {
+    accelerator: tpus.v2_32,
+    paramsOverride+: {
+      train+: {
+        batch_size: 256,
+      },
+    },
+  },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+    paramsOverride+: {
+      train+: {
+        batch_size: 256,
+      },
+    },
+  },
 
   configs: [
     retinanet + functional + v2_8,
     retinanet + functional + v3_8,
     retinanet + convergence + v2_8,
     retinanet + convergence + v3_8,
+    retinanet + functional + v2_32,
+    retinanet + functional + v3_32,
+    retinanet + convergence + v2_32,
+    retinanet + convergence + v3_32,
   ],
 }

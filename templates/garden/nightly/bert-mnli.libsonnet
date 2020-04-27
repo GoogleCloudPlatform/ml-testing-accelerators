@@ -48,15 +48,29 @@ local tpus = import "../../tpus.libsonnet";
   local v2_8 = {
     accelerator: tpus.v2_8,
     command+: [
-      '--train_batch_size=32',
-      '--eval_batch_size=32',
+      '--train_batch_size=128',
+      '--eval_batch_size=128',
     ],
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
     command+: [
-      '--train_batch_size=32',
-      '--eval_batch_size=32',
+      '--train_batch_size=128',
+      '--eval_batch_size=128',
+    ],
+  },
+  local v2_32 = {
+    accelerator: tpus.v2_32,
+    command+: [
+      '--train_batch_size=512',
+      '--eval_batch_size=512',
+    ],
+  },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+    command+: [
+      '--train_batch_size=512',
+      '--eval_batch_size=512',
     ],
   },
 
@@ -65,5 +79,9 @@ local tpus = import "../../tpus.libsonnet";
     bert + v3_8 + functional,
     bert + v2_8 + convergence + timeouts.Hours(2),
     bert + v3_8 + convergence + timeouts.Hours(2),
+    bert + v2_32 + functional,
+    bert + v3_32 + functional,
+    bert + v2_32 + convergence,
+    bert + v3_32 + convergence,
   ],
 }

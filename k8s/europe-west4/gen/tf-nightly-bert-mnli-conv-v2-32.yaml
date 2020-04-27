@@ -15,13 +15,13 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-nightly-resnet-ctl-func-v3-8"
+  "name": "tf-nightly-bert-mnli-conv-v2-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 3600
+      "activeDeadlineSeconds": 36000
       "backoffLimit": 1
       "template":
         "metadata":
@@ -31,22 +31,20 @@
           "containers":
           - "args":
             - "python3"
-            - "official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py"
+            - "official/nlp/bert/run_classifier.py"
             - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--data_dir=$(IMAGENET_DIR)"
+            - "--steps_per_loop=1000"
+            - "--input_meta_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_meta_data"
+            - "--train_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_train.tf_record"
+            - "--eval_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_eval.tf_record"
+            - "--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_config.json"
+            - "--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_model.ckpt"
+            - "--learning_rate=3e-5"
             - "--distribution_strategy=tpu"
-            - "--steps_per_loop=500"
-            - "--use_synthetic_data=false"
-            - "--dtype=fp32"
-            - "--enable_eager=true"
-            - "--enable_tensorboard=true"
-            - "--log_steps=50"
-            - "--single_l2_loss_op=true"
-            - "--use_tf_function=true"
             - "--model_dir=$(MODEL_DIR)"
-            - "--batch_size=2048"
-            - "--train_epochs=1"
-            - "--epochs_between_evals=1"
+            - "--train_batch_size=512"
+            - "--eval_batch_size=512"
+            - "--num_train_epochs=3"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -65,7 +63,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/resnet-ctl/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/bert-mnli/conv/v2-32/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
@@ -74,7 +72,7 @@
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v3": 8
+                "cloud-tpus.google.com/v2": 32
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -94,7 +92,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/resnet-ctl/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/bert-mnli/conv/v2-32/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -116,7 +114,7 @@
                   },
                   "write_to_error_reporting": true
                  },
-                 "test_name": "tf-nightly-resnet-ctl-func-v3-8"
+                 "test_name": "tf-nightly-bert-mnli-conv-v2-32"
                 }
             "envFrom":
             - "configMapRef":
@@ -124,5 +122,5 @@
             "image": "gcr.io/xl-ml-test/publisher:stable"
             "name": "publisher"
           "restartPolicy": "Never"
-  "schedule": "0 8 * * *"
+  "schedule": "0 6 * * 0,5"
   "successfulJobsHistoryLimit": 1
