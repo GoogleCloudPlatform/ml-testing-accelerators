@@ -15,13 +15,13 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-nightly-classifier-efficientnet-conv-v3-8"
+  "name": "tf-nightly-classifier-resnet-func-v2-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 111600
+      "activeDeadlineSeconds": 3600
       "backoffLimit": 1
       "template":
         "metadata":
@@ -32,14 +32,14 @@
           - "args":
             - "python3"
             - "official/vision/image_classification/classifier_trainer.py"
-            - "--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-tpu.yaml"
+            - "--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/tpu.yaml"
             - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
             - "--data_dir=$(IMAGENET_DIR)"
-            - "--model_type=efficientnet"
+            - "--model_type=resnet"
             - "--dataset=imagenet"
             - "--mode=train_and_eval"
             - "--model_dir=$(MODEL_DIR)"
-            - "--params_override=\"evaluation\":\n  \"epochs_between_evals\": 500\n\"train\":\n  \"epochs\": 500\n\"train_dataset\":\n  \"builder\": \"records\"\n\"validation_dataset\":\n  \"builder\": \"records\""
+            - "--params_override=\"evaluation\":\n  \"epochs_between_evals\": 3\n\"train\":\n  \"epochs\": 3\n\"train_dataset\":\n  \"builder\": \"records\"\n\"validation_dataset\":\n  \"builder\": \"records\""
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -58,7 +58,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/classifier-efficientnet/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/classifier-resnet/func/v2-32/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
@@ -67,7 +67,7 @@
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v3": 8
+                "cloud-tpus.google.com/preemptible-v2": 32
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -87,7 +87,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/classifier-efficientnet/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/classifier-resnet/func/v2-32/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -105,17 +105,11 @@
                      "stddevs_from_mean": 5
                     },
                     "wait_for_n_points_of_history": 10
-                   },
-                   "val_epoch_accuracy_final": {
-                    "comparison": "greater",
-                    "success_threshold": {
-                     "fixed_value": 0.76000000000000001
-                    }
                    }
                   },
                   "write_to_error_reporting": true
                  },
-                 "test_name": "tf-nightly-classifier-efficientnet-conv-v3-8"
+                 "test_name": "tf-nightly-classifier-resnet-func-v2-32"
                 }
             "envFrom":
             - "configMapRef":
@@ -123,5 +117,5 @@
             "image": "gcr.io/xl-ml-test/publisher:stable"
             "name": "publisher"
           "restartPolicy": "Never"
-  "schedule": "0 6 * * 0,5"
+  "schedule": "0 8 * * *"
   "successfulJobsHistoryLimit": 1
