@@ -17,6 +17,7 @@ from absl.testing import absltest
 import tensorflow as tf
 
 import alert_handler
+import job_status_handler
 import main
 import metrics
 
@@ -99,8 +100,15 @@ class CloudMetricsHandlerTest(absltest.TestCase):
     with self.assertLogs(level='ERROR'):
       metrics_handler.compute_bounds_and_report_errors(
           {'foo_final': [], 'total_wall_time': []},
-          final_metrics
+          final_metrics, job_status_handler.SUCCESS
       )
+    # No error should be logged for out-of-bounds metrics if the job failed.
+    with self.assertRaises(AssertionError):
+      with self.assertLogs(level='ERROR'):
+        metrics_handler.compute_bounds_and_report_errors(
+            {'foo_final': [], 'total_wall_time': []},
+            final_metrics, job_status_handler.FAILURE
+        )
 
 if __name__ == '__main__':
   absltest.main()
