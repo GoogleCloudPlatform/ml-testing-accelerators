@@ -15,14 +15,14 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-fs-transformer-func-v3-8"
+  "name": "pt-nightly-mnist-conv-v3-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 3600
-      "backoffLimit": 1
+      "activeDeadlineSeconds": 36000
+      "backoffLimit": 0
       "template":
         "metadata":
           "annotations":
@@ -30,46 +30,9 @@
         "spec":
           "containers":
           - "args":
-            - "/bin/bash"
-            - "-c"
-            - |
-              set -u
-              set -e
-              set -x
-              
-              python3 \
-                /tpu-examples/deps/fairseq/train.py \
-                /datasets/wmt18_en_de_bpej32k \
-                --tensorboard-logdir=$(MODEL_DIR) \
-                --metrics_debug \
-                --arch=transformer_vaswani_wmt_en_de_big \
-                --max-target-positions=64 \
-                --attention-dropout=0.1 \
-                --no-progress-bar \
-                --criterion=label_smoothed_cross_entropy \
-                --source-lang=en \
-                --lr-scheduler=inverse_sqrt  \
-                --min-lr=1e-09 \
-                --skip-invalid-size-inputs-valid-test \
-                --target-lang=de \
-                --label-smoothing=0.1 \
-                --update-freq=1 \
-                --optimizer=adam \
-                --adam-betas='(0.9,0.98)' \
-                --warmup-init-lr=1e-07 \
-                --lr=0.0005 \
-                --warmup-updates=4000 \
-                --share-all-embeddings \
-                --dropout=0.3 \
-                --weight-decay=0.0 \
-                --num_cores=8 \
-                --no-save \
-                --max-epoch=1 \
-                --log_steps=10 \
-                --train-subset=valid \
-                --valid-subset=test \
-                --input_shapes=128x64
-              
+            - "python3"
+            - "/usr/share/torch-xla-nightly/pytorch/xla/test/test_train_mp_mnist.py"
+            - "--logdir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -88,28 +51,24 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/fs-transformer/func/v3-8/$(JOB_NAME)"
-            - "name": "XLA_USE_BF16"
-              "value": "0"
+              "value": "$(OUTPUT_BUCKET)/mnist/conv/v3-32/$(JOB_NAME)"
+            - "name": "ACCELERATOR_TYPE"
+              "value": "v3-32"
+            - "name": "CONDA_ENV"
+              "value": "torch-xla-nightly"
+            - "name": "MACHINE_TYPE"
+              "value": "n1-standard-8"
+            - "name": "XLA_DIST_FLAGS"
+              "value": ""
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
+            "image": "gcr.io/xl-ml-test/pytorch-pods:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v3": 8
-              "requests":
-                "cpu": "9.0"
-                "memory": "30Gi"
-            "volumeMounts":
-            - "mountPath": "/dev/shm"
-              "name": "dshm"
-              "readOnly": false
-            - "mountPath": "/datasets"
-              "name": "pytorch-datasets"
-              "readOnly": true
+                "cloud-tpus.google.com/v3": 32
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -129,7 +88,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/fs-transformer/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/mnist/conv/v3-32/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -151,6 +110,12 @@
                    "aten_ops_sum_final"
                   ],
                   "metric_success_conditions": {
+                   "Accuracy/test_final": {
+                    "comparison": "greater",
+                    "success_threshold": {
+                     "fixed_value": 98
+                    }
+                   },
                    "CompileTime__Percentile_99_sec_final": {
                     "comparison": "less",
                     "success_threshold": {
@@ -181,7 +146,7 @@
                   },
                   "write_to_error_reporting": true
                  },
-                 "test_name": "pt-nightly-fs-transformer-func-v3-8"
+                 "test_name": "pt-nightly-mnist-conv-v3-32"
                 }
             "envFrom":
             - "configMapRef":
@@ -189,12 +154,5 @@
             "image": "gcr.io/xl-ml-test/publisher:stable"
             "name": "publisher"
           "restartPolicy": "Never"
-          "volumes":
-          - "emptyDir":
-              "medium": "Memory"
-            "name": "dshm"
-          - "name": "pytorch-datasets"
-            "persistentVolumeClaim":
-              "claimName": "pytorch-datasets-claim"
-  "schedule": "0 15 * * *"
+  "schedule": "0 14 * * *"
   "successfulJobsHistoryLimit": 1
