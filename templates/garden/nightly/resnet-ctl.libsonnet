@@ -26,7 +26,6 @@ local tpus = import "../../tpus.libsonnet";
       "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
       "--data_dir=$(IMAGENET_DIR)",
       "--distribution_strategy=tpu",
-      "--batch_size=1024",
       "--steps_per_loop=500",
       "--use_synthetic_data=false",
       "--dtype=fp32",
@@ -45,7 +44,6 @@ local tpus = import "../../tpus.libsonnet";
     ],
   },
   local convergence = mixins.Convergence {
-    accelerator+: tpus.Preemptible,
     command+: [
       "--train_epochs=90",
       "--epochs_between_evals=90",
@@ -59,11 +57,23 @@ local tpus = import "../../tpus.libsonnet";
     accelerator: tpus.v3_8,
     command+: [ "--batch_size=2048" ],
   },
+  local v2_32 = {
+    accelerator: tpus.v2_32,
+    command+: [ "--batch_size=4096" ],
+  },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+    command+: [ "--batch_size=8192" ],
+  },
 
   configs: [
     resnet + v2_8 + functional,
     resnet + v3_8 + functional,
     resnet + v2_8 + convergence + timeouts.Hours(16),
     resnet + v3_8 + convergence,
+    resnet + v2_32 + functional,
+    resnet + v3_32 + functional,
+    resnet + v2_32 + convergence,
+    resnet + v3_32 + convergence,
   ],
 }
