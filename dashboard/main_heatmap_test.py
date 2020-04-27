@@ -85,6 +85,20 @@ class MainHeatmapTest(parameterized.TestCase):
     self.assertEqual(df['overall_status'].tolist(),
                      args_dict['expected_overall_statuses'])
 
+    # We only want to display metrics as a top-level failure if the job
+    # succeeded. For failed jobs, it's not so helpful to know that the
+    # metrics were out of bounds.
+    metrics_failure_explanations = df['failed_metrics'].tolist()
+    for i, expl_list in enumerate(metrics_failure_explanations):
+      job_status = job_statuses[i]
+      metric_status = metric_statuses[i]
+      if job_status == 'success' and metric_status == 'failure':
+        self.assertGreaterEqual(len(expl_list), 1)
+        for expl in expl_list:
+          self.assertTrue('outside' in expl)
+      else:
+        self.assertFalse(expl_list)
+
     commands = df['logs_download_command'].tolist()
     # If the command is already populated, it should be left alone.
     self.assertEqual(commands[0], 'my command')
