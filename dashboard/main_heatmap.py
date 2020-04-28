@@ -14,6 +14,7 @@
 
 import collections
 import math
+import os
 
 from bokeh.core.properties import Instance
 from bokeh.events import DoubleTap
@@ -28,8 +29,10 @@ import pandas as pd
 
 from absl import logging
 
+JOB_HISTORY_TABLE_NAME = os.environ['JOB_HISTORY_TABLE_NAME']
+METRIC_HISTORY_TABLE_NAME = os.environ['METRIC_HISTORY_TABLE_NAME']
 
-JOB_STATUS_QUERY = """
+JOB_STATUS_QUERY = f"""
 SELECT
   x.test_name,
   x.job_status,
@@ -43,14 +46,14 @@ FROM (
     SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
     max(farm_fingerprint(uuid)) as max_uuid,
   FROM
-    `xl-ml-test.metrics_handler_dataset.job_history`
+    `{JOB_HISTORY_TABLE_NAME}`
   WHERE
     test_name like @test_name_prefix
   GROUP BY
     test_name, run_date
 ) AS y
 INNER JOIN
-  `xl-ml-test.metrics_handler_dataset.job_history` AS x
+  `{JOB_HISTORY_TABLE_NAME}` AS x
 ON
   y.test_name = x.test_name AND
   y.max_uuid = farm_fingerprint(x.uuid)
@@ -58,7 +61,7 @@ ORDER BY
   run_date DESC
 """
 
-METRIC_STATUS_QUERY = """
+METRIC_STATUS_QUERY = f"""
 SELECT
   test_name,
   SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
@@ -67,7 +70,7 @@ SELECT
   metric_upper_bound,
   metric_lower_bound
 FROM
-  `xl-ml-test.metrics_handler_dataset.metric_history`
+  `{METRIC_HISTORY_TABLE_NAME}`
 WHERE
   test_name LIKE @test_name_prefix AND
   (metric_lower_bound IS NOT NULL OR metric_upper_bound IS NOT NULL) AND
@@ -154,6 +157,8 @@ def process_dataframes(job_status_dataframe, metrics_dataframe):
 def make_plot(dataframe):
   source = ColumnDataSource(data=dataframe)
   all_dates = np.unique(source.data['run_date']).tolist()
+
+  # The heatmap doesn't render correctly if there are very few dates.
   MIN_DATES_TO_RENDER = 15
   if len(all_dates) < MIN_DATES_TO_RENDER:
     all_dates.extend(['0-spacer{:02d}'.format(x) for x in range(

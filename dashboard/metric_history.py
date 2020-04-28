@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from math import pi
+import os
 
 from bokeh.models import CategoricalColorMapper, ColumnDataSource, CustomJS, HoverTool, TapTool, Whisker
 from bokeh.plotting import figure
@@ -22,9 +23,11 @@ import utils
 
 import numpy as np
 
+JOB_HISTORY_TABLE_NAME = os.environ['JOB_HISTORY_TABLE_NAME']
+METRIC_HISTORY_TABLE_NAME = os.environ['METRIC_HISTORY_TABLE_NAME']
 
 # For a given test_name, find the history of metrics for that test.
-QUERY = """
+QUERY = f"""
 SELECT
   metrics.test_name,
   metrics.metric_name,
@@ -51,20 +54,20 @@ FROM (
       SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
       min(timestamp) as min_timestamp
     FROM
-      `xl-ml-test.metrics_handler_dataset.metric_history`
+      `{METRIC_HISTORY_TABLE_NAME}`
     WHERE
       test_name = @test_name AND
       (metric_name NOT LIKE '%%__Percentile_%%' OR metric_name LIKE '%%__Percentile_99%%')
     GROUP BY
       test_name, metric_name, run_date
   ) AS y
-  INNER JOIN `xl-ml-test.metrics_handler_dataset.metric_history` AS x
+  INNER JOIN `{METRIC_HISTORY_TABLE_NAME}` AS x
   ON
     y.test_name = x.test_name AND
     y.metric_name = x.metric_name AND
     y.min_timestamp = x.timestamp
 ) AS metrics
-INNER JOIN `xl-ml-test.metrics_handler_dataset.job_history` AS job
+INNER JOIN `{JOB_HISTORY_TABLE_NAME}` AS job
 ON
   metrics.uuid = job.uuid
 ORDER BY

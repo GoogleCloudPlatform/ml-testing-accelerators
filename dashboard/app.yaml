@@ -29,10 +29,14 @@ resources:
   memory_gb: 3
   disk_size_gb: 10
 
-# Update with Redis instance IP and port
+# Update to match your project.
 env_variables:
   REDISHOST: '10.25.27.107'
   REDISPORT: '6379'
+  TEST_NAME_PREFIXES: 'pt-nightly,pt-1.5,tf-nightly'
+  JOB_HISTORY_TABLE_NAME: 'xl-ml-test.metrics_handler_dataset.job_history'
+  METRIC_HISTORY_TABLE_NAME: 'xl-ml-test.metrics_handler_dataset.metric_history'
+
 
 # Update with Redis instance network name
 network:

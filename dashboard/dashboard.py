@@ -17,6 +17,7 @@
 
 import logging
 import concurrent
+import os
 import time
 
 from bokeh.io import curdoc
@@ -61,8 +62,7 @@ def parallel_fetch_data(test_name_prefixes):
 timer = Paragraph()
 
 all_tabs = []
-# TODO: Pass tabs/test prefix via config.
-test_name_prefixes = ['pt-nightly', 'pt-1.5', 'tf-nightly']
+test_name_prefixes = os.environ.get('TEST_NAME_PREFIXES', '').split(',')
 all_data = parallel_fetch_data(test_name_prefixes)
 for test_prefix, data in all_data.items():
   plot = main_heatmap.make_plot(data)
