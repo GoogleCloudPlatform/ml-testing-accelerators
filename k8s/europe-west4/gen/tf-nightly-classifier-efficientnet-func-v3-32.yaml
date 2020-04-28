@@ -58,7 +58,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/classifier-efficientnet/func/v3-32/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/classifier-efficientnet/func/v3-32/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
@@ -87,7 +87,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/classifier-efficientnet/func/v3-32/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/classifier-efficientnet/func/v3-32/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
