@@ -17,14 +17,14 @@ steps:
   args: [
     'build',
     '-t',
-    'gcr.io/$PROJECT_ID/model-garden:$_VERSION', '.',
-    '-f', 'images/garden/Dockerfile',
+    'gcr.io/$PROJECT_ID/tensorflow:$_VERSION', '.',
+    '-f', 'images/tensorflow/Dockerfile',
     '--build-arg', 'image_version=$_BASE_IMAGE_VERSION',
     '--build-arg', 'model_garden_branch=$_MODEL_GARDEN_BRANCH'
   ]
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/$PROJECT_ID/model-garden:$_VERSION']
-images: ['gcr.io/$PROJECT_ID/model-garden:$_VERSION']
+  args: ['push', 'gcr.io/$PROJECT_ID/tensorflow:$_VERSION']
+images: ['gcr.io/$PROJECT_ID/tensorflow:$_VERSION']
 timeout: 1200s  # 20 minutes
 substitutions:
   _VERSION: 'latest'

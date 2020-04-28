@@ -16,6 +16,6 @@ local base = import "../base.libsonnet";
 
 {
   GardenTest:: base.BaseTest {
-    image: "gcr.io/xl-ml-test/model-garden",
+    image: "gcr.io/xl-ml-test/tensorflow",
   }
 }
