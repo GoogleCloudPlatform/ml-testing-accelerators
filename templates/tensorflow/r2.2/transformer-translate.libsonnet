@@ -23,7 +23,6 @@ local tpus = import "../../tpus.libsonnet";
       "python3",
       "official/nlp/transformer/transformer_main.py",
       "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-      "--steps_between_evals=10000",
       "--static_batch=true",
       "--use_ctl=true",
       "--param_set=big",
@@ -42,6 +41,7 @@ local tpus = import "../../tpus.libsonnet";
   },
   local convergence = base.Convergence {
     command+: [
+      "--steps_between_evals=200000",
       "--train_steps=200000",
     ],
   },
