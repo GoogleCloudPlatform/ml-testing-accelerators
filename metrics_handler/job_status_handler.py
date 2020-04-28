@@ -106,7 +106,7 @@ class JobStatusHandler(object):
     except Exception as e:
       if isinstance(e, kubernetes.client.rest.ApiException) and \
           e.status == 404:
-        self.logger.error(
+        self.logger.warning(
             'Job with job_name: {} no longer exists in namespace: '
             '{}.  Error was: {}'.format(job_name, namespace, e))
         return DOES_NOT_EXIST, None
