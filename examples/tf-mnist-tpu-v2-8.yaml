@@ -36,7 +36,7 @@ spec:
           - name: test-container
             # TODO: Change this to your image if desired. See `images/README`
             # for more on setting up images.
-            image: gcr.io/xl-ml-test/model-garden:nightly
+            image: gcr.io/xl-ml-test/tensorflow:nightly
             imagePullPolicy: Always
             resources:
               limits:

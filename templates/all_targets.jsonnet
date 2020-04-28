@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local garden_tests = import "garden/targets.jsonnet";
+local garden_tests = import "tensorflow/targets.jsonnet";
 local pytorch_tests = import "pytorch/targets.jsonnet";
 
 local all_tests = garden_tests + pytorch_tests;

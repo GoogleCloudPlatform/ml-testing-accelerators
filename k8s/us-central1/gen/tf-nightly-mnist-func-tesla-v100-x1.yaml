@@ -59,7 +59,7 @@
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/model-garden:nightly"
+            "image": "gcr.io/xl-ml-test/tensorflow:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":

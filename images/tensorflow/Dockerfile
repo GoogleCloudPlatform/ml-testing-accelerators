@@ -29,7 +29,7 @@ RUN pip3 install -r /garden/official/requirements.txt
 ENV PYTHONPATH /garden
 
 COPY images/setup.sh /
-COPY images/garden/entrypoint.sh /
+COPY images/tensorflow/entrypoint.sh /
 
 RUN curl -L https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-289.0.0-linux-x86_64.tar.gz | tar zx
 ENV PATH "/google-cloud-sdk/bin/:${PATH}"
