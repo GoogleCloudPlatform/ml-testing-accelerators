@@ -180,11 +180,13 @@ local volumes = import 'volumes.libsonnet';
     },
 
     oneshotJob:: {
-      // Don't publish PubSub message for oneshot jobs.
       local oneshotConfig = config {
         jobSpec+: {
+          # Don't retry oneshot jobs.
+          backoffLimit: 0,
           template+: {
             spec+: {
+              # Don't publish PubSub message for oneshot jobs.
               initContainerMap: {},
             },
           },
