@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+import os
 import time
 
 from bokeh.io import curdoc
@@ -28,8 +29,14 @@ QUERY = """
       `xl-ml-test.metrics_handler_dataset.metric_history`
     ORDER BY TEST_NAME
 """
-test_names = run_query(
+test_name_prefixes = os.environ.get('TEST_NAME_PREFIXES', '').split(',')
+all_test_names = run_query(
     QUERY, cache_key=('xlmltest'))['test_name'].values.tolist()
+test_names = []
+for name in all_test_names:
+  for prefix in test_name_prefixes:
+    if prefix in name:
+      test_names.append(name)
 
 
 def update(attr, old, new):
@@ -48,6 +55,9 @@ def update(attr, old, new):
       )
   )
   test_name = test_select.value
+  if test_name not in test_names:
+    timer.text = 'Invalid test_name: {}'.format(test_name)
+    return
   metric_substr = metric_select.value
   data = metric_history.fetch_data(test_name)
   plots = metric_history.make_plots(test_name, metric_substr, data)
