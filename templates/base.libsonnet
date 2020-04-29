@@ -111,7 +111,7 @@ local volumes = import 'volumes.libsonnet';
             {
               name: "MODEL_DIR",
               value: 
-                "$(OUTPUT_BUCKET)/%(modelName)s/%(mode)s/%(acceleratorName)s/$(JOB_NAME)" % config,
+                "$(OUTPUT_BUCKET)/%(frameworkPrefix)s/%(modelName)s/%(mode)s/%(acceleratorName)s/$(JOB_NAME)" % config,
             },
           ],
 
