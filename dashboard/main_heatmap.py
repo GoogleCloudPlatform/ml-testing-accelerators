@@ -39,6 +39,7 @@ SELECT
   SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
   x.stackdriver_logs_link AS logs_link,
   x.logs_download_command AS logs_download_command,
+  x.kubernetes_workload_link AS workload_link,
   x.uuid
 FROM (
   SELECT

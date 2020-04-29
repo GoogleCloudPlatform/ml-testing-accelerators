@@ -89,8 +89,15 @@ PASS_FAIL_GRID_MODAL_STRING = """
       metrics_link_html = `<a href="${metrics_link}" target="_blank">Metrics History</a><br/><br/>`;
     }
     var link_to_logs = source.data['logs_link'][cb_data.source.selected.indices];
-    var logs_download_command = source.data['logs_download_command'][cb_data.source.selected.indices];
     var logs_link_html_element = `<a href="${link_to_logs}" target="_blank">Logs in Stackdriver</a>`;
+    var workload_link = source.data['workload_link'][cb_data.source.selected.indices];
+    var workload_link_html_element = '';
+
+    // String will be 'NaN' if no link exists.
+    if (workload_link.length > 3) {
+      var workload_link_html_element = `<br/><br/><a href="${workload_link}" target="_blank">Kubernetes Workload</a>`;
+    }
+    var logs_download_command = source.data['logs_download_command'][cb_data.source.selected.indices];
     var text_to_copy = `<input type="text" value="${logs_download_command}" id="textToCopy">`;
     var copy_button = `<button onclick="function copyToClipboard(){var copyText = document.getElementById('textToCopy');copyText.select();copyText.setSelectionRange(0, 9999);document.execCommand('copy');} copyToClipboard();">Copy to clipboard</button>`;
     modal_ele.innerHTML=`
@@ -100,6 +107,7 @@ PASS_FAIL_GRID_MODAL_STRING = """
           ${modal_header}
           ${metrics_link_html}
           ${logs_link_html_element}
+          ${workload_link_html_element}
           <br/><br/>
           <p>Command to download full logs:</p>
           ${text_to_copy} &nbsp ${copy_button}
