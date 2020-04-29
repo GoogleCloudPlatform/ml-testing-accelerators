@@ -433,15 +433,13 @@ def _process_pubsub_message(msg, status_handler, logger):
   logs_link = msg.get('logs_link')
   metric_collection_config = msg.get('metric_collection_config')
   regression_test_config = msg.get('regression_test_config')
-
   job_name = msg.get('job_name')
   job_namespace = msg.get('job_namespace')
   test_type = msg.get('test_type')
   accelerator = msg.get('accelerator')
   framework_version = msg.get('framework_version')
-
-  zone = msgs_to_process[0].get('zone')
-  cluster = msgs_to_process[0].get('cluster_name')
+  zone = msg.get('zone')
+  cluster = msg.get('cluster_name')
   project = google.auth.default()[1]
   download_command = util.download_command(
       job_name, job_namespace, zone, cluster, project)
