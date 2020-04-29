@@ -45,7 +45,7 @@ MIN_MSG_AGE_SEC = 60
 
 
 class CloudMetricsHandler(object):
-  def __init__(self, test_name, events_dir, stackdriver_logs_link,
+  def __init__(self, test_name, events_dir, debug_info,
                metric_collection_config, regression_test_config,
                test_type, accelerator, framework_version, logger):
     """Handles metrics storage, collection, aggregation, alerts, etc.
@@ -58,8 +58,9 @@ class CloudMetricsHandler(object):
         naming, e.g. for error strings if this test's metrics regress.
       events_dir (string): Path to a GCS or local directory where Tensorboard
         summaries are stored.
-      stackdriver_logs_link (string): Link to the Stackdriver Logs for the run
-        that produced the metrics being handled.
+      debug_info (alert_handler.DebugInfo): Should include job_name, link to
+        stackdriver logs, command to download plaintext logs, and link to the
+        Kubernetes workload for this run of the test.
       metric_collection_config (dict): Options for collecting metrics. See
         README for documentation.
       regression_test_config (dict): Options for alerting in the event of
@@ -75,7 +76,7 @@ class CloudMetricsHandler(object):
     """
     self.test_name = test_name
     self.events_dir = events_dir
-    self.stackdriver_logs_link = stackdriver_logs_link
+    self.debug_info = debug_info
     self.metric_collection_config = metric_collection_config or {}
     self.regression_test_config = regression_test_config or {}
     self.test_type = test_type
@@ -237,10 +238,10 @@ class CloudMetricsHandler(object):
         job_status['num_failures'],
         int(job_status['stop_time'] - job_status['start_time']),
         self._wall_time_to_sql_timestamp(job_status['stop_time']),
-        self.stackdriver_logs_link,
+        self.debug_info.stackdriver_logs_link,
         job_status['publish_time'],
-        util.download_command_from_logs_link(self.stackdriver_logs_link),
-        util.workload_link_from_logs_link(self.stackdriver_logs_link),
+        self.debug_info.download_command,
+        self.debug_info.workload_link,
     ]
 
     # Create rows to represent the computed metrics for this job.
@@ -278,7 +279,8 @@ class CloudMetricsHandler(object):
         #       elements in the list, so it should be safe to retry.
         self.logger.error(
             'Failed to add rows to Bigquery. Errors: {}'.format(errors),
-            logs_link=self.stackdriver_logs_link)
+            debug_info = self.debug_info)
+
 
   def get_metrics_history_from_bigquery(self):
     """Returns the historic values of each metric for a given model."""
@@ -317,11 +319,12 @@ class CloudMetricsHandler(object):
       return uuid, publish_time
     query_result = self.bigquery_client.query(
         'SELECT * FROM `{}` WHERE stackdriver_logs_link=\"{}\"'.format(
-            self.job_history_table_id, self.stackdriver_logs_link)).result()
+            self.job_history_table_id,
+            self.debug_info.stackdriver_logs_link)).result()
     if query_result.total_rows > 1:
-      self.logger.error('Found more than 1 row in job_history for logs_link: '
-                        '{}'.format(logs_link),
-                        logs_link=self.stackdriver_logs_link)
+      self.logger.error('Found more than 1 row in job_history for test: '
+                        '{}'.format(self.test_name),
+                        debug_info=self.debug_info)
     for row in query_result:
       uuid = row['uuid']
       publish_time = row['msg_publish_time']
@@ -412,7 +415,7 @@ class CloudMetricsHandler(object):
           '({}, {}) and value was {:.2f}'.format(
               metric_name, self.test_name, lower_bound, upper_bound,
               metric_value),
-          logs_link=self.stackdriver_logs_link)
+          debug_info=self.debug_info)
 
     return metric_name_to_visual_bounds
 
@@ -437,10 +440,21 @@ def _process_pubsub_message(msg, status_handler, logger):
   accelerator = msg.get('accelerator')
   framework_version = msg.get('framework_version')
 
-  if not (events_dir and test_name and logs_link and job_name):
-    raise ValueError('Pubsub message must contain 4 required fields: '
-                     'events_dir, test_name, logs_link, and job_name. '
-                     'Message was: {}'.format(event))
+  zone = msgs_to_process[0].get('zone')
+  cluster = msgs_to_process[0].get('cluster_name')
+  project = google.auth.default()[1]
+  download_command = util.download_command(
+      job_name, job_namespace, zone, cluster, project)
+  workload_link = util.workload_link(
+      job_name, job_namespace, zone, cluster, project)
+  debug_info = alert_handler.DebugInfo(
+      job_name, logs_link, download_command, workload_link)
+
+  if not (events_dir and test_name and logs_link and job_name and zone \
+          and cluster and project):
+    raise ValueError('Pubsub message must contain 7 required fields: '
+                     'events_dir, test_name, logs_link, job_name, '
+                     'zone, cluster, project. Message was: {}'.format(event))
   logs_link = util.add_unbound_time_to_logs_link(logs_link)
   if not regression_test_config and not metric_collection_config:
     raise ValueError('metric_collection_config and regression_test_config '
@@ -477,7 +491,7 @@ def _process_pubsub_message(msg, status_handler, logger):
         else 'tf-nightly'
 
   handler = CloudMetricsHandler(
-      test_name, events_dir, logs_link, metric_collection_config,
+      test_name, events_dir, debug_info, metric_collection_config,
       regression_test_config, test_type, accelerator, framework_version, logger)
 
   # Sometimes pubsub messages get delayed. If we've already processed metrics
@@ -499,7 +513,7 @@ def _process_pubsub_message(msg, status_handler, logger):
     logger.error(
         'job_status was `{}` for test `{}`'.format(
             job_status['final_status'], test_name),
-        logs_link=logs_link)
+        debug_info=debug_info)
 
   new_metrics = handler.get_metrics_from_events_dir(job_status)
   if regression_test_config:

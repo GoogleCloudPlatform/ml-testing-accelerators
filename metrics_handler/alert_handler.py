@@ -31,8 +31,13 @@ _RECIPIENT_EMAIL_SECRET_NAME = 'alert-destination-email-address'
 _SENDER_EMAIL_SECRET_NAME = 'alert-sender-email-address'
 
 # An error not specific to any test, e.g. a failure to read from Pubsub,
-# will not have any corresponding training logs.
-_NO_LOGS = 'no logs'
+# will not have any corresponding debug info.
+_NO_INFO = 'no info'
+
+
+DebugInfo = collections.namedtuple(
+    'DebugInfo',
+    ['job_name', 'stackdriver_logs_link', 'download_command', 'workload_link'])
 
 
 class AlertHandler(object):
@@ -88,21 +93,21 @@ class AlertHandler(object):
   def _log(self, message, log_level):
     logging.log(log_level, message)
 
-  def _report_error(self, message, logs_link):
-    if logs_link != _NO_LOGS:
-      message += ' ||| Logs for this run: {}'.format(logs_link)
+  def _report_error(self, message, debug_info):
+    if debug_info != _NO_INFO:
+      message += ' ||| Logs for this run: {}'.format(debug_info)
     self.error_reporter.report(message)
 
-  def _add_to_email(self, message, logs_link):
-    self.messages_to_email[logs_link].append(message)
+  def _add_to_email(self, message, debug_info):
+    self.messages_to_email[debug_info].append(message)
 
-  def _log_all(self, message, log_level, logs_link=_NO_LOGS):
+  def _log_all(self, message, log_level, debug_info=_NO_INFO):
     if self.write_to_logging:
       self._log(message, log_level)
     if self.write_to_error_reporting and log_level <= logging.ERROR:
-      self._report_error(message, logs_link)
+      self._report_error(message, debug_info)
     if self.write_to_email and log_level <= logging.ERROR:
-      self._add_to_email(message, logs_link)
+      self._add_to_email(message, debug_info)
 
   def debug(self, message):
     """Log a message at DEBUG level.
@@ -128,7 +133,7 @@ class AlertHandler(object):
     """
     self._log_all(message, logging.WARNING)
 
-  def error(self, message, logs_link=_NO_LOGS):
+  def error(self, message, debug_info=_NO_INFO):
     """Log a message at ERROR level.
 
     This will also trigger a report to Stackdriver Error Reporting and add to
@@ -136,13 +141,12 @@ class AlertHandler(object):
 
     Args:
       message (string): Message to log.
-      logs_link (string, Optional): Link to the Stackdriver Logs of the test
-        where this message originated. If provided, will be included in the
-        alert email and the Stackdriver Error.
+      debug_info (DebugInfo, optional): If provided, this information will be
+        included in the alert email and the Stackdriver Error.
     """
-    self._log_all(message, logging.ERROR, logs_link=logs_link)
+    self._log_all(message, logging.ERROR, debug_info=debug_info)
 
-  def fatal(self, message, logs_link=_NO_LOGS):
+  def fatal(self, message, debug_info=_NO_INFO):
     """Log a message at FATAL level.
 
     This will also trigger a report to Stackdriver Error Reporting and add to
@@ -150,11 +154,10 @@ class AlertHandler(object):
 
     Args:
       message (string): Message to log.
-      logs_link (string, Optional): Link to the Stackdriver Logs of the test
-        where this message originated. If provided, will be included in the
-        alert email and the Stackdriver Error.
+      debug_info (DebugInfo, optional): If provided, this information will be
+        included in the alert email and the Stackdriver Error.
     """
-    self._log_all(message, logging.FATAL, logs_link=logs_link)
+    self._log_all(message, logging.FATAL, debug_info=debug_info)
 
   def generate_email_body(self):
     """Generate the HTML body of email based on the messages logged so far.
@@ -167,27 +170,27 @@ class AlertHandler(object):
     html_message_body = 'New errors in test suite for {}:'.format(
         self.project_id)
     html_message_body += '<ul>'
-    for logs_link in self.messages_to_email.keys():
+    for debug_info in self.messages_to_email.keys():
       html_message_body += '<li>{}:'.format(
-          'General errors' if logs_link == _NO_LOGS else \
-              util.test_name_from_logs_link(logs_link))
+          'General errors' if debug_info == _NO_INFO else \
+              debug_info.job_name)
       html_message_body += '<ul>'
-      for message in self.messages_to_email[logs_link]:
+      for message in self.messages_to_email[debug_info]:
         html_message_body += '<li>{}</li>'.format(message)
 
       # If the error was specific to a certain test, include links to quickly
       # access the logs from that test.
-      if logs_link != _NO_LOGS:
+      if debug_info != _NO_INFO:
         html_message_body += '<li><a href="{}">Stackdriver logs for this ' \
-                             'run of the test</a></li>'.format(logs_link)
+                             'run of the test</a></li>'.format(
+                                 debug_info.stackdriver_logs_link)
         html_message_body += '<li><a href="{}">Kubernetes workload for this ' \
                              'run of the test</a></li>'.format(
-                                 util.workload_link_from_logs_link(logs_link))
+                                 debug_info.workload_link)
         html_message_body += '<li>Command to download plaintext logs: ' \
                              '<code style="background-color:#e3e3e3;">' \
                              '{}</code></li>'.format(
-                                 util.download_command_from_logs_link(
-                                     logs_link))
+                                 debug_info.download_command)
       html_message_body += '</ul>'
       html_message_body += '</li>'
     html_message_body += '</ul>'

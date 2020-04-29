@@ -100,22 +100,6 @@ class MetricsTest(parameterized.TestCase):
       }
     )
 
-  def test_total_wall_time(self):
-    raw_metrics = {
-      'foo': [
-        metrics.MetricPoint(metric_value=0, wall_time=0),
-        metrics.MetricPoint(metric_value=1, wall_time=1),
-      ],
-      'bar': [
-        metrics.MetricPoint(metric_value=0, wall_time=0),
-        metrics.MetricPoint(metric_value=2, wall_time=2),
-      ],
-    }
-
-    total_wall_time = metrics.total_wall_time(raw_metrics)
-    self.assertEqual(
-        total_wall_time, metrics.MetricPoint(metric_value=2, wall_time=2))
-
   def test_time_to_accuracy(self):
     raw_metrics = {
       'accuracy': [
