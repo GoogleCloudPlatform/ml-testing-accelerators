@@ -26,33 +26,7 @@ local tpus = import "../../tpus.libsonnet";
       "--use_torchvision=True",
       "--metrics_debug",
       "--target_accuracy=72",
-      "--datadir=/datasets/cifar-data",
     ],
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          volumes+: [
-            {
-              name: "cifar-pd",
-              gcePersistentDisk: {
-                pdName: "cifar-pd-central1-b",
-                fsType: "ext4",
-                readOnly: true,
-              },
-            },
-          ],
-          containers: [
-            container {
-              volumeMounts+: [{
-                mountPath: "/datasets",
-                name: "cifar-pd",
-                readOnly: true,
-              }],
-            } for container in super.containers
-          ],
-        },
-      },
-    },
   },
   local convergence = base.Convergence {
     # Run at 6AM PST daily instead of 2x per week since convergence is fast.
