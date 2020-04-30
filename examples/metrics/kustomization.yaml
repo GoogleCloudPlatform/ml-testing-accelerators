@@ -18,7 +18,6 @@ generatorOptions:
   disableNameSuffixHash: true
 configMapGenerator:
 - name: metrics-config
-  namespace: default
   files:
   - pt-cifar-tpu-v3-8.json
   - pt-imagenet-mini-gpu.json
