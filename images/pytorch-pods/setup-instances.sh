@@ -50,17 +50,13 @@ gcloud compute --project="${PROJECT}" \
   --zone="${ZONE}"
 
 echo "Waiting for ${INSTANCE_GROUP_NAME} to start..."
-while [[ ${size:-0} != ${INSTANCE_GROUP_SIZE} ]];
-  do sleep 10 && \
-  size=$(gcloud compute instance-groups \
-    list-instances \
-    ${INSTANCE_GROUP_NAME} \
-    --zone=${ZONE} \
-    --filter="STATUS=RUNNING" \
-    --format="value(NAME)" \
-    | wc -l) && \
-  echo "$size/${INSTANCE_GROUP_SIZE} instances started...";
-done
+gcloud compute --project="${PROJECT}" \
+  instance-groups \
+  managed \
+  wait-until \
+  --stable \
+  "${INSTANCE_GROUP_NAME}" \
+  --zone "${ZONE}"
 
 # GKE will wait until the TPU is READY, but not necessarily until it is HEALTHY
 echo "Waiting for TPU Pod ${TPU_POD_NAME} to become healthy..."
