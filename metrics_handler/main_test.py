@@ -51,7 +51,7 @@ class CloudMetricsHandlerTest(absltest.TestCase):
     metrics_handler = main.CloudMetricsHandler(
       test_name="test",
       events_dir=self.temp_dir,
-      stackdriver_logs_link=None,
+      debug_info=None,
       metric_collection_config={
         'default_aggregation_strategies': ['final', 'min',]
       },
@@ -72,7 +72,7 @@ class CloudMetricsHandlerTest(absltest.TestCase):
     metrics_handler = main.CloudMetricsHandler(
       test_name="test",
       events_dir=self.temp_dir,
-      stackdriver_logs_link=None,
+      debug_info=None,
       metric_collection_config={
         'default_aggregation_strategies': ['final'],
         'tags_to_ignore': ['bar'],

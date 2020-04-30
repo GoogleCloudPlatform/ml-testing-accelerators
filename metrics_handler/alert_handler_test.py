@@ -14,7 +14,15 @@ from absl.testing import parameterized
 import alert_handler
 
 
-VALID_LOGS_LINK = 'https://console.cloud.google.com/logs?project=xl-ml-test&advancedFilter=resource.type%3Dk8s_container%0Aresource.labels.project_id%3Dxl-ml-test%0Aresource.labels.location=us-central1-b%0Aresource.labels.cluster_name=xl-ml-test%0Aresource.labels.namespace_name=automated%0Aresource.labels.pod_name:pt-1.5-fs-transformer-functional-v3-8-1585756800&extra_junk&dateRangeUnbound=backwardInTime'
+LOGS_LINK = """https://console.cloud.google.com/logs?project=xl-ml-test&advancedFilter=resource.type%3Dk8s_container%0Aresource.labels.project_id%3Dxl-ml-test%0Aresource.labels.location=us-central1-b%0Aresource.labels.cluster_name=xl-ml-test%0Aresource.labels.namespace_name=automated%0Aresource.labels.pod_name:pt-1.5-fs-transformer-functional-v3-8-1585756800&extra_junk&dateRangeUnbound=backwardInTime"""
+DOWNLOAD_COMMAND = """gcloud logging read 'resource.type=k8s_container resource.labels.project_id=xl-ml-test resource.labels.location=us-central1-b resource.labels.cluster_name=xl-ml-test resource.labels.namespace_name=automated resource.labels.pod_name:pt-1.5-fs-transformer-functional-v3-8-1585756800' --limit 10000000000000 --order asc --format 'value(textPayload)' --project=xl-ml-test > pt-1.5-fs-transformer-functional-v3-8-1585756800_logs.txt && sed -i '/^$/d' pt-1.5-fs-transformer-functional-v3-8-1585756800_logs.txt"""
+WORKLOAD_LINK = """https://console.cloud.google.com/kubernetes/job/us-central1-b/xl-ml-test/automated/pt-1.5-fs-transformer-functional-v3-8-1585756800?project=xl-ml-test&pt-1.5-fs-transformer-functional-v3-8-1585756800_events_tablesize=50&tab=events&duration=P30D&pod_summary_list_tablesize=20&service_list_datatablesize=20"""
+DEBUG_INFO = alert_handler.DebugInfo(
+    'pt-1.5-fs-transformer-functional-v3-8-1585756800',
+    LOGS_LINK,
+    DOWNLOAD_COMMAND,
+    WORKLOAD_LINK)
+
 HTML_GENERAL_ERRORS_ONLY = """New errors in test suite for my-project-id:<ul><li>General errors:<ul><li>msg1</li><li>msg2</li></ul></li></ul>"""
 HTML_GENERAL_AND_SPECIFIC_ERRORS = """New errors in test suite for my-project-id:<ul><li>General errors:<ul><li>msg1</li><li>msg2</li></ul></li><li>pt-1.5-fs-transformer-functional-v3-8-1585756800:<ul><li>msg3</li><li>msg4</li><li><a href="https://console.cloud.google.com/logs?project=xl-ml-test&advancedFilter=resource.type%3Dk8s_container%0Aresource.labels.project_id%3Dxl-ml-test%0Aresource.labels.location=us-central1-b%0Aresource.labels.cluster_name=xl-ml-test%0Aresource.labels.namespace_name=automated%0Aresource.labels.pod_name:pt-1.5-fs-transformer-functional-v3-8-1585756800&extra_junk&dateRangeUnbound=backwardInTime">Stackdriver logs for this run of the test</a></li><li><a href="https://console.cloud.google.com/kubernetes/job/us-central1-b/xl-ml-test/automated/pt-1.5-fs-transformer-functional-v3-8-1585756800?project=xl-ml-test&pt-1.5-fs-transformer-functional-v3-8-1585756800_events_tablesize=50&tab=events&duration=P30D&pod_summary_list_tablesize=20&service_list_datatablesize=20">Kubernetes workload for this run of the test</a></li><li>Command to download plaintext logs: <code style="background-color:#e3e3e3;">gcloud logging read 'resource.type=k8s_container resource.labels.project_id=xl-ml-test resource.labels.location=us-central1-b resource.labels.cluster_name=xl-ml-test resource.labels.namespace_name=automated resource.labels.pod_name:pt-1.5-fs-transformer-functional-v3-8-1585756800' --limit 10000000000000 --order asc --format 'value(textPayload)' --project=xl-ml-test > pt-1.5-fs-transformer-functional-v3-8-1585756800_logs.txt && sed -i '/^$/d' pt-1.5-fs-transformer-functional-v3-8-1585756800_logs.txt</code></li></ul></li></ul>"""
 HTML_SPECIFIC_ERRORS_ONLY = """New errors in test suite for my-project-id:<ul><li>pt-1.5-fs-transformer-functional-v3-8-1585756800:<ul><li>msg3</li><li>msg4</li><li><a href="https://console.cloud.google.com/logs?project=xl-ml-test&advancedFilter=resource.type%3Dk8s_container%0Aresource.labels.project_id%3Dxl-ml-test%0Aresource.labels.location=us-central1-b%0Aresource.labels.cluster_name=xl-ml-test%0Aresource.labels.namespace_name=automated%0Aresource.labels.pod_name:pt-1.5-fs-transformer-functional-v3-8-1585756800&extra_junk&dateRangeUnbound=backwardInTime">Stackdriver logs for this run of the test</a></li><li><a href="https://console.cloud.google.com/kubernetes/job/us-central1-b/xl-ml-test/automated/pt-1.5-fs-transformer-functional-v3-8-1585756800?project=xl-ml-test&pt-1.5-fs-transformer-functional-v3-8-1585756800_events_tablesize=50&tab=events&duration=P30D&pod_summary_list_tablesize=20&service_list_datatablesize=20">Kubernetes workload for this run of the test</a></li><li>Command to download plaintext logs: <code style="background-color:#e3e3e3;">gcloud logging read 'resource.type=k8s_container resource.labels.project_id=xl-ml-test resource.labels.location=us-central1-b resource.labels.cluster_name=xl-ml-test resource.labels.namespace_name=automated resource.labels.pod_name:pt-1.5-fs-transformer-functional-v3-8-1585756800' --limit 10000000000000 --order asc --format 'value(textPayload)' --project=xl-ml-test > pt-1.5-fs-transformer-functional-v3-8-1585756800_logs.txt && sed -i '/^$/d' pt-1.5-fs-transformer-functional-v3-8-1585756800_logs.txt</code></li></ul></li></ul>"""
@@ -52,9 +60,9 @@ class AlertHandlerTest(parameterized.TestCase):
     with self.assertLogs() as cm:
       getattr(self.handler, log_method_name)('msg1')
       getattr(self.handler, log_method_name)('msg2')
-      getattr(self.handler, log_method_name)('msg3', logs_link='link1')
-      getattr(self.handler, log_method_name)('msg4', logs_link='link1')
-      getattr(self.handler, log_method_name)('msg5', logs_link='link2')
+      getattr(self.handler, log_method_name)('msg3', debug_info='link1')
+      getattr(self.handler, log_method_name)('msg4', debug_info='link1')
+      getattr(self.handler, log_method_name)('msg5', debug_info='link2')
       self.assertEqual(cm.output, [
           f'{log_level}:absl:msg1',
           f'{log_level}:absl:msg2',
@@ -63,7 +71,7 @@ class AlertHandlerTest(parameterized.TestCase):
           f'{log_level}:absl:msg5',
       ])
     expected_messages = {
-        alert_handler._NO_LOGS: ['msg1', 'msg2'],
+        alert_handler._NO_INFO: ['msg1', 'msg2'],
         'link1': ['msg3', 'msg4'],
         'link2': ['msg5'],
     }
@@ -76,7 +84,7 @@ class AlertHandlerTest(parameterized.TestCase):
 
   def test_generate_email_body_general_errors_only(self):
     self.handler.messages_to_email = {
-        alert_handler._NO_LOGS: ['msg1', 'msg2'],
+        alert_handler._NO_INFO: ['msg1', 'msg2'],
     }
     self.assertEqual(
         self.handler.generate_email_body(),
@@ -84,7 +92,7 @@ class AlertHandlerTest(parameterized.TestCase):
 
   def test_generate_email_body_specific_errors_only(self):
     self.handler.messages_to_email = {
-        VALID_LOGS_LINK: ['msg3', 'msg4'],
+        DEBUG_INFO: ['msg3', 'msg4'],
     }
     self.assertEqual(
         self.handler.generate_email_body(),
@@ -92,8 +100,8 @@ class AlertHandlerTest(parameterized.TestCase):
 
   def test_generate_email_body_general_and_specific_errors(self):
     self.handler.messages_to_email = {
-        alert_handler._NO_LOGS: ['msg1', 'msg2'],
-        VALID_LOGS_LINK: ['msg3', 'msg4'],
+        alert_handler._NO_INFO: ['msg1', 'msg2'],
+        DEBUG_INFO: ['msg3', 'msg4'],
     }
     self.assertEqual(
         self.handler.generate_email_body(),

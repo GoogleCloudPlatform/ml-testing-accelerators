@@ -20,16 +20,8 @@ import re
 
 
 LOGS_DOWNLOAD_COMMAND = """gcloud logging read 'resource.type=k8s_container resource.labels.project_id={project} resource.labels.location={zone} resource.labels.cluster_name={cluster} resource.labels.namespace_name={namespace} resource.labels.pod_name:{pod}' --limit 10000000000000 --order asc --format 'value(textPayload)' --project={project} > {pod}_logs.txt && sed -i '/^$/d' {pod}_logs.txt"""
-LOG_LINK_REGEX = re.compile('https://console\.cloud\.google\.com/logs\?project=(\S+)\&advancedFilter=resource\.type\%3Dk8s_container\%0Aresource\.labels\.project_id\%3D(?P<project>\S+)\%0Aresource\.labels\.location=(?P<zone>\S+)\%0Aresource\.labels\.cluster_name=(?P<cluster>\S+)\%0Aresource\.labels\.namespace_name=(?P<namespace>\S+)\%0Aresource\.labels\.pod_name:(?P<pod>[a-zA-Z0-9\-\.]+)')
 UNBOUND_DATE_RANGE = '&dateRangeUnbound=backwardInTime'
-WORKLOAD_LINK = """https://console.cloud.google.com/kubernetes/job/us-central1-b/{cluster}/{namespace}/{pod}?project={project}&{pod}_events_tablesize=50&tab=events&duration=P30D&pod_summary_list_tablesize=20&service_list_datatablesize=20"""
-
-def _parse_logs_link(logs_link):
-  log_pieces = LOG_LINK_REGEX.match(logs_link)
-  if not log_pieces:
-    raise ValueError('Could not parse Stackdriver logs link. '
-                     'Logs link was: {}'.format(logs_link))
-  return log_pieces.groupdict()
+WORKLOAD_LINK = """https://console.cloud.google.com/kubernetes/job/{zone}/{cluster}/{namespace}/{pod}?project={project}&{pod}_events_tablesize=50&tab=events&duration=P30D&pod_summary_list_tablesize=20&service_list_datatablesize=20"""
 
 
 def add_unbound_time_to_logs_link(logs_link):
@@ -46,52 +38,53 @@ def add_unbound_time_to_logs_link(logs_link):
       logs_link + UNBOUND_DATE_RANGE
 
 
-def download_command_from_logs_link(logs_link):
-  """Convert a link to Stackdriver logs to a command to download logs.
+def download_command(job_name, job_namespace, zone, cluster, project):
+  """Build a command to download Stackdriver logs for a test run.
 
   Args:
-    logs_link (string): Link to the logs of a Kubernetes pod.
+    job_name (string): Name of the Kubernetes job. Should include the
+      timestamp, e.g. 'pt-1.5-resnet-func-v3-8-1584453600'.
+    job_namespace (string): Name of the Kubernetes namespace.
+    zone (string): GCP zone, e.g. 'us-central1-b'.
+    cluster (string): Name of the Kubernetes cluster.
+    project (string): Name of the GCP project.
 
   Returns:
     command (string): A command to download the plaintext logs of the pod
       that was referenced in `logs_link`.
   """
-  log_pieces_dict = _parse_logs_link(logs_link)
-  command = LOGS_DOWNLOAD_COMMAND.format(**log_pieces_dict)
+  command = LOGS_DOWNLOAD_COMMAND.format(**{
+      'project': project,
+      'zone': zone,
+      'namespace': job_namespace,
+      'pod': job_name,
+      'cluster': cluster
+  })
   return command
 
 
-def workload_link_from_logs_link(logs_link):
-  """Generate a link to the Kubernetes workload based on `logs_link`.
+def workload_link(job_name, job_namespace, zone, cluster, project):
+  """Build a link to the Kubernetes workload for a specific test run.
 
   Args:
-    logs_link (string): Link to the logs of a Kubernetes pod.
+    job_name (string): Name of the Kubernetes job. Should include the
+      timestamp, e.g. 'pt-1.5-resnet-func-v3-8-1584453600'.
+    job_namespace (string): Name of the Kubernetes namespace.
+    zone (string): GCP zone, e.g. 'us-central1-b'.
+    cluster (string): Name of the Kubernetes cluster.
+    project (string): Name of the GCP project.
 
   Returns:
-    link (string): A link to the Kubernetes workload page for the workload
-      that was referenced in `logs_link`.
+    link (string): A link to the Kubernetes workload page for this job.
   """
-  log_pieces_dict = _parse_logs_link(logs_link)
-  link = WORKLOAD_LINK.format(**log_pieces_dict)
+  link = WORKLOAD_LINK.format(**{
+      'project': project,
+      'zone': zone,
+      'namespace': job_namespace,
+      'pod': job_name,
+      'cluster': cluster
+  })
   return link
-
-
-def test_name_from_logs_link(logs_link):
-  """Extract test name from a link to Stackdriver logs for that test.
-
-  Args:
-    logs_link (string): Link to the logs of a Kubernetes pod.
-
-  Returns:
-    test_name (string): The name of the Kuberneted pod, which is synonymous
-      with the test name in the context of the metrics handler.
-  """
-  log_pieces_dict = _parse_logs_link(logs_link)
-  test_name = log_pieces_dict.get('pod')
-  if not test_name:
-    raise ValueError('Unable to parse test name from logs link: {}'.format(
-        logs_link))
-  return test_name
 
 
 def replace_invalid_values(row):

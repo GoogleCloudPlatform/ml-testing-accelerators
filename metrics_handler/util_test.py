@@ -24,7 +24,6 @@ import util
 
 VALID_LOGS_LINK = 'https://console.cloud.google.com/logs?project=xl-ml-test&advancedFilter=resource.type%3Dk8s_container%0Aresource.labels.project_id%3Dxl-ml-test%0Aresource.labels.location=us-central1-b%0Aresource.labels.cluster_name=xl-ml-test%0Aresource.labels.namespace_name=automated%0Aresource.labels.pod_name:pt-1.5-resnet50-functional-v3-8-1584453600&extra_junk&dateRangeUnbound=backwardInTime'
 VALID_DOWNLOAD_COMMAND = """gcloud logging read 'resource.type=k8s_container resource.labels.project_id=xl-ml-test resource.labels.location=us-central1-b resource.labels.cluster_name=xl-ml-test resource.labels.namespace_name=automated resource.labels.pod_name:pt-1.5-resnet50-functional-v3-8-1584453600' --limit 10000000000000 --order asc --format 'value(textPayload)' --project=xl-ml-test > pt-1.5-resnet50-functional-v3-8-1584453600_logs.txt && sed -i '/^$/d' pt-1.5-resnet50-functional-v3-8-1584453600_logs.txt"""
-VALID_TEST_NAME = 'pt-1.5-resnet50-functional-v3-8-1584453600'
 VALID_WORKLOAD_LINK = 'https://console.cloud.google.com/kubernetes/job/us-central1-b/xl-ml-test/automated/pt-1.5-resnet50-functional-v3-8-1584453600?project=xl-ml-test&pt-1.5-resnet50-functional-v3-8-1584453600_events_tablesize=50&tab=events&duration=P30D&pod_summary_list_tablesize=20&service_list_datatablesize=20'
 
 
@@ -39,24 +38,26 @@ class UtilTest(parameterized.TestCase):
         'abc{}'.format(util.UNBOUND_DATE_RANGE),
         util.add_unbound_time_to_logs_link('abc'))
 
-  def test_download_command_from_logs_link_fail_to_parse(self):
-    with self.assertRaises(ValueError):
-      _ = util.download_command_from_logs_link('abc')
-
-  def test_download_command_from_logs_link_success(self):
+  def test_download_command(self):
+    project = 'xl-ml-test'
+    cluster = 'xl-ml-test'
+    namespace = 'automated'
+    pod_name = 'pt-1.5-resnet50-functional-v3-8-1584453600'
+    zone = 'us-central1-b'
     self.assertEqual(
-        VALID_DOWNLOAD_COMMAND,
-        util.download_command_from_logs_link(VALID_LOGS_LINK))
+        util.download_command(pod_name, namespace, zone, cluster, project),
+        VALID_DOWNLOAD_COMMAND)
 
-  def test_test_name_from_logs_link_fail_to_parse(self):
-    with self.assertRaises(ValueError):
-      _ = util.test_name_from_logs_link('abc')
-
-  def test_test_name_from_logs_link_success(self):
+  def test_workload_link(self):
+    project = 'xl-ml-test'
+    cluster = 'xl-ml-test'
+    namespace = 'automated'
+    pod_name = 'pt-1.5-resnet50-functional-v3-8-1584453600'
+    zone = 'us-central1-b'
     self.assertEqual(
-        VALID_TEST_NAME,
-        util.test_name_from_logs_link(VALID_LOGS_LINK))
-  
+        util.workload_link(pod_name, namespace, zone, cluster, project),
+        VALID_WORKLOAD_LINK)
+
   @parameterized.named_parameters(
     ('inf', [1, 2, 3, math.inf, 4, 5], [1, 2, 3, None, 4, 5]),
     ('-inf', [1, 2, 3, -math.inf, 4, 5], [1, 2, 3, None, 4, 5]),
@@ -68,11 +69,6 @@ class UtilTest(parameterized.TestCase):
   def test_replace_invalid_values(self, row, expected_row):
     clean_row = util.replace_invalid_values(row)
     self.assertSequenceEqual(clean_row, expected_row)
-
-  def test_workload_link_from_logs_link(self):
-    self.assertEqual(
-        VALID_WORKLOAD_LINK,
-        util.workload_link_from_logs_link(VALID_LOGS_LINK))
 
 
 if __name__ == '__main__':
