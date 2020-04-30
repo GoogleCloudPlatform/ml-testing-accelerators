@@ -4,7 +4,7 @@
 
 See [our developing doc](../doc/developing) for build pre-requisites.
 
-To run a single test, run the following:
+To run a single test, first [connect to a cluster](https://console.cloud.google.com/kubernetes/list) and then run the following:
 
 ```bash
 jsonnet templates/oneshot.jsonnet -S --tla-str test=$TEST_NAME | kubectl create -f -
