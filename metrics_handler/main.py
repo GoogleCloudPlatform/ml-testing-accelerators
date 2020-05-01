@@ -467,10 +467,16 @@ def _process_pubsub_message(msg, status_handler, logger):
         'retried later.'.format(job_name))
     return False  # Do not ack the message.
   elif status == job_status_handler.DOES_NOT_EXIST:
-    logger.warning(
-        'Job with job_name: {} no longer exists in Kubernetes. Message '
-        'will be acknowledged.'.format(job_name))
-    return True  # Ack the message.
+    if msg_age_sec >= 60 * 60 * 24:
+      logger.warning(
+          'Job with job_name: {} no longer exists in Kubernetes. Message '
+          'will be acknowledged.'.format(job_name))
+      return True  # Ack the message.
+    else:
+      logger.warning(
+          'Job with job_name: {} not found in Kubernetes. Message '
+          'will be retried later.'.format(job_name))
+      return False  # Do not ack the message.
   job_status = {
       'final_status': status,
       'start_time': publish_time,
