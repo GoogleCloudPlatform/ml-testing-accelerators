@@ -30,15 +30,9 @@ After the basic setup above, you'll be able to see errors in Stackdriver Error R
     * `alert-sender-email-address`: The 'from' email used by Sendgrid for alerts.
     * `sendgrid-api-key`: Sendgrid API key that you copied in step 2.
 1. Give permission to your metrics handler Cloud Function to read these 3 Secrets. Run these from command line:
-    * `gcloud beta secrets add-iam-policy-binding alert-destination-email-address \
-    --role roles/secretmanager.secretAccessor \
-    --member serviceAccount:YOUR-PROJECT-NAME@appspot.gserviceaccount.com`
-    * `gcloud beta secrets add-iam-policy-binding alert-sender-email-address \
-    --role roles/secretmanager.secretAccessor \
-    --member serviceAccount:YOUR-PROJECT-NAME@appspot.gserviceaccount.com`
-    * `gcloud beta secrets add-iam-policy-binding sendgrid-api-key \
-    --role roles/secretmanager.secretAccessor \
-    --member serviceAccount:YOUR-PROJECT-NAME@appspot.gserviceaccount.com`
+    * `gcloud beta secrets add-iam-policy-binding alert-destination-email-address --role roles/secretmanager.secretAccessor --member serviceAccount:YOUR-PROJECT-NAME@appspot.gserviceaccount.com`
+    * `gcloud beta secrets add-iam-policy-binding alert-sender-email-address --role roles/secretmanager.secretAccessor --member serviceAccount:YOUR-PROJECT-NAME@appspot.gserviceaccount.com`
+    * `gcloud beta secrets add-iam-policy-binding sendgrid-api-key --role roles/secretmanager.secretAccessor --member serviceAccount:YOUR-PROJECT-NAME@appspot.gserviceaccount.com`
 
 Once you've finished these steps, the metrics handler will send an alert email to the `alert-destination-email-address` whenever it finds errors in your tests.
 
