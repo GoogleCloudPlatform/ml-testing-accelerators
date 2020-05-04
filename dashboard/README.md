@@ -24,35 +24,15 @@ export INSTANCE_NAME=my-redis-instance
 
 2. `gcloud redis instances create $INSTANCE_NAME --size=2 --region=$REGION --redis-version=redis_4_0 --project=$PROJECT_ID`
 
-3. (wait ~2 min for the instance to be searchable) `gcloud redis instances describe $INSTANCE_NAME --region=$REGION --project=$PROJECT_ID`
-
-This will print some information like this. Write down the highlighted portions:
-```
-authorizedNetwork: projects/my-project/global/networks/**default**
-createTime: '2018-04-09T21:47:56.824081Z'
-currentLocationId: us-central1-a
-host: **10.0.0.27**
-locationId: us-central1-a
-memorySizeGb: 2
-name: projects/my-project/locations/us-central1/instances/myinstance
-networkThroughputGbps: 2
-port: **6379**
-redisVersion: REDIS_4_0
-reservedIpRange: 10.0.0.24/29
-state: READY
-tier: BASIC
-```
-
-4. Edit `app.yaml` in 3 ways:
-  1. Update redis info if using redis:
-    * REDISHOST = `host` from the previous step.
-    * REDISPORT = `port` from the previous step.
-    * network.name (near bottom of `app.yaml`) = last bit of `authorizedNetwork` from previous step.
-  2. Update `JOB_HISTORY_TABLE_NAME` and `METRIC_HISTORY_TABLE_NAME`.
+3. Edit `app.yaml` in 3 ways:
+  * Update redis info if using redis:
+    * REDISHOST = Find this value using: `echo $(gcloud redis instances describe $INSTANCE_NAME --region=$REGION --project=$PROJECT_ID --format='value(host)')`
+    * REDISPORT = Find this value using: `echo $(gcloud redis instances describe $INSTANCE_NAME --region=$REGION --project=$PROJECT_ID --format='value(port)')`
+  * Update `JOB_HISTORY_TABLE_NAME` and `METRIC_HISTORY_TABLE_NAME`.
     * You can find these table names [here](https://console.cloud.google.com/bigquery) by clicking your project name in the left sidebar.
-  3. Change `--allow-websocket-origin` arg in `entrypoint` to be the URL of your app engine project. You can find this URL in your [App Engine Dashboard](https://console.cloud.google.com/appengine) (top right of that UI). If you don’t see the URL there, try deploying first (see next step) and at that point you should receive your URL.
+  * Change `--allow-websocket-origin` arg in `entrypoint` to be the URL of your app engine project. You can find this URL in your [App Engine Dashboard](https://console.cloud.google.com/appengine) (top right of that UI). If you don’t see the URL there, try deploying first (see next step) and at that point you should receive your URL.
 
-5. Make sure you are in the dir where `app.yaml` lives and then run `gcloud app deploy`
+4. Make sure you are in the dir where `app.yaml` lives and then run `gcloud app deploy`
 
 
 ## Clean up your hosted dashboard
