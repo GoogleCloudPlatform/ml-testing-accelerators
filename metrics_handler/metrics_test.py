@@ -165,6 +165,18 @@ class MetricsTest(parameterized.TestCase):
     within_bounds = metrics.within_bounds(value, *bounds, inclusive)
     self.assertIs(within_bounds, expected)
 
+  # To use this test, replace the args to compute_memory_metrics with your
+  # project ID and the name of a recent job. Change the assert if your job
+  # does not use GPUs.
+  def _test_compute_memory_metrics(self):
+    m = {}
+    metrics.compute_memory_metrics(
+        m, 'xl-ml-test', 'tf-nightly-mnist-func-tesla-v100-x1-1588665600')
+    self.assertTrue('vm_memory_usage_bytes' in m and \
+                    m['vm_memory_usage_bytes'] > 0)
+    self.assertTrue('gpu_memory_usage_bytes' in m and \
+                    m['gpu_memory_usage_bytes'] > 0)
+
 
 if __name__ == '__main__':
   absltest.main()

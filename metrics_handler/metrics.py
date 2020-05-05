@@ -15,18 +15,57 @@
 import collections
 import itertools
 import math
+import time
+import traceback
 
 from absl import logging
+from google.cloud import monitoring_v3
+from google.cloud.monitoring_v3 import enums
 import numpy as np
 import tensorflow as tf
 from tensorboard.backend.event_processing import event_multiplexer
 
 
 ALLOWED_COMPARISONS = ['greater', 'less', 'equal', 'less_or_equal']
+_METRIC_CLIENT = monitoring_v3.MetricServiceClient()
 
 
 MetricPoint = collections.namedtuple('MetricPoint', ['metric_value', 'wall_time'])
 Threshold = collections.namedtuple('Threshold', ['type', 'value'])
+
+
+def compute_memory_metrics(final_metrics, project, job_name):
+  """Compute the memory used by a Kubernetes job and add it to final_metrics.
+
+  Args:
+    final_metrics (dict): Memory metrics will be added to this dict.
+    project (string): GCP project name.
+    job_name (string): Kubernetes job name.
+  """
+  lookup_path = _METRIC_CLIENT.project_path(project)
+  base_filter = """metric.type = "kubernetes.io/container/{}" AND resource.labels.pod_name = starts_with("{}")"""
+  vm_mem_filter = base_filter.format('memory/used_bytes', job_name)
+  gpu_mem_filter = base_filter.format('accelerator/memory_used', job_name)
+  end_time = time.time()
+  interval = monitoring_v3.types.TimeInterval()
+  interval.end_time.seconds = int(end_time)
+  interval.end_time.nanos = int((end_time - interval.end_time.seconds) * 10**9)
+  interval.start_time.seconds = int(end_time - 60*60*48)
+  interval.start_time.nanos = 0
+  view = enums.ListTimeSeriesRequest.TimeSeriesView.FULL
+  for tup in [(vm_mem_filter, 'vm_memory_usage_bytes'),
+              (gpu_mem_filter, 'gpu_memory_usage_bytes')]:
+    max_value = 0
+    try:
+      for series in _METRIC_CLIENT.list_time_series(
+          lookup_path, tup[0], interval, view):
+        max_value = max(
+            [max_value] + [p.value.int64_value for p in series.points])
+      if max_value:
+        final_metrics[tup[1]] = max_value
+    except Exception as e:
+      logging.error('Encountered exception when searching for metric {}. '
+                    'Exception was: '.format(tup[0], traceback.format_exc()))
 
 
 def read_metrics_from_events_dir(events_dir, tags_to_ignore=None):

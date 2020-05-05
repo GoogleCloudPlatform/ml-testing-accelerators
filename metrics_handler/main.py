@@ -157,6 +157,9 @@ class CloudMetricsHandler(object):
       except ValueError as e:
         raise ValueError('Error computing time to accuracy: {}'.format(e))
 
+    metrics.compute_memory_metrics(final_metrics, self.project,
+                                   self.debug_info.job_name)
+
     return final_metrics
 
   def _make_bigquery_tables(self):
