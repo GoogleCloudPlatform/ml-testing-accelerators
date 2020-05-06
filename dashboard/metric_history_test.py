@@ -16,18 +16,6 @@ SAMPLE_LOGS_LINK = 'https://console.cloud.google.com/logs?project=xl-ml-test&adv
 
 class MetricHistoryTest(parameterized.TestCase):
 
-  def test_process_dataframe(self):
-    input_df = pd.DataFrame({
-        'logs_link': pd.Series([SAMPLE_LOGS_LINK] * 3),
-        'logs_download_command': pd.Series(['no_op', '', 'no_op']),
-    })
-    df = metric_history.process_dataframe(input_df)
-    self.assertEqual(len(df), 3)
-    download_commands = df['logs_download_command'].tolist()
-    self.assertTrue('gcloud' in download_commands[1])
-    self.assertEqual(download_commands[0], 'no_op')
-    self.assertEqual(download_commands[2], 'no_op')
-
   def test_make_plots_nothing_oob(self):
     input_df = pd.DataFrame({
         'test_name': pd.Series(['test1', 'test1', 'test1', 'test1']),
