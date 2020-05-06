@@ -112,7 +112,7 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: metrics-config
-                  key: pt-imagenet-mini-gpu.json
+                  key: example-pt-imagenet-mini-gpu.json
             envFrom:
             - configMapRef:
                 name: gcs-buckets
