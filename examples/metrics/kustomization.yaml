@@ -20,5 +20,5 @@ configMapGenerator:
 - name: metrics-config
   files:
   - pt-cifar-tpu-v3-8.json
-  - pt-imagenet-mini-gpu.json
+  - example-pt-imagenet-mini-gpu.json
   - tf-mnist-tpu-v2-8.json
