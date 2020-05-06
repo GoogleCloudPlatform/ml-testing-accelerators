@@ -104,12 +104,8 @@ class CloudMetricsHandler(object):
   def _get_table_id(self, dataset_name, table_name):
     return '{}.{}.{}'.format(self.project, dataset_name, table_name)
 
-  def get_metrics_from_events_dir(self, job_status_dict):
+  def get_metrics_from_events_dir(self):
     """Retrieves and aggregates metrics from Tensorboard Summary file.
-
-    Args:
-      job_status_dict (dict): Should contain `job_status`, `start_time`,
-        and `stop_time` as keys.
 
     Returns:
       final_metrics (dict): Key is metric name and value is a MetricPoint
@@ -136,14 +132,26 @@ class CloudMetricsHandler(object):
       )
     except ValueError as e:
       raise ValueError("Error during metric aggregation: {}".format(e))
+    return final_metrics
 
+  def add_computed_metrics(self, metrics_dict, job_status_dict,
+                           find_memory_metrics=True):
+    """Computes additional metrics and adds them to `metrics_dict`.
+
+    Args:
+      metrics_dict (dict): Keys are strings and values are MetricPoints.
+      job_status_dict (dict): Should contain `job_status`, `start_time`,
+        and `stop_time` as keys.
+      find_memory_metrics (bool, optional): If True, query Cloud Monitoring
+        to find memory usage metrics and add them to `metrics_dict`.
+    """
     start_time = job_status_dict['start_time']
     stop_time = job_status_dict['stop_time']
-    final_metrics['total_wall_time'] = metrics.MetricPoint(
+    metrics_dict['total_wall_time'] = metrics.MetricPoint(
         stop_time - start_time, stop_time)
 
-    tta_config = self.metric_collection_config.get('time_to_accuracy')
     # Compute time_to_accuracy if requested in the config.
+    tta_config = self.metric_collection_config.get('time_to_accuracy')
     if tta_config:
       if 'accuracy_tag' not in tta_config or \
           'accuracy_threshold' not in tta_config:
@@ -152,15 +160,15 @@ class CloudMetricsHandler(object):
       tag = tta_config['accuracy_tag']
       threshold = tta_config['accuracy_threshold']
       try:
-        final_metrics['time_to_accuracy'] = metrics.time_to_accuracy(
-            raw_metrics, tag, threshold)
+        metrics_dict['time_to_accuracy'] = metrics.time_to_accuracy(
+            metrics_dict, tag, threshold)
       except ValueError as e:
         raise ValueError('Error computing time to accuracy: {}'.format(e))
 
-    metrics.compute_memory_metrics(final_metrics, self.project,
-                                   self.debug_info.job_name)
+    if find_memory_metrics:
+      metrics.compute_memory_metrics(metrics_dict, self.project,
+                                     self.debug_info.job_name)
 
-    return final_metrics
 
   def _make_bigquery_tables(self):
     if not self.metric_collection_config.get('write_to_bigquery'):
@@ -522,7 +530,8 @@ def _process_pubsub_message(msg, status_handler, logger):
             job_status['final_status'], test_name),
         debug_info=debug_info)
 
-  new_metrics = handler.get_metrics_from_events_dir(job_status)
+  new_metrics = handler.get_metrics_from_events_dir()
+  handler.add_computed_metrics(new_metrics, job_status)
   if regression_test_config:
     metrics_history = handler.get_metrics_history_from_bigquery()
     metric_name_to_visual_bounds = handler.compute_bounds_and_report_errors(
