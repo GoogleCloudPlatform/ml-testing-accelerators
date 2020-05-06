@@ -62,11 +62,34 @@ class CloudMetricsHandlerTest(absltest.TestCase):
       logger=self.logger,
     )
 
-    final_metrics = metrics_handler.get_metrics_from_events_dir(
-        self.job_status_dict)
+    final_metrics = metrics_handler.get_metrics_from_events_dir()
     self.assertContainsSubset(
-        ['foo_final', 'foo_min', 'bar_final', 'bar_min', 'total_wall_time'],
+        ['foo_final', 'foo_min', 'bar_final', 'bar_min'],
         final_metrics.keys())
+
+  def test_add_computed_metrics(self):
+    metrics_handler = main.CloudMetricsHandler(
+      test_name="test",
+      events_dir=self.temp_dir,
+      debug_info=None,
+      metric_collection_config={
+        'default_aggregation_strategies': ['final', 'min',]
+      },
+      regression_test_config={},
+      test_type=None,
+      accelerator=None,
+      framework_version=None,
+      logger=self.logger,
+    )
+
+    final_metrics = {'foo_final': 1}
+    metrics_handler.add_computed_metrics(final_metrics, self.job_status_dict,
+                                         find_memory_metrics=False)
+    self.assertContainsSubset(
+        ['foo_final', 'total_wall_time'],
+        final_metrics.keys())
+
+
 
   def test_compute_bounds_and_report_errors_fixed_value(self):
     metrics_handler = main.CloudMetricsHandler(
@@ -95,8 +118,7 @@ class CloudMetricsHandlerTest(absltest.TestCase):
       logger=self.logger,
     )
 
-    final_metrics = metrics_handler.get_metrics_from_events_dir(
-        self.job_status_dict)
+    final_metrics = metrics_handler.get_metrics_from_events_dir()
     with self.assertLogs(level='ERROR'):
       metrics_handler.compute_bounds_and_report_errors(
           {'foo_final': [], 'total_wall_time': []},

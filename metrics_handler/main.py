@@ -134,17 +134,16 @@ class CloudMetricsHandler(object):
       raise ValueError("Error during metric aggregation: {}".format(e))
     return final_metrics
 
-  def add_computed_metrics(self, metrics_dict, job_status_dict):
+  def add_computed_metrics(self, metrics_dict, job_status_dict,
+                           find_memory_metrics=True):
     """Computes additional metrics and adds them to `existing_metrics`.
 
     Args:
       metrics_dict (dict): Keys are strings and values are MetricPoints.
       job_status_dict (dict): Should contain `job_status`, `start_time`,
         and `stop_time` as keys.
-
-    Returns:
-      final_metrics (dict): Key is metric name and value is a MetricPoint
-        containing the aggregated value for that metric.
+      find_memory_metrics (bool, optional): If True, query Cloud Monitoring
+        to find memory usage metrics and add them to `metrics_dict`.
     """
     start_time = job_status_dict['start_time']
     stop_time = job_status_dict['stop_time']
@@ -166,10 +165,10 @@ class CloudMetricsHandler(object):
       except ValueError as e:
         raise ValueError('Error computing time to accuracy: {}'.format(e))
 
-    metrics.compute_memory_metrics(metrics_dict, self.project,
-                                   self.debug_info.job_name)
+    if find_memory_metrics:
+      metrics.compute_memory_metrics(metrics_dict, self.project,
+                                     self.debug_info.job_name)
 
-    return final_metrics
 
   def _make_bigquery_tables(self):
     if not self.metric_collection_config.get('write_to_bigquery'):
