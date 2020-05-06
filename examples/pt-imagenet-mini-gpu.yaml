@@ -65,10 +65,6 @@ spec:
             - "--a=resnet18"
             - "/datasets/imagenet-mini"
             - "--epochs=3"
-            - "--multiprocessing-distributed"
-            - "--dist-url=tcp://localhost:23456"
-            - "--rank=0"
-            - "--world-size=1"
             env:
             - name: "POD_NAME"
               valueFrom:
