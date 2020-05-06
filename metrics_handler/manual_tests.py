@@ -30,11 +30,10 @@ class ManualTests(absltest.TestCase):
   # To use this test, replace the args to compute_memory_metrics with your
   # project ID and the name of a recent job. Change the assert if your job
   # does not use GPUs.
-  def test_compute_memory_metrics(self):
+  def _test_compute_memory_metrics(self):
     m = {}
     metrics.compute_memory_metrics(
-        m, 'xl-ml-test', 'example-pt-imagenet-mini-gpu-manual-fhjhh')
-    print(m)
+        m, 'xl-ml-test', 'example-pt-imagenet-mini-gpu-manual-h7xmg')
     self.assertTrue('vm_memory_usage_bytes' in m and \
                     m['vm_memory_usage_bytes'].metric_value > 0)
     self.assertTrue('gpu_memory_usage_bytes' in m and \
