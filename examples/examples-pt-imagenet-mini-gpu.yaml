@@ -34,14 +34,14 @@ spec:
           - name: dshm
             emptyDir:
               medium: Memory
-          - gcePersistentDisk:
-              fsType: ext4
-              pdName: imagenet-mini-pd-central1-b
-              readOnly: true
-            # TODO: This `name` should match the `name` below under volumeMounts.
-            name: imagenet-mini-pd
+          # TODO: This should match `name` under volumeMounts below.
+          - name: imagenet-mini-pd
+            gcePersistentDisk:
+              # TODO: Change this to the name of your Cloud persistent disk.
+              pdName: "imagenet-mini-pd-central1-b"
+              fsType: "ext4"
           containers:
-          - name: "train-container"
+          - name: train-container
             # TODO: Change this to your image if desired. See `images/README`
             # for more on setting up images.
             image: "gcr.io/xl-ml-test/pytorch-examples-gpu:nightly"
@@ -55,7 +55,7 @@ spec:
               mountPath: "/dev/shm"
             # TODO: This should match `name` of the gcePersistentDisk above.
             - name: imagenet-mini-pd
-              mountPath: /datasets
+              mountPath: "/datasets"
               readOnly: true
             args:
             # TODO: Change this to the command to run your test.
@@ -112,7 +112,7 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: metrics-config
-                  key: "pt-imagenet-mini-gpu.json"
+                  key: pt-imagenet-mini-gpu.json
             envFrom:
             - configMapRef:
                 name: gcs-buckets
