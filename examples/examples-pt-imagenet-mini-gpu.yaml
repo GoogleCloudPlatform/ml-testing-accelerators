@@ -55,7 +55,7 @@ spec:
               mountPath: "/dev/shm"
             # TODO: This should match `name` of the gcePersistentDisk above.
             - name: imagenet-mini-pd
-              mountPath: "/datasets"
+              mountPath: /datasets
               readOnly: true
             args:
             # TODO: Change this to the command to run your test.
