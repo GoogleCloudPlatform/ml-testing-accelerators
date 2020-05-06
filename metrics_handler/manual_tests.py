@@ -35,9 +35,9 @@ class ManualTests(absltest.TestCase):
     metrics.compute_memory_metrics(
         m, 'xl-ml-test', 'tf-nightly-mnist-func-tesla-v100-x1-1588665600')
     self.assertTrue('vm_memory_usage_bytes' in m and \
-                    m['vm_memory_usage_bytes'] > 0)
+                    m['vm_memory_usage_bytes'].metric_value > 0)
     self.assertTrue('gpu_memory_usage_bytes' in m and \
-                    m['gpu_memory_usage_bytes'] > 0)
+                    m['gpu_memory_usage_bytes'].metric_value > 0)
 
 
 if __name__ == '__main__':
