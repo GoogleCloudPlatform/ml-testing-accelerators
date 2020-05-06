@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM tensorflow/tensorflow:nightly-gpu-py3
+FROM gcr.io/deeplearning-platform-release/pytorch-gpu.1-4
 
 RUN apt-get update && apt-get install -y --no-install-recommends git
 RUN curl -sSL https://sdk.cloud.google.com | bash

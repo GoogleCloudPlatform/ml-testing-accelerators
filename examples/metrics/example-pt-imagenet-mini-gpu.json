@@ -1,5 +1,5 @@
 {
-  "test_name": "pt-imagenet-mini-gpu",
+  "test_name": "example-pt-imagenet-mini-gpu",
   "metric_collection_config": {
     "write_to_bigquery": "True",
     "default_aggregation_strategies": ["final"]

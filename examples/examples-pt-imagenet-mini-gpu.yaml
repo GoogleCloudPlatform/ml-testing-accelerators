@@ -16,7 +16,7 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   # TODO: Change this to a unique name within your project.
-  name: pt-imagenet-mini-gpu
+  name: example-pt-imagenet-mini-gpu
 spec:
   concurrencyPolicy: Forbid
   jobTemplate:
@@ -35,14 +35,13 @@ spec:
             emptyDir:
               medium: Memory
           # TODO: This should match `name` under volumeMounts below.
-          - name: "imagenet-mini-pd"
+          - name: imagenet-mini-pd
             gcePersistentDisk:
               # TODO: Change this to the name of your Cloud persistent disk.
               pdName: "imagenet-mini-pd-central1-b"
               fsType: "ext4"
-              readOnly: true
           containers:
-          - name: "train-container"
+          - name: train-container
             # TODO: Change this to your image if desired. See `images/README`
             # for more on setting up images.
             image: "gcr.io/xl-ml-test/pytorch-examples-gpu:nightly"
@@ -65,10 +64,6 @@ spec:
             - "--a=resnet18"
             - "/datasets/imagenet-mini"
             - "--epochs=3"
-            - "--multiprocessing-distributed"
-            - "--dist-url=tcp://localhost:23456"
-            - "--rank=0"
-            - "--world-size=1"
             env:
             - name: "POD_NAME"
               valueFrom:
@@ -92,11 +87,37 @@ spec:
               # name away from `xl-ml-test-us-central1` since you won't have
               # write access to that bucket.
               value: "gs://xl-ml-test-us-central1/k8s/imagenet/functional/gpu/$(JOB_NAME)"
-            - name: METRIC_CONFIG
+          initContainers:
+          - env:
+            - name: "POD_NAME"
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+            - name: "POD_UID"
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.uid"
+            - name: "POD_NAMESPACE"
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.namespace"
+            - name: "JOB_NAME"
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.labels['job-name']"
+            - name: "MODEL_DIR"
+              # TODO: Change to match "MODEL_DIR" value from above.
+              value: "gs://xl-ml-test-us-central1/k8s/imagenet/functional/gpu/$(JOB_NAME)"
+            - name: "METRIC_CONFIG"
               valueFrom:
                 configMapKeyRef:
                   name: metrics-config
-                  key: pt-imagenet-mini-gpu.json
+                  key: example-pt-imagenet-mini-gpu.json
+            envFrom:
+            - configMapRef:
+                name: gcs-buckets
+            image: "gcr.io/xl-ml-test/publisher:stable"
+            name: publisher
   # TODO: Update the timing of your test runs:
   # https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs/#schedule
   schedule: "0 */24 * * *"
