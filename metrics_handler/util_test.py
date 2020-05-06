@@ -28,6 +28,11 @@ VALID_WORKLOAD_LINK = 'https://console.cloud.google.com/kubernetes/job/us-centra
 
 
 class UtilTest(parameterized.TestCase):
+  def test_add_unbound_time_to_logs_link_empty_string(self):
+    self.assertEqual(
+        '',
+        util.add_unbound_time_to_logs_link(''))
+
   def test_add_unbound_time_to_logs_link_already_exists(self):
     self.assertEqual(
         VALID_LOGS_LINK,
