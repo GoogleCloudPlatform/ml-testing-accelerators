@@ -136,7 +136,7 @@ class CloudMetricsHandler(object):
 
   def add_computed_metrics(self, metrics_dict, job_status_dict,
                            find_memory_metrics=True):
-    """Computes additional metrics and adds them to `existing_metrics`.
+    """Computes additional metrics and adds them to `metrics_dict`.
 
     Args:
       metrics_dict (dict): Keys are strings and values are MetricPoints.
