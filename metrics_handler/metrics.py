@@ -62,7 +62,7 @@ def compute_memory_metrics(final_metrics, project, job_name):
         max_value = max(
             [max_value] + [p.value.int64_value for p in series.points])
       if max_value:
-        final_metrics[tup[1]] = max_value
+        final_metrics[tup[1]] = MetricPoint(max_value, end_time)
     except Exception as e:
       logging.error('Encountered exception when searching for metric {}. '
                     'Exception was: '.format(tup[0], traceback.format_exc()))
