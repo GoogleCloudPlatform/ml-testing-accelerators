@@ -29,7 +29,7 @@ flags.DEFINE_string('namespace', 'default', 'The namespace of the pod.')
 flags.DEFINE_string('container', 'train', 'The name of the container to watch.')
 
 flags.DEFINE_integer('interval', 60, 'Number of seconds to wait between health checks.')
-flags.DEFINE_bool('verbose', False, 'Whether to print when TPU is HEALTHY')
+flags.DEFINE_bool('verbose', False, 'Whether to print when TPU is HEALTHY.')
 
 flags.DEFINE_string('project', None, 'The GCP project with your GKE cluster.')
 flags.DEFINE_string('zone', None, 'The GCP zone with your GKE cluster.')
@@ -79,8 +79,8 @@ def main(_):
                     FLAGS.container, str(pod.status))
       exit(1)
     if getattr(status.state, 'terminated'):
-      logging.info('Container `%s` terminated with status:\n%s',
-                   FLAGS.container, str(status))
+      logging.warning('Container `%s` terminated with status:\n%s',
+                      FLAGS.container, str(status))
       break
   
     time.sleep(FLAGS.interval)
