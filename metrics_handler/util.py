@@ -34,7 +34,7 @@ def add_unbound_time_to_logs_link(logs_link):
     logs_link (string): Input with dateRangeUnbound added to it or the
       input unchanged if it already contained dateRangeUnbound.
   """
-  return logs_link if UNBOUND_DATE_RANGE in logs_link else \
+  return logs_link if (not logs_link or UNBOUND_DATE_RANGE in logs_link) else \
       logs_link + UNBOUND_DATE_RANGE
 
 
