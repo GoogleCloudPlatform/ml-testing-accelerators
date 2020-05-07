@@ -29,22 +29,22 @@ steps:
   - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
   - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test'
 - name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', 'k8s/us-central1/gen', '-f', 'k8s/us-central1/', '-f', 'examples/', '--namespace=automated']
+  args: ['apply', '-f', 'k8s/us-central1/gen', '-f', 'k8s/us-central1/', '-f', 'k8s/common/', '-f', 'examples/', '--namespace=automated']
   env:
   - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
   - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test'
 - name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', 'k8s/europe-west4/gen', '-f', 'k8s/europe-west4/', '--namespace=automated']
+  args: ['apply', '-f', 'k8s/europe-west4/gen', '-f', 'k8s/europe-west4/', '-f', 'k8s/common/', '--namespace=automated']
   env:
   - 'CLOUDSDK_COMPUTE_ZONE=europe-west4-a'
   - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test-europe-west4'
 - name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', 'k8s/us-central1/']
+  args: ['apply', '-f', 'k8s/us-central1/', '-f', 'k8s/common/',]
   env:
   - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
   - 'CLOUDSDK_CONTAINER_CLUSTER=oneshots'
 - name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', 'k8s/europe-west4/',]
+  args: ['apply', '-f', 'k8s/europe-west4/', '-f', 'k8s/common/',]
   env:
   - 'CLOUDSDK_COMPUTE_ZONE=europe-west4-a'
   - 'CLOUDSDK_CONTAINER_CLUSTER=europe-oneshots'
