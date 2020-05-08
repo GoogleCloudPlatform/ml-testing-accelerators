@@ -95,7 +95,7 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: metrics-config
-                  key: pt-cifar-tpu-v3-8.json
+                  key: example-pt-cifar-tpu-v3-8.json
   # TODO: Update the timing of your test runs:
   # https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs/#schedule
   schedule: "0 */24 * * *"
