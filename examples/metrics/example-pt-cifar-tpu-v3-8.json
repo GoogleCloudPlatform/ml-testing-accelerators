@@ -5,7 +5,7 @@
     "default_aggregation_strategies": ["final"],
     "time_to_accuracy": {
       "accuracy_threshold": 80.0,
-      "accuracy_tag": "Accuracy/test"
+      "accuracy_tag": "Accuracy/test_final"
     }
   },
   "regression_test_config": {
