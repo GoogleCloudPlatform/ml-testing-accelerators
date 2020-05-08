@@ -91,11 +91,37 @@ spec:
               # name away from `xl-ml-test-us-central1` since you won't have
               # write access to that bucket.
               value: "gs://xl-ml-test-us-central1/k8s/cifar/convergence/v3-8/$(JOB_NAME)"
-            - name: METRIC_CONFIG
+          initContainers:
+          - env:
+            - name: "POD_NAME"
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+            - name: "POD_UID"
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.uid"
+            - name: "POD_NAMESPACE"
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.namespace"
+            - name: "JOB_NAME"
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.labels['job-name']"
+            - name: "MODEL_DIR"
+              # TODO: Change to match "MODEL_DIR" value from above.
+              value: "gs://xl-ml-test-us-central1/k8s/cifar/convergence/v3-8/$(JOB_NAME)"
+            - name: "METRIC_CONFIG"
               valueFrom:
                 configMapKeyRef:
                   name: metrics-config
                   key: example-pt-cifar-tpu-v3-8.json
+            envFrom:
+            - configMapRef:
+                name: gcs-buckets
+            image: "gcr.io/xl-ml-test/publisher:stable"
+            name: publisher
   # TODO: Update the timing of your test runs:
   # https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs/#schedule
   schedule: "0 */24 * * *"
