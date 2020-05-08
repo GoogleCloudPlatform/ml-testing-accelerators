@@ -16,7 +16,7 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   # TODO: Change this to a unique name within your project.
-  name: pt-cifar-tpu-v3-8
+  name: example-pt-cifar-tpu-v3-8
 spec:
   concurrencyPolicy: Forbid
   jobTemplate:

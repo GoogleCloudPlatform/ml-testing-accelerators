@@ -16,7 +16,7 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   # TODO: Change this to a unique name within your project.
-  name: tf-mnist-tpu-v2-8
+  name: example-tf-mnist-tpu-v2-8
 spec:
   concurrencyPolicy: Forbid
   jobTemplate:

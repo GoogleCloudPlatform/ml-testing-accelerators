@@ -1,5 +1,5 @@
 {
-  "test_name": "pt-cifar-tpu-v3-8",
+  "test_name": "example-pt-cifar-tpu-v3-8",
   "metric_collection_config": {
     "write_to_bigquery": true,
     "default_aggregation_strategies": ["final"],
