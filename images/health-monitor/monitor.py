@@ -35,10 +35,8 @@ flags.DEFINE_string('project', None, 'The GCP project with your GKE cluster.')
 flags.DEFINE_string('zone', None, 'The GCP zone with your GKE cluster.')
 
 def main(_):
-  if FLAGS.verbose:
-    logging.set_verbosity(logging.DEBUG)
-  else:
-    logging.set_verbosity(logging.WARNING)
+  logging.info('Starting TPU health monitor for container %s...',
+               FLAGS.container)
 
   try:
     config.load_incluster_config()
@@ -52,6 +50,13 @@ def main(_):
   tpu_name = os.path.basename(pod.metadata.annotations[tpu_name_annotation])
 
   tpu_client = cloud_tpu_client.Client(tpu_name, FLAGS.zone, FLAGS.project)
+
+  logging.info('TPU health monitor initialized for %s.', tpu_name)
+
+  if FLAGS.verbose:
+    logging.set_verbosity(logging.DEBUG)
+  else:
+    logging.set_verbosity(logging.WARNING)
 
   while True:
     try:
