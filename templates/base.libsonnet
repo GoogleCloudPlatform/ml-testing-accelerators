@@ -40,7 +40,6 @@ local volumes = import 'volumes.libsonnet';
       default_aggregation_strategies: ["final"],
     },
     regressionTestConfig: {
-      write_to_error_reporting: true,
       metric_success_conditions: {
         total_wall_time: {
           success_threshold: {

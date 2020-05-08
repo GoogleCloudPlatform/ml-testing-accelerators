@@ -206,8 +206,7 @@
                      "fixed_value": 11700
                     }
                    }
-                  },
-                  "write_to_error_reporting": true
+                  }
                  },
                  "test_name": "pt-nightly-fs-transformer-conv-v3-8"
                 }
