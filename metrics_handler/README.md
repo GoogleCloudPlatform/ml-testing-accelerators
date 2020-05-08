@@ -71,7 +71,7 @@ Full config options:
   }
 
   # (Optional) Ignore metrics with these Tensorboard tags. These metrics will
-  # not be aggregated or written to Bigquery and the metrics handler will not
+  # not be aggregated or written to BigQuery and the metrics handler will not
   # look for regressions in these metrics.
   "tags_to_ignore": ["LearningRate"],
 
@@ -84,7 +84,7 @@ Full config options:
     "accuracy_tag": "Accuracy/test",  # Tag used in the SummaryWriter for acc.
   },
 
-  # (Optional) Defaults to True. Set to false to disable all Bigquery writes.
+  # (Optional) Defaults to True. Set to false to disable all BigQuery writes.
   "write_to_bigquery": "True"
 }
 ```
@@ -158,11 +158,11 @@ Full config options:
 
 See the `Config` section above for full details. Here are some common config patterns you might want to use.
 
-#### I want no alerts, no emails, and don't want to write to Bigquery.
+#### I want no alerts, no emails, and don't want to write to BigQuery.
 
 Best to turn off the metrics handler entirely. Delete the Cloud Function and the Cloud Scheduler to trigger the Cloud Function (both of which you added in the `Setup` section above).
 
-#### I want to record metrics in Bigquery but I don't alerts/emails.
+#### I want to record metrics in BigQuery but I don't alerts/emails.
 
 This will record the final value of all metrics you write to Tensorboard, plus `total_wall_time` and memory usage metrics like `vm_memory_usage_bytes`.
 
