@@ -16,7 +16,7 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   # TODO: Change this to a unique name within your project.
-  name: tf-mnist-tpu-v2-8
+  name: example-pt-cifar-tpu-v3-8
 spec:
   concurrencyPolicy: Forbid
   jobTemplate:
@@ -26,30 +26,48 @@ spec:
       template:
         metadata:
           annotations:
-            tf-version.cloud-tpus.google.com: nightly
+            tf-version.cloud-tpus.google.com: pytorch-nightly
         spec:
           # TODO: Extend the timeout if your test takes longer.
           activeDeadlineSeconds: 3600
           restartPolicy: Never
+          volumes:
+          - name: dshm
+            emptyDir:
+              medium: Memory
+          # TODO: This should match `name` under volumeMounts below in the
+          # `volumeMounts` section.
+          - name: cifar-pd
+            gcePersistentDisk:
+              # TODO: Change this to the name of your Cloud persistent disk.
+              pdName: "cifar-pd-central1-b"
+              fsType: "ext4"
+              readOnly: true
           containers:
-          # TODO: Change this to the command to run your test.
-          - name: test-container
+          - name: "train-container"
             # TODO: Change this to your image if desired. See `images/README`
             # for more on setting up images.
-            image: gcr.io/xl-ml-test/tensorflow:nightly
+            image: "gcr.io/xl-ml-test/pytorch-xla:nightly"
             imagePullPolicy: Always
             resources:
               limits:
-                cloud-tpus.google.com/preemptible-v2: 8
+                cloud-tpus.google.com/preemptible-v3: 8
+            volumeMounts:
+            - name: dshm
+              mountPath: "/dev/shm"
+            # TODO: This should match `name` of the gcePersistentDisk above in
+            # the `volumes` section.
+            - name: cifar-pd
+              mountPath: "/datasets"
+              readOnly: true
             args:
+            # TODO: Change this to the command to run your test.
             - "python3"
-            - "official/vision/image_classification/mnist_main.py"
-            - "--data_dir=gs://xl-ml-test-us-central1/data/mnist"
-            - "--distribution_strategy=tpu"
-            - "--batch_size=1024"
-            - "--train_epochs=1"
-            - "--epochs_between_evals=1"
-            - "--model_dir=$(MODEL_DIR)"
+            - "pytorch/xla/test/test_train_cifar.py"
+            - "--metrics_debug"
+            - "--target_accuracy=72"
+            - "--datadir=/datasets/cifar-data"
+            - "--logdir=$(MODEL_DIR)"
             env:
             - name: "POD_NAME"
               valueFrom:
@@ -72,12 +90,38 @@ spec:
               # will be written. At the very least, change the storage bucket
               # name away from `xl-ml-test-us-central1` since you won't have
               # write access to that bucket.
-              value: "gs://xl-ml-test-us-central1/k8s/mnist/functional/v2-8/$(JOB_NAME)"
-            - name: METRIC_CONFIG
+              value: "gs://xl-ml-test-us-central1/k8s/cifar/convergence/v3-8/$(JOB_NAME)"
+          initContainers:
+          - env:
+            - name: "POD_NAME"
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.name"
+            - name: "POD_UID"
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.uid"
+            - name: "POD_NAMESPACE"
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.namespace"
+            - name: "JOB_NAME"
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.labels['job-name']"
+            - name: "MODEL_DIR"
+              # TODO: Change to match "MODEL_DIR" value from above.
+              value: "gs://xl-ml-test-us-central1/k8s/cifar/convergence/v3-8/$(JOB_NAME)"
+            - name: "METRIC_CONFIG"
               valueFrom:
                 configMapKeyRef:
                   name: metrics-config
-                  key: tf-mnist-tpu-v2-8.json
+                  key: example-pt-cifar-tpu-v3-8.json
+            envFrom:
+            - configMapRef:
+                name: gcs-buckets
+            image: "gcr.io/xl-ml-test/publisher:stable"
+            name: publisher
   # TODO: Update the timing of your test runs:
   # https://kubernetes.io/docs/tasks/job/automated-tasks-with-cron-jobs/#schedule
   schedule: "0 */24 * * *"
