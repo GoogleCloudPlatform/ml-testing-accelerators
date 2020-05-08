@@ -346,7 +346,7 @@ class CloudMetricsHandler(object):
     """Compute the bounds for metrics and report abnormal values.
 
     Any metric that is currently outside the expected bounds is reported to
-    Stackdriver Error Reporting unless `write_to_error_reporting` is set to
+    Stackdriver Error Reporting unless `alert_for_oob_metrics` is set to
     False in the regression test config. Even if this reporting is turned off,
     this method computes the upper and lower bounds for each metric to provide
     to BigQuery as a visual aid when rendering metrics history into charts.
@@ -418,7 +418,7 @@ class CloudMetricsHandler(object):
       #   2. alerting is disabled by config.
       #   3. the job failed and therefore metrics are unreliable.
       if within_bounds or not self.regression_test_config.get(
-          'write_to_error_reporting', True) or \
+          'alert_for_oob_metrics', True) or \
               job_status != job_status_handler.SUCCESS:
         continue
       self.logger.error(

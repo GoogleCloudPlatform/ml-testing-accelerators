@@ -145,12 +145,145 @@ Full config options:
     "Accuracy/test_final"
   ],
 
-  # (Optional) Defaults to True. If set to False, this test will not write
-  # any errors to Stackdriver Error Reporting for out-of-bounds metrics.
-  "write_to_error_reporting": "True",
+  # (Optional) Defaults to True. If set to False, this test will not create
+  # any alerts for out-of-bounds metrics.
+  "alert_for_oob_metrics": "True",
 
-  # (Optional) Defaults to True. If set to False, this test will not send
+  # (Optional) Defaults to True. If set to False, this test will not create
   # any alerts emails if the test crashes or times out.
   "alert_for_failed_jobs": "True"
 }
+```
+## Config "Recipes"
+
+See the `Config` section above for full details. Here are some common config patterns you might want to use.
+
+#### I want no alerts, no emails, and don't want to write to Bigquery.
+
+Best to turn off the metrics handler entirely. Delete the Cloud Function and the Cloud Scheduler to trigger the Cloud Function (both of which you added in the `Setup` section above).
+
+#### I want to record metrics in Bigquery but I don't alerts/emails.
+
+This will record the final value of all metrics you write to Tensorboard, plus `total_wall_time` and memory usage metrics like `vm_memory_usage_bytes`.
+
+```
+  "metric_collection_config": {
+    "default_aggregation_strategies": ["final"],
+    "write_to_bigquery": true
+  },
+  "regression_test_config": {
+    "alert_for_failed_jobs": false,
+    "alert_for_oob_metrics": false
+  },
+```
+
+#### Record metrics and alert if a test crashes but not if metrics regress.
+
+Record metrics in the same way as the example above.
+
+```
+  "metric_collection_config": {
+    "default_aggregation_strategies": ["final"],
+    "write_to_bigquery": true
+  },
+  "regression_test_config": {
+    "alert_for_oob_metrics": false
+  },
+```
+
+#### Record metrics and alert if any metric spikes up above the average.
+
+Record metrics in the same way as the examples above.
+
+Alert if any metric value **increases** by a significant amount above the mean.
+
+Wait for 10 datapoints for a metric before enrolling that metric in alerts.
+
+```
+  "metric_collection_config": {
+    "default_aggregation_strategies": ["final"],
+    "write_to_bigquery": true
+  },
+  "regression_test_config": {
+    "metric_success_conditions": {
+      "default": {
+        "comparison": "less",
+          "success_threshold": {
+            "stddevs_from_mean": 4.0
+          },
+        "wait_for_n_points_of_history": 10
+      }
+    }
+  },
+```
+
+#### Alert if any metric spikes up or if a scalar constant metric changes at all.
+
+Record metrics in the same way as the examples above.
+
+For the `metric_with_constant_value` metric, alert if the value goes up at all.
+
+This is useful in the case where you don't know what a metric value will be when writing the test, but the value should be the same every day. If you simply used `stddevs_from_mean=0` and `comparison=less`, the alert would always fire since your metric is not less than the mean unless it's decreasing every day.
+
+**If you do know what a metric value should be, then see the next example.**
+
+For all other metrics, alert if the value increases significantly above the mean.
+
+Wait for 10 datapoints for a metric before enrolling that metric in alerts.
+
+```
+  "metric_collection_config": {
+    "default_aggregation_strategies": ["final"],
+    "write_to_bigquery": true
+  },
+  "regression_test_config": {
+    "metric_success_conditions": {
+      "default": {
+        "comparison": "less",
+          "success_threshold": {
+            "stddevs_from_mean": 4.0
+          },
+        "wait_for_n_points_of_history": 10
+      },
+      "metric_with_constant_value": {
+        "comparison": "less_or_equal",
+        "success_threshold": {
+          "stddevs_from_mean": 0
+        }
+      }
+    }
+  },
+```
+
+#### Alert if a metric falls below or above a known value.
+
+Record metrics in the same way as the examples above.
+
+Alert if `Accuracy/test_final` falls below 99.0 or if `Loss/test_final` rises above 0.5.
+
+Do not alert for any other metric.
+
+These take effect immediately and will not wait for N runs before alerting.
+
+```
+  "metric_collection_config": {
+    "default_aggregation_strategies": ["final"],
+    "write_to_bigquery": true
+  },
+  "regression_test_config": {
+    "metric_success_conditions": {
+      "Accuracy/test_final": {
+        "comparison": "greater",
+        "success_threshold": {
+          "fixed_value": 99.0
+        }
+      },
+      "Loss/test_final": {
+        "comparison": "less",
+        "success_threshold": {
+          "fixed_value": 0.5
+        }
+      }
+    }
+  },
 ```
