@@ -124,8 +124,7 @@
                      "fixed_value": 0.76000000000000001
                     }
                    }
-                  },
-                  "write_to_error_reporting": true
+                  }
                  },
                  "test_name": "tf-nightly-classifier-resnet-conv-v3-32"
                 }

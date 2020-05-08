@@ -159,8 +159,7 @@
                     },
                     "wait_for_n_points_of_history": 10
                    }
-                  },
-                  "write_to_error_reporting": true
+                  }
                  },
                  "test_name": "pt-nightly-cifar-tv-conv-v3-8"
                 }
