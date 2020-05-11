@@ -170,7 +170,7 @@ def make_plot(dataframe):
   tooltip_template = """@overall_status on @run_date"""
   plot = figure(
       plot_width=(2*longest_test_name)+(45*len(all_dates)),
-      plot_height=30*len(all_test_names),
+      plot_height=100 + 30*len(all_test_names),
       x_range = all_dates[-1::-1],  # Reverse for latest dates first.
       x_axis_location='above',
       y_range = all_test_names[-1::-1],  # Reverse for alphabetical.
