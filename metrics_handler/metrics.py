@@ -110,11 +110,8 @@ def get_computed_metrics(raw_metrics_dict, job_status_dict,
                        'See README for how to set up the config.')
     tag = tta_config['accuracy_tag']
     threshold = tta_config['accuracy_threshold']
-    try:
-      computed_metrics_dict['time_to_accuracy'] = time_to_accuracy(
-          raw_metrics_dict, tag, threshold, start_time)
-    except ValueError as e:
-      raise ValueError('Error computing time to accuracy: {}'.format(e))
+    computed_metrics_dict['time_to_accuracy'] = time_to_accuracy(
+        raw_metrics_dict, tag, threshold, start_time)
 
   if find_memory_metrics:
     if not project_id or not job_name:
@@ -126,7 +123,7 @@ def get_computed_metrics(raw_metrics_dict, job_status_dict,
 
 def read_metrics_from_events_dir(events_dir, tags_to_ignore=None):
   """Collect the TensorBoard summary values for each metric.
-  
+
   Args:
     events_dir (string): Path to location of TensorBoard summaries.
     tags_to_ignore (set[string]): Set of TensorBoard tag names to skip.

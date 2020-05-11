@@ -108,7 +108,8 @@ class CloudMetricsHandler(object):
     """Retrieves and aggregates metrics from Tensorboard Summary file.
 
     Returns:
-      raw_metrics (dict): 
+      raw_metrics (dict): Key is Tensorboard Tag and value is a list of
+        MetricPoint namedtuples.
       aggregated_metrics (dict): Key is metric name and value is a MetricPoint
         containing the aggregated value for that metric.
     """
