@@ -54,7 +54,7 @@
               "checkpoint": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
               "total_steps": 22500
               "train_batch_size": 128
-              "train_file_pattern": "$(COCO_DIR)/train*"
+              "training_file_pattern": "$(COCO_DIR)/train*"
               "val_json_file": "$(COCO_DIR)/instances_val2017.json"
               "validation_file_pattern": "$(COCO_DIR)/val*"
             - "--model_dir=$(MODEL_DIR)"
