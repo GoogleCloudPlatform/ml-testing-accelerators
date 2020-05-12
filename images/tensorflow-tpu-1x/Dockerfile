@@ -12,13 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-generatorOptions:
-  disableNameSuffixHash: true
-configMapGenerator:
-- name: metrics-config
-  files:
-  - example-pt-cifar-tpu-v3-8.json
-  - example-pt-imagenet-mini-gpu.json
-  - example-tf-mnist-tpu-v2-8.json
+FROM tensorflow/tensorflow:1.15.2
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl
+RUN pip install \
+  pyyaml \
+  google-cloud-storage \
+  google-api-python-client \
+  oauth2client
+
+# Checkout tensorflow/tpu models at HEAD
+WORKDIR /
+RUN curl -L https://github.com/tensorflow/tpu/archive/r1.15.tar.gz | tar zx
+RUN mv tpu-* tpu/
+ENV PYTHONPATH /tpu/models
+
+COPY images/setup.sh /
+COPY images/tensorflow/entrypoint.sh /
+
+WORKDIR /tpu
+ENTRYPOINT ["/entrypoint.sh"]

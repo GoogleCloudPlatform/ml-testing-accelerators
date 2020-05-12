@@ -17,5 +17,9 @@ local base = import "../base.libsonnet";
 {
   GardenTest:: base.BaseTest {
     image: "gcr.io/xl-ml-test/tensorflow",
+  },
+  LegacyTpuTest:: base.BaseTest {
+    image: "gcr.io/xl-ml-test/tensorflow-tpu-1x",
   }
+
 }

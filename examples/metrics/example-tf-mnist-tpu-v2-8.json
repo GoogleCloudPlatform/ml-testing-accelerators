@@ -1,5 +1,5 @@
 {
-  "test_name": "tf-mnist-tpu-v2-8",
+  "test_name": "example-tf-mnist-tpu-v2-8",
   "metric_collection_config": {
     "write_to_bigquery": true,
     "default_aggregation_strategies": ["final"]
