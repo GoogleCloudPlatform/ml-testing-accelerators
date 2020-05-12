@@ -1,0 +1,18 @@
+{
+  "test_name": "example-community-geometric-gpu",
+  "metric_collection_config": {
+    "write_to_bigquery": true,
+    "default_aggregation_strategies": ["final"]
+  },
+  "regression_test_config": {
+    "metric_success_conditions": {
+      "default": {
+        "comparison": "less",
+        "success_threshold": {
+          "stddevs_from_mean": 4.0
+        },
+        "wait_for_n_points_of_history": 10
+      }
+    }
+  }
+}

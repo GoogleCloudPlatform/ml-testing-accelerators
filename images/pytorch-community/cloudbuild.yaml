@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-generatorOptions:
-  disableNameSuffixHash: true
-configMapGenerator:
-- name: metrics-config
-  files:
-  - example-pt-cifar-tpu-v3-8.json
-  - example-pt-imagenet-mini-gpu.json
-  - example-tf-mnist-tpu-v2-8.json
-  - example-community-fairseq-gpu.json
-  - example-community-fastai-gpu.json
-  - example-community-geometric-gpu.json
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/pytorch-community:$_VERSION', '.', '-f', 'images/pytorch-community/Dockerfile']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/$PROJECT_ID/pytorch-community:$_VERSION']
+images: ['gcr.io/$PROJECT_ID/pytorch-community:$_VERSION']
+timeout: 1200s  # 20 minutes
+substitutions:
+  _VERSION: 'latest'
+options:
+    substitution_option: 'ALLOW_LOOSE'

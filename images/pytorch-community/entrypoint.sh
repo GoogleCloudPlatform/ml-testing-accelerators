@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright 2020 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,16 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-generatorOptions:
-  disableNameSuffixHash: true
-configMapGenerator:
-- name: metrics-config
-  files:
-  - example-pt-cifar-tpu-v3-8.json
-  - example-pt-imagenet-mini-gpu.json
-  - example-tf-mnist-tpu-v2-8.json
-  - example-community-fairseq-gpu.json
-  - example-community-fastai-gpu.json
-  - example-community-geometric-gpu.json
+
+source /setup.sh
+
+set -u
+set -x
+
+"$@"
