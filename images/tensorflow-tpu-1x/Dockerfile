@@ -25,7 +25,9 @@ RUN pip install \
 WORKDIR /
 RUN curl -L https://github.com/tensorflow/tpu/archive/r1.15.tar.gz | tar zx
 RUN mv tpu-* tpu/
-ENV PYTHONPATH /tpu/models
+RUN pip3 install Cython matplotlib opencv-python-headless pyyaml Pillow
+RUN pip3 install 'git+https://github.com/cocodataset/cocoapi#egg=pycocotools&subdirectory=PythonAPI'
+ENV PYTHONPATH /tpu/models:/tpu/models/official/efficientnet
 
 COPY images/setup.sh /
 COPY images/tensorflow/entrypoint.sh /
