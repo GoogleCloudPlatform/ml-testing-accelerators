@@ -1,5 +1,5 @@
 local efficientnet = import "efficientnet.libsonnet";
-local mask_rcnn = import "mask_rcnn.libsonnet";
+local mask_rcnn = import "mask-rcnn.libsonnet";
 local mnasnet = import "mnasnet.libsonnet";
 local resnet = import "resnet.libsonnet";
 

@@ -17,7 +17,7 @@ local tpus = import "../../tpus.libsonnet";
 
 {
   local mask_rcnn = base.LegacyTpuTest {
-    modelName: "mask_rcnn",
+    modelName: "mask-rcnn",
     paramsOverride:: {
       train_file_pattern: "$(COCO_DIR)/train*",
       train_batch_size: error "Must set `train_batch_size`",
