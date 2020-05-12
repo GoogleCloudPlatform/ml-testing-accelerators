@@ -19,8 +19,6 @@ RUN curl -sSL https://sdk.cloud.google.com | bash
 
 # Checkout repo at HEAD.
 RUN git clone https://github.com/pytorch/builder.git
-#RUN pip3 install torch torchvision
-#RUN pip3 install -r /examples/imagenet/requirements.txt
 
 COPY images/setup.sh /
 COPY images/pytorch-examples-gpu/entrypoint.sh /
