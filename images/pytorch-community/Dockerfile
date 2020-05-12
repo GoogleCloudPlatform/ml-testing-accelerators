@@ -12,16 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-generatorOptions:
-  disableNameSuffixHash: true
-configMapGenerator:
-- name: metrics-config
-  files:
-  - example-pt-cifar-tpu-v3-8.json
-  - example-pt-imagenet-mini-gpu.json
-  - example-tf-mnist-tpu-v2-8.json
-  - example-community-fairseq-gpu.json
-  - example-community-fastai-gpu.json
-  - example-community-geometric-gpu.json
+FROM gcr.io/deeplearning-platform-release/pytorch-gpu.1-4
+
+RUN apt-get update && apt-get install -y --no-install-recommends git
+RUN curl -sSL https://sdk.cloud.google.com | bash
+
+# Checkout repo at HEAD.
+RUN git clone https://github.com/pytorch/builder.git
+#RUN pip3 install torch torchvision
+#RUN pip3 install -r /examples/imagenet/requirements.txt
+
+COPY images/setup.sh /
+COPY images/pytorch-examples-gpu/entrypoint.sh /
+
+ENTRYPOINT ["/entrypoint.sh"]
