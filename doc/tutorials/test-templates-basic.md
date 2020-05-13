@@ -63,7 +63,7 @@ local mnist = base.BaseTest {
 mnist.oneshotJob
 ```
 
-This templated test will build a Kubernetes `Job` resource that will download the MNIST dataset to a temportary folder and run the model for one epoch on CPUs. You can build this file by `jsonnet`: 
+This templated test will build a Kubernetes `Job` resource that will download the MNIST dataset to a temporary folder and run the model for one epoch on CPUs. You can build this file by `jsonnet`: 
 
 ```bash
 jsonnet -J ml-testing-accelerators/ mnist-cpu.jsonnet
