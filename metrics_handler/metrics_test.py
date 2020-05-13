@@ -113,9 +113,9 @@ class MetricsTest(parameterized.TestCase):
     }
 
     time_to_accuracy = metrics.time_to_accuracy(
-        raw_metrics, tag='accuracy', threshold=.4)
+        raw_metrics, tag='accuracy', threshold=.4, start_wall_time=1)
     self.assertEqual(time_to_accuracy,
-        metrics.MetricPoint(metric_value=10, wall_time=10))
+        metrics.MetricPoint(metric_value=9, wall_time=10))
 
   @parameterized.named_parameters(
     ('equal', 'equal', 5., (5., 5.)),
@@ -164,6 +164,34 @@ class MetricsTest(parameterized.TestCase):
   def test_within_bounds(self, value, bounds, inclusive, expected):
     within_bounds = metrics.within_bounds(value, *bounds, inclusive)
     self.assertIs(within_bounds, expected)
+
+  def test_get_computed_metrics(self):
+    job_status_dict = {
+        'start_time': 0,
+        'stop_time': 20,
+    }
+    raw_metrics = {
+      'accuracy': [
+        metrics.MetricPoint(metric_value=.2, wall_time=0),
+        metrics.MetricPoint(metric_value=.4, wall_time=10),
+        metrics.MetricPoint(metric_value=.6, wall_time=20),
+      ],
+      'other_key': [
+        metrics.MetricPoint(metric_value=.8, wall_time=0),
+      ],
+    }
+    tta_config = {
+        'accuracy_tag': 'accuracy',
+        'accuracy_threshold': 0.4,
+    }
+    computed_metrics = metrics.get_computed_metrics(
+        raw_metrics, job_status_dict, tta_config=tta_config,
+        find_memory_metrics=False)
+    self.assertEqual(
+        computed_metrics,
+        {'total_wall_time': metrics.MetricPoint(metric_value=20, wall_time=20),
+         'time_to_accuracy': metrics.MetricPoint(metric_value=10, wall_time=10)}
+    )
 
 
 if __name__ == '__main__':

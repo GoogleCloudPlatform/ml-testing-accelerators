@@ -34,14 +34,18 @@ MetricPoint = collections.namedtuple('MetricPoint', ['metric_value', 'wall_time'
 Threshold = collections.namedtuple('Threshold', ['type', 'value'])
 
 
-def compute_memory_metrics(final_metrics, project, job_name):
-  """Compute the memory used by a Kubernetes job and add it to final_metrics.
+def compute_memory_metrics(project, job_name):
+  """Compute the memory used by a Kubernetes job.
 
   Args:
-    final_metrics (dict): Memory metrics will be added to this dict.
     project (string): GCP project name.
     job_name (string): Kubernetes job name.
+
+  Returns:
+    memory_metrics (dict): Keys are strings and value for each key is a
+      MetricPoint.
   """
+  memory_metrics = {}
   lookup_path = _METRIC_CLIENT.project_path(project)
   base_filter = """metric.type = "kubernetes.io/container/{}" AND resource.labels.pod_name = starts_with("{}")"""
   vm_mem_filter = base_filter.format('memory/used_bytes', job_name)
@@ -62,21 +66,71 @@ def compute_memory_metrics(final_metrics, project, job_name):
         max_value = max(
             [max_value] + [p.value.int64_value for p in series.points])
       if max_value:
-        final_metrics[tup[1]] = MetricPoint(max_value, end_time)
+        memory_metrics[tup[1]] = MetricPoint(max_value, end_time)
     except Exception as e:
       logging.error('Encountered exception when searching for metric {}. '
                     'Exception was: '.format(tup[0], traceback.format_exc()))
+  return memory_metrics
 
+def get_computed_metrics(raw_metrics_dict, job_status_dict,
+                         project_id=None, job_name=None, tta_config=None,
+                         find_memory_metrics=True):
+  """Computes additional metrics about a test.
+
+  Args:
+    raw_metrics_dict (dict): Keys are strings and values are MetricPoints.
+    job_status_dict (dict): Should contain `job_status`, `start_time`,
+      and `stop_time` as keys.
+    project_id (string, optional): Name of the GCP project where the test ran.
+      Required if `find_memory_metrics` is True.
+    job_name (string, optional): Name of the Kubernetes job for this run of the
+      test. Required if `find_memory_metrics` is True.
+    tta_config (dict, optional): The `time_to_accuracy` portion of the
+      metric collection config. Should contain `accuracy_tag` and
+      `accuracy_threshold` as keys. If absent, `time_to_accuracy` will not
+      be added to the return value of this method.
+    find_memory_metrics (bool, optional): If True, query Cloud Monitoring
+      to find memory usage metrics and add them to `metrics_dict`.
+
+  Returns:
+    computed_metrics_dict (dict): Keys are strings and values are
+      MetricPoints.
+  """
+  computed_metrics_dict = {}
+  start_time = job_status_dict['start_time']
+  stop_time = job_status_dict['stop_time']
+  computed_metrics_dict['total_wall_time'] = MetricPoint(
+      stop_time - start_time, stop_time)
+
+  # Compute time_to_accuracy if requested in the config.
+  if tta_config:
+    if 'accuracy_tag' not in tta_config or \
+        'accuracy_threshold' not in tta_config:
+      raise ValueError('Invalid `time_to_accuracy` portion of config. '
+                       'See README for how to set up the config.')
+    tag = tta_config['accuracy_tag']
+    threshold = tta_config['accuracy_threshold']
+    computed_metrics_dict['time_to_accuracy'] = time_to_accuracy(
+        raw_metrics_dict, tag, threshold, start_time)
+
+  if find_memory_metrics:
+    if not project_id or not job_name:
+      raise ValueError('project_id and job_name are required if '
+                       'find_memory_metrics=True')
+    computed_metrics_dict.update(
+        compute_memory_metrics(project_id, job_name))
+  return computed_metrics_dict
 
 def read_metrics_from_events_dir(events_dir, tags_to_ignore=None):
   """Collect the TensorBoard summary values for each metric.
-  
+
   Args:
-    events_dir: path to location of TensorBoard summaries.
-    tags_to_ignore: set of TensorBoard tag names to skip.
+    events_dir (string): Path to location of TensorBoard summaries.
+    tags_to_ignore (set[string]): Set of TensorBoard tag names to skip.
 
   Returns:
-    dict mapping TensorBoard tags to list of MetricPoint.
+    raw_metrics (dict): Keys are TensorBoard tags and value is a list of
+      MetricPoint for every data point for that Tensorboard tag.
   """
   tags_to_ignore = tags_to_ignore or set()
 
@@ -127,7 +181,7 @@ def aggregate_metrics(raw_metrics, default_strategies, metric_strategies=None):
 
   Returns:
     dict mapping metric name to MetricPoint.
-  
+
   Raises:
     ValueError: If `default_strategies` is empty or an invalid strategy is
       provided.
@@ -174,14 +228,15 @@ def aggregate_metrics(raw_metrics, default_strategies, metric_strategies=None):
   return final_metrics
 
 
-def time_to_accuracy(raw_metrics, tag, threshold):
+def time_to_accuracy(raw_metrics, tag, threshold, start_wall_time):
   """Calculate the amount of time for accuracy to cross a given threshold.
 
   Args:
-    raw_metrics: dict mapping TensorBoard tags to list of MetricPoint.
-    tag: string name of accuracy metric.
-    threshold: the desired model accuracy.
-  
+    raw_metrics (dict): Mapping of TensorBoard tags to list of MetricPoint.
+    tag (string): Name of accuracy metric. Should be a key in `raw_metrics`.
+    threshold (float): The desired model accuracy.
+    start_wall_time (float): Wall time at which the test began.
+
   Returns:
     float, amount of time in seconds to reach the desired accuracy.
   """
@@ -191,7 +246,6 @@ def time_to_accuracy(raw_metrics, tag, threshold):
         'Possible tags were: {}'.format(tag, raw_metrics.keys()))
 
   # MetricPoints should be sorted by timestamp with earlier events first.
-  start_wall_time = values[0].wall_time
   try:
     end_wall_time = next(
         v.wall_time for v in values
