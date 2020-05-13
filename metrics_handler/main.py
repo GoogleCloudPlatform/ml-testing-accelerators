@@ -120,7 +120,7 @@ class CloudMetricsHandler(object):
 
     if not raw_metrics:
       self.logger.warning("No metrics found in {}".format(self.events_dir))
-      return {}
+      return {}, {}
 
     default_aggregation_strategies = self.metric_collection_config.get(
         'default_aggregation_strategies')
