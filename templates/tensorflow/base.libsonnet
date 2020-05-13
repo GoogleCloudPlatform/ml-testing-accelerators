@@ -55,7 +55,43 @@ local base = import "../base.libsonnet";
     },
   },
   LegacyTpuTest:: base.BaseTest {
+    local config = self,
+
     image: "gcr.io/xl-ml-test/tensorflow-tpu-1x",
+
+    jobSpec+: {
+      template+: {
+        spec+: {
+          containerMap+: if config.accelerator.type == "tpu" then
+            {
+              monitor: {
+                name: "monitor",
+                image: "gcr.io/xl-ml-test/health-monitor:stable",
+                imagePullPolicy: "Always",
+                env: [
+                  {
+                    name: "POD_NAME",
+                    valueFrom: {
+                      fieldRef: {
+                        fieldPath: "metadata.name",
+                      },
+                    },
+                  },
+                  {
+                    name: "POD_NAMESPACE",
+                    valueFrom: {
+                      fieldRef: {
+                        fieldPath: "metadata.namespace",
+                      },
+                    },
+                  },
+                ],
+              },
+            }
+          else { },
+        },
+      },
+    },
   },
 
 }
