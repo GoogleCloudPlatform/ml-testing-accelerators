@@ -2,6 +2,7 @@
 
 ## Prerequisites
 
+1. [A GCP project](https://cloud.google.com/resource-manager/docs/creating-managing-projects).
 1. A clone of this repository.
 1. Build dependencies from [developing.md](/doc/developing.md).
 1. A GKE cluster with GPUs and (optionally) Cloud TPUs. Accelerator availability depends on GCE zone. All of the accelerators used in this tutorial are available in `us-central1-b`.
@@ -16,21 +17,29 @@
         --num-nodes 1 \
         --enable-ip-alias \
         --enable-autoupgrade \
-        --enable-tpu
+        --enable-tpu \
+        --project=$PROJECT_ID
       kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded.yaml
     ```
 1. A GCS bucket.
   - To create a new GCS bucket, run `gsutil mb -c standard -l us-central1 gs://your-bucket-name`
+
+Before you begin, set the following environment variables:
+
+```bash
+export PROJECT_ID=...
+export GCS_BUCKET=gs://... 
+```
 
 ## Creating a simple test without accelerators
 
 We'll start by creating a simple test that runs the example MNIST model from the TensorFlow model garden on CPUs. First, build the TensorFlow test image from this repository:
 
 ```bash
-gcloud builds submit --config images/tensorflow/cloudbuild.yaml --project=xl-ml-test --substitutions _VERSION=r2.2,_BASE_IMAGE_VERSION=2.2.0,_MODEL_GARDEN_BRANCH=r2.2.0
+gcloud builds submit --config images/tensorflow/cloudbuild.yaml --project=$PROJECT_ID --substitutions _VERSION=r2.2,_BASE_IMAGE_VERSION=2.2.0,_MODEL_GARDEN_BRANCH=r2.2.0
 ```
 
-This new image will be available at `gcr.io/your-project/tensorflow:r2.2.
+This new image will be available at `gcr.io/your-project/tensorflow:r2.2`. You can view your GCR images at https://console.cloud.google.com/gcr.
 
 Next, create the file `mnist-cpu.jsonnet`:
 
@@ -140,7 +149,6 @@ Notice that the `--model_dir` flag has multiple environment variable substitutio
 To create a `ConfigMap` with to specify `OUTPUT_DIR`, run the following command:
 
 ```bash
-export GCS_BUCKET=gs://... 
 kubectl create configmap gcs-buckets --from-literal=OUTPUT_DIR=$GCS_BUCKET/output
 ```
 
@@ -159,7 +167,7 @@ The above example downloads the MNIST dataset every time it runs. That's workabl
 For this example, we can download the MNIST dataset with TensorFlow Datasets (TFDS). Either install the `tensorflow-datasets` pip package or run a Docker image that already has it installed:
 
 ```bash
-kubectl run -it --rm --image gcr.io/your-project/tensorflow:r2.2 --env=GCS_BUCKET=$GCS_BUCKET $USER bash
+kubectl run -it --rm --image gcr.io/$PROJECT_ID/tensorflow:r2.2 --env=GCS_BUCKET=$GCS_BUCKET $USER bash
 ```
 
 Then, download and prepare the dataset with TFDS:
