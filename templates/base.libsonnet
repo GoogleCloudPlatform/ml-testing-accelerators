@@ -25,6 +25,7 @@ local volumes = import 'volumes.libsonnet';
     acceleratorName:: config.accelerator.name,
     mode: "functional",
     command: error "Must specify model `command`",
+    # TODO: Move this to tpus.libsonnet
     tpuVersion: "nightly",
     image: error "Must specify mode `image`",
     imageTag: "latest",
@@ -219,6 +220,7 @@ local volumes = import 'volumes.libsonnet';
   },
   cpu:: {
     name: "cpu",
+    type: "cpu",
     PodSpec: {
       containerMap+: {
         train+: {

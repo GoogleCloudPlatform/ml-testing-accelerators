@@ -2,17 +2,25 @@
 
 ## Prerequisites
 
-1. A copy of this repository.
-1. Build dependencies from [developing.md](/doc/developing.md)
+1. A clone of this repository.
+1. Build dependencies from [developing.md](/doc/developing.md).
+1. A GKE cluster with GPUs and (optionally) Cloud TPUs. Accelerator availability depends on GCE zone. All of the accelerators used in this tutorial are available in `us-central1-b`.
+  - Example command:
+    ```
+      gcloud beta container clusters create tutorial-cluster \
+        --zone us-central1-b \
+        --release-channel regular \
+        --machine-type n1-standard-4 \
+        --accelerator "type=nvidia-tesla-v100,count=1" \
+        --scopes "https://www.googleapis.com/auth/cloud-platform" \
+        --num-nodes 1 \
+        --enable-ip-alias \
+        --enable-autoupgrade \
+        --enable-tpu
+      kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded.yaml
+    ```
 1. A GCS bucket.
-1. A GKE cluster with GPUs and (optionally) Cloud TPUs. See [`/deployments/`](/deployments) for examples. Accelerator availability depends on GCE zone. All of the accelerators used in this tutorial are available in `us-central1-b`.
-
-Set the following environment variables in your shell:
-
-```bash
-export PROJECT_ID=...
-export GCS_BUCKET=gs://... # Run `gsutil mb -c standard -l us-central1 gs://your-bucket`
-```
+  - To create a new GCS bucket, run `gsutil mb -c standard -l us-central1 gs://your-bucket-name`
 
 ## Creating a simple test without accelerators
 
@@ -46,7 +54,7 @@ local mnist = base.BaseTest {
     'official/vision/image_classification/mnist_main.py',
     '--data_dir=/tmp/mnist',
     '--download',
-    '--num_gpu=0',
+    '--num_gpus=0',
     '--train_epochs=1',
     '--model_dir=$(OUTPUT_DIR)/mnist/$(JOB_NAME)',
   ]
@@ -63,7 +71,7 @@ jsonnet -J ml-testing-accelerators/ mnist-cpu.jsonnet
 
 The output should look something like this:
 
-```yaml
+```json
 {
    "apiVersion": "batch/v1",
    "kind": "Job",
@@ -132,6 +140,7 @@ Notice that the `--model_dir` flag has multiple environment variable substitutio
 To create a `ConfigMap` with to specify `OUTPUT_DIR`, run the following command:
 
 ```bash
+export GCS_BUCKET=gs://... 
 kubectl create configmap gcs-buckets --from-literal=OUTPUT_DIR=$GCS_BUCKET/output
 ```
 
@@ -141,7 +150,7 @@ Finally, you can create and run the job with the following command:
 jsonnet -J ml-testing-accelerators/ mnist-cpu.jsonnet | kubectl create -f -
 ```
 
-You can find the job running on your GKE workloads page.
+You can find the job running on your [GKE workloads](https://console.cloud.google.com/kubernetes/workload) page.
 
 ## Storing datasets on GCS
 
@@ -150,7 +159,7 @@ The above example downloads the MNIST dataset every time it runs. That's workabl
 For this example, we can download the MNIST dataset with TensorFlow Datasets (TFDS). Either install the `tensorflow-datasets` pip package or run a Docker image that already has it installed:
 
 ```bash
-kubectl run -it --rm --image gcr.io/deeplearning-platform-release/tf2-cpu --env=GCS_BUCKET=$GCS_BUCKET $USER bash
+kubectl run -it --rm --image gcr.io/your-project/tensorflow:r2.2 --env=GCS_BUCKET=$GCS_BUCKET $USER bash
 ```
 
 Then, download and prepare the dataset with TFDS:
@@ -168,20 +177,21 @@ gsutil ls $GCS_BUCKET/tfds
 Update the `gcs-buckets` `ConfigMap` with a variable to point to the new directory:
 
 ```bash
-kubectl patch configmap gcs-buckets --from-literal=MNIST_DIR=$GCS_BUCKET/tfds
+kubectl delete configmap gcs-buckets
+kubectl create configmap gcs-buckets --from-literal=OUTPUT_DIR=$GCS_BUCKET/output --from-literal=MNIST_DIR=$GCS_BUCKET/tfds
 ```
 
-Then, update the `commands` field in `mnist-cpu.jsonnet`;
+Then, update the `command` field in `mnist-cpu.jsonnet`;
 
 ```jsonnet
   command: [
     'python3',
     'official/vision/image_classification/mnist_main.py',
     '--data_dir=$(MNIST_DIR)',
-    '--num_gpu=0',
+    '--num_gpus=0',
     '--train_epochs=1',
     '--model_dir=$(OUTPUT_DIR)/mnist/$(JOB_NAME)',
-  ]
+  ],
 ```
 
 Run `jsonnet` and `kubectl` again to run the test with `$MNIST_DIR`.
@@ -206,10 +216,10 @@ local mnist = base.BaseTest {
     'python3',
     'official/vision/image_classification/mnist_main.py',
     '--data_dir=$(MNIST_DIR)',
-    '--num_gpu=1',
+    '--num_gpus=1',
     '--train_epochs=1',
     '--model_dir=$(OUTPUT_DIR)/mnist/$(JOB_NAME)',
-  ]
+  ],
   [...]
 ```
 
@@ -243,12 +253,12 @@ Again, make a copy of `mnist-cpu.jsonnet` and name it to `mnist-tpu.jsonnet`. Ad
 
 ```jsonnet
 local base = import 'templates/base.libsonnet';
-local gpus = import 'templates/gpus.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
 
 local mnist = base.BaseTest {
   [...]
   tpuVersion: '2.2',
-  accelerator: gpus.teslaV100,
+  accelerator: tpus.v2_8,
 
   command: [
     'python3',
@@ -257,11 +267,11 @@ local mnist = base.BaseTest {
     '--data_dir=$(MNIST_DIR)',
     '--train_epochs=1',
     '--model_dir=$(OUTPUT_DIR)/mnist/$(JOB_NAME)',
-  ]
+  ],
   [...]
 ```
 
-Note how we removed `--num_gpu` and added `--distribution_strategy=tpu` and `tpu_version: '2.2'`. Build the Kubernetes `Job` with `JSonnet`: 
+We added `tpu_version: '2.2'` and `accelerator: tpus.v2_8` to the test config and updated the model `command`, removing `--num_gpu` and adding `--distribution_strategy=tpu`. Build the Kubernetes `Job` with `jsonnet`: 
 
 ```
 jsonnet -J ml-testing-accelerators/ mnist-tpu.jsonnet
@@ -294,4 +304,3 @@ jsonnet -J ml-testing-accelerators/ mnist-tpu.jsonnet | kubectl create -f -
 - Delete any resources you created just to follow this tutorial.
 - Learn how to automate tests and monitor regressions in the next tutorial (coming soon!).
 - Explore our other documents in [docs/](/docs/).
-- View example tests in [tensorflow/](/templates/tensorflow) and [pytorch/](/templates/pytorch).

@@ -54,6 +54,8 @@ local volumes = import "../volumes.libsonnet";
     },
   },
   PyTorchTest:: PyTorchBaseTest {
+    local config = self,
+
     image: "gcr.io/xl-ml-test/pytorch-xla",
     volumeMap+: {
       dshm: volumes.MemoryVolumeSpec {
@@ -77,7 +79,33 @@ local volumes = import "../volumes.libsonnet";
                 },
               },
             },
-          },
+          } + if config.accelerator.type == "tpu" then
+            {
+              monitor: {
+                name: "monitor",
+                image: "gcr.io/xl-ml-test/health-monitor:stable",
+                imagePullPolicy: "Always",
+                env: [
+                  {
+                    name: "POD_NAME",
+                    valueFrom: {
+                      fieldRef: {
+                        fieldPath: "metadata.name",
+                      },
+                    },
+                  },
+                  {
+                    name: "POD_NAMESPACE",
+                    valueFrom: {
+                      fieldRef: {
+                        fieldPath: "metadata.namespace",
+                      },
+                    },
+                  },
+                ],
+              },
+            }
+          else { },
         },
       },
     },
@@ -103,6 +131,29 @@ local volumes = import "../volumes.libsonnet";
                 CONDA_ENV: config.condaEnv,
                 XLA_DIST_FLAGS: config.xlaDistFlags,
               },
+            },
+            monitor: {
+              name: "monitor",
+              image: "gcr.io/xl-ml-test/health-monitor:stable",
+              imagePullPolicy: "Always",
+              env: [
+                {
+                  name: "POD_NAME",
+                  valueFrom: {
+                    fieldRef: {
+                      fieldPath: "metadata.name",
+                    },
+                  },
+                },
+                {
+                  name: "POD_NAMESPACE",
+                  valueFrom: {
+                    fieldRef: {
+                      fieldPath: "metadata.namespace",
+                    },
+                  },
+                },
+              ],
             },
           },
         },

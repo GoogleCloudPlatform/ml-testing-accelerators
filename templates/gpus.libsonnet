@@ -16,8 +16,9 @@
   GPUSpec:: {
     local gpu = self,
 
-    name: "%(type)s-x%(number)d" % gpu,
-    type: error "Must specify GPUSpec `type`",
+    name: "%(version)s-x%(number)d" % gpu,
+    type: "gpu",
+    version: error "Must specify GPUSpec `version`",
     number: 1,
     region: null,
 
@@ -32,10 +33,10 @@
         },
       },
       nodeSelector+: {
-        "cloud.google.com/gke-accelerator": "nvidia-%(type)s" % gpu,
+        "cloud.google.com/gke-accelerator": "nvidia-%(version)s" % gpu,
       },
     },
   },
 
-  teslaV100: self.GPUSpec { type: "tesla-v100" },
+  teslaV100: self.GPUSpec { version: "tesla-v100" },
 }
