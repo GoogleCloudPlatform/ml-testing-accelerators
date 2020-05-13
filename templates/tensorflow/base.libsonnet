@@ -53,5 +53,9 @@ local base = import "../base.libsonnet";
         },
       },
     },
-  }
+  },
+  LegacyTpuTest:: base.BaseTest {
+    image: "gcr.io/xl-ml-test/tensorflow-tpu-1x",
+  },
+
 }
