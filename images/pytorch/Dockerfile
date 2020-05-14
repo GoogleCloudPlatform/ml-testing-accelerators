@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG _VERSION=nightly
-FROM gcr.io/tpu-pytorch/xla:$_VERSION
+ARG _PT_XLA_VERSION="nightly_3.6"
+FROM gcr.io/tpu-pytorch/xla:$_PT_XLA_VERSION
 
 RUN curl -sSL https://sdk.cloud.google.com | bash
 
