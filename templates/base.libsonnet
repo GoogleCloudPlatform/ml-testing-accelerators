@@ -25,10 +25,11 @@ local volumes = import 'volumes.libsonnet';
     acceleratorName:: config.accelerator.name,
     mode: "functional",
     command: error "Must specify model `command`",
-    tpuVersion: error "Must specify `tpuVersion`",
+    # TODO: Move this to tpus.libsonnet
+    tpuVersion: "nightly",
     image: error "Must specify mode `image`",
     imageTag: "latest",
-    timeout: error "Must specify `timeout`", # 1 hour
+    timeout: error "Must specify `timeout`",
     # Schedule for CronJob in UTC
     schedule: error "Must specify `schedule`",
 
@@ -213,6 +214,22 @@ local volumes = import 'volumes.libsonnet';
         successfulJobsHistoryLimit: 1,
         jobTemplate: {
           spec: config.jobSpec,
+        },
+      },
+    },
+  },
+  cpu:: {
+    name: "cpu",
+    type: "cpu",
+    PodSpec: {
+      containerMap+: {
+        train+: {
+          resources+: {
+            limits+: {
+              cpu: 2,
+              memory: "2Gi",
+            },
+          },
         },
       },
     },

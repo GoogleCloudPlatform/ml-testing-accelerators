@@ -17,7 +17,8 @@
     local tpu = self,
 
     name: "v%(version)d-%(size)d" % tpu,
-    version: error "Must override `type`",
+    type: "tpu",
+    version: error "Must override `version`",
     size: error "Must override `size`",
     preemptible: false,
     region: null,
@@ -28,28 +29,6 @@
           resources+: {
             limits+: { [tpu.resource]: tpu.size },
           },
-        },
-        monitor+: {
-          image: "gcr.io/xl-ml-test/health-monitor:stable",
-          imagePullPolicy: "Always",
-          env: [
-            {
-              name: "POD_NAME",
-              valueFrom: {
-                fieldRef: {
-                  fieldPath: "metadata.name",
-                },
-              },
-            },
-            {
-              name: "POD_NAMESPACE",
-              valueFrom: {
-                fieldRef: {
-                  fieldPath: "metadata.namespace",
-                },
-              },
-            },
-          ],
         },
       },
     },
