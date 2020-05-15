@@ -14,23 +14,38 @@
 
 FROM tensorflow/tensorflow:1.15.2
 
-RUN apt-get update && apt-get install -y --no-install-recommends curl git
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  curl \
+  git \
+  libsm6 \
+  libxext6 \
+  libxrender-dev
 RUN pip install \
   pyyaml \
   google-cloud-storage \
   google-api-python-client \
-  oauth2client
+  oauth2client \
+  Cython \
+  matplotlib \
+  opencv-python-headless \
+  pyyaml \
+  Pillow \
+  tensor2tensor \
+  'git+https://github.com/cocodataset/cocoapi#egg=pycocotools&subdirectory=PythonAPI'
 
-# Checkout tensorflow/tpu models at HEAD
 WORKDIR /
 RUN curl -L https://github.com/tensorflow/tpu/archive/r1.15.tar.gz | tar zx
 RUN mv tpu-* tpu/
-RUN pip3 install Cython matplotlib opencv-python-headless pyyaml Pillow
-RUN pip3 install 'git+https://github.com/cocodataset/cocoapi#egg=pycocotools&subdirectory=PythonAPI'
 ENV PYTHONPATH /tpu/models:/tpu/models/official/efficientnet:/tpu/models/official/mnasnet
+
+# ShapeMask is kept its own branch 
+RUN curl -L https://github.com/tensorflow/tpu/archive/shapemask.tar.gz | tar zx
+RUN mv tpu-* shapemask/
+ 
+RUN curl -L https://github.com/google-research/bert/archive/master.tar.gz | tar zx
+RUN mv bert-* bert/
 
 COPY images/setup.sh /
 COPY images/tensorflow/entrypoint.sh /
 
-WORKDIR /tpu
 ENTRYPOINT ["/entrypoint.sh"]
