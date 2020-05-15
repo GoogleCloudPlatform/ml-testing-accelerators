@@ -55,9 +55,9 @@
             - "--init_checkpoint=$(TF1_BERT_DIR)/2018_10_18/uncased_L-12_H-768_A-12/bert_model.ckpt"
             - "--learning_rate=3e-5"
             - "--num_train_epochs=3"
+            - "--max_seq_length=128"
             - "--use_tpu=True"
             - "--output_dir=$(MODEL_DIR)"
-            - "--max_seq_length=128"
             - "--train_batch_size=512"
             - "--num_tpu_cores=32"
             "env":

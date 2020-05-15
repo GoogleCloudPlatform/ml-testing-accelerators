@@ -44,7 +44,6 @@ local tpus = import "../../tpus.libsonnet";
     accelerator: tpus.v2_8,
     paramsOverride+: {
       train+: {
-        total_steps: 22500,
         train_batch_size: 64,
       },
     },

@@ -32,6 +32,7 @@ local tpus = import "../../tpus.libsonnet";
       "--init_checkpoint=$(TF1_BERT_DIR)/2018_10_18/uncased_L-12_H-768_A-12/bert_model.ckpt",
       "--learning_rate=3e-5",
       "--num_train_epochs=3",
+      "--max_seq_length=128",
       "--use_tpu=True",
       "--output_dir=$(MODEL_DIR)",
     ],
@@ -39,7 +40,6 @@ local tpus = import "../../tpus.libsonnet";
   local v2_8 = {
     accelerator: tpus.v2_8,
     command+: [
-      "--max_seq_length=128",
       "--train_batch_size=128",
       "--num_tpu_cores=8",
     ],
@@ -47,7 +47,6 @@ local tpus = import "../../tpus.libsonnet";
   local v3_8 = {
     accelerator: tpus.v3_8,
     command+: [
-      "--max_seq_length=128",
       "--train_batch_size=128",
       "--num_tpu_cores=8",
     ],
@@ -55,7 +54,6 @@ local tpus = import "../../tpus.libsonnet";
   local v2_32 = {
     accelerator: tpus.v2_32,
     command+: [
-      "--max_seq_length=128",
       "--train_batch_size=512",
       "--num_tpu_cores=32",
     ],
@@ -63,7 +61,6 @@ local tpus = import "../../tpus.libsonnet";
   local v3_32 = {
     accelerator: tpus.v3_32,
     command+: [
-      "--max_seq_length=128",
       "--train_batch_size=512",
       "--num_tpu_cores=32",
     ],
