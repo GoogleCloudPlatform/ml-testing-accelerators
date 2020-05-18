@@ -20,51 +20,31 @@ from bokeh.io import curdoc
 from bokeh.layouts import column, row
 from bokeh.models import Select, Paragraph, Panel, Tabs, TextInput
 
-import metric_history as metric_history
+import metric_compare
 
 from utils import run_query
-QUERY = """
-    SELECT DISTINCT(test_name)
-    FROM
-      `xl-ml-test.metrics_handler_dataset.metric_history`
-    ORDER BY TEST_NAME
-"""
-test_name_prefixes = os.environ.get('TEST_NAME_PREFIXES', '').split(',')
-all_valid_test_names = run_query(
-    QUERY, cache_key=('xlmltest'))['test_name'].values.tolist()
-valid_test_names = []
-for name in all_valid_test_names:
-  for prefix in test_name_prefixes:
-    if prefix in name:
-      valid_test_names.append(name)
-
 
 def update(attr, old, new):
-  if old == new:
-    return
   t0 = time.time()
   timer = Paragraph()
   timer.text = '(Executing query...)'
   curdoc().clear()
-  base_rows = [row(test_select, metric_select, timer)]
+  base_rows = [row(timer), row(test_select), row(metric_select)]
   curdoc().add_root(
       column(
           children=base_rows,
       )
   )
-  test_names = test_select.value.split(',')
-  for name in test_names:
-    if name not in valid_test_names:
-      timer.text = 'Invalid test_name: {}'.format(test_name)
-      return
-  metric_names = metric_select.value.split(',')
+  test_names = [x for x in test_select.value.split(',') if x]
+  print('TEST_NAMES: __{}__'.format(test_names))
+  metric_names = [x for x in metric_select.value.split(',') if x]
+  print('METRIC_NAMES: __{}__'.format(metric_names))
   if not test_names or not metric_names:
     timer.text = 'Neither test_names nor metric_names can be blank.'
     return
   timer.text = 'TEST_NAMES: {}      METRIC_NAMES: {}'.format(test_names, metric_names)
-  return
   data = metric_compare.fetch_data(test_names, metric_names)
-  plots = metric_history.make_plots(test_names, metric_names, data)
+  plots = metric_compare.make_plots(test_names, metric_names, data)
   plot_rows = [row(p) for p in plots] if plots else []
   curdoc().clear()
   curdoc().add_root(
@@ -77,8 +57,10 @@ def update(attr, old, new):
 
 # Try to parse test_names and metric_names from URL args.
 args = curdoc().session_context.request.arguments or {}
-current_test_names = str(args.get('test_names', [''])[0], 'utf-8')
-current_metric_names = str(args.get('metric_names', [''])[0], 'utf-8')
+import base64
+current_test_names = base64.b64decode(args.get('test_names', [b''])[0]).decode('utf-8')
+current_metric_names = base64.b64decode(args.get('metric_names', [b''])[0]).decode('utf-8')
+print('done parsing args')
 
 test_select = TextInput(
     value=current_test_names,
