@@ -545,9 +545,12 @@ def run_main(event, context):
   for msg in all_msgs:
     data_str = msg.message.data
     try:
+      message_id = msg.message.message_id
+      logger.info('Found message_id: {}'.format(message_id))
       data = json.loads(data_str)
       data['publish_time'] = msg.message.publish_time.seconds
       data['ack_id'] = msg.ack_id
+      data['message_id'] = message_id
       test_name_to_msgs[data['test_name']].append(data)
     except Exception as e:
       logger.error(
@@ -605,3 +608,5 @@ def run_main(event, context):
   logger.info('Processed a message for each of the following tests: '
               '{}'.format([x['test_name'] for x in msgs_to_process]))
   logger.send_email()
+
+run_main(None, None)
