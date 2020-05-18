@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 
 {
-  local transformer = base.GardenTest {
+  local transformer = common.ModelGardenTest {
     modelName: "transformer-translate",
     command: [
       "python3",
@@ -39,7 +39,7 @@ local tpus = import "templates/tpus.libsonnet";
       "--model_dir=$(MODEL_DIR)",
     ],
   },
-  local convergence = base.Convergence {
+  local convergence = common.Convergence {
     command+: [
       "--steps_between_evals=200000",
       "--train_steps=200000",

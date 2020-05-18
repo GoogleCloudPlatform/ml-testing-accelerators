@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 
 {
-  local cifar = base.PyTorchTest {
+  local cifar = common.PyTorchTest {
     modelName: "cifar-inline",
     command: [
       "python3",
@@ -27,7 +27,7 @@ local tpus = import "templates/tpus.libsonnet";
       "--target_accuracy=72",
     ],
   },
-  local convergence = base.Convergence {
+  local convergence = common.Convergence {
     # Run at 6AM PST daily instead of 2x per week since convergence is fast.
     schedule: "0 14 * * *",
     regressionTestConfig+: {

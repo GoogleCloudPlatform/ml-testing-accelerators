@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 
 {
-  local efficientnet = base.GardenTest {
+  local efficientnet = common.ModelGardenTest {
     modelName: "classifier-efficientnet",
     paramsOverride:: {
       train: {
@@ -46,7 +46,7 @@ local tpus = import "templates/tpus.libsonnet";
       "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride),
     ],
   },
-  local convergence = base.Convergence {
+  local convergence = common.Convergence {
     paramsOverride+: {
       train+: {
         epochs: 500, 

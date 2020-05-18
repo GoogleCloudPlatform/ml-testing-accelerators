@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 
 {
-  local mask_rcnn = base.LegacyTpuTest {
+  local mask_rcnn = common.LegacyTpuTest {
     modelName: "mask-rcnn",
     paramsOverride:: {
       training_file_pattern: "$(COCO_DIR)/train*",
@@ -79,7 +79,7 @@ local tpus = import "templates/tpus.libsonnet";
       "--config_file=/tpu/models/official/mask_rcnn/configs/cloud/v3-32.yaml",
     ],
   },
-  local convergence = base.Convergence,
+  local convergence = common.Convergence,
 
   configs: [
     mask_rcnn + v2_8 + convergence,

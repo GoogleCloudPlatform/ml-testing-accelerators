@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 local utils = import "templates/utils.libsonnet";
@@ -53,10 +53,10 @@ local utils = import "templates/utils.libsonnet";
         --save-interval=1 \
         --input_shapes=128x64 \
   ||| % command_common,
-  local transformer = base.PyTorchTest {
+  local transformer = common.PyTorchTest {
     modelName: "fs-transformer",
     volumeMap+: {
-      datasets: base.datasetsVolume,
+      datasets: common.datasetsVolume,
     },
     jobSpec+:: {
       template+: {
@@ -75,7 +75,7 @@ local utils = import "templates/utils.libsonnet";
       },
     },
   },
-  local checkpoint_local = base.Functional {
+  local checkpoint_local = common.Functional {
     modelName: "fs-checkpoint-local",
     command: utils.scriptCommand(
       |||
@@ -86,7 +86,7 @@ local utils = import "templates/utils.libsonnet";
       ||| % {common: chpt_command_common}
     ),
   },
-  local checkpoint_gcs = base.Functional {
+  local checkpoint_gcs = common.Functional {
     modelName: "fs-checkpoint-gcs",
     command: utils.scriptCommand(
       |||
@@ -113,7 +113,7 @@ local utils = import "templates/utils.libsonnet";
       },
     },
   },
-  local functional = base.Functional {
+  local functional = common.Functional {
     command: utils.scriptCommand(
       |||
         %(command_common)s  --no-save \
@@ -125,7 +125,7 @@ local utils = import "templates/utils.libsonnet";
       ||| % command_common
     ),
   },
-  local convergence = base.Convergence {
+  local convergence = common.Convergence {
     command: utils.scriptCommand(
       |||
         pip install --editable /tpu-examples/deps/fairseq

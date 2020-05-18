@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 local gpus = import "templates/gpus.libsonnet";
 
 {
-  local mnist = base.GardenTest {
+  local mnist = common.ModelGardenTest {
     modelName: "mnist",
     command: [
       "python3",
@@ -26,7 +26,7 @@ local gpus = import "templates/gpus.libsonnet";
       "--model_dir=$(MODEL_DIR)",
     ],
   },
-  local convergence = base.Convergence {
+  local convergence = common.Convergence {
     command+: [
       "--train_epochs=10",
       "--epochs_between_evals=10",

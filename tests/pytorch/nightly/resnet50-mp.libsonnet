@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 
 {
-  local resnet50_MP = base.PyTorchTest {
+  local resnet50_MP = common.PyTorchTest {
     modelName: "resnet50-mp",
     command: [
       "python3",
@@ -29,7 +29,7 @@ local tpus = import "templates/tpus.libsonnet";
       "--log_steps=200",
     ],
     volumeMap+: {
-      datasets: base.datasetsVolume
+      datasets: common.datasetsVolume
     },
     jobSpec+:: {
       template+: {
@@ -48,13 +48,13 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
   },
-  local functional = base.Functional {
+  local functional = common.Functional {
     command+: [
       "--num_epochs=2",
       "--datadir=/datasets/imagenet-mini",
     ],
   },
-  local convergence = base.Convergence {
+  local convergence = common.Convergence {
     accelerator+: tpus.Preemptible,
     command+: [
       "--num_epochs=90",

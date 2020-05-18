@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 
 {
-  local retinanet = base.LegacyTpuTest {
+  local retinanet = common.LegacyTpuTest {
     modelName: "retinanet",
     paramsOverride: {
       train: {
@@ -84,7 +84,7 @@ local tpus = import "templates/tpus.libsonnet";
       "--num_cores=32",
     ],
   },
-  local convergence = base.Convergence,
+  local convergence = common.Convergence,
 
   configs: [
     retinanet + v2_8 + convergence,

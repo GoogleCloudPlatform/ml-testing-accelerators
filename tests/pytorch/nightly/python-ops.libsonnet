@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 
 {
-  local operations = base.PyTorchTest {
+  local operations = common.PyTorchTest {
     modelName: "python-ops",
     command: [
       "bash",
@@ -33,7 +33,7 @@ local tpus = import "templates/tpus.libsonnet";
   },
 
   configs: [
-    operations + v2_8 + base.Functional + timeouts.Hours(2),
-    operations + v3_8 + base.Functional + timeouts.Hours(2),
+    operations + v2_8 + common.Functional + timeouts.Hours(2),
+    operations + v3_8 + common.Functional + timeouts.Hours(2),
   ],
 }

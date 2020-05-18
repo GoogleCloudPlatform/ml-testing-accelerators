@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "../base.libsonnet";
+local common = import "../common.libsonnet";
 
 {
-  GardenTest:: base.GardenTest {
+ ModelGardenTest:: common.ModelGardenTest {
     frameworkPrefix: "tf-nightly",
     tpuVersion: "nightly",
     imageTag: "nightly",

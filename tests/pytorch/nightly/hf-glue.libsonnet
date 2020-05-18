@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 local utils = import "templates/utils.libsonnet";
@@ -40,7 +40,7 @@ local utils = import "templates/utils.libsonnet";
       --metrics_debug \
       --overwrite_cache \
   |||,
-  local bert_base_cased = base.Convergence {
+  local bert_base_cased = common.Convergence {
     modelName: "hf-glue-bert-b-c",
     command: utils.scriptCommand(
       |||
@@ -68,7 +68,7 @@ local utils = import "templates/utils.libsonnet";
       },
     },
   },
-  local xlnet_large_cased = base.Convergence {
+  local xlnet_large_cased = common.Convergence {
     modelName: "hf-glue-xlnet-l-c",
     command: utils.scriptCommand(
       |||
@@ -96,7 +96,7 @@ local utils = import "templates/utils.libsonnet";
       },
     },
   },
-  local roberta_large = base.Convergence {
+  local roberta_large = common.Convergence {
     modelName: "hf-glue-roberta-l",
     command: utils.scriptCommand(
       |||
@@ -124,7 +124,7 @@ local utils = import "templates/utils.libsonnet";
       },
     },
   },
-  local xlm_mlm_en_2048 = base.Convergence {
+  local xlm_mlm_en_2048 = common.Convergence {
     modelName: "hf-glue-xlm-mlm-en-2048",
     command: utils.scriptCommand(
       |||
@@ -152,7 +152,7 @@ local utils = import "templates/utils.libsonnet";
       },
     },
   },
-  local distilbert_base_uncased = base.Convergence {
+  local distilbert_base_uncased = common.Convergence {
     modelName: "hf-glue-distilbert-b-uc",
     command: utils.scriptCommand(
       |||
@@ -180,10 +180,10 @@ local utils = import "templates/utils.libsonnet";
       },
     },
   },
-  local hf_glue = base.PyTorchTest {
+  local hf_glue = common.PyTorchTest {
     modelName: "hf-glue",
     volumeMap+: {
-      datasets: base.datasetsVolume,
+      datasets: common.datasetsVolume,
     },
     jobSpec+:: {
       template+: {

@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 
 {
-  local retinanet = base.GardenTest {
+  local retinanet = common.ModelGardenTest {
     modelName: "retinanet",
     paramsOverride:: {
       eval: {
@@ -53,7 +53,7 @@ local tpus = import "templates/tpus.libsonnet";
       "--model_dir=$(MODEL_DIR)",
     ],
   },
-  local convergence = base.Convergence {
+  local convergence = common.Convergence {
     command+: [
       "--mode=train",
     ],

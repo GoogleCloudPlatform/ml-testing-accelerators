@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 
 {
-  local efficientnet = base.LegacyTpuTest {
+  local efficientnet = common.LegacyTpuTest {
     modelName: "efficientnet",
     command: [
       "python3",
@@ -57,7 +57,7 @@ local tpus = import "templates/tpus.libsonnet";
       "--train_steps=109474",
     ],
   },
-  local convergence = base.Convergence,
+  local convergence = common.Convergence,
 
   configs: [
     efficientnet + v2_8 + convergence,

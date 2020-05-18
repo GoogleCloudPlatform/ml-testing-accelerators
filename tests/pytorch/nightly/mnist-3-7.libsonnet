@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local mixins = import "templates/mixins.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 
 {
-  local mnist = base.PyTorchTest {
+  local mnist = common.PyTorchTest {
     imageTag: "nightly_3.7",
     modelName: "mnist-3-7",
     command: [
@@ -28,7 +28,7 @@ local tpus = import "templates/tpus.libsonnet";
     ],
   },
 
-  local convergence = base.Convergence {
+  local convergence = common.Convergence {
     # Run at 6AM PST daily instead of 2x per week since convergence is fast.
     schedule: "0 14 * * *",
     regressionTestConfig+: {

@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 
 {
-  local resnet = base.LegacyTpuTest {
+  local resnet = common.LegacyTpuTest {
     modelName: "resnet",
     command: [
       "python3",
@@ -52,7 +52,7 @@ local tpus = import "templates/tpus.libsonnet";
       "--config_file=/tpu/models/official/resnet/configs/cloud/v3-32.yaml",
     ],
   },
-  local convergence = base.Convergence,
+  local convergence = common.Convergence,
 
   configs: [
     resnet + v2_8 + convergence,

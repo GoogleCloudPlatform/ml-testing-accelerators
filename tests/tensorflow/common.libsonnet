@@ -15,7 +15,7 @@
 local base = import "templates/base.libsonnet";
 
 {
-  GardenTest:: base.BaseTest {
+  ModelGardenTest:: base.BaseTest {
     local config = self,
 
     image: "gcr.io/xl-ml-test/tensorflow",

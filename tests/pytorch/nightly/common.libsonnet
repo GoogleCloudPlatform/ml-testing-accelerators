@@ -12,17 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "../base.libsonnet";
+local common = import "../common.libsonnet";
 local mixins = import "templates/mixins.libsonnet";
+local volumes = import "templates/volumes.libsonnet";
 
 {
-  LegacyTpuTest:: base.LegacyTpuTest {
-    frameworkPrefix: "tf-r1.15",
-    tpuVersion: "1.15",
-    imageTag: "1.15",
+  PyTorchTest:: common.PyTorchTest {
+    frameworkPrefix: "pt-nightly",
+    tpuVersion: "pytorch-nightly",
+    imageTag: "nightly",
+  },
+  PyTorchPodTest:: common.PyTorchPodTest {
+    frameworkPrefix: "pt-nightly",
+    tpuVersion: "pytorch-nightly",
+    imageTag: "nightly",
+  },
+  Functional:: mixins.Functional {
+    # Run at 7AM PST daily.
+    schedule: "0 15 * * *",
   },
   Convergence:: mixins.Convergence {
-    # Run at 1:00 PST on Saturday
-    schedule: "0 8 * * 6"
+    # Run at 22:00 PST on Monday and Thursday.
+    schedule: "0 6 * * 1,6",
+  },
+  datasetsVolume: volumes.PersistentVolumeSpec {
+    name: "pytorch-datasets",
+    mountPath: "/datasets",
   },
 }

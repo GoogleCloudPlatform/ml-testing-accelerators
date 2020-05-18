@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 
 {
-  local transformer = base.LegacyTpuTest {
+  local transformer = common.LegacyTpuTest {
     modelName: "transformer",
     command: [
       "t2t-trainer",
@@ -62,7 +62,7 @@ local tpus = import "templates/tpus.libsonnet";
       "--train_steps=62500",
     ],
   },
-  local convergence = base.Convergence,
+  local convergence = common.Convergence,
 
   configs: [
     transformer + v2_8 + convergence,

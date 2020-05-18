@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local mixins = import "templates/mixins.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 local gpus = import "templates/gpus.libsonnet";
 
 {
-  local mnist = base.GardenTest {
+  local mnist = common.ModelGardenTest {
     modelName: "mnist",
     command: [
       "python3",

@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 
 {
-  local shapemask = base.LegacyTpuTest {
+  local shapemask = common.LegacyTpuTest {
     modelName: "shapemask",
     paramsOverride: {
       eval: {
@@ -120,7 +120,7 @@ local tpus = import "templates/tpus.libsonnet";
       "--num_cores=32",
     ],
   },
-  local convergence = base.Convergence,
+  local convergence = common.Convergence,
 
   configs: [
     shapemask + v2_8 + convergence,

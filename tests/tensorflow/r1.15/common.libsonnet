@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "../base.libsonnet";
+local common = import "../common.libsonnet";
 local mixins = import "templates/mixins.libsonnet";
 
 {
-  GardenTest:: base.GardenTest {
-    frameworkPrefix: "tf-r2.2",
-    tpuVersion: "2.2",
-    imageTag: "r2.2",
+  LegacyTpuTest:: common.LegacyTpuTest {
+    frameworkPrefix: "tf-r1.15",
+    tpuVersion: "1.15",
+    imageTag: "1.15",
   },
   Convergence:: mixins.Convergence {
     # Run at 1:00 PST on Saturday

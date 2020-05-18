@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "base.libsonnet";
+local common = import "common.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 local utils = import "templates/utils.libsonnet";
 
 {
-  local roberta = base.PyTorchTest {
+  local roberta = common.PyTorchTest {
     modelName: "roberta-pre",
     paramsOverride: {
       maxEpoch: error "Must set `maxEpoch`",
@@ -58,7 +58,7 @@ local utils = import "templates/utils.libsonnet";
       ||| % self.paramsOverride,
     ),
     volumeMap+: {
-      datasets: base.datasetsVolume
+      datasets: common.datasetsVolume
     },
     jobSpec+:: {
       template+: {
@@ -77,13 +77,13 @@ local utils = import "templates/utils.libsonnet";
       },
     },
   },
-  local functional = base.Functional {
+  local functional = common.Functional {
     regressionTestConfig: null,
     paramsOverride: {
       maxEpoch: 1
     },
   },
-  local convergence = base.Convergence {
+  local convergence = common.Convergence {
     paramsOverride: {
       maxEpoch: 5,
     },
