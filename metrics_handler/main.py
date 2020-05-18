@@ -608,5 +608,3 @@ def run_main(event, context):
   logger.info('Processed a message for each of the following tests: '
               '{}'.format([x['test_name'] for x in msgs_to_process]))
   logger.send_email()
-
-run_main(None, None)
