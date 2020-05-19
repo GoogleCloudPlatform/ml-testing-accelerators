@@ -15,12 +15,12 @@
 local common = import "../common.libsonnet";
 
 {
-  ModelGardenTest:: common.BaseTest {
+  ModelGardenTest:: common.CloudAcceleratorTest {
     local config = self,
 
     image: "gcr.io/xl-ml-test/tensorflow",
   },
-  LegacyTpuTest:: common.BaseTest {
+  LegacyTpuTest:: common.CloudAcceleratorTest {
     local config = self,
 
     image: "gcr.io/xl-ml-test/tensorflow-tpu-1x",

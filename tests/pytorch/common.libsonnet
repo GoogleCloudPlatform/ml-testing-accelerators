@@ -16,7 +16,7 @@ local common = import "../common.libsonnet";
 local volumes = import "templates/volumes.libsonnet";
 
 {
-  local PyTorchBaseTest = common.BaseTest {
+  local PyTorchBaseTest = common.CloudAcceleratorTest {
     regressionTestConfig+: {
       metric_subset_to_alert: [
         "ExecuteTime__Percentile_99_sec_final",

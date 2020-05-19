@@ -15,7 +15,7 @@
 local base = import "templates/base.libsonnet";
 
 {
-  BaseTest:: base.BaseTest {
+  CloudAcceleratorTest:: base.BaseTest {
     local config = self,
 
     publisherImage: "gcr.io/xl-ml-test/publisher:stable",
