@@ -12,30 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+local common = import "common.libsonnet";
+local timeouts = import "templates/timeouts.libsonnet";
+local tpus = import "templates/tpus.libsonnet";
+
 {
-  GPUSpec:: {
-    local gpu = self,
-
-    name: "%(version)s-x%(number)d" % gpu,
-    type: "gpu",
-    version: error "Must specify GPUSpec `version`",
-    number: 1,
-
-    PodSpec:: {
-      containerMap+: {
-        train+: {
-          resources+: {
-            limits+: {
-              "nvidia.com/gpu": gpu.number
-            },
-          },
-        },
-      },
-      nodeSelector+: {
-        "cloud.google.com/gke-accelerator": "nvidia-%(version)s" % gpu,
-      },
-    },
+  local operations = common.PyTorchTest {
+    modelName: "python-ops",
+    command: [
+      "bash",
+      "pytorch/xla/test/run_tests.sh",
+    ],
+    regressionTestConfig: null,
+  },
+  local v2_8 = {
+    accelerator: tpus.v2_8,
+  },
+  local v3_8 = {
+    accelerator: tpus.v3_8,
   },
 
-  teslaV100: self.GPUSpec { version: "tesla-v100" },
+  configs: [
+    operations + v2_8 + common.Functional + timeouts.Hours(2),
+    operations + v3_8 + common.Functional + timeouts.Hours(2),
+  ],
 }

@@ -265,7 +265,9 @@ local tpus = import 'templates/tpus.libsonnet';
 
 local mnist = base.BaseTest {
   [...]
-  tpuVersion: '2.2',
+  tpuSettings: {
+    softwareVersion: '2.2',
+  }
   accelerator: tpus.v2_8,
 
   command: [

@@ -12,30 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-{
-  GPUSpec:: {
-    local gpu = self,
+local all_tests = import "all_tests.jsonnet";
 
-    name: "%(version)s-x%(number)d" % gpu,
-    type: "gpu",
-    version: error "Must specify GPUSpec `version`",
-    number: 1,
-
-    PodSpec:: {
-      containerMap+: {
-        train+: {
-          resources+: {
-            limits+: {
-              "nvidia.com/gpu": gpu.number
-            },
-          },
-        },
-      },
-      nodeSelector+: {
-        "cloud.google.com/gke-accelerator": "nvidia-%(version)s" % gpu,
-      },
-    },
-  },
-
-  teslaV100: self.GPUSpec { version: "tesla-v100" },
-}
+function(test) std.manifestYamlDoc(all_tests[test].oneshotJob)

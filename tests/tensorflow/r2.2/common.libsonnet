@@ -12,30 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+local common = import "../common.libsonnet";
+local mixins = import "templates/mixins.libsonnet";
+
 {
-  GPUSpec:: {
-    local gpu = self,
-
-    name: "%(version)s-x%(number)d" % gpu,
-    type: "gpu",
-    version: error "Must specify GPUSpec `version`",
-    number: 1,
-
-    PodSpec:: {
-      containerMap+: {
-        train+: {
-          resources+: {
-            limits+: {
-              "nvidia.com/gpu": gpu.number
-            },
-          },
-        },
-      },
-      nodeSelector+: {
-        "cloud.google.com/gke-accelerator": "nvidia-%(version)s" % gpu,
-      },
+  ModelGardenTest:: common.ModelGardenTest {
+    frameworkPrefix: "tf-r2.2",
+    tpuSettings+: {
+      softwareVersion: "2.2",
     },
+    imageTag: "r2.2",
   },
-
-  teslaV100: self.GPUSpec { version: "tesla-v100" },
+  Convergence:: mixins.Convergence {
+    # Run at 1:00 PST on Saturday
+    schedule: "0 8 * * 6"
+  },
 }
