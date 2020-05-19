@@ -15,7 +15,7 @@
 local tpus = import "templates/tpus.libsonnet";
 local utils = import "templates/utils.libsonnet";
 
-local targets = import "all_targets.jsonnet";
+local all_tests = import "all_tests.jsonnet";
 
 local copyrightHeader = |||
   # Copyright 2020 Google LLC
@@ -43,7 +43,7 @@ local regionAccelerators = {
   ],
 };
 
-local cronJobs = utils.cronJobOutput(targets, defaultRegion, regionAccelerators);
+local cronJobs = utils.cronJobOutput(all_tests, defaultRegion, regionAccelerators);
 
 # Outputs {filename: yaml_string} for each target
 {

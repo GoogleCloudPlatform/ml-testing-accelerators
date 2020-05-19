@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local garden_tests = import "tensorflow/targets.jsonnet";
-local pytorch_tests = import "pytorch/targets.jsonnet";
+local tensorflow_targets = import "tensorflow/targets.jsonnet";
+local pytorch_targets = import "pytorch/targets.jsonnet";
 
-local all_tests = garden_tests + pytorch_tests;
+local all_targets = tensorflow_targets + pytorch_targets;
 
 # Mapping from unique test name to test config
 {
-  [test.testName]: test for test in all_tests
+  [test.testName]: test for test in all_targets
 }

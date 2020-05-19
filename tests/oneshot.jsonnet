@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local targets = import "all_targets.jsonnet";
+local all_tests = import "all_tests.jsonnet";
 
-function(test) std.manifestYamlDoc(targets[test].oneshotJob)
+function(test) std.manifestYamlDoc(all_tests[test].oneshotJob)
