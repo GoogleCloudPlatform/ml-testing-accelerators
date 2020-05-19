@@ -26,7 +26,7 @@ local volumes = import 'volumes.libsonnet';
     mode: error "Must set `mode`",
     command: error "Must specify model `command`",
 
-    # Image in main `train` container
+    # Image in main `train` container.
     image: error "Must specify mode `image`",
     imageTag: "latest",
 
