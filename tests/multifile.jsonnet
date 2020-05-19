@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+local tpus = import "templates/tpus.libsonnet";
+local utils = import "templates/utils.libsonnet";
+
 local targets = import "all_targets.jsonnet";
 
 local copyrightHeader = |||
@@ -32,11 +35,17 @@ local copyrightHeader = |||
 |||;
 
 local defaultRegion = "us-central1";
-local getDirectory(region) = (if region == null then defaultRegion else region) + "/gen/";
+local regionAccelerators = {
+  "us-central1": [ ],
+  "europe-west4": [
+    tpus.v2_32,
+    tpus.v3_32,
+  ],
+};
+
+local cronJobs = utils.cronJobOutput(targets, defaultRegion, regionAccelerators);
 
 # Outputs {filename: yaml_string} for each target
 {
-  [getDirectory(targets[name].accelerator.region) + name + ".yaml"]:
-      copyrightHeader + std.manifestYamlDoc(targets[name].cronJob)
-  for name in std.objectFields(targets) if targets[name].schedule != null
+  [filename]: copyrightHeader + cronJobs[filename] for filename in std.objectFields(cronJobs)
 }

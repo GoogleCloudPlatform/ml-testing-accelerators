@@ -20,7 +20,6 @@
     type: "gpu",
     version: error "Must specify GPUSpec `version`",
     number: 1,
-    region: null,
 
     PodSpec:: {
       containerMap+: {
