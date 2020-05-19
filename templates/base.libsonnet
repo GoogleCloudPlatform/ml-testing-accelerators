@@ -23,19 +23,31 @@ local volumes = import 'volumes.libsonnet';
     accelerator: error "Must specify `accelerator`",
     # HACK: for format strings
     acceleratorName:: config.accelerator.name,
-    mode: "functional",
+    mode: error "Must set `mode`",
     command: error "Must specify model `command`",
-    # TODO: Move this to tpus.libsonnet
-    tpuVersion: "nightly",
+
+    # Image in main `train` container
     image: error "Must specify mode `image`",
     imageTag: "latest",
+
+    # URL of image used for publishing PubSub messages. See images/publisher.
+    publisherImage: error "Must set `publisherImage`",
+
+    # Timeout deadline for test, in seconds.
     timeout: error "Must specify `timeout`",
     # Schedule for CronJob in UTC
     schedule: error "Must specify `schedule`",
 
-    # Map of names to VolumeSpecs
+    # Setting for TPU tests -- these can be ignored for GPU tests.
+    tpuSettings: {
+      # TPU software version (e.g. `nightly`)
+      softwareVersion: error "Must set TPU `softwareVersion`",
+    },
+
+    # Map of names to VolumeSpecs.
     volumeMap: { },
 
+    # Default regression test settings. Alert when time for test increases significantly.
     metricCollectionConfig: {
       write_to_bigquery: true,
       default_aggregation_strategies: ["final"],
@@ -69,9 +81,13 @@ local volumes = import 'volumes.libsonnet';
       activeDeadlineSeconds: config.timeout,
       template: {
         metadata: {
-          annotations: {
-            "tf-version.cloud-tpus.google.com": config.tpuVersion,
-          },
+          annotations: std.prune({
+              "tf-version.cloud-tpus.google.com":
+                if config.accelerator.type == "tpu" then
+                  config.tpuSettings.softwareVersion
+                else
+                  null,
+          }),
         },
         spec: config.accelerator.PodSpec + volumes.combinedMixin(config.volumeMap) {
           local pod = self,
@@ -118,7 +134,7 @@ local volumes = import 'volumes.libsonnet';
           restartPolicy: "Never",
           initContainerMap:: {
             publisher: {
-              image: "gcr.io/xl-ml-test/publisher:stable",
+              image: config.publisherImage,
               envFrom: [
                 {
                   configMapRef: {

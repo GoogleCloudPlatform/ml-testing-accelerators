@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "templates/base.libsonnet";
+local common = import "../common.libsonnet";
 local volumes = import "templates/volumes.libsonnet";
 
 {
-  local PyTorchBaseTest = base.BaseTest {
+  local PyTorchBaseTest = common.BaseTest {
     regressionTestConfig+: {
       metric_subset_to_alert: [
         "ExecuteTime__Percentile_99_sec_final",
@@ -79,36 +79,10 @@ local volumes = import "templates/volumes.libsonnet";
                 },
               },
             },
-          } + if config.accelerator.type == "tpu" then
-            {
-              monitor: {
-                name: "monitor",
-                image: "gcr.io/xl-ml-test/health-monitor:stable",
-                imagePullPolicy: "Always",
-                env: [
-                  {
-                    name: "POD_NAME",
-                    valueFrom: {
-                      fieldRef: {
-                        fieldPath: "metadata.name",
-                      },
-                    },
-                  },
-                  {
-                    name: "POD_NAMESPACE",
-                    valueFrom: {
-                      fieldRef: {
-                        fieldPath: "metadata.namespace",
-                      },
-                    },
-                  },
-                ],
-              },
-            }
-          else { },
-        },
-      },
-    },
+          }
+        }
+      }
+    }
   },
   # Pod tests are run by creating an instance group to feed the TPU Pods
   PyTorchPodTest:: PyTorchBaseTest {
@@ -131,29 +105,6 @@ local volumes = import "templates/volumes.libsonnet";
                 CONDA_ENV: config.condaEnv,
                 XLA_DIST_FLAGS: config.xlaDistFlags,
               },
-            },
-            monitor: {
-              name: "monitor",
-              image: "gcr.io/xl-ml-test/health-monitor:stable",
-              imagePullPolicy: "Always",
-              env: [
-                {
-                  name: "POD_NAME",
-                  valueFrom: {
-                    fieldRef: {
-                      fieldPath: "metadata.name",
-                    },
-                  },
-                },
-                {
-                  name: "POD_NAMESPACE",
-                  valueFrom: {
-                    fieldRef: {
-                      fieldPath: "metadata.namespace",
-                    },
-                  },
-                },
-              ],
             },
           },
         },

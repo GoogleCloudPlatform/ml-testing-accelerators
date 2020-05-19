@@ -12,86 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local base = import "templates/base.libsonnet";
+local common = import "../common.libsonnet";
 
 {
-  ModelGardenTest:: base.BaseTest {
+  ModelGardenTest:: common.BaseTest {
     local config = self,
 
     image: "gcr.io/xl-ml-test/tensorflow",
-
-    jobSpec+: {
-      template+: {
-        spec+: {
-          containerMap+: if config.accelerator.type == "tpu" then
-            {
-              monitor: {
-                name: "monitor",
-                image: "gcr.io/xl-ml-test/health-monitor:stable",
-                imagePullPolicy: "Always",
-                env: [
-                  {
-                    name: "POD_NAME",
-                    valueFrom: {
-                      fieldRef: {
-                        fieldPath: "metadata.name",
-                      },
-                    },
-                  },
-                  {
-                    name: "POD_NAMESPACE",
-                    valueFrom: {
-                      fieldRef: {
-                        fieldPath: "metadata.namespace",
-                      },
-                    },
-                  },
-                ],
-              },
-            }
-          else { },
-        },
-      },
-    },
   },
-  LegacyTpuTest:: base.BaseTest {
+  LegacyTpuTest:: common.BaseTest {
     local config = self,
 
     image: "gcr.io/xl-ml-test/tensorflow-tpu-1x",
-
-    jobSpec+: {
-      template+: {
-        spec+: {
-          containerMap+: if config.accelerator.type == "tpu" then
-            {
-              monitor: {
-                name: "monitor",
-                image: "gcr.io/xl-ml-test/health-monitor:stable",
-                imagePullPolicy: "Always",
-                env: [
-                  {
-                    name: "POD_NAME",
-                    valueFrom: {
-                      fieldRef: {
-                        fieldPath: "metadata.name",
-                      },
-                    },
-                  },
-                  {
-                    name: "POD_NAMESPACE",
-                    valueFrom: {
-                      fieldRef: {
-                        fieldPath: "metadata.namespace",
-                      },
-                    },
-                  },
-                ],
-              },
-            }
-          else { },
-        },
-      },
-    },
   },
 
 }

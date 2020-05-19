@@ -17,7 +17,9 @@ local common = import "../common.libsonnet";
 {
  ModelGardenTest:: common.ModelGardenTest {
     frameworkPrefix: "tf-nightly",
-    tpuVersion: "nightly",
+    tpuSettings+: {
+      softwareVersion: "nightly",
+    },
     imageTag: "nightly",
   },
 }

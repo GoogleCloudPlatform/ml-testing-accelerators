@@ -19,12 +19,16 @@ local volumes = import "templates/volumes.libsonnet";
 {
   PyTorchTest:: common.PyTorchTest {
     frameworkPrefix: "pt-nightly",
-    tpuVersion: "pytorch-nightly",
+    tpuSettings+: {
+      softwareVersion: "pytorch-nightly",
+    },
     imageTag: "nightly",
   },
   PyTorchPodTest:: common.PyTorchPodTest {
     frameworkPrefix: "pt-nightly",
-    tpuVersion: "pytorch-nightly",
+    tpuSettings+: {
+      softwareVersion: "pytorch-nightly"
+    },
     imageTag: "nightly",
   },
   Functional:: mixins.Functional {
