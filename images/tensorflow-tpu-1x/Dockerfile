@@ -32,6 +32,8 @@ RUN pip install \
   Pillow \
   tensor2tensor \
   'git+https://github.com/cocodataset/cocoapi#egg=pycocotools&subdirectory=PythonAPI'
+# Use 1.15.3 base image when it's available.
+RUN pip install -U tensorflow==1.15.3
 
 WORKDIR /
 RUN curl -L https://github.com/tensorflow/tpu/archive/r1.15.tar.gz | tar zx

@@ -25,6 +25,6 @@ steps:
 images: ['gcr.io/$PROJECT_ID/tensorflow-tpu-1x:$_VERSION']
 timeout: 1200s  # 20 minutes
 substitutions:
-  _VERSION: 'latest'
+  _VERSION: 'r1.15.3'
 options:
   substitution_option: 'ALLOW_LOOSE'
