@@ -90,6 +90,8 @@ def get_query_config(test_names, metric_names):
   }
 
 def get_query(test_names, metric_names):
+  # Note that Bigquery does not support ANY, otherwise we could use a simpler
+  # query such as "WHERE test_name LIKE ANY(...)".
   def _make_where_clause(column_name, names):
     where_clause = f'({column_name} LIKE @{column_name}0'
     for i in range(1, len(names)):
@@ -97,8 +99,8 @@ def get_query(test_names, metric_names):
     where_clause += ')'
     return where_clause
   # TODO: Maybe make the cutoff date configurable.
-  cutoff_date = (datetime.datetime.now() - datetime.timedelta(30)).strftime(
-      '%Y-%m-%d')
+  cutoff_date = (datetime.datetime.now() - datetime.timedelta(
+      days=30)).strftime('%Y-%m-%d')
   query = QUERY.format(**{
     'job_table_name': os.environ['JOB_HISTORY_TABLE_NAME'],
     'metric_table_name': os.environ['METRIC_HISTORY_TABLE_NAME'],
@@ -118,7 +120,7 @@ def fetch_data(test_names, metric_names):
     config=get_query_config(test_names, metric_names))
   return dataframe
 
-def make_table(data_grid):
+def make_html_table(data_grid):
   if not data_grid:
     return ''
   STYLE = 'style="width:100px; border:1px solid #cfcfcf"'
@@ -197,22 +199,8 @@ def _make_plot_and_tables(metric_name, dataframe):
         source=source,
         fill_color={'field': 'job_status', 'transform': color_mapper},
         size=15)
-    #table = DataTable(selectable=True, source=source, width=275, height=275, columns=[
-    #          TableColumn(field="metric_value", title=metric_name, width=80, formatter=NumberFormatter(format="0,0")),
-    #          TableColumn(field="run_date", title="Date", width=80),
-    #])
-    #all_tables.append(column(
-    #    Div(text=f"""<a href="metrics?test_name={test}">{test}</a>""",
-    #        width=275, height=10),
-    #    table))
-  #tables_rows = []
-  #chunked_tables = np.array_split(np.array(all_tables), len(all_tables)//5)
-  #print(len(chunked_tables))
-  #print(len(chunked_tables[0]))
-  #for chunk in chunked_tables:
-  #  tables_rows.append(row(column(chunk.tolist())))
-  #tables_row = row(tables_rows)
 
+  # Create a table representation of the data from the plot above.
   # Each date is a column and each row is a test.
   # Add an extra first row for the headers and an extra first
   # column for the test name.
@@ -231,17 +219,8 @@ def _make_plot_and_tables(metric_name, dataframe):
       run_date = row[1]['run_date']
       data_grid[row_i][run_date_to_column_index[run_date]] = \
           f'{metric_value:0.2f}'
-  table = make_table(data_grid)
-  print(table)
+  table = make_html_table(data_grid)
   table_row = Div(text=table)
-
-
-
-  #taptool = plot.select(type=TapTool)
-  #test_name='mnist'
-  #taptool.callback = OpenURL(url='metrics?test_name='+test_name)
-
-  #tables_row = PreText(text=str(dataframe), width=1000)
 
   plot.xaxis.major_label_orientation = pi / 3
   return plot, table_row

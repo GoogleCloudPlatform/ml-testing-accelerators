@@ -89,12 +89,11 @@ class MetricHistoryTest(parameterized.TestCase):
       'parameterValue': {'value': metric_names[1]},
     })
 
-  def test_make_table(self):
+  def test_make_html_table(self):
     data_grid = [[1,2,'header'], [4,'-',6]]
     self.assertEqual(
-        metric_compare.make_table(data_grid),
-        '<table><tr><th>1</th><th>2</th><th>header</th></tr>'
-        '<tr><td>4</td><td>-</td><td>6</td></tr></table>')
+        metric_compare.make_html_table(data_grid),
+        '<table style="width:300px"><tr><th style="width:100px; border:1px solid #cfcfcf">1</th><th style="width:100px; border:1px solid #cfcfcf">2</th><th style="width:100px; border:1px solid #cfcfcf">header</th></tr><tr><td style="width:100px; border:1px solid #cfcfcf">4</td><td style="width:100px; border:1px solid #cfcfcf">-</td><td style="width:100px; border:1px solid #cfcfcf">6</td></tr></table>')
 
 if __name__ == '__main__':
   absltest.main()
