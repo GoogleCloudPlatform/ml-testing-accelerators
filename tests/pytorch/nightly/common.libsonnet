@@ -32,8 +32,8 @@ local volumes = import "templates/volumes.libsonnet";
     imageTag: "nightly",
   },
   Functional:: mixins.Functional {
-    # Run at 7AM PST daily.
-    schedule: "0 15 * * *",
+    # Run at 11AM PST daily.
+    schedule: "0 19 * * *",
   },
   Convergence:: mixins.Convergence {
     # Run at 22:00 PST on Monday and Thursday.
