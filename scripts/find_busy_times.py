@@ -14,6 +14,7 @@ output grid.
 
 Example usage:
 
+pip3 install croniter
 python3 scripts/find_busy_times.py --dir_path=/Users/me/ml-testing-accelerators/k8s/us-central1/gen/* --chunk_minutes=15
 """
 
