@@ -2,7 +2,7 @@
 
 ## Google Cloud Storage
 
-[Google Cloud Storage](https://cloud.google.com/storage/docs) is a convenient option for models using TensorFlow, since it has native support, and it is the best option for storage for use with TensorFlow TPUs. For best performance, we recommend that you use a regional bucket in the same region in which you are running your model. For example, if your cluster is located in `us-central1-b`, you should create a regional GCS bucket in `us-central1`. For models using frameworks that do not have native GCS support (e.g. PyTorch), you should add a step to your test to copy the data from GCS to local storage before running the model. You do not need any additional setup to use GCS with GKE, as long as your compute service account (or the service accound of your Kubernetes nodes) and the TPU service account (if applicable) have access to your data bucket.
+[Google Cloud Storage](https://cloud.google.com/storage/docs) is a convenient option for models using TensorFlow, since it has native support, and it is the best storage option for use with TensorFlow TPUs. For best performance, we recommend that you use a regional bucket in the same region in which you are running your model. For example, if your cluster is located in `us-central1-b`, you should create a regional GCS bucket in `us-central1`. For models using frameworks that do not have native GCS support (e.g. PyTorch), you should add a step to your test to copy the data from GCS to local storage before running the model. You do not need any additional setup to use GCS with GKE, as long as your compute service account (or the service accound of your Kubernetes nodes) and the TPU service account (if applicable) have access to your data bucket.
 
 ## Cloud Filestore
 
@@ -39,7 +39,7 @@ spec:
       storage: 1Ki
 ```
 
-`Job`s that rely on the dataset in Filestore will need to have the following line in their pod template:
+`Job`s that rely on the dataset in Filestore will need to have the following line in their pod template to bind to that `PersistentVolumeClaim`:
 
 ```yaml
   ...
