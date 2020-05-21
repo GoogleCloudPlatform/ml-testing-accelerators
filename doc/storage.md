@@ -45,8 +45,19 @@ spec:
   ...
   - name: filestore-datasets
     persistentVolumeClaim:
+      # `claimName` should match the name of the `PersistentVolumeClaim`.
       claimName: filestore-datasets-claim
   ...
+```
+
+In containers that need the dataset, add the corresponding `volumeMount` to mount it at `/datasets`:
+
+```yaml
+    ...
+    - mountPath: /datasets
+      name: filestore-datasets
+      readOnly: true
+    ...
 ```
 
 If you are using our templates to generate your automated tests, you can add a [`PersistentVolumeSpec`](../tests/volumes.libsonnet) to a test's `volumeMap` to automatically mount the volume in the test's main `train` container.
