@@ -123,16 +123,33 @@ def fetch_data(test_names, metric_names):
 def make_html_table(data_grid):
   if not data_grid:
     return ''
-  STYLE = 'style="width:100px; border:1px solid #cfcfcf"'
-  table_width = 100 * len(data_grid[0])
+  cell_width = 100
+  normal_style = f'style="width:{cell_width}px; border:1px solid #cfcfcf"'
+  alert_style = f'style="width:{cell_width}px; border:1px solid #cfcfcf; background-color: #ff8a8a"'
+  table_width = cell_width * len(data_grid[0])
   table_html = f'<table style="width:{table_width}px">'
   first_row = True
   for row in data_grid:
+    values = []
+    for col in row:
+      try:
+        values.append(float(col))
+      except ValueError:
+        continue
+    mean = np.mean(values) if values else 0
+    stddev = np.std(values) if values else 0
     # First row uses '<th>' HTML tag, others use '<td>'.
     tag_type = 'h' if first_row else 'd'
     table_html += '<tr>'
     for col in row:
-      table_html += f'<t{tag_type} {STYLE}>{col}</t{tag_type}>'
+      style = normal_style
+      try:
+        v = float(col)
+        if stddev > 0 and (abs(v - mean) / stddev) > 3.0:
+          style = alert_style
+      except ValueError:
+        pass
+      table_html += f'<t{tag_type} {style}>{col}</t{tag_type}>'
     table_html += '</tr>'
     first_row = False
   table_html += '</table>'
