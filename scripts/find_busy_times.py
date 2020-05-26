@@ -29,7 +29,8 @@ output grid.
 Example usage:
 
 pip3 install croniter
-python3 scripts/find_busy_times.py --dir_path=/Users/me/ml-testing-accelerators/k8s/us-central1/gen/* --chunk_minutes=15
+pip3 install PyYAML
+python3 scripts/find_busy_times.py --files=/Users/me/ml-testing-accelerators/k8s/us-central1/gen/* --chunk_minutes=15
 """
 
 import datetime
@@ -38,32 +39,34 @@ import re
 import sys
 
 import croniter
+import yaml
 
 from absl import app
 from absl import flags
 
 FLAGS = flags.FLAGS
-flags.DEFINE_string('dir_path', None, 'Dir to search for test configs.')
+flags.DEFINE_string('files', None, 'Dir to search for test configs.')
 flags.DEFINE_integer('chunk_minutes', 10, 'Number of minutes per chunk.')
-
-_DEADLINE_REGEX = r'"?activeDeadlineSeconds"?: "?(\d+)"?'
-_SCHEDULE_REGEX = r'"?schedule"?: "?([ \*0-9,\-%LW#\?/H]+)"?'
 
 def get_deadline_and_schedules():
   file_to_schedule_and_deadline = {}
-  for file in glob.iglob(FLAGS.dir_path):
+  for file in glob.iglob(FLAGS.files):
     is_tpu_test = False
     deadline_sec = None
     schedule = None
+    with open(file, 'r') as yamlfile:
+      loaded = yaml.load(yamlfile)
+      try:
+        schedule = loaded['spec']['schedule']
+        deadline_sec = int(
+            loaded['spec']['jobTemplate']['spec']['activeDeadlineSeconds'])
+      except Exception:
+        continue
     for line in open(file, 'r'):
+      # TODO: Consider checking the loaded yaml to find the TPU request. Right
+      # now this method seems less likely to change.
       if re.search("""cloud-tpus.google.com/\S+: [0-9]+""", line):
         is_tpu_test = True
-      dd = re.findall(_DEADLINE_REGEX, line)
-      if dd:
-        deadline_sec = int(dd[0])
-      ss = re.findall(_SCHEDULE_REGEX, line)
-      if ss:
-        schedule = ss[0]
     if is_tpu_test:
       file_to_schedule_and_deadline[file] = (deadline_sec, schedule)
   return file_to_schedule_and_deadline
