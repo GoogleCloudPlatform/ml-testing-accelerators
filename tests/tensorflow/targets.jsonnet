@@ -15,12 +15,10 @@
 local nightly = import "nightly/targets.jsonnet";
 local r2_2 = import "r2.2/targets.jsonnet";
 local r1_15 = import "r1.15/targets.jsonnet";
-local r2_1_1 = import "r2.1.1/targets.jsonnet";
 
 # Add new versions here
 std.flattenArrays([
   nightly,
   r1_15,
   r2_2,
-  r2_1_1
 ])
