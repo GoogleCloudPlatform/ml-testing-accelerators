@@ -121,11 +121,22 @@ local tpus = import "templates/tpus.libsonnet";
     ],
   },
   local convergence = common.Convergence,
+  local functional = common.Functional {
+    paramsOverride+: {
+      train+: {
+        total_steps: 1000,
+      },
+    },
+  },
 
   configs: [
     shapemask + v2_8 + convergence,
     shapemask + v3_8 + convergence,
     shapemask + v2_32 + convergence,
     shapemask + v3_32 + convergence,
+    shapemask + v2_8 + functional,
+    shapemask + v3_8 + functional,
+    shapemask + v2_32 + functional,
+    shapemask + v3_32 + functional,
   ],
 }

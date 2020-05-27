@@ -27,4 +27,8 @@ local mixins = import "templates/mixins.libsonnet";
     # Run at 1:00 PST on Saturday
     schedule: "0 8 * * 6"
   },
+  Functional:: mixins.Functional {
+    # Run at 20:00 PST daily
+    schedule: "0 3 * * 0-6"
+  },
 }

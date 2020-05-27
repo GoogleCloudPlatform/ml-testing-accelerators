@@ -85,11 +85,22 @@ local tpus = import "templates/tpus.libsonnet";
     ],
   },
   local convergence = common.Convergence,
+  local functional = common.Functional {
+    paramsOverride+: {
+      train+: {
+        total_steps: 1000,
+      },
+    },
+  },
 
   configs: [
     retinanet + v2_8 + convergence,
     retinanet + v3_8 + convergence,
     retinanet + v2_32 + convergence,
     retinanet + v3_32 + convergence,
+    retinanet + v2_8 + functional,
+    retinanet + v3_8 + functional,
+    retinanet + v2_32 + functional,
+    retinanet + v3_32 + functional,
   ],
 }
