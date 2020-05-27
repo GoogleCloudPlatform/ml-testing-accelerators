@@ -19,9 +19,9 @@ local mixins = import "templates/mixins.libsonnet";
   LegacyTpuTest:: common.LegacyTpuTest {
     frameworkPrefix: "tf-r1.15",
     tpuSettings+: {
-      softwareVersion: "1.15",
+      softwareVersion: "1.15.3",
     },
-    imageTag: "1.15",
+    imageTag: "r1.15.3",
   },
   Convergence:: mixins.Convergence {
     # Run at 1:00 PST on Saturday
