@@ -13,11 +13,11 @@
 # limitations under the License.
 
 import datetime
-from math import pi
+import math
 import os
 
 from bokeh.layouts import column, row
-from bokeh.models import CategoricalColorMapper, ColumnDataSource, DataTable, Div, HoverTool, NumberFormatter, OpenURL, PreText, TableColumn, TapTool, Whisker
+from bokeh.models import CategoricalColorMapper, ColumnDataSource, Div, HoverTool
 from bokeh.plotting import figure
 
 import javascript_utils
@@ -136,15 +136,22 @@ def make_html_table(data_grid):
         values.append(float(col))
       except ValueError:
         continue
-    mean = np.mean(values) if values else 0
-    stddev = np.std(values) if values else 0
     # First row uses '<th>' HTML tag, others use '<td>'.
     tag_type = 'h' if first_row else 'd'
     table_html += '<tr>'
     for col in row:
+      # Use normal cell style unless the cell's value is unusually high or low.
       style = normal_style
       try:
         v = float(col)
+        # Find the mean/stddev of this row's values but make sure to exclude
+        # the current value.
+        values_copy = list(values)
+        for i, x in enumerate(values_copy):
+          if math.isclose(x, v):
+            values_copy.pop(i)
+        mean = np.mean(values_copy) if values_copy else 0
+        stddev = np.std(values_copy) if values_copy else 0
         if stddev > 0 and (abs(v - mean) / stddev) > 3.0:
           style = alert_style
       except ValueError:
@@ -157,7 +164,7 @@ def make_html_table(data_grid):
 
 def make_plots(test_names, metric_names, dataframe):
   if not dataframe['metric_name'].any():
-    print("FOUND NO DATA: {}\n{}".format(test_names, dataframe))
+    logging.error("Found no data: {}\n{}".format(test_names, dataframe))
     return
 
   # Split data into 1 dataframe per metric so we can easily make 1 graph
@@ -167,15 +174,15 @@ def make_plots(test_names, metric_names, dataframe):
     metric_dataframe = dataframe[dataframe['metric_name'] == metric_name]
     metric_to_dataframe[metric_name] = metric_dataframe
 
-  all_plots = []
+  all_rows = []
   for metric_name, dataframe in metric_to_dataframe.items():
-    plot, tables_row = _make_plot_and_tables(
+    plot, table_row = _make_plot_and_table(
         metric_name, metric_to_dataframe[metric_name])
-    all_plots.extend([plot, tables_row])
-  return all_plots
+    all_rows.extend([plot, table_row])
+  return all_rows
 
 
-def _make_plot_and_tables(metric_name, dataframe):
+def _make_plot_and_table(metric_name, dataframe):
   # Record some global stats about the entire suite of tests.
   all_dates = np.unique(dataframe['run_date']).tolist()[-1::-1]
   y_max = 1.1 * dataframe['metric_value'].max()
@@ -239,6 +246,6 @@ def _make_plot_and_tables(metric_name, dataframe):
   table = make_html_table(data_grid)
   table_row = Div(text=table)
 
-  plot.xaxis.major_label_orientation = pi / 3
+  plot.xaxis.major_label_orientation = math.pi / 3
   return plot, table_row
 

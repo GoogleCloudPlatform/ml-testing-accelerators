@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
+import base64
 import os
 import time
 
+from absl import logging
 from bokeh.io import curdoc
 from bokeh.layouts import column, row
 from bokeh.models import Select, Paragraph, Panel, Tabs, TextInput
@@ -36,13 +37,12 @@ def update(attr, old, new):
       )
   )
   test_names = [x for x in test_select.value.split(',') if x]
-  print('TEST_NAMES: __{}__'.format(test_names))
+  logging.info('test_names: `{}`'.format(test_names))
   metric_names = [x for x in metric_select.value.split(',') if x]
-  print('METRIC_NAMES: __{}__'.format(metric_names))
+  logging.info('metric_names: `{}`'.format(metric_names))
   if not test_names or not metric_names:
     timer.text = 'Neither test_names nor metric_names can be blank.'
     return
-  timer.text = 'TEST_NAMES: {}      METRIC_NAMES: {}'.format(test_names, metric_names)
   data = metric_compare.fetch_data(test_names, metric_names)
   plots = metric_compare.make_plots(test_names, metric_names, data)
   plot_rows = [row(p) for p in plots] if plots else []
@@ -57,10 +57,10 @@ def update(attr, old, new):
 
 # Try to parse test_names and metric_names from URL args.
 args = curdoc().session_context.request.arguments or {}
-import base64
-current_test_names = base64.b64decode(args.get('test_names', [b''])[0]).decode('utf-8')
-current_metric_names = base64.b64decode(args.get('metric_names', [b''])[0]).decode('utf-8')
-print('done parsing args')
+current_test_names = base64.b64decode(
+    args.get('test_names', [b''])[0]).decode('utf-8')
+current_metric_names = base64.b64decode(
+    args.get('metric_names', [b''])[0]).decode('utf-8')
 
 test_select = TextInput(
     value=current_test_names,
