@@ -63,11 +63,20 @@ local tpus = import "templates/tpus.libsonnet";
     ],
   },
   local convergence = common.Convergence,
+  local functional = common.Functional {
+    command+: [
+      "--train_steps=10",
+    ],
+  },
 
   configs: [
     transformer + v2_8 + convergence,
     transformer + v3_8 + convergence,
     transformer + v2_32 + convergence,
     transformer + v3_32 + convergence,
+    transformer + v2_8 + functional,
+    transformer + v3_8 + functional,
+    transformer + v2_32 + functional,
+    transformer + v3_32 + functional,
   ],
 }

@@ -66,11 +66,20 @@ local tpus = import "templates/tpus.libsonnet";
     ],
   },
   local convergence = common.Convergence,
+  local functional = common.Functional {
+    command+: [
+      '--num_train_epochs=1',
+    ],
+  },
 
   configs: [
     bert + v2_8 + convergence,
     bert + v3_8 + convergence,
     bert + v2_32 + convergence,
     bert + v3_32 + convergence,
+    bert + v2_8 + functional,
+    bert + v3_8 + functional,
+    bert + v2_32 + functional,
+    bert + v3_32 + functional,
   ],
 }

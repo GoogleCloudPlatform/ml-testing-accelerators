@@ -26,7 +26,7 @@
       "template":
         "metadata":
           "annotations":
-            "tf-version.cloud-tpus.google.com": "1.15"
+            "tf-version.cloud-tpus.google.com": "1.15.3"
         "spec":
           "containers":
           - "env":
@@ -80,7 +80,7 @@
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/tensorflow-tpu-1x:1.15"
+            "image": "gcr.io/xl-ml-test/tensorflow-tpu-1x:r1.15.3"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":

@@ -80,11 +80,20 @@ local tpus = import "templates/tpus.libsonnet";
     ],
   },
   local convergence = common.Convergence,
+  local functional = common.Functional {
+    command+: [
+      "--total_steps=1000",
+    ],
+  },
 
   configs: [
     mask_rcnn + v2_8 + convergence,
     mask_rcnn + v3_8 + convergence,
     mask_rcnn + v2_32 + convergence,
     mask_rcnn + v3_32 + convergence,
+    mask_rcnn + v2_8 + functional,
+    mask_rcnn + v3_8 + functional,
+    mask_rcnn + v2_32 + functional,
+    mask_rcnn + v3_32 + functional,
   ],
 }

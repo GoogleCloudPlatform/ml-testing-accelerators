@@ -58,11 +58,20 @@ local tpus = import "templates/tpus.libsonnet";
     ],
   },
   local convergence = common.Convergence,
+  local functional = common.Functional {
+    command+: [
+      "--train_steps=1000",
+    ],
+  },
 
   configs: [
     efficientnet + v2_8 + convergence,
     efficientnet + v3_8 + convergence,
     efficientnet + v2_32 + convergence,
     efficientnet + v3_32 + convergence,
+    efficientnet + v2_8 + functional,
+    efficientnet + v3_8 + functional,
+    efficientnet + v2_32 + functional,
+    efficientnet + v3_32 + functional,
   ],
 }
