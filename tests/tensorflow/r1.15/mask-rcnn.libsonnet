@@ -81,9 +81,9 @@ local tpus = import "templates/tpus.libsonnet";
   },
   local convergence = common.Convergence,
   local functional = common.Functional {
-    command+: [
-      "--total_steps=1000",
-    ],
+    paramsOverride+: {
+      total_steps: 1000,
+    },
   },
 
   configs: [

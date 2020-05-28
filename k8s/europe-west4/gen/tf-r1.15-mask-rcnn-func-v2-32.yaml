@@ -52,7 +52,7 @@
             - |
               --params_override="backbone": "resnet50"
               "checkpoint": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
-              "total_steps": 22500
+              "total_steps": 1000
               "train_batch_size": 128
               "training_file_pattern": "$(COCO_DIR)/train*"
               "val_json_file": "$(COCO_DIR)/instances_val2017.json"
@@ -60,7 +60,6 @@
             - "--model_dir=$(MODEL_DIR)"
             - "--num_cores=32"
             - "--config_file=/tpu/models/official/mask_rcnn/configs/cloud/v2-32.yaml"
-            - "--total_steps=1000"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
