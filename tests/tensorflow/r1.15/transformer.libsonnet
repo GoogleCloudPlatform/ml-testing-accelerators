@@ -35,7 +35,6 @@ local tpus = import "templates/tpus.libsonnet";
     command+: [
       "--iterations_per_loop=100",
       "--tpu_num_shards=8",
-      "--train_steps=250000",
     ],
   },
   local v3_8 = {
@@ -43,7 +42,6 @@ local tpus = import "templates/tpus.libsonnet";
     command+: [
       "--iterations_per_loop=100",
       "--tpu_num_shards=8",
-      "--train_steps=250000",
     ],
   },
   local v2_32 = {
@@ -51,7 +49,6 @@ local tpus = import "templates/tpus.libsonnet";
     command+: [
       "--iterations_per_loop=5000",
       "--tpu_num_shards=32",
-      "--train_steps=62500",
     ],
   },
   local v3_32 = {
@@ -59,7 +56,6 @@ local tpus = import "templates/tpus.libsonnet";
     command+: [
       "--iterations_per_loop=5000",
       "--tpu_num_shards=32",
-      "--train_steps=62500",
     ],
   },
   local convergence = common.Convergence,
@@ -70,10 +66,10 @@ local tpus = import "templates/tpus.libsonnet";
   },
 
   configs: [
-    transformer + v2_8 + convergence,
-    transformer + v3_8 + convergence,
-    transformer + v2_32 + convergence,
-    transformer + v3_32 + convergence,
+    transformer + v2_8 + convergence + { command+: [ "--train_steps=250000" ] },
+    transformer + v3_8 + convergence + { command+: [ "--train_steps=250000" ] },
+    transformer + v2_32 + convergence + { command+: [ "--train_steps=62500" ] },
+    transformer + v3_32 + convergence + { command+: [ "--train_steps=62500" ] },
     transformer + v2_8 + functional,
     transformer + v3_8 + functional,
     transformer + v2_32 + functional,
