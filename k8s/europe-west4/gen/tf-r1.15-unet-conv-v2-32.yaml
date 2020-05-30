@@ -49,7 +49,11 @@
             - "--training_file_pattern=$(LITS_DIR)/train*"
             - "--eval_file_pattern=$(LITS_DIR)/val*"
             - |
-              --params_override="train_batch_size": 8
+              --params_override="input_image_size":
+              - 128
+              - 128
+              - 128
+              "train_batch_size": 8
               "train_steps": 1200
             - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
             - "--model_dir=$(MODEL_DIR)"

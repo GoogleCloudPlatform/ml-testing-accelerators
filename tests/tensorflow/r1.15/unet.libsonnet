@@ -50,6 +50,7 @@ local tpus = import "templates/tpus.libsonnet";
     paramsOverride+: {
       train_steps: 1200,
       train_batch_size: 8,
+      input_image_size: [128,128,128],
     },
     command+: [
       "--config_file=/tpu/models/official/unet3d/configs/cloud/v3-32_256x256x256_ce.yaml",
@@ -71,7 +72,6 @@ local tpus = import "templates/tpus.libsonnet";
   local functional = common.Functional {
     paramsOverride+: {
       train_steps: 100,
-      input_image_size: [128,128,128],
     },
   },
 
