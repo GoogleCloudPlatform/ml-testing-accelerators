@@ -25,10 +25,7 @@ import metric_compare
 
 from utils import run_query
 
-def update(attr, old, new):
-  t0 = time.time()
-  timer = Paragraph()
-  timer.text = '(Executing query...)'
+def draw_base_ui(timer, test_select, metric_select):
   curdoc().clear()
   base_rows = [row(timer), row(test_select), row(metric_select)]
   curdoc().add_root(
@@ -36,16 +33,32 @@ def update(attr, old, new):
           children=base_rows,
       )
   )
+
+def update(attr, old, new):
+  timer = Paragraph()
+  timer.text = '(Executing query...)'
+  draw_base_ui(timer, test_select, metric_select)
+  curdoc().add_next_tick_callback(create_plots)
+
+def create_plots():
+  t0 = time.time()
+  timer = Paragraph()
   test_names = [x for x in test_select.value.split(',') if x]
   logging.info('test_names: `{}`'.format(test_names))
   metric_names = [x for x in metric_select.value.split(',') if x]
   logging.info('metric_names: `{}`'.format(metric_names))
   if not test_names or not metric_names:
     timer.text = 'Neither test_names nor metric_names can be blank.'
+    draw_base_ui(timer, test_select, metric_select)
     return
   data = metric_compare.fetch_data(test_names, metric_names)
+  if data.empty:
+    timer.text = 'No data found. Double check metric/test names.'
+    draw_base_ui(timer, test_select, metric_select)
+    return
   plots = metric_compare.make_plots(test_names, metric_names, data)
   plot_rows = [row(p) for p in plots] if plots else []
+  base_rows = [row(timer), row(test_select), row(metric_select)]
   curdoc().clear()
   curdoc().add_root(
       column(

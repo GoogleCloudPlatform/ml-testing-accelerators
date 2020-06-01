@@ -16,6 +16,7 @@ import datetime
 import math
 import os
 
+from absl import logging
 from bokeh.layouts import column, row
 from bokeh.models import CategoricalColorMapper, ColumnDataSource, Div, HoverTool
 from bokeh.plotting import figure
@@ -150,9 +151,9 @@ def make_html_table(data_grid):
         for i, x in enumerate(values_copy):
           if math.isclose(x, v):
             values_copy.pop(i)
-        mean = np.mean(values_copy) if values_copy else 0
-        stddev = np.std(values_copy) if values_copy else 0
-        if stddev > 0 and (abs(v - mean) / stddev) > 3.0:
+        mean = np.mean(values_copy) if len(values_copy) >= 5 else 0
+        stddev = np.std(values_copy) if len(values_copy) >= 5 else 0
+        if stddev > 0 and (abs(v - mean) / stddev) > 5.0:
           style = alert_style
       except ValueError:
         pass
