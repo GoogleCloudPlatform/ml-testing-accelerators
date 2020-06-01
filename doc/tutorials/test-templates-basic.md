@@ -312,5 +312,5 @@ jsonnet -J ml-testing-accelerators/ mnist-tpu.jsonnet | kubectl create -f -
 ## Next steps
 
 - Delete any resources you created just to follow this tutorial.
-- Learn how to automate tests and monitor regressions in the next tutorial (coming soon!).
+- Learn how to automate tests and monitor regressions in the [next tutorial](test-templates-automated).
 - Explore our other documents in [docs/](/docs/).

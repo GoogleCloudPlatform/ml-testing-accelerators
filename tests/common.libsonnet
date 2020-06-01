@@ -55,5 +55,11 @@ local base = import "templates/base.libsonnet";
         },
       },
     },
+
+    cronJob+:: {
+      metadata+: {
+        namespace: "automated"
+      },
+    },
   },
 }

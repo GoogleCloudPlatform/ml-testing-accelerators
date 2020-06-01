@@ -222,7 +222,6 @@ local volumes = import 'volumes.libsonnet';
       kind: "CronJob",
       metadata: {
         name: config.testName,
-        namespace: "automated"
       },
       spec: {
         schedule: config.schedule,
