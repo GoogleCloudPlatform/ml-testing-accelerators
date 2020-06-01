@@ -29,7 +29,6 @@ local tpus = import "templates/tpus.libsonnet";
       "--mode=train",
       "--training_file_pattern=$(LITS_DIR)/train*",
       "--eval_file_pattern=$(LITS_DIR)/val*",
-      "--config_file=/tpu/models/official/unet3d/configs/cloud/v3-8_128x128x128_dice.yaml",
       "--params_override=%s" % (std.manifestYamlDoc(self.paramsOverride) + "\n"),
       "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
       "--model_dir=$(MODEL_DIR)",
@@ -42,6 +41,7 @@ local tpus = import "templates/tpus.libsonnet";
       train_batch_size: 32,
     },
     command+: [
+      "--config_file=/tpu/models/official/unet3d/configs/cloud/v3-8_128x128x128_dice.yaml",
       "--num_cores=8",
     ],
   },
@@ -49,9 +49,11 @@ local tpus = import "templates/tpus.libsonnet";
     accelerator: tpus.v2_32,
     paramsOverride+: {
       train_steps: 1200,
-      train_batch_size: 128,
+      train_batch_size: 8,
+      input_image_size: [128,128,128],
     },
     command+: [
+      "--config_file=/tpu/models/official/unet3d/configs/cloud/v3-32_256x256x256_ce.yaml",
       "--num_cores=32",
     ],
   },
@@ -62,6 +64,7 @@ local tpus = import "templates/tpus.libsonnet";
       train_batch_size: 128,
     },
     command+: [
+      "--config_file=/tpu/models/official/unet3d/configs/cloud/v3-8_128x128x128_dice.yaml",
       "--num_cores=32",
     ],
   },
