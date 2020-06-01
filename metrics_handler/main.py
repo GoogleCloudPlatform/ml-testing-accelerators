@@ -42,6 +42,7 @@ BQ_JOB_TABLE_NAME = 'job_history'
 BQ_METRIC_TABLE_NAME = 'metric_history'
 METRICS_WRITTEN_TOPIC = 'metrics-written'
 MIN_MSG_AGE_SEC = 60
+MAX_SEC_TO_WAIT_FOR_MESSAGE = 48 * 60 * 60  # 48 hours.
 
 
 class CloudMetricsHandler(object):
@@ -443,7 +444,7 @@ def _process_pubsub_message(msg, status_handler, logger):
         'retried later.'.format(job_name))
     return False  # Do not ack the message.
   elif status == job_status_handler.DOES_NOT_EXIST:
-    if msg_age_sec >= 60 * 60 * 24:
+    if msg_age_sec >= MAX_SEC_TO_WAIT_FOR_MESSAGE:
       logger.warning(
           'Job with job_name: {} no longer exists in Kubernetes. Message '
           'will be acknowledged.'.format(job_name))
