@@ -42,7 +42,7 @@ BQ_JOB_TABLE_NAME = 'job_history'
 BQ_METRIC_TABLE_NAME = 'metric_history'
 METRICS_WRITTEN_TOPIC = 'metrics-written'
 MIN_MSG_AGE_SEC = 60
-MAX_SEC_TO_WAIT_FOR_MESSAGE = 48 * 60 * 60
+MAX_SEC_TO_WAIT_FOR_MESSAGE = 48 * 60 * 60  # 48 hours.
 
 
 class CloudMetricsHandler(object):
