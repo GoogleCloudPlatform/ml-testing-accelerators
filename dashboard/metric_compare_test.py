@@ -96,10 +96,11 @@ class MetricHistoryTest(parameterized.TestCase):
         '<table style="width:300px"><tr><th style="width:100px; border:1px solid #cfcfcf">1</th><th style="width:100px; border:1px solid #cfcfcf">2</th><th style="width:100px; border:1px solid #cfcfcf">header</th></tr><tr><td style="width:100px; border:1px solid #cfcfcf">4</td><td style="width:100px; border:1px solid #cfcfcf">-</td><td style="width:100px; border:1px solid #cfcfcf">6</td></tr></table>')
 
   def test_make_html_table_with_alert(self):
-    data_grid = [[1,2,'header', 'a', 'b', 'c'], [4,'-', 6, '5', '4', '99']]
+    data_grid = [[1,2,'header', 'a', 'b', 'c', 'd'],
+                 [4,'-', 6, '5', '4', '99', '3']]
     self.assertEqual(
         metric_compare.make_html_table(data_grid),
-        '<table style="width:600px"><tr><th style="width:100px; border:1px solid #cfcfcf">1</th><th style="width:100px; border:1px solid #cfcfcf">2</th><th style="width:100px; border:1px solid #cfcfcf">header</th><th style="width:100px; border:1px solid #cfcfcf">a</th><th style="width:100px; border:1px solid #cfcfcf">b</th><th style="width:100px; border:1px solid #cfcfcf">c</th></tr><tr><td style="width:100px; border:1px solid #cfcfcf">4</td><td style="width:100px; border:1px solid #cfcfcf">-</td><td style="width:100px; border:1px solid #cfcfcf">6</td><td style="width:100px; border:1px solid #cfcfcf">5</td><td style="width:100px; border:1px solid #cfcfcf">4</td><td style="width:100px; border:1px solid #cfcfcf; background-color: #ff8a8a">99</td></tr></table>')
+        '<table style="width:700px"><tr><th style="width:100px; border:1px solid #cfcfcf">1</th><th style="width:100px; border:1px solid #cfcfcf">2</th><th style="width:100px; border:1px solid #cfcfcf">header</th><th style="width:100px; border:1px solid #cfcfcf">a</th><th style="width:100px; border:1px solid #cfcfcf">b</th><th style="width:100px; border:1px solid #cfcfcf">c</th><th style="width:100px; border:1px solid #cfcfcf">d</th></tr><tr><td style="width:100px; border:1px solid #cfcfcf">4</td><td style="width:100px; border:1px solid #cfcfcf">-</td><td style="width:100px; border:1px solid #cfcfcf">6</td><td style="width:100px; border:1px solid #cfcfcf">5</td><td style="width:100px; border:1px solid #cfcfcf">4</td><td style="width:100px; border:1px solid #cfcfcf; background-color: #ff8a8a">99</td><td style="width:100px; border:1px solid #cfcfcf">3</td></tr></table>')
 
 if __name__ == '__main__':
   absltest.main()
