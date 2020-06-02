@@ -14,6 +14,7 @@
 
 local bert_mnli = import "bert-mnli.libsonnet";
 local classifier_efficientnet = import "classifier-efficientnet.libsonnet";
+local maskrcnn = import "maskrcnn.libsonnet";
 local mnist = import "mnist.libsonnet";
 local resnet_ctl = import "resnet-ctl.libsonnet";
 local retinanet = import "retinanet.libsonnet";
@@ -23,6 +24,7 @@ local transformer_translate = import "transformer-translate.libsonnet";
 std.flattenArrays([
   bert_mnli.configs,
   classifier_efficientnet.configs,
+  maskrcnn.configs,
   mnist.configs,
   resnet_ctl.configs,
   retinanet.configs,
