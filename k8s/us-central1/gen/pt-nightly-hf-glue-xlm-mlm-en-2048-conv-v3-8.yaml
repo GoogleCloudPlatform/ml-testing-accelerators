@@ -21,7 +21,7 @@
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 14400
+      "activeDeadlineSeconds": 25200
       "backoffLimit": 1
       "template":
         "metadata":
@@ -52,27 +52,29 @@
               git clone https://github.com/huggingface/transformers.git
               cd transformers && pip install .
               git log -1
-              python examples/run_tpu_glue.py \
-                --tensorboard_logdir=$(MODEL_DIR) \
+              python examples/xla_spawn.py \
+                --num_cores 8 \
+                examples/text-classification/run_glue.py \
+                --logging_dir=./tensorboard-metrics \
                 --task_name MNLI \
+                --data_dir /datasets/glue/MNLI \
+                --cache_dir ./cache_dir \
                 --do_train \
                 --do_eval \
-                --data_dir /datasets/glue/MNLI \
+                --num_train_epochs 3 \
                 --max_seq_length 128 \
                 --learning_rate 3e-5 \
-                --num_train_epochs 3.0 \
                 --output_dir MNLI \
                 --overwrite_output_dir \
-                --logging_steps 50 \
-                --save_steps 1000 \
-                --num_cores=8 \
-                --only_log_master \
-                --metrics_debug \
+                --logging_steps 100 \
+                --save_steps 3000 \
                 --overwrite_cache \
-               --model_type xlm \
-              --model_name_or_path xlm-mlm-en-2048 \
-              --train_batch_size 8 \
-              --eval_batch_size 8
+                --tpu_metrics_debug \
+               --model_name_or_path xlm-mlm-en-2048 \
+              --per_gpu_train_batch_size 8 \
+              --per_gpu_eval_batch_size 8
+              gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
+              
               
             "env":
             - "name": "POD_NAME"
@@ -176,13 +178,13 @@
                      "stddevs_from_mean": 0
                     }
                    },
-                   "mnli-mm/acc_final": {
+                   "eval_mnli-mm/acc": {
                     "comparison": "greater",
                     "success_threshold": {
                      "fixed_value": 0.80000000000000004
                     }
                    },
-                   "mnli/acc_final": {
+                   "eval_mnli/acc": {
                     "comparison": "greater",
                     "success_threshold": {
                      "fixed_value": 0.80000000000000004
