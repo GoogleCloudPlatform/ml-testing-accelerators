@@ -65,7 +65,7 @@ local mnist = base.BaseTest {
     '--download',
     '--num_gpus=0',
     '--train_epochs=1',
-    '--model_dir=$(OUTPUT_DIR)/mnist/$(JOB_NAME)',
+    '--model_dir=$(MODEL_DIR)',
   ]
 };
 
@@ -100,7 +100,7 @@ The output should look something like this:
                      "--download",
                      "--num_gpu=0",
                      "--train_epochs=1",
-                     "--model_dir=$(OUTPUT_DIR)/mnist/$(JOB_NAME)",
+                     "--model_dir=$(MODEL_DIR)",
                   ],
                   "env": [
                      {
@@ -110,6 +110,10 @@ The output should look something like this:
                               "fieldPath": "metadata.labels['job-name']"
                            }
                         }
+                     },
+                     {
+                        "name": "MODEL_DIR",
+                        "value": "$(OUTPUT_BUCKET)/tf/mnist/example/cpu/$(JOB_NAME)",
                      },
                      [...]
                   ],
@@ -144,12 +148,12 @@ Some unimportant fields have been removed for brevity. Note how the following fi
 - `accelerator` is the type of accelerator used, and it will affect `resources.limits` for the `train` container. For this example, we use the CPU "accelerator", which requests a small amount of CPU and memory.
 - `command` is used to build the command run on the `train` container.
 
-Notice that the `--model_dir` flag has multiple environment variable substitutions. `JOB_NAME` comes from the `env` section of the `train` container. `OUTPUT_DIR` can be configured at the namespace level by a Kubernetes `ConfigMap` to determine where models write checkpoints and TensorBoard summaries.
+Notice that the `--model_dir` flag has an environment variable substitution for `MODEL_DIR`, which itself has multiple substitutions. `JOB_NAME` comes from the `env` section of the `train` container. `OUTPUT_BUCKET` can be configured at the namespace level by a Kubernetes `ConfigMap` to determine where models write checkpoints and TensorBoard summaries.
 
-To create a `ConfigMap` with to specify `OUTPUT_DIR`, run the following command:
+To create a `ConfigMap` with to specify `OUTPUT_BUCKET`, run the following command:
 
 ```bash
-kubectl create configmap gcs-buckets --from-literal=OUTPUT_DIR=$GCS_BUCKET/output
+kubectl create configmap gcs-buckets --from-literal=OUTPUT_BUCKET=$GCS_BUCKET/output
 ```
 
 Finally, you can create and run the job with the following command: 
@@ -186,7 +190,7 @@ Update the `gcs-buckets` `ConfigMap` with a variable to point to the new directo
 
 ```bash
 kubectl delete configmap gcs-buckets
-kubectl create configmap gcs-buckets --from-literal=OUTPUT_DIR=$GCS_BUCKET/output --from-literal=MNIST_DIR=$GCS_BUCKET/tfds
+kubectl create configmap gcs-buckets --from-literal=OUTPUT_BUCKET=$GCS_BUCKET/output --from-literal=MNIST_DIR=$GCS_BUCKET/tfds
 ```
 
 Then, update the `command` field in `mnist-cpu.jsonnet`;
@@ -198,7 +202,7 @@ Then, update the `command` field in `mnist-cpu.jsonnet`;
     '--data_dir=$(MNIST_DIR)',
     '--num_gpus=0',
     '--train_epochs=1',
-    '--model_dir=$(OUTPUT_DIR)/mnist/$(JOB_NAME)',
+    '--model_dir=$(MODEL_DIR)',
   ],
 ```
 
@@ -226,7 +230,7 @@ local mnist = base.BaseTest {
     '--data_dir=$(MNIST_DIR)',
     '--num_gpus=1',
     '--train_epochs=1',
-    '--model_dir=$(OUTPUT_DIR)/mnist/$(JOB_NAME)',
+    '--model_dir=$(MODEL_DIR)',
   ],
   [...]
 ```
@@ -276,7 +280,7 @@ local mnist = base.BaseTest {
     '--distribution_strategy=tpu',
     '--data_dir=$(MNIST_DIR)',
     '--train_epochs=1',
-    '--model_dir=$(OUTPUT_DIR)/mnist/$(JOB_NAME)',
+    '--model_dir=$(MODEL_DIR)',
   ],
   [...]
 ```
@@ -312,5 +316,5 @@ jsonnet -J ml-testing-accelerators/ mnist-tpu.jsonnet | kubectl create -f -
 ## Next steps
 
 - Delete any resources you created just to follow this tutorial.
-- Learn how to automate tests and monitor regressions in the next tutorial (coming soon!).
+- Learn how to automate tests and monitor regressions in the [next tutorial](test-templates-automated).
 - Explore our other documents in [docs/](/docs/).
