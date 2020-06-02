@@ -1,0 +1,146 @@
+{
+   "apiVersion": "batch/v1beta1",
+   "kind": "CronJob",
+   "metadata": {
+      "name": "pt-1.4-gpytorch-convergence-tesla-v100-x1",
+      "namespace": "automated"
+   },
+   "spec": {
+      "concurrencyPolicy": "Forbid",
+      "jobTemplate": {
+         "spec": {
+            "activeDeadlineSeconds": 3600,
+            "backoffLimit": 1,
+            "template": {
+               "metadata": {
+                  "annotations": { }
+               },
+               "spec": {
+                  "containers": [
+                     {
+                        "args": [
+                           "bash",
+                           "builder/test_community_repos/external_projects/gpytorch/run.sh"
+                        ],
+                        "env": [
+                           {
+                              "name": "POD_NAME",
+                              "valueFrom": {
+                                 "fieldRef": {
+                                    "fieldPath": "metadata.name"
+                                 }
+                              }
+                           },
+                           {
+                              "name": "POD_UID",
+                              "valueFrom": {
+                                 "fieldRef": {
+                                    "fieldPath": "metadata.uid"
+                                 }
+                              }
+                           },
+                           {
+                              "name": "POD_NAMESPACE",
+                              "valueFrom": {
+                                 "fieldRef": {
+                                    "fieldPath": "metadata.namespace"
+                                 }
+                              }
+                           },
+                           {
+                              "name": "JOB_NAME",
+                              "valueFrom": {
+                                 "fieldRef": {
+                                    "fieldPath": "metadata.labels['job-name']"
+                                 }
+                              }
+                           },
+                           {
+                              "name": "MODEL_DIR",
+                              "value": "$(OUTPUT_BUCKET)/pt-1.4/gpytorch/convergence/tesla-v100-x1/$(JOB_NAME)"
+                           }
+                        ],
+                        "envFrom": [
+                           {
+                              "configMapRef": {
+                                 "name": "gcs-buckets"
+                              }
+                           }
+                        ],
+                        "image": "gcr.io/xl-ml-test/pytorch-community:latest",
+                        "imagePullPolicy": "Always",
+                        "name": "train",
+                        "resources": {
+                           "limits": {
+                              "nvidia.com/gpu": 1
+                           }
+                        }
+                     }
+                  ],
+                  "initContainers": [
+                     {
+                        "env": [
+                           {
+                              "name": "POD_NAME",
+                              "valueFrom": {
+                                 "fieldRef": {
+                                    "fieldPath": "metadata.name"
+                                 }
+                              }
+                           },
+                           {
+                              "name": "POD_UID",
+                              "valueFrom": {
+                                 "fieldRef": {
+                                    "fieldPath": "metadata.uid"
+                                 }
+                              }
+                           },
+                           {
+                              "name": "POD_NAMESPACE",
+                              "valueFrom": {
+                                 "fieldRef": {
+                                    "fieldPath": "metadata.namespace"
+                                 }
+                              }
+                           },
+                           {
+                              "name": "JOB_NAME",
+                              "valueFrom": {
+                                 "fieldRef": {
+                                    "fieldPath": "metadata.labels['job-name']"
+                                 }
+                              }
+                           },
+                           {
+                              "name": "MODEL_DIR",
+                              "value": "$(OUTPUT_BUCKET)/pt-1.4/gpytorch/convergence/tesla-v100-x1/$(JOB_NAME)"
+                           },
+                           {
+                              "name": "METRIC_CONFIG",
+                              "value": "{\n \"metric_collection_config\": {\n  \"default_aggregation_strategies\": [\n   \"final\"\n  ],\n  \"write_to_bigquery\": true\n },\n \"regression_test_config\": {\n  \"metric_success_conditions\": {\n   \"default\": {\n    \"comparison\": \"less\",\n    \"success_threshold\": {\n     \"stddevs_from_mean\": 4\n    },\n    \"wait_for_n_points_of_history\": 10\n   }\n  }\n },\n \"test_name\": \"pt-1.4-gpytorch-convergence-tesla-v100-x1\"\n}\n"
+                           }
+                        ],
+                        "envFrom": [
+                           {
+                              "configMapRef": {
+                                 "name": "gcs-buckets"
+                              }
+                           }
+                        ],
+                        "image": "gcr.io/xl-ml-test/publisher:latest",
+                        "name": "publisher"
+                     }
+                  ],
+                  "nodeSelector": {
+                     "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
+                  },
+                  "restartPolicy": "Never"
+               }
+            }
+         }
+      },
+      "schedule": "0 10 * * *",
+      "successfulJobsHistoryLimit": 1
+   }
+}
