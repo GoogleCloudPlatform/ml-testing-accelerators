@@ -15,6 +15,7 @@
     --enable-autoupgrade \
     --project=$PROJECT_ID
     ```
+1. Enable the [BiqQuery](console.cloud.google.com/apis/api/bigquery.googleapis.com) and [Stackdriver Error Reporting](console.cloud.google.com/apis/api/clouderrorreporting.googleapis.com) APIs.
 
 ## Automating tests with `CronJobs`
 
@@ -41,7 +42,7 @@ local mnist = base.BaseTest {
     '--data_dir=$(MNIST_DIR)',
     '--num_gpus=0',
     '--train_epochs=1',
-    '--model_dir=$(OUTPUT_DIR)/mnist/$(JOB_NAME)',
+    '--model_dir=$(OUTPUT_BUCKET)/mnist/$(JOB_NAME)',
   ],
 };
 
@@ -60,15 +61,19 @@ gcloud builds submit --config images/publisher/cloudbuild.yaml
 Then, to deploy the metrics handler, run these commands:
 
 ```bash
-# Deploy the Cloud Function and create the PubSub topic.
+# Deploy the Cloud Function and create the PubSub topic to trigger the function.
+cd metrics_handler
 gcloud functions deploy metrics_handler --runtime python37 --trigger-topic=begin-metrics-handler --memory=1024MB --entry-point=run_main --timeout=500s
+cd -
+# Create the PubSub queue for the Cloud Function to read from.
+gcloud pubsub topics create metrics-written
 # Trigger the Metrics Handler every 15 minutes.
 gcloud scheduler jobs create pubsub metrics-handler --schedule="*/15 * * * *" --topic=begin-metrics-handler --message-body="{}" --description="Kicks off the metric handler"
 ```
 
-Note that you can adjust the timing of the metrics handler by changing the `--schedule` argument in the second command above. This flag takes a schedule in [Cron format](https://en.wikipedia.org/wiki/Cron#CRON_expression). You can find the details of the new function on the [Cloud Functions](https://console.cloud.google.com/functions/list) page.
+Note that you can adjust the timing of the metrics handler by changing the `--schedule` argument in the last command above. This flag takes a schedule in [Cron format](https://en.wikipedia.org/wiki/Cron#CRON_expression). You can find the details of the new function on the [Cloud Functions](https://console.cloud.google.com/functions/list) page.
 
-In `mnist-cpu.jsonnet`, add the `schedule` and `publisherImage` fields to the test definition. `schedule` is also in cron format, and `publisherImage` should be the `gcr.io` tag of the image you just built. Finally, replace `mnist.oneshotJob` with `mnist.cronJob`:
+In `mnist-cpu.jsonnet`, add the `schedule` and `publisherImage` fields to the test definition. `schedule` is also in cron format, and `publisherImage` should be the `gcr.io` tag of the image you just built. Finally, replace `mnist.oneshotJob` with `mnist.cronJob`, and wrap the output in `std.manifestYamlDoc` to make the output more readable:
 
 ```jsonnet
 local mnist = base.BaseTest {
@@ -78,13 +83,13 @@ local mnist = base.BaseTest {
   ...
 };
 
-mnist.cronJob
+std.manifestYamlDoc(mnist.cronJob)
 ```
 
 This will run the MNIST cpu training job at the top of every hour. Build the template with JSonnet:
 
 ```bash
-jsonnet -J ml-testing-accelerators/ mnist-cpu.jsonnet
+jsonnet -S -J ml-testing-accelerators/ mnist-cpu.jsonnet
 ```
 
 Note the following changes to the output:
@@ -105,23 +110,25 @@ local mnist = base.BaseTest {
   metricCollectionConfig+: {
     metric_to_aggregation_strategy: {
       epoch_sparse_categorical_accuracy: ['final'],
-    }
-  }
+    },
+  },
   regressionTestConfig: {
-    epoch_sparse_categorical_accuracy_final: {
-      comparison: 'greater'
-      success_condition: {
-        fixed_value: 98.0,
-      }
-    }
-  }
+    metric_success_conditions: {
+      epoch_sparse_categorical_accuracy_final: {
+        comparison: 'greater',
+        success_threshold: {
+          fixed_value: 0.97,
+        },
+      },
+    },
+  },
 };
 ```
 
 If you rebuild the template, you can see that this config has updated the `METRIC_CONFIG` environment variable of publisher. You can deploy the `CronJob` resource with the following command:
 
 ```bash
-jsonnet -J ml-testing-accelerators/ mnist-cpu.jsonnet | kubectl create -f -
+jsonnet -S -J ml-testing-accelerators/ mnist-cpu.jsonnet | kubectl apply -f -
 ```
 
 You can find deployed `CronJob` running on your [GKE workloads](https://console.cloud.google.com/kubernetes/workload) page. You can either wait for the `CronJob` trigger, or manually trigger a run of the cronjob with the following command:
@@ -137,13 +144,19 @@ messageIds:
 - '1234567890987654321'
 ```
 
-Once the job finishes, wait for the next trigger of the Metrics Handler or trigger the `metrics-handler` job from the [Cloud Scheduler](console.cloud.google.com/cloudscheduler) page in your console. From the `metrics-handler` [Cloud Function](https://pantheon.corp.google.com/functions/list) page, follow the link to view logs. You should see a message like the following:
+Once the job finishes, wait for the next trigger of the Metrics Handler or trigger the `metrics-handler` job from the [Cloud Scheduler](console.cloud.google.com/cloudscheduler) page in your console. From the `metrics_handler` [Cloud Function](https://pantheon.corp.google.com/functions/list) page, follow the link to view logs. You should see a message like the following:
 
 ```
 Processed a message for each of the following tests: ['tf-example-mnist-cpu']
 ```
 
-If you go further up in the logs, you'll find a warning that the job failed a metrics assertion! That's because we set the accuracy threshold at 98%, but only ran the job for one epoch. To fix the issue, update the `--train_epochs` flag in the test:
+If you go further up in the logs, you'll find a warning that the job failed a metrics assertion! For example:
+
+```
+Metric `epoch_sparse_categorical_accuracy_final` was out of bounds for test `tf-mnist-example-cpu`. Bounds were (0.98, inf) and value was 0.79
+```
+
+That's because we set the accuracy threshold at 97%, but only ran the job for one epoch. To fix the issue, update the `--train_epochs` flag in the test:
 
 ```
 local mnist = base.BaseTest {
@@ -168,7 +181,6 @@ You can also view the model's metric history for the model with the following qu
 ```sql
 SELECT *
 FROM metrics_handler_dataset.metric_history
-WHERE test_name LIKE "tf-example-mnist-cpu-%"
 ```
 
 This tutorial runs a `Job` with no accelerator, but you can add GPUs or TPUs as in the previous tutorial.
