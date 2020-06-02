@@ -137,7 +137,7 @@ You can find deployed `CronJob` running on your [GKE workloads](https://console.
 kubectl create job --from=cronjob/tf-mnist-example-cpu tf-mnist-example-cpu-$(date +"%Y%m%d%H%M")
 ```
 
-If you look at the beginning of the logs for your job, you'll see a message like the following from the `publsher` container:
+If you look at the beginning of the logs for your job, you'll see a message like the following from the `publisher` container:
 
 ```
 messageIds:
