@@ -117,7 +117,7 @@ local mnist = base.BaseTest {
       epoch_sparse_categorical_accuracy_final: {
         comparison: 'greater',
         success_threshold: {
-          fixed_value: 0.97,
+          fixed_value: 0.96,
         },
       },
     },
@@ -156,7 +156,7 @@ If you go further up in the logs, you'll find a warning that the job failed a me
 Metric `epoch_sparse_categorical_accuracy_final` was out of bounds for test `tf-mnist-example-cpu`. Bounds were (0.98, inf) and value was 0.79
 ```
 
-That's because we set the accuracy threshold at 97%, but only ran the job for one epoch. To fix the issue, update the `--train_epochs` flag in the test:
+That's because we set the accuracy threshold at 96%, but only ran the job for one epoch. To fix the issue, update the `--train_epochs` flag in the test:
 
 ```
 local mnist = base.BaseTest {
