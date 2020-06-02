@@ -26,7 +26,7 @@ local tpus = import "templates/tpus.libsonnet";
       "--use_tpu=True",
       "--schedule=train",
       "--data_dir=$(T2T_TRANSFORMER_DIR)",
-      "--cloud_tpu_name=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
+      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
       "--output_dir=$(MODEL_DIR)",
     ],
   },
