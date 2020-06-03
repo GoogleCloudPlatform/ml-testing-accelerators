@@ -18,6 +18,7 @@ from absl import logging
 from absl.testing import absltest
 from absl.testing import parameterized
 import tensorflow as tf
+import numpy as np
 
 import metrics
 
@@ -56,7 +57,7 @@ class MetricsTest(parameterized.TestCase):
   def test_aggregate_metrics_default_all(self):
     raw_metrics = metrics.read_metrics_from_events_dir(self.temp_dir)
     final_metrics = metrics.aggregate_metrics(
-      raw_metrics, default_strategies=['final', 'min', 'max'])
+      raw_metrics, default_strategies=['final', 'min', 'max', 'average'])
 
     # Remove wall time, since it's non-deterministic
     metric_to_value = {
@@ -70,9 +71,11 @@ class MetricsTest(parameterized.TestCase):
         'foo_final': 2,
         'foo_min': 1,
         'foo_max': 2,
+        'foo_average': 1.5,
         'accuracy_final': .25,
         'accuracy_min': .125,
         'accuracy_max': .5,
+        'accuracy_average': np.mean([.125, .25, .5]),
       }
     )
 

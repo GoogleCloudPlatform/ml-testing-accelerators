@@ -21,5 +21,22 @@ local common = import "../common.libsonnet";
       softwareVersion: "nightly",
     },
     imageTag: "nightly",
+
+    metricCollectionConfig+: {
+      metric_to_aggregation_strategies+: {
+        "examples/sec": ["average"],
+      },
+      use_run_name_prefix: true,
+    },
+    regressionTestConfig+: {
+      metric_success_conditions+: {
+        "examples/sec_average": {
+          comparison: "greater",
+          success_threshold: {
+            stddevs_from_mean: 2.0,
+          },
+        },
+      },
+    },
   },
 }

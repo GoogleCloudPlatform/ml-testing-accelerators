@@ -68,7 +68,7 @@ local tpus = import "templates/tpus.libsonnet";
     },
     regressionTestConfig+: {
       metric_success_conditions+: {
-        val_epoch_accuracy_final: {
+        "validation/epoch_accuracy_final": {
           success_threshold: {
             fixed_value: 0.76,
           },

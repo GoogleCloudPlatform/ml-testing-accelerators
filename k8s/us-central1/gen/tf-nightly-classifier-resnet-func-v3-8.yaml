@@ -107,10 +107,22 @@
                   "default_aggregation_strategies": [
                    "final"
                   ],
+                  "metric_to_aggregation_strategies": {
+                   "examples/sec": [
+                    "average"
+                   ]
+                  },
+                  "use_run_name_prefix": true,
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
                   "metric_success_conditions": {
+                   "examples/sec_average": {
+                    "comparison": "greater",
+                    "success_threshold": {
+                     "stddevs_from_mean": 2
+                    }
+                   },
                    "total_wall_time": {
                     "comparison": "less",
                     "success_threshold": {

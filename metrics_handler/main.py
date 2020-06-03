@@ -116,8 +116,10 @@ class CloudMetricsHandler(object):
     """
     tags_to_ignore = set(
         self.metric_collection_config.get('tags_to_ignore', []))
+    use_run_name_prefix = self.metric_collection_config.get(
+      'use_run_name_prefix', False)
     raw_metrics = metrics.read_metrics_from_events_dir(
-        self.events_dir, tags_to_ignore)
+        self.events_dir, tags_to_ignore, use_run_name_prefix)
 
     if not raw_metrics:
       self.logger.warning("No metrics found in {}".format(self.events_dir))
