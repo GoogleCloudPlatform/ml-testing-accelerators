@@ -25,13 +25,13 @@ local volumes = import "templates/volumes.libsonnet";
     imageTag: "r1.5",
   },
   Functional:: mixins.Functional {
-    schedule: "0 21 * * *",
+    schedule: "0 23 * * *",
     accelerator+: {
       preemptible: false,
     },
   },
   Convergence:: mixins.Convergence {
-    schedule: "0 23 * * 1,6",
+    schedule: "0 1 * * 1,6",
   },
   datasetsVolume: volumes.PersistentVolumeSpec {
     name: "pytorch-datasets",

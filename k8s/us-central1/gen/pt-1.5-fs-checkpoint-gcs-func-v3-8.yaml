@@ -244,5 +244,5 @@
           - "name": "pytorch-datasets"
             "persistentVolumeClaim":
               "claimName": "pytorch-datasets-claim"
-  "schedule": "0 21 * * *"
+  "schedule": "0 23 * * *"
   "successfulJobsHistoryLimit": 1
