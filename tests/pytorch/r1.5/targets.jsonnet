@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local nightly = import "nightly/targets.jsonnet";
-local r1_5 = import "r1.5/targets.jsonnet";
+local fairseqRobertaPretrain = import "roberta-pre.libsonnet";
+local fairseqTransformer = import "fs-transformer.libsonnet";
+local resnet50_mp = import "resnet50-mp.libsonnet";
 
-// Add new versions here
+# Add new models here
 std.flattenArrays([
-  nightly,
-  r1_5,
+  fairseqRobertaPretrain.configs,
+  fairseqTransformer.configs,
+  resnet50_mp.configs,
 ])
