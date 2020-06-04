@@ -121,12 +121,15 @@ def get_computed_metrics(raw_metrics_dict, job_status_dict,
         compute_memory_metrics(project_id, job_name))
   return computed_metrics_dict
 
-def read_metrics_from_events_dir(events_dir, tags_to_ignore=None):
+def read_metrics_from_events_dir(events_dir, tags_to_ignore=None,
+                                 use_run_name_prefix=False):
   """Collect the TensorBoard summary values for each metric.
 
   Args:
     events_dir (string): Path to location of TensorBoard summaries.
     tags_to_ignore (set[string]): Set of TensorBoard tag names to skip.
+    use_run_name_prefix (bool): If True, prefix tag names with the name
+      of the run that contains them (e.g. `train/` or `eval/`)
 
   Returns:
     raw_metrics (dict): Keys are TensorBoard tags and value is a list of
@@ -142,14 +145,22 @@ def read_metrics_from_events_dir(events_dir, tags_to_ignore=None):
   for run, tags in em.Runs().items():
     # 'Old-style' runs have a simple format and store values directly.
     for tag in tags['scalars']:
-      if tag in tags_to_ignore:
+      if use_run_name_prefix and run != '.':
+        tag_final = '/'.join((run, tag))
+      else:
+        tag_final = tag
+      if tag_final in tags_to_ignore:
         continue
-      raw_metrics[tag].extend(
+      raw_metrics[tag_final].extend(
           [MetricPoint(metric_value=x.value, wall_time=x.wall_time)
           for x in em.Scalars(run, tag)])
     # 'New-style' runs stores values inside of Tensor protos.
     for tag in tags['tensors']:
-      if tag in tags_to_ignore:
+      if use_run_name_prefix and run != '.':
+        tag_final = '/'.join((run, tag))
+      else:
+        tag_final = tag
+      if tag_final in tags_to_ignore:
         continue
       for t in em.Tensors(run, tag):
         tensor_dtype = tf.dtypes.as_dtype(t.tensor_proto.dtype)
@@ -158,7 +169,7 @@ def read_metrics_from_events_dir(events_dir, tags_to_ignore=None):
               t.tensor_proto.tensor_content,
               tensor_dtype.as_numpy_dtype).tolist()
           assert len(val) == 1  # There should be 1 value per tensor.
-          raw_metrics[tag].append(
+          raw_metrics[tag_final].append(
               MetricPoint(metric_value=val[0], wall_time=t.wall_time))
         except ValueError as e:
           logging.warning(
@@ -172,7 +183,7 @@ def read_metrics_from_events_dir(events_dir, tags_to_ignore=None):
 def aggregate_metrics(raw_metrics, default_strategies, metric_strategies=None):
   """Aggregate raw TensorBoard metrics according to collection config.
 
-  Available aggregation strategies: `final`, `min`, `max`.
+  Available aggregation strategies: `final`, `min`, `max`, `average`.
 
   Args:
     raw_metrics: dict mapping TensorBoard tags to list of MetricPoint.
@@ -215,6 +226,10 @@ def aggregate_metrics(raw_metrics, default_strategies, metric_strategies=None):
         if metric.metric_value < min_metric.metric_value:
           min_metric = metric
       return min_metric
+    elif strategy == 'average':
+      average_metric_value = np.mean([m.metric_value for m in metrics])
+      average_metric_time = np.mean([m.wall_time for m in metrics])
+      return MetricPoint(average_metric_value, average_metric_time)
     else:
       raise ValueError('Unknown aggregation strategy: {}'.format(strategy))
 

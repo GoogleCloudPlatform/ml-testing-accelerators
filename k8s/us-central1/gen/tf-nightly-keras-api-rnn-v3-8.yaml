@@ -110,6 +110,12 @@
                   "default_aggregation_strategies": [
                    "final"
                   ],
+                  "metric_to_aggregation_strategies": {
+                   "examples/sec": [
+                    "average"
+                   ]
+                  },
+                  "use_run_name_prefix": true,
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {

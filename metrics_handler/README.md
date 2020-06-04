@@ -60,6 +60,7 @@ Full config options:
   # "final": Save the final value for that metric.
   # "max": Save the max value for that metric.
   # "min": Save the min value for that metric.
+  # "average": Save the average value for that metric.
   "default_aggregation_strategies": ["final"],
 
   # (Optional) Apply special aggregation strategies to some metrics. Key
@@ -85,7 +86,12 @@ Full config options:
   },
 
   # (Optional) Defaults to True. Set to false to disable all BigQuery writes.
-  "write_to_bigquery": "True"
+  "write_to_bigquery": "True",
+
+  # (Optional) Defaults to false. Set to true to prefix tag names with
+  # the run name, or the subdirectory containing TensorBoard summaries (e.g.
+  # `train/` or `eval/`).
+  "use_run_name_prefix: false
 }
 ```
 
