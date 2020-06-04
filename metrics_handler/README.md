@@ -60,6 +60,7 @@ Full config options:
   # "final": Save the final value for that metric.
   # "max": Save the max value for that metric.
   # "min": Save the min value for that metric.
+  # "average": Save the average value for that metric.
   "default_aggregation_strategies": ["final"],
 
   # (Optional) Apply special aggregation strategies to some metrics. Key
