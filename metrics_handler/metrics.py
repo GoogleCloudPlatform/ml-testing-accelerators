@@ -26,7 +26,8 @@ import tensorflow as tf
 from tensorboard.backend.event_processing import event_multiplexer
 
 
-ALLOWED_COMPARISONS = ['greater', 'less', 'equal', 'less_or_equal']
+ALLOWED_COMPARISONS = ['greater', 'less', 'equal', 'less_or_equal',
+                       'greater_or_equal']
 _METRIC_CLIENT = monitoring_v3.MetricServiceClient()
 
 
@@ -281,8 +282,8 @@ def metric_bounds(value_history, threshold, comparison):
   Args:
     value_history (list of floats): History of values for this metric. These
       should be ordered so the most recent value is the last in the list.
-    threshold: Threshold, desired metric threshold.
-    comparison: string, comparison to given threshold.
+    threshold (Threshold): Desired metric threshold.
+    comparison (string): Comparison to given threshold.
 
   Returns:
     tuple(is_within_bounds (bool), lower_bound (float), upper_bound (float)).
@@ -314,11 +315,13 @@ def metric_bounds(value_history, threshold, comparison):
           'or `equal` for the comparison. The comparison was: {}'.format(
               comparison))
   elif threshold.type == 'stddevs_from_mean':
-    if comparison not in ('greater', 'less', 'less_or_equal'):
+    if comparison not in (
+        'greater', 'greater_or_equal', 'less', 'less_or_equal'):
       raise ValueError(
           'A metric success condition using a `stddevs_from_mean`-type '
-          'threshold must use `greater`, `less`, or `less_or_equal` for the '
-          'comparison. The comparison was: {}'.format(comparison))
+          'threshold must use `greater`, `greater_or_equal`, `less`, or '
+          '`less_or_equal` for the comparison. The comparison '
+          'was: {}'.format(comparison))
     values = [v.metric_value for v in value_history]
     mean = np.mean(values)
     stddev = np.std(values)
