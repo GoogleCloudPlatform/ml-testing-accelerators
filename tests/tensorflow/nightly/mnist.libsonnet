@@ -45,6 +45,12 @@ local gpus = import "templates/gpus.libsonnet";
       "--num_gpus=1",
     ],
   },
+  local k80 = {
+    accelerator: gpus.teslaK80,
+    command+: [
+      "--num_gpus=1",
+    ],
+  },
   local v2_8 = {
     accelerator: tpus.v2_8,
     command+: [
@@ -61,6 +67,7 @@ local gpus = import "templates/gpus.libsonnet";
   },
 
   configs: [
+    mnist + k80 + functional + mixins.Experimental,
     mnist + v100 + functional,
     mnist + v2_8 + functional,
     mnist + v2_8 + convergence,

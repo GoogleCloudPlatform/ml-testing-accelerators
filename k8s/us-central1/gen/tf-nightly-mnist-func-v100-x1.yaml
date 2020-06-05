@@ -15,7 +15,7 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-nightly-transformer-translate-func-v3-8"
+  "name": "tf-nightly-mnist-func-v100-x1"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
@@ -25,43 +25,17 @@
       "backoffLimit": 1
       "template":
         "metadata":
-          "annotations":
-            "tf-version.cloud-tpus.google.com": "nightly"
+          "annotations": {}
         "spec":
           "containers":
-          - "env":
-            - "name": "POD_NAME"
-              "valueFrom":
-                "fieldRef":
-                  "fieldPath": "metadata.name"
-            - "name": "POD_NAMESPACE"
-              "valueFrom":
-                "fieldRef":
-                  "fieldPath": "metadata.namespace"
-            "image": "gcr.io/xl-ml-test/health-monitor:stable"
-            "imagePullPolicy": "Always"
-            "name": "monitor"
           - "args":
             - "python3"
-            - "official/nlp/transformer/transformer_main.py"
-            - "--param_set=big"
-            - "--max_length=64"
-            - "--data_dir=$(TRANSFORMER_DIR)"
-            - "--vocab_file=$(TRANSFORMER_DIR)/vocab.ende.32768"
-            - "--bleu_source=$(TRANSFORMER_DIR)/newstest2014.en"
-            - "--bleu_ref=$(TRANSFORMER_DIR)/newstest2014.de"
-            - "--enable_tensorboard"
+            - "official/vision/image_classification/mnist_main.py"
+            - "--data_dir=$(MNIST_DIR)"
             - "--model_dir=$(MODEL_DIR)"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--distribution_strategy=tpu"
-            - "--steps_between_evals=10000"
-            - "--static_batch=true"
-            - "--use_ctl=true"
-            - "--padded_decode=true"
-            - "--decode_batch_size=32"
-            - "--decode_max_length=97"
-            - "--batch_size=6144"
-            - "--train_steps=20000"
+            - "--num_gpus=1"
+            - "--train_epochs=1"
+            - "--epochs_between_evals=1"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -80,7 +54,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/transformer-translate/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/mnist/func/v100-x1/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
@@ -89,7 +63,7 @@
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v3": 8
+                "nvidia.com/gpu": 1
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -109,7 +83,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/transformer-translate/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/mnist/func/v100-x1/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -142,13 +116,15 @@
                    }
                   }
                  },
-                 "test_name": "tf-nightly-transformer-translate-func-v3-8"
+                 "test_name": "tf-nightly-mnist-func-v100-x1"
                 }
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/publisher:stable"
             "name": "publisher"
+          "nodeSelector":
+            "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
           "restartPolicy": "Never"
   "schedule": "0 8 * * *"
   "successfulJobsHistoryLimit": 1

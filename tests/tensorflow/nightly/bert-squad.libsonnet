@@ -16,6 +16,7 @@ local common = import "common.libsonnet";
 local mixins = import "templates/mixins.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
+local gpus = import "templates/gpus.libsonnet";
 
 {
   local bert = common.ModelGardenTest {
@@ -23,17 +24,11 @@ local tpus = import "templates/tpus.libsonnet";
     command: [
       "python3",
       "official/nlp/bert/run_squad.py",
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
       "--input_meta_data_path=gs://xl-ml-test-us-central1/data/squad/squad_v1.1_meta_data.json",
       "--train_data_path=gs://xl-ml-test-us-central1/data/squad/squad_v1.1_train.tfrecord",
       "--predict_file=gs://xl-ml-test-us-central1/data/squad/dev-v1.1.json",
-      "--vocab_file=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/vocab.txt",
-      "--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_config.json",
-      "--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_model.ckpt",
       "--learning_rate=8e-5",
       "--do_lower_case=true",
-      "--distribution_strategy=tpu",
-      "--steps_per_loop=500",
       "--model_dir=$(MODEL_DIR)",
     ],
   },
@@ -43,13 +38,52 @@ local tpus = import "templates/tpus.libsonnet";
       "--num_train_epochs=1",
     ],
   },
-  local v2_8 = {
+  local convergence = mixins.Convergence {
+    command+: [
+      "--num_train_epochs=2",
+    ],
+  },
+
+
+  local gpu_common = {
+    command+: [
+      "--vocab_file=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/vocab.txt",
+      "--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/bert_config.json",
+      "--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/bert_model.ckpt",
+    ],
+  },
+  local k80 = gpu_common {
+    accelerator: gpus.teslaK80,
+    command+: [
+      "--train_batch_size=4",
+      "--predict_batch_size=4",
+    ],
+  },
+  local v100 = gpu_common {
+    accelerator: gpus.teslaV100,
+    command+: [
+      "--train_batch_size=4",
+      "--predict_batch_size=4",
+    ],
+  },
+
+  local tpu_common = {
+    command+: [
+      "--vocab_file=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/vocab.txt",
+      "--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_config.json",
+      "--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_model.ckpt",
+      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
+      "--distribution_strategy=tpu",
+      "--steps_per_loop=500",
+    ],
+  },
+  local v2_8 = tpu_common {
     accelerator: tpus.v2_8,
     command+: [
       "--train_batch_size=16",
     ],
   },
-  local v3_8 = {
+  local v3_8 =  tpu_common {
     accelerator: tpus.v3_8,
     command+: [
       "--train_batch_size=32",
@@ -57,6 +91,10 @@ local tpus = import "templates/tpus.libsonnet";
   },
 
   configs: [
+    bert + k80 + functional + mixins.Experimental + timeouts.Hours(6),
+    bert + v100 + functional + timeouts.Hours(3),
+    bert + k80 + convergence + mixins.Experimental + timeouts.Hours(12),
+    bert + v100 + convergence + mixins.Experimental + timeouts.Hours(6),
     bert + v2_8 + functional,
     bert + v3_8 + functional,
   ],

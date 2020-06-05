@@ -44,24 +44,24 @@
           - "args":
             - "python3"
             - "official/nlp/transformer/transformer_main.py"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--steps_between_evals=10000"
-            - "--static_batch=true"
-            - "--use_ctl=true"
             - "--param_set=big"
             - "--max_length=64"
-            - "--decode_batch_size=32"
-            - "--decode_max_length=97"
-            - "--padded_decode=true"
-            - "--distribution_strategy=tpu"
             - "--data_dir=$(TRANSFORMER_DIR)"
             - "--vocab_file=$(TRANSFORMER_DIR)/vocab.ende.32768"
             - "--bleu_source=$(TRANSFORMER_DIR)/newstest2014.en"
             - "--bleu_ref=$(TRANSFORMER_DIR)/newstest2014.de"
             - "--enable_tensorboard"
             - "--model_dir=$(MODEL_DIR)"
-            - "--train_steps=20000"
+            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
+            - "--distribution_strategy=tpu"
+            - "--steps_between_evals=10000"
+            - "--static_batch=true"
+            - "--use_ctl=true"
+            - "--padded_decode=true"
+            - "--decode_batch_size=32"
+            - "--decode_max_length=97"
             - "--batch_size=6144"
+            - "--train_steps=20000"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -89,7 +89,7 @@
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v2": 8
+                "cloud-tpus.google.com/preemptible-v2": 8
           "initContainers":
           - "env":
             - "name": "POD_NAME"
