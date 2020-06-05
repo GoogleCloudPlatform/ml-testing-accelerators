@@ -123,7 +123,8 @@ Full config options:
       "comparison": "greater",
       "success_threshold": {
         # Compare the metric value to a fixed value. For this type of
-        # threshold, comparison can be "greater", "less", or "equal".
+        # threshold, comparison can be "greater", "less", "equal",
+        # "greater_or_equal", "less_or_equal".
         "fixed_value": 99.0
       }
     },
@@ -131,7 +132,8 @@ Full config options:
       "comparison": "less",
       "success_threshold": {
         # Compare the metric to historical performance. For this type
-        # of threshold, comparison can be "greater" or "less".
+        # of threshold, comparison can be "greater", "less",
+        # "greater_or_equal", or "less_or_equal".
         # "greater": assert metric_value > (mean - 4.0 * stddev)
         # "less": assert metric_value < (mean + 4.0 * stddev)
         "stddevs_from_mean": 4.0

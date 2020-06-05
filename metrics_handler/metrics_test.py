@@ -139,6 +139,7 @@ class MetricsTest(parameterized.TestCase):
     ('less_or_equal', 'less', 1, (-math.inf, 4.414)),
     ('less_2_dev', 'less', 2, (-math.inf, 5.828)),
     ('greater', 'greater', 1, (1.586, math.inf)),
+    ('greater_or_equal', 'greater', 1, (1.586, math.inf)),
   )
   def test_metric_bounds_stddevs_from_mean(self, comparison, threshold_value, expected_bounds):
     # mean = 3, stddev = ~1.414
@@ -163,6 +164,7 @@ class MetricsTest(parameterized.TestCase):
     ('less_exclusive', 5., (-math.inf, 5.), False, False),
     ('greater', 5., (-math.inf, 5.), False, False),
     ('outside', 10, (0., 5.), False, False),
+    ('greater_inclusive', 5., (5., math.inf), True, True),
   )
   def test_within_bounds(self, value, bounds, inclusive, expected):
     within_bounds = metrics.within_bounds(value, *bounds, inclusive)

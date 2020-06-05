@@ -31,7 +31,7 @@ local common = import "../common.libsonnet";
     regressionTestConfig+: {
       metric_success_conditions+: {
         "examples/sec_average": {
-          comparison: "greater",
+          comparison: "greater_or_equal",
           success_threshold: {
             stddevs_from_mean: 2.0,
           },

@@ -37,7 +37,7 @@ class CloudMetricsHandlerTest(absltest.TestCase):
       tf.summary.scalar("bar", tf.convert_to_tensor(1), 0)
 
       tf.summary.scalar("foo", 2, 100)
-      tf.summary.scalar("bar", tf.convert_to_tensor(2), 100)
+      tf.summary.scalar("bar", tf.convert_to_tensor(1), 100)
 
     self.summary_writer.close()
 
@@ -85,8 +85,8 @@ class CloudMetricsHandlerTest(absltest.TestCase):
             },
             'comparison': 'greater',
             'wait_for_n_points_of_history': 0,
-          }
-        }
+          },
+        },
       },
       test_type=None,
       accelerator=None,
@@ -107,6 +107,66 @@ class CloudMetricsHandlerTest(absltest.TestCase):
             {'foo_final': [], 'total_wall_time': []},
             aggregated_metrics, job_status_handler.FAILURE
         )
+
+  def test_compute_bounds_and_report_errors_stddevs(self):
+    metrics_handler = main.CloudMetricsHandler(
+      test_name="test",
+      events_dir=self.temp_dir,
+      debug_info=None,
+      metric_collection_config={
+        'default_aggregation_strategies': ['final'],
+        'tags_to_ignore': ['foo'],
+      },
+      regression_test_config={
+        'metric_subset_to_alert': ['bar_final'],
+        'metric_success_conditions': {
+          'bar_final': {
+            'success_threshold': {
+              'stddevs_from_mean': 1.
+            },
+            'comparison': 'greater_or_equal',
+            'wait_for_n_points_of_history': 0,
+          },
+        },
+      },
+      test_type=None,
+      accelerator=None,
+      framework_version=None,
+      logger=self.logger,
+    )
+
+    _, aggregated_metrics = metrics_handler.get_metrics_from_events_dir()
+    # Average is higher than current value - this should trigger an alert.
+    with self.assertLogs(level='ERROR'):
+      metrics_handler.compute_bounds_and_report_errors(
+          {'bar_final': [metrics.MetricPoint(10.0, 111),
+                         metrics.MetricPoint(10.0, 112),
+                         metrics.MetricPoint(10.0, 113)],
+           'total_wall_time': []},
+          aggregated_metrics, job_status_handler.SUCCESS
+      )
+    # No error should be logged for out-of-bounds metrics if the job failed.
+    with self.assertRaises(AssertionError):
+      with self.assertLogs(level='ERROR'):
+        metrics_handler.compute_bounds_and_report_errors(
+            {'bar_final': [metrics.MetricPoint(10.0, 111),
+                           metrics.MetricPoint(10.0, 112),
+                           metrics.MetricPoint(10.0, 113)],
+             'total_wall_time': []},
+            aggregated_metrics, job_status_handler.FAILURE
+        )
+    # Average == current value - this should not trigger an alert since
+    # we are using `greater_or_equal`.
+    with self.assertRaises(AssertionError):
+      with self.assertLogs(level='ERROR'):
+        metrics_handler.compute_bounds_and_report_errors(
+            {'bar_final': [metrics.MetricPoint(1.0, 111),
+                           metrics.MetricPoint(1.0, 112),
+                           metrics.MetricPoint(1.0, 113)],
+             'total_wall_time': []},
+            aggregated_metrics, job_status_handler.SUCCESS
+        )
+
 
 if __name__ == '__main__':
   absltest.main()
