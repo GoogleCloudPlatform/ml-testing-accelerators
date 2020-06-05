@@ -21,7 +21,7 @@ local timeouts = import "timeouts.libsonnet";
     # Run at midnight PST daily
     schedule: "0 8 * * *",
     accelerator+: {
-      preemptible: true,
+      preemptible: false,
     },
   },
   Convergence:: {

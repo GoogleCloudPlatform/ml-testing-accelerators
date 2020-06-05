@@ -78,7 +78,7 @@
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v3": 32
+                "cloud-tpus.google.com/v3": 32
           "initContainers":
           - "env":
             - "name": "POD_NAME"
