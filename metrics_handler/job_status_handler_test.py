@@ -65,6 +65,8 @@ class JobStatusHandlerTest(parameterized.TestCase):
         'condition_transition_time': datetime.datetime(2020, 3, 30, 17, 46, 15),
         'condition_reason': 'BackoffLimitExceeded',
         'expected_status': job_status_handler.FAILURE}),
+    ('empty_status', {
+        'expected_status': job_status_handler.DOES_NOT_EXIST}),
   )
   def test_interpret_status(self, args_dict):
     status = FakeKubernetesStatus(
@@ -77,9 +79,10 @@ class JobStatusHandlerTest(parameterized.TestCase):
     status_code, stop_time, num_failures = self.handler.interpret_status(
         status, "my_job_name")
     self.assertEqual(status_code, args_dict['expected_status'])
-    expected_datetime = args_dict.get('completion_time') or args_dict[
-        'condition_transition_time']
-    self.assertEqual(stop_time, expected_datetime.timestamp())
+    expected_datetime = args_dict.get('completion_time') or args_dict.get(
+        'condition_transition_time')
+    if expected_datetime is not None:
+      self.assertEqual(stop_time, expected_datetime.timestamp())
     self.assertEqual(num_failures, args_dict.get('num_failures', 0))
 
   def test_interpret_status_success_without_completion_or_transition(self):

@@ -583,16 +583,19 @@ def run_main(event, context):
     logger.info('No messages to process. Stopping early.')
     return
 
-  # TODO: Add support for multi-zone and/or multi-cluster setups.
-  zone = msgs_to_process[0].get('zone')
-  cluster = msgs_to_process[0].get('cluster_name')
-  status_handler = job_status_handler.JobStatusHandler(
-      project_id, zone, cluster, logger)
-
   # Handle the metrics for each test. Ack if the process was successful or if
   # the message is permanently invalid. Do not ack if the test is still running
   # so that we will retry again later once that test has finished running.
+  status_handlers_dict = {}
   for msg in msgs_to_process:
+    zone = msg['zone']
+    cluster = msg['cluster_name']
+    key = '{}_{}'.format(zone, cluster)
+    if key not in status_handlers_dict:
+      status_handlers_dict[key] = job_status_handler.JobStatusHandler(
+          project_id, zone, cluster, logger)
+    status_handler = status_handlers_dict[key]
+
     try:
       logger.info('Pubsub message to process: {}'.format(msg))
       should_ack = _process_pubsub_message(msg, status_handler, logger)

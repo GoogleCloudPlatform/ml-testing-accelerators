@@ -101,7 +101,7 @@ class JobStatusHandler(object):
     if not self.k8s_client:
       self._init_k8s_client()
     try:
-      status = self.k8s_client.read_namespaced_job_status(
+      status = self.k8s_client.read_namespaced_job(
           job_name, namespace).status
     except Exception as e:
       if isinstance(e, kubernetes.client.rest.ApiException) and \
@@ -155,11 +155,11 @@ class JobStatusHandler(object):
           stop_time = time.time()
     else:
       if not status.conditions or len(status.conditions) != 1:
-        self.logger.error(
+        self.logger.warning(
             'Expected exactly 1 `condition` element in non-success status. '
-            'Status was: {}'.format(status))
-        completion_code = FAILURE
-        stop_time = status.start_time.timestamp()
+            'Will retry later. Status was: {}.'.format(status))
+        completion_code = DOES_NOT_EXIST
+        stop_time = time.time()
       else:
         completion_code = TIMEOUT if \
             status.conditions[0].reason == 'DeadlineExceeded' else FAILURE
