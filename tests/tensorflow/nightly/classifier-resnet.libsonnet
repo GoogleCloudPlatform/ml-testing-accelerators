@@ -16,6 +16,7 @@ local common = import "common.libsonnet";
 local mixins = import "templates/mixins.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
+local gpus = import "templates/gpus.libsonnet";
 
 {
   local resnet = common.ModelGardenTest {
@@ -37,8 +38,6 @@ local tpus = import "templates/tpus.libsonnet";
     command: [
       "python3",
       "official/vision/image_classification/classifier_trainer.py",
-      "--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/tpu.yaml",
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
       "--data_dir=$(IMAGENET_DIR)",
       "--model_type=resnet",
       "--dataset=imagenet",
@@ -77,20 +76,58 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
   },
-  local v2_8 = {
+
+  local gpu_common = {
+    local config = self,
+
+    paramsOverride+:: {
+      runtime: {
+        num_gpus: config.accelerator.number,
+      },
+    },
+    command+: [
+      "--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/gpu.yaml",
+    ],
+  },
+  local v100 = gpu_common {
+    accelerator: gpus.teslaV100,
+  },
+  local k80 = gpu_common {
+    paramsOverride+:: {
+      train_dataset+: {
+        batch_size: 128
+      },
+      validation_dataset+: {
+        batch_size: 128
+      },
+    },
+    accelerator: gpus.teslaK80,
+  },
+
+  local tpu_common = {
+    command+: [
+      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
+      "--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/tpu.yaml",
+    ]
+  },
+  local v2_8 = tpu_common {
     accelerator: tpus.v2_8,
   },
-  local v3_8 = {
+  local v3_8 = tpu_common {
     accelerator: tpus.v3_8,
   },
-  local v2_32 = {
+  local v2_32 = tpu_common {
     accelerator: tpus.v2_32,
   },
-  local v3_32 = {
+  local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
   },
 
   configs: [
+    resnet + k80 + functional + timeouts.Hours(5) + mixins.Experimental,
+    resnet + v100 + functional + timeouts.Hours(3),
+    resnet + k80 + convergence + timeouts.Hours(48) + mixins.Experimental,
+    resnet + v100 + convergence + timeouts.Hours(48) + mixins.Experimental,
     resnet + v2_8 + functional,
     resnet + v3_8 + functional,
     resnet + v2_8 + convergence,

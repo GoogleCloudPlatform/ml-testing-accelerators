@@ -16,6 +16,7 @@ local common = import "common.libsonnet";
 local mixins = import "templates/mixins.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
+local gpus = import "templates/gpus.libsonnet";
 
 {
   local transformer = common.ModelGardenTest {
@@ -23,16 +24,8 @@ local tpus = import "templates/tpus.libsonnet";
     command: [
       "python3",
       "official/nlp/transformer/transformer_main.py",
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-      "--steps_between_evals=10000",
-      "--static_batch=true",
-      "--use_ctl=true",
       "--param_set=big",
       "--max_length=64",
-      "--decode_batch_size=32",
-      "--decode_max_length=97",
-      "--padded_decode=true",
-      "--distribution_strategy=tpu",
       "--data_dir=$(TRANSFORMER_DIR)",
       "--vocab_file=$(TRANSFORMER_DIR)/vocab.ende.32768",
       "--bleu_source=$(TRANSFORMER_DIR)/newstest2014.en",
@@ -51,38 +44,77 @@ local tpus = import "templates/tpus.libsonnet";
       "--train_steps=200000",
     ],
   },
-  local v2_8 = {
+
+  local gpu_common = {
+    local config = self,
+
+    command+: [
+      "--num_gpus=%d" % config.accelerator.number,
+      "--steps_between_evals=5000",
+    ],
+  },
+  local k80 = gpu_common {
+    accelerator: gpus.teslaK80,
+    command+: [
+      "--batch_size=2048",
+    ],
+  },
+  local v100 = gpu_common {
+    accelerator: gpus.teslaV100,
+    command+: [
+      "--batch_size=4096",
+    ],
+  },
+
+  local tpu_common = {
+    command+: [
+      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
+      "--distribution_strategy=tpu",
+      "--steps_between_evals=10000",
+      "--static_batch=true",
+      "--use_ctl=true",
+      "--padded_decode=true",
+      "--decode_batch_size=32",
+      "--decode_max_length=97",
+    ],
+  },
+  local v2_8 = tpu_common {
     accelerator: tpus.v2_8,
     command+: [
       "--batch_size=6144",
     ],
   },
-  local v3_8 = {
+  local v3_8 = tpu_common {
     accelerator: tpus.v3_8,
     command+: [
       "--batch_size=6144",
     ],
   },
-  local v2_32 = {
+  local v2_32 = tpu_common {
     accelerator: tpus.v2_32,
     command+: [
       "--batch_size=24576",
     ],
   },
-  local v3_32 = {
+  local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
     command+: [
       "--batch_size=24576",
     ],
   },
+
   configs: [
-    transformer + functional + v2_8,
-    transformer + functional + v3_8,
-    transformer + convergence + v2_8,
-    transformer + convergence + v3_8,
-    transformer + functional + v2_32,
-    transformer + functional + v3_32,
-    transformer + convergence + v2_32,
-    transformer + convergence + v3_32,
+    transformer + k80 + functional + timeouts.Hours(6) + mixins.Experimental,
+    transformer + v100 + functional + timeouts.Hours(3),
+    transformer + k80 + convergence  + mixins.Experimental,
+    transformer + v100 + convergence  + mixins.Experimental,
+    transformer + v2_8 + functional,
+    transformer + v3_8 + functional,
+    transformer + v2_8 + convergence,
+    transformer + v3_8 + convergence ,
+    transformer + v2_32 + functional,
+    transformer + v3_32 + functional,
+    transformer + v2_32 + convergence,
+    transformer + v3_32 + convergence,
   ],
 }

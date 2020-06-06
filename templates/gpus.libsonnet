@@ -32,10 +32,11 @@
         },
       },
       nodeSelector+: {
-        "cloud.google.com/gke-accelerator": "nvidia-%(version)s" % gpu,
+        "cloud.google.com/gke-accelerator": "nvidia-tesla-%(version)s" % gpu,
       },
     },
   },
 
-  teslaV100: self.GPUSpec { version: "tesla-v100" },
+  teslaK80: self.GPUSpec { version: "k80" },
+  teslaV100: self.GPUSpec { version: "v100" },
 }
