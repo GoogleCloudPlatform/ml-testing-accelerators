@@ -49,8 +49,8 @@ local utils = import "templates/utils.libsonnet";
     command: utils.scriptCommand(
       |||
         %(common)s --model_name_or_path bert-base-cased \
-        --per_gpu_train_batch_size 128 \
-        --per_gpu_eval_batch_size 128
+        --per_gpu_train_batch_size 64 \
+        --per_gpu_eval_batch_size 64
         %(common_copy)s
       ||| % {common: command_common, common_copy: command_copy_metrics}
     ),
