@@ -112,6 +112,7 @@
                 "cloud-tpus.google.com/v3": 8
               "requests":
                 "cpu": "9.0"
+                "ephemeral-storage": "10Gi"
                 "memory": "30Gi"
             "volumeMounts":
             - "mountPath": "/dev/shm"
