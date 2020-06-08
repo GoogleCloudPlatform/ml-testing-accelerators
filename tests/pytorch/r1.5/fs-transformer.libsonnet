@@ -143,7 +143,7 @@ local utils = import "templates/utils.libsonnet";
            --skip-invalid-size-inputs-valid-test | grep BLEU \
            | grep -v loadi | tail -1 | cut -d '=' -f 3| cut -d'.' -f 1`
         echo 'BLEU score is' $bleu
-        test $bleu -gt 27
+        test $bleu -gt 26
       ||| % command_common
     ),
     jobSpec+:: {
