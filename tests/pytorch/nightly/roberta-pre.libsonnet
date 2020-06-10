@@ -69,6 +69,7 @@ local utils = import "templates/utils.libsonnet";
                 requests: {
                   cpu: "9.0",
                   memory: "30Gi",
+		  "ephemeral-storage": "10Gi",
                 },
               },
             },
