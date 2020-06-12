@@ -61,6 +61,8 @@ The `compare.py` dashboard allows you to specify a list of test names and a list
 
 Since it's tedious to type the same list of test and metric names for a commonly-used query, you can generate a URL with the test and metric names encoded in it.
 
+Note that you can use the SQL wildcard `%` to use prefix or suffix matching.
+
 The URL should be of the form `$APP_URL/compare?test_names=$B64_TEST_NAMES&metric_names=$B64_METRIC_NAMES`. For example, if your `APP_URL` is 'https://xl-ml-test.appspot.com', then a simple snippet to generate the URL could be:
 
 ```
