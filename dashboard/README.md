@@ -6,7 +6,7 @@ This guide assumes you have a Google Cloud Platform project and you are running 
 
 ## Running locally
 
-Command to run locally: `python3 -m bokeh serve --show dashboard/dashboard.py dashboard/metrics.py`
+Command to run locally: `python3 -m bokeh serve --show dashboard/dashboard.py dashboard/metrics.py dashboard/compare.py`
 
 
 ## Hosting your dashboard
@@ -40,3 +40,35 @@ export INSTANCE_NAME=my-redis-instance
 1. `gcloud redis instances delete $INSTANCE_NAME --region=$REGION --project=$PROJECT_ID`
 
 2. Click "Disable Application" on [this page](https://console.cloud.google.com/appengine/settings)
+
+# Advanced Usage
+
+## Multiple dashboard versions
+
+When you run `gcloud app deploy`, the command defaults to using `app.yaml`. You can specify a different yaml with e.g. `gcloud app deploy custom.yaml` or deploy multiple versions with `gcloud app deploy custom.yaml custom2.yaml`.
+
+Check out `pytorch-dashboard.yaml` for an example of a secondary dashboard and note the `allow-websocket-origin` argument for an example of how the URL looks for the secondary dashboard(s).
+
+## Privacy / authentication
+
+You can restrict which tests are shown in the dashboard by using the `TEST_NAME_PREFIXES` environment variable in the .yaml file.
+
+The hosted dashboard runs as an App Engine app. You can restrict the URL to specific group(s) of people by following the instructions [here](https://cloud.google.com/iap/docs/app-engine-quickstart). You can configure the IAP (identity-aware proxy) rules such that each dashboard version has its own group of restricted viewers. See also the `Multiple dashboard versions` section above.
+
+## Pre-generated URLs for the compare dashboard
+
+The `compare.py` dashboard allows you to specify a list of test names and a list of metric names and renders 1 graph+table for each combination of test and metric.
+
+Since it's tedious to type the same list of test and metric names for a commonly-used query, you can generate a URL with the test and metric names encoded in it.
+
+The URL should be of the form `$APP_URL/compare?test_names=$B64_TEST_NAMES&metric_names=$B64_METRIC_NAMES`. For example, if your `APP_URL` is 'https://xl-ml-test.appspot.com', then a simple snippet to generate the URL could be:
+
+```
+python3
+ > import base64
+ > my_url = 'https://xl-ml-test.appspot.com'
+ > b64_test_names = base64.b64encode('tf-nightly-%,my-other-test1,my-other-test-2'.encode('utf-8')).decode()
+ > b64_metric_names = base64.b64encode('%examples/sec%,accuracy_final'.encode('utf-8')).decode()
+ > print(f'{my_url}/compare?test_names={b64_test_names}&metric_names={b64_metric_names}')
+```
+(note the syntax would be a little different in python2)
