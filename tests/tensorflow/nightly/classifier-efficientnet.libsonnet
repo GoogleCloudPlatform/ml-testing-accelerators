@@ -63,7 +63,7 @@ local tpus = import "templates/tpus.libsonnet";
         epochs: 500, 
       },
       evaluation+: {
-        epochs_between_evals: 500,
+        epochs_between_evals: 5,
       },
     },
     regressionTestConfig+: {
