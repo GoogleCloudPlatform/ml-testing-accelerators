@@ -62,7 +62,7 @@ local gpus = import "templates/gpus.libsonnet";
         epochs: 90, 
       },
       evaluation+: {
-        epochs_between_evals: 90,
+        epochs_between_evals: 1,
       },
     },
     regressionTestConfig+: {
