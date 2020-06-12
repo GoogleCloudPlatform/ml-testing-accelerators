@@ -42,35 +42,35 @@ local tpus = import "templates/tpus.libsonnet";
   },
   local convergence = mixins.Convergence {
     command+: [
-      '--num_train_epochs=3',
+      '--num_train_epochs=6',
     ],
   },
   local v2_8 = {
     accelerator: tpus.v2_8,
     command+: [
-      '--train_batch_size=128',
-      '--eval_batch_size=128',
+      '--train_batch_size=64',
+      '--eval_batch_size=64',
     ],
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
     command+: [
-      '--train_batch_size=128',
-      '--eval_batch_size=128',
+      '--train_batch_size=64',
+      '--eval_batch_size=64',
     ],
   },
   local v2_32 = {
     accelerator: tpus.v2_32,
     command+: [
-      '--train_batch_size=512',
-      '--eval_batch_size=512',
+      '--train_batch_size=256',
+      '--eval_batch_size=256',
     ],
   },
   local v3_32 = {
     accelerator: tpus.v3_32,
     command+: [
-      '--train_batch_size=512',
-      '--eval_batch_size=512',
+      '--train_batch_size=256',
+      '--eval_batch_size=256',
     ],
   },
 
