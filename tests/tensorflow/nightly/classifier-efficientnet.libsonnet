@@ -60,10 +60,10 @@ local tpus = import "templates/tpus.libsonnet";
   local convergence = mixins.Convergence {
     paramsOverride+: {
       train+: {
-        epochs: 500, 
+        epochs: 350, 
       },
       evaluation+: {
-        epochs_between_evals: 5,
+        epochs_between_evals: 10,
       },
     },
     regressionTestConfig+: {
@@ -93,8 +93,8 @@ local tpus = import "templates/tpus.libsonnet";
   configs: [
     efficientnet + v2_8 + functional,
     efficientnet + v3_8 + functional,
-    efficientnet + v2_8 + convergence + timeouts.Hours(62),
-    efficientnet + v3_8 + convergence + timeouts.Hours(62),
+    efficientnet + v2_8 + convergence + timeouts.Hours(30),
+    efficientnet + v3_8 + convergence + timeouts.Hours(30),
     efficientnet + v2_32 + functional,
     efficientnet + v3_32 + functional,
     efficientnet + v2_32 + convergence + timeouts.Hours(30),

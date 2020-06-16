@@ -51,7 +51,7 @@
             - "--dataset=imagenet"
             - "--mode=train_and_eval"
             - "--model_dir=$(MODEL_DIR)"
-            - "--params_override=\"evaluation\":\n  \"epochs_between_evals\": 5\n\"train\":\n  \"epochs\": 500\n\"train_dataset\":\n  \"builder\": \"records\"\n\"validation_dataset\":\n  \"builder\": \"records\""
+            - "--params_override=\"evaluation\":\n  \"epochs_between_evals\": 10\n\"train\":\n  \"epochs\": 350\n\"train_dataset\":\n  \"builder\": \"records\"\n\"validation_dataset\":\n  \"builder\": \"records\""
             "env":
             - "name": "POD_NAME"
               "valueFrom":
