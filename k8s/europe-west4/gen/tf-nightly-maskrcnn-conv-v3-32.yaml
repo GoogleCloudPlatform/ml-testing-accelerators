@@ -44,8 +44,6 @@
           - "args":
             - "python3"
             - "official/vision/detection/main.py"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--strategy_type=tpu"
             - "--model=mask_rcnn"
             - |
               --params_override="architecture":
@@ -64,10 +62,12 @@
                   "path": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
                   "prefix": "resnet50/"
                 "iterations_per_loop": 5000
-                "total_steps": 22500
+                "total_steps": 5625
                 "train_file_pattern": "$(COCO_DIR)/train*"
             - "--model_dir=$(MODEL_DIR)"
             - "--mode=train"
+            - "--strategy_type=tpu"
+            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
             "env":
             - "name": "POD_NAME"
               "valueFrom":

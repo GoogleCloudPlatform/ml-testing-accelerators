@@ -16,6 +16,7 @@ local common = import "common.libsonnet";
 local mixins = import "templates/mixins.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
+local gpus = import "templates/gpus.libsonnet";
 
 {
   local maskrcnn = common.ModelGardenTest {
@@ -23,14 +24,7 @@ local tpus = import "templates/tpus.libsonnet";
     paramsOverride:: {
       eval: {
         eval_file_pattern: "$(COCO_DIR)/val*",
-        batch_size: 40,
         val_json_file: "$(COCO_DIR)/instances_val2017.json",
-      },
-      predict: {
-        batch_size: 40,
-      },
-      architecture: {
-        use_bfloat16: true,
       },
       train: {
         iterations_per_loop: 5000,
@@ -49,8 +43,6 @@ local tpus = import "templates/tpus.libsonnet";
     command: [
       "python3",
       "official/vision/detection/main.py",
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-      "--strategy_type=tpu",
       "--model=mask_rcnn",
       "--params_override=%s" % (std.manifestYamlDoc(self.paramsOverride) + "\n"),
       "--model_dir=$(MODEL_DIR)",
@@ -67,16 +59,73 @@ local tpus = import "templates/tpus.libsonnet";
     },
   },
   local convergence = mixins.Convergence {
+    local config = self,
+
     command+: [
       "--mode=train",
     ],
     paramsOverride+: {
       train+: {
-        total_steps: 22500,
+        total_steps: 22500 / config.accelerator.replicas,
       },
     },
   },
-  local v2_8 = {
+
+  local gpu_common = {
+    local config = self,
+
+    paramsOverride+:: {
+      eval+: {
+        batch_size: 4,
+      },
+      predict+: {
+        batch_size: 4,
+      },
+      architecture+: {
+        use_bfloat16: false,
+      },
+    },
+    command+: [
+      "--num_gpus=%d" % config.accelerator.count,
+    ],
+
+    # TODO: remove this when this model is fixed.
+    regressionTestConfig: {
+      alert_for_failed_jobs: false,
+    },
+  },
+  local v100 = gpu_common {
+    local config = self,
+
+    paramsOverride+:: {
+      train+: {
+        batch_size: 4 * config.accelerator.replicas,
+      },
+    },
+    accelerator: gpus.teslaV100,
+  },
+  local v100x4 = v100 {
+    accelerator: gpus.teslaV100 + { count: 4 },
+  },
+
+  local tpu_common = {
+    paramsOverride+:: {
+      eval+: {
+        batch_size: 40,
+      },
+      predict+: {
+        batch_size: 40,
+      },
+      architecture+: {
+        use_bfloat16: true,
+      },
+    },
+    command+: [
+      "--strategy_type=tpu",
+      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
+    ],
+  },
+  local v2_8 = tpu_common {
     accelerator: tpus.v2_8,
     paramsOverride+: {
       train+: {
@@ -84,7 +133,7 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
   },
-  local v3_8 = {
+  local v3_8 = tpu_common {
     accelerator: tpus.v3_8,
     paramsOverride+: {
       train+: {
@@ -92,7 +141,7 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
   },
-  local v2_32 = {
+  local v2_32 = tpu_common {
     accelerator: tpus.v2_32,
     paramsOverride+: {
       train+: {
@@ -100,7 +149,7 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
   },
-  local v3_32 = {
+  local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
     paramsOverride+: {
       train+: {
@@ -110,6 +159,8 @@ local tpus = import "templates/tpus.libsonnet";
   },
 
   configs: [
+    maskrcnn + functional + v100,
+    maskrcnn + functional + v100x4 + mixins.Experimental,
     maskrcnn + functional + v2_8,
     maskrcnn + functional + v3_8,
     maskrcnn + convergence + v2_8,

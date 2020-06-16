@@ -61,7 +61,7 @@
             - "--decode_batch_size=32"
             - "--decode_max_length=97"
             - "--batch_size=24576"
-            - "--train_steps=200000"
+            - "--train_steps=50000"
             "env":
             - "name": "POD_NAME"
               "valueFrom":

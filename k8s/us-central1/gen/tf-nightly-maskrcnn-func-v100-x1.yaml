@@ -15,7 +15,7 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-nightly-retinanet-func-v2-8"
+  "name": "tf-nightly-maskrcnn-func-v100-x1"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
@@ -25,45 +25,35 @@
       "backoffLimit": 1
       "template":
         "metadata":
-          "annotations":
-            "tf-version.cloud-tpus.google.com": "nightly"
+          "annotations": {}
         "spec":
           "containers":
-          - "env":
-            - "name": "POD_NAME"
-              "valueFrom":
-                "fieldRef":
-                  "fieldPath": "metadata.name"
-            - "name": "POD_NAMESPACE"
-              "valueFrom":
-                "fieldRef":
-                  "fieldPath": "metadata.namespace"
-            "image": "gcr.io/xl-ml-test/health-monitor:stable"
-            "imagePullPolicy": "Always"
-            "name": "monitor"
           - "args":
             - "python3"
             - "official/vision/detection/main.py"
+            - "--model=mask_rcnn"
             - |
               --params_override="architecture":
-                "use_bfloat16": true
+                "use_bfloat16": false
               "eval":
-                "batch_size": 8
+                "batch_size": 4
                 "eval_file_pattern": "$(COCO_DIR)/val*"
                 "val_json_file": "$(COCO_DIR)/instances_val2017.json"
+              "postprocess":
+                "pre_nms_num_boxes": 1000
               "predict":
-                "batch_size": 8
+                "batch_size": 4
               "train":
-                "batch_size": 64
+                "batch_size": 4
                 "checkpoint":
                   "path": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
                   "prefix": "resnet50/"
+                "iterations_per_loop": 5000
                 "total_steps": 1000
                 "train_file_pattern": "$(COCO_DIR)/train*"
             - "--model_dir=$(MODEL_DIR)"
             - "--mode=train"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--strategy_type=tpu"
+            - "--num_gpus=1"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -82,7 +72,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/retinanet/func/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/maskrcnn/func/v100-x1/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
@@ -91,7 +81,7 @@
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v2": 8
+                "nvidia.com/gpu": 1
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -111,7 +101,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/retinanet/func/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/maskrcnn/func/v100-x1/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -128,29 +118,17 @@
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
-                  "metric_success_conditions": {
-                   "examples/sec_average": {
-                    "comparison": "greater_or_equal",
-                    "success_threshold": {
-                     "stddevs_from_mean": 2
-                    }
-                   },
-                   "total_wall_time": {
-                    "comparison": "less",
-                    "success_threshold": {
-                     "stddevs_from_mean": 5
-                    },
-                    "wait_for_n_points_of_history": 10
-                   }
-                  }
+                  "alert_for_failed_jobs": false
                  },
-                 "test_name": "tf-nightly-retinanet-func-v2-8"
+                 "test_name": "tf-nightly-maskrcnn-func-v100-x1"
                 }
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/publisher:stable"
             "name": "publisher"
+          "nodeSelector":
+            "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
           "restartPolicy": "Never"
   "schedule": "0 8 * * *"
   "successfulJobsHistoryLimit": 1

@@ -44,7 +44,6 @@ local gpus = import "templates/gpus.libsonnet";
     ],
   },
 
-
   local gpu_common = {
     command+: [
       "--vocab_file=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/vocab.txt",
@@ -64,6 +63,13 @@ local gpus = import "templates/gpus.libsonnet";
     command+: [
       "--train_batch_size=4",
       "--predict_batch_size=4",
+    ],
+  },
+  local v100x4 = gpu_common {
+    accelerator: gpus.teslaV100 + { count: 4 },
+    command+: [
+      "--train_batch_size=8",
+      "--predict_batch_size=8",
     ],
   },
 
@@ -91,10 +97,12 @@ local gpus = import "templates/gpus.libsonnet";
   },
 
   configs: [
-    bert + k80 + functional + mixins.Experimental + timeouts.Hours(6),
     bert + v100 + functional + timeouts.Hours(3),
-    bert + k80 + convergence + mixins.Experimental + timeouts.Hours(12),
-    bert + v100 + convergence + mixins.Experimental + timeouts.Hours(6),
+    bert + v100 + convergence + timeouts.Hours(6),
+    bert + v100x4 + functional + timeouts.Hours(2) + mixins.Experimental,
+    bert + v100x4 + convergence + timeouts.Hours(4) + mixins.Experimental,
+    bert + k80 + functional + timeouts.Hours(6) + mixins.Experimental,
+    bert + k80 + convergence + timeouts.Hours(12) + mixins.Experimental,
     bert + v2_8 + functional,
     bert + v3_8 + functional,
   ],

@@ -16,17 +16,18 @@
   GPUSpec:: {
     local gpu = self,
 
-    name: "%(version)s-x%(number)d" % gpu,
+    name: "%(version)s-x%(count)d" % gpu,
     type: "gpu",
     version: error "Must specify GPUSpec `version`",
-    number: 1,
+    count: 1,
+    replicas: gpu.count,
 
     PodSpec:: {
       containerMap+: {
         train+: {
           resources+: {
             limits+: {
-              "nvidia.com/gpu": gpu.number
+              "nvidia.com/gpu": gpu.count
             },
           },
         },
