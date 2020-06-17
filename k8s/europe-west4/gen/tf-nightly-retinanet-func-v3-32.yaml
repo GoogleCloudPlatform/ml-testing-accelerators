@@ -44,8 +44,6 @@
           - "args":
             - "python3"
             - "official/vision/detection/main.py"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--strategy_type=tpu"
             - |
               --params_override="architecture":
                 "use_bfloat16": true
@@ -64,6 +62,8 @@
                 "train_file_pattern": "$(COCO_DIR)/train*"
             - "--model_dir=$(MODEL_DIR)"
             - "--mode=train"
+            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
+            - "--strategy_type=tpu"
             "env":
             - "name": "POD_NAME"
               "valueFrom":

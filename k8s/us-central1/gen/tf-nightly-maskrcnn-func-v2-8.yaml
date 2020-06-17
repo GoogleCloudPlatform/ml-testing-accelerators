@@ -44,8 +44,6 @@
           - "args":
             - "python3"
             - "official/vision/detection/main.py"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--strategy_type=tpu"
             - "--model=mask_rcnn"
             - |
               --params_override="architecture":
@@ -68,6 +66,8 @@
                 "train_file_pattern": "$(COCO_DIR)/train*"
             - "--model_dir=$(MODEL_DIR)"
             - "--mode=train"
+            - "--strategy_type=tpu"
+            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
             "env":
             - "name": "POD_NAME"
               "valueFrom":

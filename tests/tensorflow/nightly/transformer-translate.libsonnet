@@ -45,8 +45,10 @@ local gpus = import "templates/gpus.libsonnet";
     ],
   },
   local convergence = mixins.Convergence {
+    local config = self,
+
     command+: [
-      "--train_steps=200000",
+      "--train_steps=%d" % (200000 / config.accelerator.replicas),
     ],
   },
 
@@ -54,7 +56,7 @@ local gpus = import "templates/gpus.libsonnet";
     local config = self,
 
     command+: [
-      "--num_gpus=%d" % config.accelerator.number,
+      "--num_gpus=%d" % config.accelerator.count,
       "--steps_between_evals=5000",
     ],
   },
@@ -68,6 +70,12 @@ local gpus = import "templates/gpus.libsonnet";
     accelerator: gpus.teslaV100,
     command+: [
       "--batch_size=4096",
+    ],
+  },
+  local v100x4 = gpu_common {
+    accelerator: gpus.teslaV100 + { count: 4 },
+    command+: [
+      "--batch_size=16384",
     ],
   },
 
@@ -111,6 +119,8 @@ local gpus = import "templates/gpus.libsonnet";
   configs: [
     transformer + k80 + functional_short + timeouts.Hours(6) + mixins.Experimental,
     transformer + v100 + functional_short + timeouts.Hours(3),
+    transformer + v100x4 + functional_short + timeouts.Hours(3) + mixins.Experimental,
+    transformer + v100x4 + convergence + mixins.Experimental,
     transformer + k80 + convergence  + mixins.Experimental,
     transformer + v100 + convergence  + mixins.Experimental,
     transformer + v2_8 + functional,

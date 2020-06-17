@@ -16,6 +16,7 @@ local common = import "common.libsonnet";
 local mixins = import "templates/mixins.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
+local gpus = import "templates/gpus.libsonnet";
 
 {
   local efficientnet = common.ModelGardenTest {
@@ -37,8 +38,6 @@ local tpus = import "templates/tpus.libsonnet";
     command: [
       "python3",
       "official/vision/image_classification/classifier_trainer.py",
-      "--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-tpu.yaml",
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
       "--data_dir=$(IMAGENET_DIR)",
       "--model_type=efficientnet",
       "--dataset=imagenet",
@@ -77,20 +76,49 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
   },
-  local v2_8 = {
+  local gpu_common = {
+    local config = self,
+
+    modelName: "efficientnet",
+    paramsOverride+:: {
+      runtime: {
+        num_gpus: config.accelerator.count,
+      },
+    },
+    command+: [
+      "--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-gpu.yaml",
+    ],
+  },
+  local v100 = gpu_common {
+    accelerator: gpus.teslaV100,
+  },
+  local v100x4 = gpu_common {
+    accelerator: gpus.teslaV100 + { count: 4 },
+  },
+
+  local tpu_common = {
+    command+: [
+      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
+      "--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-tpu.yaml",
+    ],
+  },
+  local v2_8 = tpu_common {
     accelerator: tpus.v2_8,
   },
-  local v3_8 = {
+  local v3_8 = tpu_common {
     accelerator: tpus.v3_8,
   },
-  local v2_32 = {
+  local v2_32 = tpu_common {
     accelerator: tpus.v2_32,
   },
-  local v3_32 = {
+  local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
   },
 
   configs: [
+    efficientnet + v100 + functional + timeouts.Hours(3),
+    efficientnet + v100x4 + functional + timeouts.Hours(2) + mixins.Experimental,
+    efficientnet + v100x4 + convergence + timeouts.Hours(2) + mixins.Experimental,
     efficientnet + v2_8 + functional,
     efficientnet + v3_8 + functional,
     efficientnet + v2_8 + convergence + timeouts.Hours(35),

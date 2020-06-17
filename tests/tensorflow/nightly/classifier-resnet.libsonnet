@@ -81,8 +81,8 @@ local gpus = import "templates/gpus.libsonnet";
     local config = self,
 
     paramsOverride+:: {
-      runtime: {
-        num_gpus: config.accelerator.number,
+      runtime+: {
+        num_gpus: config.accelerator.count,
       },
     },
     command+: [
@@ -92,6 +92,13 @@ local gpus = import "templates/gpus.libsonnet";
   local v100 = gpu_common {
     accelerator: gpus.teslaV100,
   },
+  local v100x4 = gpu_common {
+    accelerator: gpus.teslaV100 + { count: 4 },
+  },
+  local v100x8 = gpu_common {
+    accelerator: gpus.teslaV100 + { count: 8 },
+  },
+
   local k80 = gpu_common {
     paramsOverride+:: {
       train_dataset+: {
@@ -124,10 +131,12 @@ local gpus = import "templates/gpus.libsonnet";
   },
 
   configs: [
-    resnet + k80 + functional + timeouts.Hours(5) + mixins.Experimental,
     resnet + v100 + functional + timeouts.Hours(3),
+    resnet + v100x4 + functional + mixins.Experimental,
+    resnet + v100x4 + convergence + mixins.Experimental,
+    resnet + v100x8 + functional + mixins.Experimental,
+    resnet + k80 + functional + timeouts.Hours(5) + mixins.Experimental,
     resnet + k80 + convergence + timeouts.Hours(48) + mixins.Experimental,
-    resnet + v100 + convergence + timeouts.Hours(48) + mixins.Experimental,
     resnet + v2_8 + functional,
     resnet + v3_8 + functional,
     resnet + v2_8 + convergence,
