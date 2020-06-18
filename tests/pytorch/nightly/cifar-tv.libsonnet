@@ -31,13 +31,44 @@ local tpus = import "templates/tpus.libsonnet";
   local convergence = common.Convergence {
     # Run daily instead of 2x per week since convergence is fast.
     schedule: "0 18 * * *",
-    regressionTestConfig+: {
-      metric_success_conditions+: {
+    regressionTestConfig: {
+      metric_subset_to_alert: [
+        "ExecuteTime__Percentile_99_sec_final",
+        "CompileTime__Percentile_99_sec_final",
+        "total_wall_time",
+        "Accuracy/test_final",
+        "aten_ops_sum_final",
+      ],
+      metric_success_conditions: {
+        "ExecuteTime__Percentile_99_sec_final": {
+          success_threshold: {
+            fixed_value: 0.5,
+          },
+          comparison: "less",
+        },
+        "CompileTime__Percentile_99_sec_final": {
+          success_threshold: {
+            fixed_value: 6.0,
+          },
+          comparison: "less",
+        },
+        "aten_ops_sum_final": {
+          success_threshold: {
+            fixed_value: 2400.0,
+          },
+          comparison: "less_or_equal",
+        },
         "Accuracy/test_final": {
           success_threshold: {
             fixed_value: 72.0,
           },
           comparison: "greater",
+        },
+        "total_wall_time": {
+          success_threshold: {
+            fixed_value: 1000.0,
+          },
+          comparison: "less",
         },
       },
     },
