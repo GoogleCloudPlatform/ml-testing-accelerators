@@ -199,6 +199,8 @@
                 "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/publisher:stable"
             "name": "publisher"
+          "nodeSelector":
+            "tpu-available": "true"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":
