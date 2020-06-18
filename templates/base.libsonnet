@@ -168,14 +168,6 @@ local volumes = import 'volumes.libsonnet';
               # Use Docker image's entrypoint wrapper
               args: config.command,
 
-              envFrom: [
-                {
-                  configMapRef: {
-                    name: "gcs-buckets",
-                  },
-                },
-              ],
-
               # Override this object to add environment variables to the container
               envMap:: {},
               env: commonEnv + [
