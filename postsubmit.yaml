@@ -39,12 +39,12 @@ steps:
   - 'CLOUDSDK_COMPUTE_ZONE=europe-west4-a'
   - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test-europe-west4'
 - name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', 'k8s/us-central1/', '-f', 'k8s/common/',]
+  args: ['apply', '-f', 'k8s/us-central1/gcs-buckets.yaml', '-f', 'k8s/us-central1/volumes.yaml', '-f', 'k8s/common/',]
   env:
   - 'CLOUDSDK_COMPUTE_ZONE=us-central1-b'
   - 'CLOUDSDK_CONTAINER_CLUSTER=oneshots'
 - name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', 'k8s/europe-west4/', '-f', 'k8s/common/',]
+  args: ['apply', '-f', 'k8s/europe-west4/gcs-buckets.yaml', '-f', 'k8s/common/',]
   env:
   - 'CLOUDSDK_COMPUTE_ZONE=europe-west4-a'
   - 'CLOUDSDK_CONTAINER_CLUSTER=europe-oneshots'
