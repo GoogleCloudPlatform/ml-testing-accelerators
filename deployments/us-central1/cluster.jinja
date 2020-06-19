@@ -18,7 +18,6 @@ resources:
   properties:
     parent: projects/{{ env["project"] }}/locations/us-central1
     cluster:
-      name: {{ env["name"] }}
       releaseChannel:
         channel: REGULAR
       enableTpu: true

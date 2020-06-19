@@ -1,13 +1,12 @@
 info:
-  title: GKE Cluster Template
-  description: Creates a new XL ML Test cluster
+  title: GKE Node Pool Template
+  description: Creates node pools in target GKE cluster.
   version: 0.1
 
 properties:
-  zone:
+  cluster-name:
     type: string
-    default: us-central1-b
-    description: GCP zone for Kubernetes cluster
+    description: Name of target GKE cluster.
 
   small-tpu:
     type: boolean
