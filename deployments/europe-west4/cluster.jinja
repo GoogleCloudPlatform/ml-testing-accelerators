@@ -16,7 +16,7 @@ resources:
 - name: {{ env["deployment"] }}
   type: gcp-types/container-v1beta1:projects.locations.clusters
   properties:
-    parent: projects/{{ env["project"] }}/locations/europe-west4-a
+    parent: projects/{{ env["project"] }}/locations/europe-west4
     cluster:
       releaseChannel:
         channel: REGULAR
@@ -25,6 +25,8 @@ resources:
         useIpAliases: true
       nodePools:
       - name: default-pool
+        locations:
+        - europe-west4-a
         initialNodeCount: 3
         autoscaling:
           enabled: true
