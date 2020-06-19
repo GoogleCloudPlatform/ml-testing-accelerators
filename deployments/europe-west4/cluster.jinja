@@ -16,7 +16,7 @@ resources:
 - name: {{ env["deployment"] }}
   type: gcp-types/container-v1beta1:projects.locations.clusters
   properties:
-    zone: europe-west4-a
+    parent: projects/{{ env["project"] }}/locations/europe-west4-a
     cluster:
       releaseChannel:
         channel: REGULAR
@@ -35,4 +35,4 @@ resources:
           oauthScopes:
           - https://www.googleapis.com/auth/cloud-platform
           labels:
-            tpu-available: true
+            tpu-available: "true"
