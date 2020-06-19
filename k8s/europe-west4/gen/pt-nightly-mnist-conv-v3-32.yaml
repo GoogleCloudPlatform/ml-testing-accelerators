@@ -164,6 +164,8 @@
                 "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/publisher:stable"
             "name": "publisher"
+          "nodeSelector":
+            "tpu-available": "true"
           "restartPolicy": "Never"
   "schedule": "0 18 * * *"
   "successfulJobsHistoryLimit": 1

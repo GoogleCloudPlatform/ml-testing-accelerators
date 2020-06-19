@@ -20,6 +20,10 @@ local base = import "templates/base.libsonnet";
 
     publisherImage: "gcr.io/xl-ml-test/publisher:stable",
 
+    tpuSettings+: {
+      requireTpuAvailableLabel: true,
+    },
+
     # Add experimental TPU health monitor to Job.
     # TODO: move this to base template if it's working well.
     jobSpec+:: {

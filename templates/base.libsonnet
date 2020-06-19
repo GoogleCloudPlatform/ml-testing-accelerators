@@ -42,6 +42,10 @@ local volumes = import 'volumes.libsonnet';
     tpuSettings: {
       # TPU software version (e.g. `nightly`)
       softwareVersion: error "Must set TPU `softwareVersion`",
+
+      # Require nodes to have label `tpu-available: true`.
+      # Useful for regional clusters where not all zones have TPU availabiltiy.
+      requireTpuAvailableLabel: false,
     },
 
     # Map of names to VolumeSpecs.
@@ -130,6 +134,12 @@ local volumes = import 'volumes.libsonnet';
                 "$(OUTPUT_BUCKET)/%(frameworkPrefix)s/%(modelName)s/%(mode)s/%(acceleratorName)s/$(JOB_NAME)" % config,
             },
           ],
+
+          nodeSelector+:
+            if config.accelerator.type == "tpu" && config.tpuSettings.requireTpuAvailableLabel then
+              { "tpu-available": "true" }
+            else
+              { },
 
           restartPolicy: "Never",
           initContainerMap:: {
