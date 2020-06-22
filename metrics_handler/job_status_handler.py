@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import base64
+import google
 from google.cloud import container_v1
 import google.auth
 import google.auth.transport.requests
@@ -58,8 +59,20 @@ class JobStatusHandler(object):
       # use this path by running `gcloud auth application-default login`.
       self.logger.info('Attempting to init k8s client from cluster response.')
       container_client = container_v1.ClusterManagerClient()
-      response = container_client.get_cluster(
-          self.project_id, self.zone, self.cluster_name)
+      # Try zonal cluster first, then try regional.
+      try:
+        cluster_path = "projects/{}/locations/{}/clusters/{}".format(
+            self.project_id, self.zone, self.cluster_name)
+        response = container_client.get_cluster(
+            None, None, None, name=cluster_path)
+      except google.api_core.exceptions.NotFound:
+        self.logger.warning('No zonal cluster found for {}. Trying regional.'.format(cluster_path))
+        # TODO: include this in message instead
+        region = self.zone[:-2]
+        cluster_path = "projects/{}/locations/{}/clusters/{}".format(
+            self.project_id, region, self.cluster_name)
+        response = container_client.get_cluster(
+            None, None, None, name=cluster_path)
       credentials, project = google.auth.default(
           scopes=['https://www.googleapis.com/auth/cloud-platform'])
       creds, projects = google.auth.default()
