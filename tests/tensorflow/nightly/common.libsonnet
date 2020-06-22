@@ -24,13 +24,13 @@ local common = import "../common.libsonnet";
 
     metricCollectionConfig+: {
       metric_to_aggregation_strategies+: {
-        "examples/sec": ["average"],
+        "examples_per_second": ["average"],
       },
       use_run_name_prefix: true,
     },
     regressionTestConfig+: {
       metric_success_conditions+: {
-        "examples/sec_average": {
+        "examples_per_second_average": {
           comparison: "greater_or_equal",
           success_threshold: {
             stddevs_from_mean: 2.0,
