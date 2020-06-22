@@ -75,12 +75,6 @@ local gpus = import "templates/gpus.libsonnet";
     local config = self,
 
     paramsOverride+:: {
-      eval+: {
-        batch_size: 4,
-      },
-      predict+: {
-        batch_size: 4,
-      },
       architecture+: {
         use_bfloat16: false,
       },
@@ -94,11 +88,36 @@ local gpus = import "templates/gpus.libsonnet";
       alert_for_failed_jobs: false,
     },
   },
+  local k80 = gpu_common {
+    local config = self,
+
+    paramsOverride+:: {
+      train+: {
+        batch_size: 2 * config.accelerator.replicas,
+      },
+      eval+: {
+        batch_size: 2 * config.accelerator.replicas,
+      },
+      predict+: {
+        batch_size: 2 * config.accelerator.replicas,
+      },
+    },
+    accelerator: gpus.teslaK80,
+  },
+  local k80x8 = k80 {
+    accelerator: gpus.teslaK80 + { count: 8 },
+  },
   local v100 = gpu_common {
     local config = self,
 
     paramsOverride+:: {
       train+: {
+        batch_size: 4 * config.accelerator.replicas,
+      },
+      eval+: {
+        batch_size: 4 * config.accelerator.replicas,
+      },
+      predict+: {
         batch_size: 4 * config.accelerator.replicas,
       },
     },
@@ -159,8 +178,11 @@ local gpus = import "templates/gpus.libsonnet";
   },
 
   configs: [
+    maskrcnn + functional + k80x8,
+    maskrcnn + convergence + k80x8 + mixins.Experimental,
     maskrcnn + functional + v100,
-    maskrcnn + functional + v100x4 + mixins.Experimental,
+    maskrcnn + functional + v100x4,
+    maskrcnn + convergence + v100x4 + mixins.Experimental,
     maskrcnn + functional + v2_8,
     maskrcnn + functional + v3_8,
     maskrcnn + convergence + v2_8,

@@ -15,13 +15,13 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-nightly-bert-squad-func-v100-x1"
+  "name": "tf-nightly-retinanet-func-k80-x8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 10800
+      "activeDeadlineSeconds": 3600
       "backoffLimit": 1
       "template":
         "metadata":
@@ -30,21 +30,24 @@
           "containers":
           - "args":
             - "python3"
-            - "official/nlp/bert/run_squad.py"
-            - "--input_meta_data_path=gs://xl-ml-test-us-central1/data/squad/squad_v1.1_meta_data.json"
-            - "--train_data_path=gs://xl-ml-test-us-central1/data/squad/squad_v1.1_train.tfrecord"
-            - "--predict_file=gs://xl-ml-test-us-central1/data/squad/dev-v1.1.json"
-            - "--learning_rate=8e-5"
-            - "--do_lower_case=true"
+            - "official/vision/detection/main.py"
+            - |
+              --params_override="eval":
+                "batch_size": 8
+                "eval_file_pattern": "$(COCO_DIR)/val*"
+                "val_json_file": "$(COCO_DIR)/instances_val2017.json"
+              "predict":
+                "batch_size": 8
+              "train":
+                "batch_size": 32
+                "checkpoint":
+                  "path": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
+                  "prefix": "resnet50/"
+                "total_steps": 1000
+                "train_file_pattern": "$(COCO_DIR)/train*"
             - "--model_dir=$(MODEL_DIR)"
-            - "--vocab_file=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/vocab.txt"
-            - "--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/bert_config.json"
-            - "--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/bert_model.ckpt"
-            - "--num_gpus=1"
-            - "--train_batch_size=4"
-            - "--predict_batch_size=4"
             - "--mode=train"
-            - "--num_train_epochs=1"
+            - "--num_gpus=8"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -63,7 +66,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/bert-squad/func/v100-x1/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/retinanet/func/k80-x8/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
@@ -72,7 +75,7 @@
             "name": "train"
             "resources":
               "limits":
-                "nvidia.com/gpu": 1
+                "nvidia.com/gpu": 8
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -92,7 +95,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/bert-squad/func/v100-x1/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/retinanet/func/k80-x8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -101,7 +104,7 @@
                    "final"
                   ],
                   "metric_to_aggregation_strategies": {
-                   "examples_per_second": [
+                   "examples/sec": [
                     "average"
                    ]
                   },
@@ -110,7 +113,7 @@
                  },
                  "regression_test_config": {
                   "metric_success_conditions": {
-                   "examples_per_second_average": {
+                   "examples/sec_average": {
                     "comparison": "greater_or_equal",
                     "success_threshold": {
                      "stddevs_from_mean": 2
@@ -125,7 +128,7 @@
                    }
                   }
                  },
-                 "test_name": "tf-nightly-bert-squad-func-v100-x1"
+                 "test_name": "tf-nightly-retinanet-func-k80-x8"
                 }
             "envFrom":
             - "configMapRef":
@@ -133,7 +136,7 @@
             "image": "gcr.io/xl-ml-test/publisher:stable"
             "name": "publisher"
           "nodeSelector":
-            "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
+            "cloud.google.com/gke-accelerator": "nvidia-tesla-k80"
           "restartPolicy": "Never"
   "schedule": "0 8 * * *"
   "successfulJobsHistoryLimit": 1
