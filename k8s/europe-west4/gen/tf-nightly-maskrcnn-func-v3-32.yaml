@@ -124,7 +124,7 @@
                    "final"
                   ],
                   "metric_to_aggregation_strategies": {
-                   "examples/sec": [
+                   "examples_per_second": [
                     "average"
                    ]
                   },
@@ -133,7 +133,7 @@
                  },
                  "regression_test_config": {
                   "metric_success_conditions": {
-                   "examples/sec_average": {
+                   "examples_per_second_average": {
                     "comparison": "greater_or_equal",
                     "success_threshold": {
                      "stddevs_from_mean": 2

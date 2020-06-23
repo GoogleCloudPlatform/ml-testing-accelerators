@@ -111,7 +111,7 @@
                    "final"
                   ],
                   "metric_to_aggregation_strategies": {
-                   "examples/sec": [
+                   "examples_per_second": [
                     "average"
                    ]
                   },
