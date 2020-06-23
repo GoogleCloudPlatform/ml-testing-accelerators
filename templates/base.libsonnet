@@ -243,6 +243,7 @@ local volumes = import 'volumes.libsonnet';
   cpu:: self.BaseAccelerator {
     name: "cpu",
     type: "cpu",
+    replicas: 1,
 
     # Ignore TPU settings.
     PodTemplate(_):: {
