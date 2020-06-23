@@ -52,7 +52,9 @@ local tpus = import "templates/tpus.libsonnet";
       "--config_file=/tpu/models/official/resnet/configs/cloud/v3-32.yaml",
     ],
   },
-  local convergence = common.Convergence,
+  local convergence = common.Convergence {
+    schedule: "0 8 * * 6",
+  },
   local functional = common.Functional {
     command+: [
       "--train_steps=1000",

@@ -23,8 +23,8 @@ local mixins = import "templates/mixins.libsonnet";
     },
     imageTag: "r2.2",
   },
+  # Don't run tests manually by default since this release is stable.
   Convergence:: mixins.Convergence {
-    # Run at 1:00 PST on Saturday
-    schedule: "0 8 * * 6"
+    schedule: null
   },
 }

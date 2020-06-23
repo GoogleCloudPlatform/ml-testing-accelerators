@@ -37,6 +37,7 @@ local tpus = import "templates/tpus.libsonnet";
     ],
   },
   local convergence = common.Convergence {
+    schedule: "0 8 * * 6",
     command+: [
       "--train_epochs=90",
       "--epochs_between_evals=90",
