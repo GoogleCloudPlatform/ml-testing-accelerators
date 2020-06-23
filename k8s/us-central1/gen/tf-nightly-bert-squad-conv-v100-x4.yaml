@@ -15,13 +15,13 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-nightly-bert-squad-func-v100-x1"
+  "name": "tf-nightly-bert-squad-conv-v100-x4"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 10800
+      "activeDeadlineSeconds": 14400
       "backoffLimit": 1
       "template":
         "metadata":
@@ -40,11 +40,10 @@
             - "--vocab_file=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/vocab.txt"
             - "--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/bert_config.json"
             - "--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/bert_model.ckpt"
-            - "--num_gpus=1"
-            - "--train_batch_size=4"
-            - "--predict_batch_size=4"
-            - "--mode=train"
-            - "--num_train_epochs=1"
+            - "--num_gpus=4"
+            - "--train_batch_size=8"
+            - "--predict_batch_size=8"
+            - "--num_train_epochs=2"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -63,7 +62,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/bert-squad/func/v100-x1/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/bert-squad/conv/v100-x4/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
@@ -72,7 +71,7 @@
             "name": "train"
             "resources":
               "limits":
-                "nvidia.com/gpu": 1
+                "nvidia.com/gpu": 4
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -92,7 +91,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/bert-squad/func/v100-x1/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/bert-squad/conv/v100-x4/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -125,7 +124,7 @@
                    }
                   }
                  },
-                 "test_name": "tf-nightly-bert-squad-func-v100-x1"
+                 "test_name": "tf-nightly-bert-squad-conv-v100-x4"
                 }
             "envFrom":
             - "configMapRef":
@@ -135,5 +134,5 @@
           "nodeSelector":
             "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
           "restartPolicy": "Never"
-  "schedule": "0 8 * * *"
+  "schedule": "0 6 * * 0,5"
   "successfulJobsHistoryLimit": 1

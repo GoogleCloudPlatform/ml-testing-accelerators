@@ -89,6 +89,9 @@ local gpus = import "templates/gpus.libsonnet";
       "--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-gpu.yaml",
     ],
   },
+  local k80x8 = gpu_common {
+    accelerator: gpus.teslaK80 + { count: 8 },
+  },
   local v100 = gpu_common {
     accelerator: gpus.teslaV100,
   },
@@ -116,9 +119,11 @@ local gpus = import "templates/gpus.libsonnet";
   },
 
   configs: [
+    efficientnet + k80x8 + functional + timeouts.Hours(2),
+    efficientnet + k80x8 + convergence + mixins.Experimental,
     efficientnet + v100 + functional + timeouts.Hours(3),
-    efficientnet + v100x4 + functional + timeouts.Hours(2) + mixins.Experimental,
-    efficientnet + v100x4 + convergence + timeouts.Hours(2) + mixins.Experimental,
+    efficientnet + v100x4 + functional + timeouts.Hours(2),
+    efficientnet + v100x4 + convergence + mixins.Experimental,
     efficientnet + v2_8 + functional,
     efficientnet + v3_8 + functional,
     efficientnet + v2_8 + convergence + timeouts.Hours(35),

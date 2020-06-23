@@ -61,22 +61,26 @@ local gpus = import "templates/gpus.libsonnet";
     ],
   },
   local k80 = gpu_common {
+    local config = self,
+
     accelerator: gpus.teslaK80,
     command+: [
-      "--batch_size=2048",
+      "--batch_size=%d" % (2048 * config.accelerator.replicas),
     ],
   },
+  local k80x8 = k80 {
+    accelerator: gpus.teslaK80 + { count: 8 },
+  },
   local v100 = gpu_common {
+    local config = self,
+
     accelerator: gpus.teslaV100,
     command+: [
-      "--batch_size=4096",
+      "--batch_size=%d" % (4096 * config.accelerator.replicas),
     ],
   },
   local v100x4 = gpu_common {
     accelerator: gpus.teslaV100 + { count: 4 },
-    command+: [
-      "--batch_size=16384",
-    ],
   },
 
   local tpu_common = {
@@ -117,7 +121,9 @@ local gpus = import "templates/gpus.libsonnet";
   },
 
   configs: [
-    transformer + k80 + functional_short + timeouts.Hours(6) + mixins.Experimental,
+    transformer + k80 + functional_short + timeouts.Hours(6),
+    transformer + k80x8 + functional_short + timeouts.Hours(6),
+    transformer + k80x8 + convergence + mixins.Experimental,
     transformer + v100 + functional_short + timeouts.Hours(3),
     transformer + v100x4 + functional_short + timeouts.Hours(3) + mixins.Experimental,
     transformer + v100x4 + convergence + mixins.Experimental,

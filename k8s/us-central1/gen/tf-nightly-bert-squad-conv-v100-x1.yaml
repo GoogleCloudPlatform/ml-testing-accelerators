@@ -40,6 +40,7 @@
             - "--vocab_file=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/vocab.txt"
             - "--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/bert_config.json"
             - "--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/bert_model.ckpt"
+            - "--num_gpus=1"
             - "--train_batch_size=4"
             - "--predict_batch_size=4"
             - "--num_train_epochs=2"

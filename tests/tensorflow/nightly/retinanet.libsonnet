@@ -77,6 +77,15 @@ local gpus = import "templates/gpus.libsonnet";
       "--num_gpus=%d" % config.accelerator.count,
     ],
   },
+  local k80x8 = gpu_common {
+    local config = self,
+    paramsOverride+:: {
+      train+: {
+        batch_size: 4 * config.accelerator.replicas,
+      },
+    },
+    accelerator: gpus.teslaK80 + { count: 8 },
+  },
   local v100 = gpu_common {
     local config = self,
 
@@ -141,8 +150,10 @@ local gpus = import "templates/gpus.libsonnet";
   },
 
   configs: [
+    retinanet + functional + k80x8,
+    retinanet + convergence + k80x8 + mixins.Experimental,
     retinanet + functional + v100,
-    retinanet + functional + v100x4 + mixins.Experimental,
+    retinanet + functional + v100x4,
     retinanet + convergence + v100x4 + mixins.Experimental,
     retinanet + functional + v2_8,
     retinanet + functional + v3_8,
