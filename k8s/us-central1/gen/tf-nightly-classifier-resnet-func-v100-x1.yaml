@@ -24,8 +24,6 @@
       "activeDeadlineSeconds": 10800
       "backoffLimit": 1
       "template":
-        "metadata":
-          "annotations": {}
         "spec":
           "containers":
           - "args":

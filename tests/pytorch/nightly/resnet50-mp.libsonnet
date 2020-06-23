@@ -15,6 +15,7 @@
 local common = import "common.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
+local mixins = import "templates/mixins.libsonnet";
 
 {
   local resnet50_MP = common.PyTorchTest {
@@ -55,7 +56,6 @@ local tpus = import "templates/tpus.libsonnet";
     ],
   },
   local convergence = common.Convergence {
-    accelerator+: tpus.Preemptible,
     command+: [
       "--num_epochs=90",
       "--datadir=/datasets/imagenet",
@@ -75,7 +75,7 @@ local tpus = import "templates/tpus.libsonnet";
     accelerator: tpus.v3_8,
   },
   configs: [
-    resnet50_MP + v3_8 + convergence + timeouts.Hours(26),
+    resnet50_MP + v3_8 + convergence + timeouts.Hours(26) + mixins.PreemptibleTpu,
     resnet50_MP + v3_8 + functional + timeouts.Hours(2),
   ],
 }

@@ -20,20 +20,19 @@ local timeouts = import "timeouts.libsonnet";
     timeout: timeouts.one_hour,
     # Run at midnight PST daily
     schedule: "0 8 * * *",
-    accelerator+: {
-      preemptible: false,
-    },
   },
   Convergence:: {
     mode: "conv",
     timeout: timeouts.ten_hours,
     # Run at 22:00 PST on Sunday and Wednesday
     schedule: "0 6 * * 0,5",
-    accelerator+: {
-      preemptible: false,
-    },
   },
   Experimental:: {
     schedule: null,
+  },
+  PreemptibleTpu:: {
+    tpuSettings+: {
+      preemptible: true,
+    },
   },
 }
