@@ -50,6 +50,8 @@ local volumes = import 'volumes.libsonnet';
 
     # Map of names to VolumeSpecs.
     volumeMap: { },
+    # List of ConfigMaps to pull environment variables from.
+    configMaps: [ "gcs-buckets" ],
 
     # Default regression test settings. Alert when time for test increases significantly.
     metricCollectionConfig: {
@@ -148,9 +150,10 @@ local volumes = import 'volumes.libsonnet';
               envFrom: [
                 {
                   configMapRef: {
-                    name: "gcs-buckets",
+                    name: bucketName,
                   },
-                },
+                }
+                for bucketName in config.configMaps
               ],
               env: commonEnv + [
                 {
@@ -181,9 +184,10 @@ local volumes = import 'volumes.libsonnet';
               envFrom: [
                 {
                   configMapRef: {
-                    name: "gcs-buckets",
+                    name: bucketName,
                   },
-                },
+                }
+                for bucketName in config.configMaps
               ],
 
               # Override this object to add environment variables to the container
