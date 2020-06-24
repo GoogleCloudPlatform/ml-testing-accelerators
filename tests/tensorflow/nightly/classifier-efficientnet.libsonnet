@@ -43,16 +43,16 @@ local gpus = import "templates/gpus.libsonnet";
       "--dataset=imagenet",
       "--mode=train_and_eval",
       "--model_dir=$(MODEL_DIR)",
-      "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride),
+      "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride) + "\n",
     ],
   },
   local functional = mixins.Functional {
     paramsOverride+: {
       train+: {
-        epochs: 3, 
+        epochs: 1, 
       },
       evaluation+: {
-        epochs_between_evals: 3,
+        epochs_between_evals: 1,
       },
     },
   },
