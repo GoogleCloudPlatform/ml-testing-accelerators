@@ -46,6 +46,9 @@ local volumes = import 'volumes.libsonnet';
       # Require nodes to have label `tpu-available: true`.
       # Useful for regional clusters where not all zones have TPU availabiltiy.
       requireTpuAvailableLabel: false,
+
+      # Whether to use a preemptible TPU.
+      preemptible: false,
     },
 
     # Map of names to VolumeSpecs.
@@ -85,17 +88,8 @@ local volumes = import 'volumes.libsonnet';
       # Try 2 times before giving up.
       backoffLimit: 1,
       activeDeadlineSeconds: config.timeout,
-      template: {
-        metadata: {
-          annotations: std.prune({
-              "tf-version.cloud-tpus.google.com":
-                if config.accelerator.type == "tpu" then
-                  config.tpuSettings.softwareVersion
-                else
-                  null,
-          }),
-        },
-        spec: config.accelerator.PodSpec + volumes.combinedMixin(config.volumeMap) {
+      template: config.accelerator.PodTemplate(config.tpuSettings) + {
+        spec+: volumes.combinedMixin(config.volumeMap) + {
           local pod = self,
           local commonEnv = [
             {
@@ -136,12 +130,6 @@ local volumes = import 'volumes.libsonnet';
                 "$(OUTPUT_BUCKET)/%(frameworkPrefix)s/%(modelName)s/%(mode)s/%(acceleratorName)s/$(JOB_NAME)" % config,
             },
           ],
-
-          nodeSelector+:
-            if config.accelerator.type == "tpu" && config.tpuSettings.requireTpuAvailableLabel then
-              { "tpu-available": "true" }
-            else
-              { },
 
           restartPolicy: "Never",
           initContainerMap:: {
@@ -247,16 +235,30 @@ local volumes = import 'volumes.libsonnet';
       },
     },
   },
-  cpu:: {
+
+  BaseAccelerator:: {
+    name: error "Must define accelerator `name`",
+    type: error "Must define accelerator `type`",
+    replicas: error "Must define accelerator `replicas`",
+
+    # tpuSettings should be ignored.
+    PodTemplate(tpuSettings):: error "Must define accelerator `PodSpec`."
+  },
+  cpu:: self.BaseAccelerator {
     name: "cpu",
     type: "cpu",
-    PodSpec: {
-      containerMap+: {
-        train+: {
-          resources+: {
-            limits+: {
-              cpu: 2,
-              memory: "2Gi",
+    replicas: 1,
+
+    # Ignore TPU settings.
+    PodTemplate(_):: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            resources+: {
+              limits+: {
+                cpu: 2,
+                memory: "2Gi",
+              },
             },
           },
         },

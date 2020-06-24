@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+local base = import 'base.libsonnet';
+
 {
-  TpuSpec:: {
+  TpuSpec:: base.BaseAccelerator {
     local tpu = self,
 
     name: "v%(version)d-%(size)d" % tpu,
@@ -23,24 +25,34 @@
     replicas: tpu.size / 8, # Each TPU replica has 8 cores
     preemptible: false,
 
-    PodSpec:: {
-      containerMap+: {
-        train+: {
-          resources+: {
-            limits+: { [tpu.resource]: tpu.size },
-          },
+    PodTemplate(tpuSettings):: {
+      metadata: {
+        annotations: {
+          "tf-version.cloud-tpus.google.com": tpuSettings.softwareVersion,
         },
       },
-    },
+      spec+: {
+        containerMap+: {
+          train+: {
+            resources+: {
+              local preemptiblePrefix = 
+                if tpuSettings.preemptible then
+                  "preemptible-"
+                else
+                  "",
+              local resourceName = "cloud-tpus.google.com/%sv%s" % [preemptiblePrefix, tpu.version],
 
-    preemptiblePrefix:: if tpu.preemptible then
-      "preemptible-"
-    else
-      "",
-    resource:: "cloud-tpus.google.com/%(preemptiblePrefix)sv%(version)s" % tpu,
-  },
-  Preemptible:: {
-    preemptible: true
+              limits+: { [resourceName]: tpu.size },
+            },
+          },
+        },
+        nodeSelector+:
+          if tpuSettings.requireTpuAvailableLabel then
+            { "tpu-available": "true" }
+          else
+            { },
+      },
+    },
   },
 
   v2_8: self.TpuSpec { version: 2, size: 8 },

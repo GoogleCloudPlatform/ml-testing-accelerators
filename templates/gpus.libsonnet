@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+local base = import 'base.libsonnet';
+
 {
-  GPUSpec:: {
+  GPUSpec:: base.BaseAccelerator {
     local gpu = self,
 
     name: "%(version)s-x%(count)d" % gpu,
@@ -22,18 +24,21 @@
     count: 1,
     replicas: gpu.count,
 
-    PodSpec:: {
-      containerMap+: {
-        train+: {
-          resources+: {
-            limits+: {
-              "nvidia.com/gpu": gpu.count
+    # Ignore TPU settings.
+    PodTemplate(_):: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            resources+: {
+              limits+: {
+                "nvidia.com/gpu": gpu.count
+              },
             },
           },
         },
-      },
-      nodeSelector+: {
-        "cloud.google.com/gke-accelerator": "nvidia-tesla-%(version)s" % gpu,
+        nodeSelector+: {
+          "cloud.google.com/gke-accelerator": "nvidia-tesla-%(version)s" % gpu,
+        },
       },
     },
   },
