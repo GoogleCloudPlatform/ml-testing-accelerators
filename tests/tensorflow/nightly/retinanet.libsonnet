@@ -22,13 +22,15 @@ local gpus = import "templates/gpus.libsonnet";
   local retinanet = common.ModelGardenTest {
     modelName: "retinanet",
     paramsOverride:: {
+      local params = self,
+
       eval: {
         eval_file_pattern: "$(COCO_DIR)/val*",
-        batch_size: 8,
+        batch_size: params.train.batch_size,
         val_json_file: "$(COCO_DIR)/instances_val2017.json",
       },
       predict: {
-        batch_size: 8,
+        batch_size: params.train.batch_size,
       },
       train: {
         checkpoint: {
