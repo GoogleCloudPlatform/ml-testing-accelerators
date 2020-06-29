@@ -98,7 +98,14 @@ def get_computed_metrics(raw_metrics_dict, job_status_dict,
       MetricPoints.
   """
   computed_metrics_dict = {}
-  start_time = job_status_dict['start_time']
+  if 'TensorboardStartTimestamp' in raw_metrics_dict:
+    custom_start_time = raw_metrics_dict[
+        'TensorboardStartTimestamp'][-1].metric_value
+    logging.warning('Using TensorboardStartTimestamp for start time with '
+                    'value: {}'.format(custom_start_time))
+    start_time = custom_start_time
+  else:
+    start_time = job_status_dict['start_time']
   stop_time = job_status_dict['stop_time']
   computed_metrics_dict['total_wall_time'] = MetricPoint(
       stop_time - start_time, stop_time)
