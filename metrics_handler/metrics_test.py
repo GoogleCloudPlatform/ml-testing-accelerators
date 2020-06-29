@@ -170,7 +170,11 @@ class MetricsTest(parameterized.TestCase):
     within_bounds = metrics.within_bounds(value, *bounds, inclusive)
     self.assertIs(within_bounds, expected)
 
-  def test_get_computed_metrics(self):
+  @parameterized.named_parameters(
+    ('with_custom_start', 1),
+    ('without_custom_start', None),
+  )
+  def test_get_computed_metrics(self, custom_start):
     job_status_dict = {
         'start_time': 0,
         'stop_time': 20,
@@ -185,6 +189,13 @@ class MetricsTest(parameterized.TestCase):
         metrics.MetricPoint(metric_value=.8, wall_time=0),
       ],
     }
+
+    if custom_start is not None:
+      raw_metrics['TensorboardStartTimestamp'] = [
+        metrics.MetricPoint(metric_value=custom_start, wall_time=0),
+      ]
+    else:
+      custom_start = 0
     tta_config = {
         'accuracy_tag': 'accuracy',
         'accuracy_threshold': 0.4,
@@ -194,8 +205,10 @@ class MetricsTest(parameterized.TestCase):
         find_memory_metrics=False)
     self.assertEqual(
         computed_metrics,
-        {'total_wall_time': metrics.MetricPoint(metric_value=20, wall_time=20),
-         'time_to_accuracy': metrics.MetricPoint(metric_value=10, wall_time=10)}
+        {'total_wall_time': metrics.MetricPoint(
+            metric_value=20-custom_start, wall_time=20),
+         'time_to_accuracy': metrics.MetricPoint(
+             metric_value=10-custom_start, wall_time=10)}
     )
 
 
