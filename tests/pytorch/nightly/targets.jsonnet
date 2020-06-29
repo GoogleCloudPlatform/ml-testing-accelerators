@@ -15,6 +15,7 @@
 local cifarInline = import "cifar-inline.libsonnet";
 local cifarTorchvision = import "cifar-tv.libsonnet";
 local cppOperations = import "cpp-ops.libsonnet";
+local dlrm = import "dlrm.libsonnet";
 local fairseqRobertaPretrain = import "roberta-pre.libsonnet";
 local fairseqTransformer = import "fs-transformer.libsonnet";
 local mnist = import "mnist.libsonnet";
@@ -29,6 +30,7 @@ std.flattenArrays([
   cifarInline.configs,
   cifarTorchvision.configs,
   cppOperations.configs,
+  dlrm.configs,
   fairseqRobertaPretrain.configs,
   fairseqTransformer.configs,
   mnist.configs,
