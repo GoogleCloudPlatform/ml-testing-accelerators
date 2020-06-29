@@ -50,6 +50,7 @@
               set -x
               
               git clone https://github.com/taylanbil/dlrm.git -b tpu
+              pip install onnx
               python dlrm/dlrm_tpu_runner.py \
                 --arch-sparse-feature-size=64 \
                 --arch-mlp-bot=512-512-64 \

@@ -39,6 +39,7 @@ local utils = import "templates/utils.libsonnet";
   |||,
   local dlrm = common.PyTorchTest {
     modelName: "dlrm",
+    schedule: "0 21 * * *",
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
