@@ -43,7 +43,7 @@ local gpus = import "templates/gpus.libsonnet";
       "--dataset=imagenet",
       "--mode=train_and_eval",
       "--model_dir=$(MODEL_DIR)",
-      "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride),
+      "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride) + "\n",
     ],
   },
   local functional = mixins.Functional {
@@ -103,6 +103,11 @@ local gpus = import "templates/gpus.libsonnet";
     accelerator: gpus.teslaK80,
   },
   local k80x8 = k80 {
+    paramsOverride+:: {
+      runtime+: {
+        all_reduce_alg: "hierarchical_copy",
+      },
+    },
     accelerator: gpus.teslaK80 + { count: 8 },
   },
   local v100 = gpu_common {

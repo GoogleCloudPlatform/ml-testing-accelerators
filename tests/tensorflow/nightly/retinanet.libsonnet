@@ -81,12 +81,16 @@ local gpus = import "templates/gpus.libsonnet";
   },
   local k80x8 = gpu_common {
     local config = self,
+
     paramsOverride+:: {
       train+: {
         batch_size: 4 * config.accelerator.replicas,
       },
     },
     accelerator: gpus.teslaK80 + { count: 8 },
+    command+: [
+      "--all_reduce_alg=hierarchical_copy",
+    ],
   },
   local v100 = gpu_common {
     local config = self,

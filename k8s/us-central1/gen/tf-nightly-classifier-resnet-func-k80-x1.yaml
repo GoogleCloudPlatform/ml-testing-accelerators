@@ -34,7 +34,19 @@
             - "--dataset=imagenet"
             - "--mode=train_and_eval"
             - "--model_dir=$(MODEL_DIR)"
-            - "--params_override=\"evaluation\":\n  \"epochs_between_evals\": 3\n\"runtime\":\n  \"num_gpus\": 1\n\"train\":\n  \"epochs\": 3\n\"train_dataset\":\n  \"batch_size\": 128\n  \"builder\": \"records\"\n\"validation_dataset\":\n  \"batch_size\": 128\n  \"builder\": \"records\""
+            - |
+              --params_override="evaluation":
+                "epochs_between_evals": 3
+              "runtime":
+                "num_gpus": 1
+              "train":
+                "epochs": 3
+              "train_dataset":
+                "batch_size": 128
+                "builder": "records"
+              "validation_dataset":
+                "batch_size": 128
+                "builder": "records"
             - "--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/gpu.yaml"
             "env":
             - "name": "POD_NAME"
