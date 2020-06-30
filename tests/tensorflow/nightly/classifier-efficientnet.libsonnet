@@ -90,6 +90,11 @@ local gpus = import "templates/gpus.libsonnet";
     ],
   },
   local k80x8 = gpu_common {
+    paramsOverride+:: {
+      runtime+: {
+        all_reduce_alg: "hierarchical_copy",
+      },
+    },
     accelerator: gpus.teslaK80 + { count: 8 },
   },
   local v100 = gpu_common {

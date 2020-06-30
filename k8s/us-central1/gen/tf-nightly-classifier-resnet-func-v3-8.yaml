@@ -49,7 +49,15 @@
             - "--dataset=imagenet"
             - "--mode=train_and_eval"
             - "--model_dir=$(MODEL_DIR)"
-            - "--params_override=\"evaluation\":\n  \"epochs_between_evals\": 3\n\"train\":\n  \"epochs\": 3\n\"train_dataset\":\n  \"builder\": \"records\"\n\"validation_dataset\":\n  \"builder\": \"records\""
+            - |
+              --params_override="evaluation":
+                "epochs_between_evals": 3
+              "train":
+                "epochs": 3
+              "train_dataset":
+                "builder": "records"
+              "validation_dataset":
+                "builder": "records"
             - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
             - "--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/tpu.yaml"
             "env":
