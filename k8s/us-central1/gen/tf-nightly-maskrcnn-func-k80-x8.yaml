@@ -52,6 +52,7 @@
             - "--model_dir=$(MODEL_DIR)"
             - "--mode=train"
             - "--num_gpus=8"
+            - "--all_reduce_alg=hierarchical_copy"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
