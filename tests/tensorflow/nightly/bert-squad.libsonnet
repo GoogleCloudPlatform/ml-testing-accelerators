@@ -55,32 +55,31 @@ local gpus = import "templates/gpus.libsonnet";
     ],
   },
   local k80 = gpu_common {
+    local config = self,
+
     accelerator: gpus.teslaK80,
     command+: [
-      "--train_batch_size=4",
-      "--predict_batch_size=4",
+      "--train_batch_size=%d" % (8 * config.accelerator.replicas),
+      "--predict_batch_size=%d" % (8 * config.accelerator.replicas),
     ],
   },
-  local k80x8 = gpu_common {
+  local k80x8 = k80 {
     accelerator: gpus.teslaK80 + { count: 8 },
     command+: [
-      "--train_batch_size=16",
-      "--predict_batch_size=16",
+      "--all_reduce_alg=hierarchical_copy",
     ],
   },
   local v100 = gpu_common {
+    local config = self,
+
     accelerator: gpus.teslaV100,
     command+: [
-      "--train_batch_size=4",
-      "--predict_batch_size=4",
+      "--train_batch_size=%d" % (8 * config.accelerator.replicas),
+      "--predict_batch_size=%d" % (8 * config.accelerator.replicas),
     ],
   },
-  local v100x4 = gpu_common {
+  local v100x4 = v100 {
     accelerator: gpus.teslaV100 + { count: 4 },
-    command+: [
-      "--train_batch_size=8",
-      "--predict_batch_size=8",
-    ],
   },
 
   local tpu_common = {

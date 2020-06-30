@@ -70,6 +70,9 @@ local gpus = import "templates/gpus.libsonnet";
   },
   local k80x8 = k80 {
     accelerator: gpus.teslaK80 + { count: 8 },
+    command+: [
+      "--all_reduce_alg=hierarchical_copy",
+    ],
   },
   local v100 = gpu_common {
     local config = self,
