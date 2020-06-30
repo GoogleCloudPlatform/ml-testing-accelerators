@@ -13,8 +13,10 @@
 # limitations under the License.
 
 local common = import "common.libsonnet";
+local mixins = import "templates/mixins.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
+local gpus = import "templates/gpus.libsonnet";
 
 {
   local transformer = common.ModelGardenTest {
@@ -22,15 +24,8 @@ local tpus = import "templates/tpus.libsonnet";
     command: [
       "python3",
       "official/nlp/transformer/transformer_main.py",
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-      "--static_batch=true",
-      "--use_ctl=true",
       "--param_set=big",
       "--max_length=64",
-      "--decode_batch_size=32",
-      "--decode_max_length=97",
-      "--padded_decode=true",
-      "--distribution_strategy=tpu",
       "--data_dir=$(TRANSFORMER_DIR)",
       "--vocab_file=$(TRANSFORMER_DIR)/vocab.ende.32768",
       "--bleu_source=$(TRANSFORMER_DIR)/newstest2014.en",
@@ -39,50 +34,111 @@ local tpus = import "templates/tpus.libsonnet";
       "--model_dir=$(MODEL_DIR)",
     ],
   },
-  local functional = common.Functional {
+  local functional = mixins.Functional {
     command+: [
-      "--steps_between_evals=2000",
-      "--train_steps=2000",
+      "--train_steps=20000",
     ],
   },
-  local convergence = common.Convergence {
+  local functional_short = mixins.Functional {
     command+: [
-      "--steps_between_evals=200000",
-      "--train_steps=200000",
+      "--train_steps=10000",
     ],
   },
-  local v2_8 = {
+  local convergence = mixins.Convergence {
+    local config = self,
+
+    command+: [
+      "--train_steps=%d" % (200000 / config.accelerator.replicas),
+    ],
+  },
+
+  local gpu_common = {
+    local config = self,
+
+    command+: [
+      "--num_gpus=%d" % config.accelerator.count,
+      "--steps_between_evals=5000",
+    ],
+  },
+  local k80 = gpu_common {
+    local config = self,
+
+    accelerator: gpus.teslaK80,
+    command+: [
+      "--batch_size=%d" % (2048 * config.accelerator.replicas),
+    ],
+  },
+  local k80x8 = k80 {
+    accelerator: gpus.teslaK80 + { count: 8 },
+    command+: [
+      "--all_reduce_alg=hierarchical_copy",
+    ],
+  },
+  local v100 = gpu_common {
+    local config = self,
+
+    accelerator: gpus.teslaV100,
+    command+: [
+      "--batch_size=%d" % (4096 * config.accelerator.replicas),
+    ],
+  },
+  local v100x4 = gpu_common {
+    accelerator: gpus.teslaV100 + { count: 4 },
+  },
+
+  local tpu_common = {
+    command+: [
+      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
+      "--distribution_strategy=tpu",
+      "--steps_between_evals=10000",
+      "--static_batch=true",
+      "--use_ctl=true",
+      "--padded_decode=true",
+      "--decode_batch_size=32",
+      "--decode_max_length=97",
+    ],
+  },
+  local v2_8 = tpu_common {
     accelerator: tpus.v2_8,
     command+: [
       "--batch_size=6144",
     ],
   },
-  local v3_8 = {
+  local v3_8 = tpu_common {
     accelerator: tpus.v3_8,
     command+: [
       "--batch_size=6144",
     ],
   },
-  local v2_32 = {
+  local v2_32 = tpu_common {
     accelerator: tpus.v2_32,
     command+: [
       "--batch_size=24576",
     ],
   },
-  local v3_32 = {
+  local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
     command+: [
       "--batch_size=24576",
     ],
   },
+
   configs: [
-    transformer + convergence + v2_8,
-    transformer + convergence + v3_8,
-    transformer + convergence + v2_32,
-    transformer + convergence + v3_32,
-    transformer + functional + v2_8,
-    transformer + functional + v3_8,
-    transformer + functional + v2_32,
-    transformer + functional + v3_32,
+    transformer + k80 + functional_short + timeouts.Hours(6),
+    transformer + k80x8 + functional_short + timeouts.Hours(6),
+    transformer + k80x8 + convergence + mixins.Experimental,
+    transformer + v100 + functional_short + timeouts.Hours(3),
+    transformer + v100x4 + functional_short + timeouts.Hours(3) + mixins.Experimental,
+    transformer + v100x4 + convergence + mixins.Experimental,
+    transformer + k80 + convergence  + mixins.Experimental,
+    transformer + v100 + convergence  + mixins.Experimental,
+    transformer + v2_8 + functional,
+    transformer + v3_8 + functional,
+    transformer + v2_8 + convergence,
+    transformer + v3_8 + convergence ,
+    transformer + v2_32 + functional,
+    transformer + v3_32 + functional,
+    transformer + v2_32 + convergence,
+    transformer + v3_32 + convergence,
   ],
 }

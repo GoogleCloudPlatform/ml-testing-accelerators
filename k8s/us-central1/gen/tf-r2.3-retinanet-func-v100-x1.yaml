@@ -1,0 +1,126 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "name": "tf-r2.3-retinanet-func-v100-x1"
+  "namespace": "automated"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "spec":
+      "activeDeadlineSeconds": 3600
+      "backoffLimit": 1
+      "template":
+        "spec":
+          "containers":
+          - "args":
+            - "python3"
+            - "official/vision/detection/main.py"
+            - |
+              --params_override="eval":
+                "batch_size": 4
+                "eval_file_pattern": "$(COCO_DIR)/val*"
+                "val_json_file": "$(COCO_DIR)/instances_val2017.json"
+              "predict":
+                "batch_size": 4
+              "train":
+                "batch_size": 4
+                "checkpoint":
+                  "path": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
+                  "prefix": "resnet50/"
+                "total_steps": 1000
+                "train_file_pattern": "$(COCO_DIR)/train*"
+            - "--model_dir=$(MODEL_DIR)"
+            - "--mode=train"
+            - "--num_gpus=1"
+            "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3/retinanet/func/v100-x1/$(JOB_NAME)"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
+            "image": "gcr.io/xl-ml-test/tensorflow:r2.3"
+            "imagePullPolicy": "Always"
+            "name": "train"
+            "resources":
+              "limits":
+                "nvidia.com/gpu": 1
+          "initContainers":
+          - "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3/retinanet/func/v100-x1/$(JOB_NAME)"
+            - "name": "METRIC_CONFIG"
+              "value": |
+                {
+                 "metric_collection_config": {
+                  "default_aggregation_strategies": [
+                   "final"
+                  ],
+                  "metric_to_aggregation_strategies": {
+                   "examples_per_second": [
+                    "average"
+                   ]
+                  },
+                  "use_run_name_prefix": true,
+                  "write_to_bigquery": true
+                 },
+                 "regression_test_config": {
+                  "alert_for_failed_jobs": false
+                 },
+                 "test_name": "tf-r2.3-retinanet-func-v100-x1"
+                }
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
+            "image": "gcr.io/xl-ml-test/publisher:stable"
+            "name": "publisher"
+          "nodeSelector":
+            "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
+          "restartPolicy": "Never"
+  "schedule": "0 8 * * *"
+  "successfulJobsHistoryLimit": 1

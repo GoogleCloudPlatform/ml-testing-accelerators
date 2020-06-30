@@ -13,20 +13,28 @@
 # limitations under the License.
 
 local bert_mnli = import "bert-mnli.libsonnet";
+local bert_squad = import "bert-squad.libsonnet";
+local classifier_resnet = import "classifier-resnet.libsonnet";
 local classifier_efficientnet = import "classifier-efficientnet.libsonnet";
-local maskrcnn = import "maskrcnn.libsonnet";
 local mnist = import "mnist.libsonnet";
+local maskrcnn = import "maskrcnn.libsonnet";
 local resnet_ctl = import "resnet-ctl.libsonnet";
 local retinanet = import "retinanet.libsonnet";
+local shapemask = import "shapemask.libsonnet";
 local transformer_translate = import "transformer-translate.libsonnet";
+local keras_api = import "keras-api.libsonnet";
 
 # Add new models here
 std.flattenArrays([
   bert_mnli.configs,
+  bert_squad.configs,
+  classifier_resnet.configs,
   classifier_efficientnet.configs,
   maskrcnn.configs,
   mnist.configs,
   resnet_ctl.configs,
   retinanet.configs,
+  shapemask.configs,
   transformer_translate.configs,
+  keras_api.configs,
 ])

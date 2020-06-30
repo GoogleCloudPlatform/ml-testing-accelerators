@@ -13,6 +13,7 @@
 # limitations under the License.
 
 local common = import "common.libsonnet";
+local mixins = import "templates/mixins.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 
@@ -36,12 +37,13 @@ local tpus = import "templates/tpus.libsonnet";
       "--model_dir=$(MODEL_DIR)",
     ],
   },
-  local functional = common.Functional {
+  local functional = mixins.Functional {
     command+: [
       "--train_epochs=1",
+      "--epochs_between_evals=1",
     ],
   },
-  local convergence = common.Convergence {
+  local convergence = mixins.Convergence {
     command+: [
       "--train_epochs=90",
       "--epochs_between_evals=90",
@@ -65,13 +67,13 @@ local tpus = import "templates/tpus.libsonnet";
   },
 
   configs: [
-    resnet + v2_8 + convergence + timeouts.Hours(16),
-    resnet + v3_8 + convergence,
-    resnet + v2_32 + convergence,
-    resnet + v3_32 + convergence,
     resnet + v2_8 + functional,
     resnet + v3_8 + functional,
+    resnet + v2_8 + convergence + timeouts.Hours(16),
+    resnet + v3_8 + convergence,
     resnet + v2_32 + functional,
     resnet + v3_32 + functional,
+    resnet + v2_32 + convergence,
+    resnet + v3_32 + convergence,
   ],
 }

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 local common = import "common.libsonnet";
+local mixins = import "templates/mixins.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 local gpus = import "templates/gpus.libsonnet";
 
@@ -26,10 +27,28 @@ local gpus = import "templates/gpus.libsonnet";
       "--model_dir=$(MODEL_DIR)",
     ],
   },
-  local functional = common.Functional {
+  local functional = mixins.Functional {
+    command+: [
+      "--train_epochs=1",
+      "--epochs_between_evals=1",
+    ],
+  },
+  local convergence = mixins.Convergence {
     command+: [
       "--train_epochs=10",
       "--epochs_between_evals=10",
+    ],
+  },
+  local v100 = {
+    accelerator: gpus.teslaV100,
+    command+: [
+      "--num_gpus=1",
+    ],
+  },
+  local k80 = {
+    accelerator: gpus.teslaK80,
+    command+: [
+      "--num_gpus=1",
     ],
   },
   local v2_8 = {
@@ -48,7 +67,11 @@ local gpus = import "templates/gpus.libsonnet";
   },
 
   configs: [
+    mnist + k80 + functional + mixins.Experimental,
+    mnist + v100 + functional,
     mnist + v2_8 + functional,
+    mnist + v2_8 + convergence,
     mnist + v3_8 + functional,
+    mnist + v3_8 + convergence,
   ],
 }

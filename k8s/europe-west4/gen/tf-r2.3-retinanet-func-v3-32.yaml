@@ -44,19 +44,15 @@
           - "args":
             - "python3"
             - "official/vision/detection/main.py"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--strategy_type=tpu"
             - |
               --params_override="architecture":
                 "use_bfloat16": true
               "eval":
-                "batch_size": 8
+                "batch_size": 256
                 "eval_file_pattern": "$(COCO_DIR)/val*"
                 "val_json_file": "$(COCO_DIR)/instances_val2017.json"
               "predict":
-                "predict_batch_size": 8
-              "retinanet_parser":
-                "use_bfloat16": true
+                "batch_size": 256
               "train":
                 "batch_size": 256
                 "checkpoint":
@@ -66,6 +62,8 @@
                 "train_file_pattern": "$(COCO_DIR)/train*"
             - "--model_dir=$(MODEL_DIR)"
             - "--mode=train"
+            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
+            - "--strategy_type=tpu"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -121,10 +119,22 @@
                   "default_aggregation_strategies": [
                    "final"
                   ],
+                  "metric_to_aggregation_strategies": {
+                   "examples_per_second": [
+                    "average"
+                   ]
+                  },
+                  "use_run_name_prefix": true,
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
                   "metric_success_conditions": {
+                   "examples_per_second_average": {
+                    "comparison": "greater_or_equal",
+                    "success_threshold": {
+                     "stddevs_from_mean": 2
+                    }
+                   },
                    "total_wall_time": {
                     "comparison": "less",
                     "success_threshold": {

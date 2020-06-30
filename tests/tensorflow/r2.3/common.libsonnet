@@ -13,20 +13,30 @@
 # limitations under the License.
 
 local common = import "../common.libsonnet";
-local mixins = import "templates/mixins.libsonnet";
 
 {
-  ModelGardenTest:: common.ModelGardenTest {
+ ModelGardenTest:: common.ModelGardenTest {
     frameworkPrefix: "tf-r2.3",
     tpuSettings+: {
       softwareVersion: "2.3",
     },
     imageTag: "r2.3",
-  },
-  # Running convergence test once a week.
-  Convergence:: mixins.Convergence {
-    schedule: "0 8 * * 0",
-  },
-  Functional:: mixins.Functional {
+
+    metricCollectionConfig+: {
+      metric_to_aggregation_strategies+: {
+        "examples_per_second": ["average"],
+      },
+      use_run_name_prefix: true,
+    },
+    regressionTestConfig+: {
+      metric_success_conditions+: {
+        "examples_per_second_average": {
+          comparison: "greater_or_equal",
+          success_threshold: {
+            stddevs_from_mean: 2.0,
+          },
+        },
+      },
+    },
   },
 }

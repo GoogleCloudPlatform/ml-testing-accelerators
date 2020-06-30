@@ -13,26 +13,24 @@
 # limitations under the License.
 
 local common = import "common.libsonnet";
+local mixins = import "templates/mixins.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
+local gpus = import "templates/gpus.libsonnet";
 
 {
   local retinanet = common.ModelGardenTest {
     modelName: "retinanet",
     paramsOverride:: {
+      local params = self,
+
       eval: {
         eval_file_pattern: "$(COCO_DIR)/val*",
-        batch_size: 8,
+        batch_size: params.train.batch_size,
         val_json_file: "$(COCO_DIR)/instances_val2017.json",
       },
       predict: {
-        predict_batch_size: 8,
-      },
-      architecture: {
-        use_bfloat16: true,
-      },
-      retinanet_parser: {
-        use_bfloat16: true,
+        batch_size: params.train.batch_size,
       },
       train: {
         checkpoint: {
@@ -47,13 +45,11 @@ local tpus = import "templates/tpus.libsonnet";
     command: [
       "python3",
       "official/vision/detection/main.py",
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-      "--strategy_type=tpu",
       "--params_override=%s" % (std.manifestYamlDoc(self.paramsOverride) + "\n"),
       "--model_dir=$(MODEL_DIR)",
     ],
   },
-  local functional = common.Functional {
+  local functional = mixins.Functional {
     command+: [
       "--mode=train",
     ],
@@ -63,17 +59,70 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
   },
-  local convergence = common.Convergence {
+  local convergence = mixins.Convergence {
+    local config = self,
+
     command+: [
       "--mode=train",
     ],
     paramsOverride+: {
       train+: {
-        total_steps: 22500,
+        total_steps: 22500 / config.accelerator.replicas,
       },
     },
   },
-  local v2_8 = {
+
+  local gpu_common = {
+    local config = self,
+
+    command+: [
+      "--num_gpus=%d" % config.accelerator.count,
+    ],
+  },
+  local k80x8 = gpu_common {
+    local config = self,
+
+    paramsOverride+:: {
+      train+: {
+        batch_size: 4 * config.accelerator.replicas,
+      },
+    },
+    accelerator: gpus.teslaK80 + { count: 8 },
+    command+: [
+      "--all_reduce_alg=hierarchical_copy",
+    ],
+  },
+  local v100 = gpu_common {
+    local config = self,
+
+    paramsOverride+:: {
+      train+: {
+        batch_size: 4 * config.accelerator.replicas,
+      },
+    },
+    accelerator: gpus.teslaV100,
+
+    # TODO: remove this when this model is fixed.
+    regressionTestConfig: {
+      alert_for_failed_jobs: false,
+    },
+  },
+  local v100x4 = v100 {
+    accelerator: gpus.teslaV100 + { count: 4 },
+  },
+
+  local tpu_common = {
+    paramsOverride+:: {
+      architecture+: {
+        use_bfloat16: true,
+      },
+    },
+    command+: [
+      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
+      "--strategy_type=tpu",
+    ],
+  },
+  local v2_8 = tpu_common {
     accelerator: tpus.v2_8,
     paramsOverride+: {
       train+: {
@@ -81,7 +130,7 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
   },
-  local v3_8 = {
+  local v3_8 = tpu_common {
     accelerator: tpus.v3_8,
     paramsOverride+: {
       train+: {
@@ -89,7 +138,7 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
   },
-  local v2_32 = {
+  local v2_32 = tpu_common {
     accelerator: tpus.v2_32,
     paramsOverride+: {
       train+: {
@@ -97,7 +146,7 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
   },
-  local v3_32 = {
+  local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
     paramsOverride+: {
       train+: {
@@ -107,13 +156,18 @@ local tpus = import "templates/tpus.libsonnet";
   },
 
   configs: [
-    retinanet + convergence + v2_8,
-    retinanet + convergence + v3_8,
-    retinanet + convergence + v2_32,
-    retinanet + convergence + v3_32,
+    retinanet + functional + k80x8,
+    retinanet + convergence + k80x8 + mixins.Experimental,
+    retinanet + functional + v100,
+    retinanet + functional + v100x4,
+    retinanet + convergence + v100x4 + mixins.Experimental,
     retinanet + functional + v2_8,
     retinanet + functional + v3_8,
+    retinanet + convergence + v2_8,
+    retinanet + convergence + v3_8,
     retinanet + functional + v2_32,
     retinanet + functional + v3_32,
+    retinanet + convergence + v2_32,
+    retinanet + convergence + v3_32,
   ],
 }

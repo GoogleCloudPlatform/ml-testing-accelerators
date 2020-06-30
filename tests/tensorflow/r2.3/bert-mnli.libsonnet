@@ -13,6 +13,7 @@
 # limitations under the License.
 
 local common = import "common.libsonnet";
+local mixins = import "templates/mixins.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 
@@ -34,53 +35,53 @@ local tpus = import "templates/tpus.libsonnet";
       "--model_dir=$(MODEL_DIR)",
     ],
   },
-  local functional = common.Functional {
+  local functional = mixins.Functional {
     command+: [
       '--num_train_epochs=1',
     ],
   },
-  local convergence = common.Convergence {
+  local convergence = mixins.Convergence {
     command+: [
-      '--num_train_epochs=3',
+      '--num_train_epochs=6',
     ],
   },
   local v2_8 = {
     accelerator: tpus.v2_8,
     command+: [
-      '--train_batch_size=128',
-      '--eval_batch_size=128',
+      '--train_batch_size=64',
+      '--eval_batch_size=64',
     ],
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
     command+: [
-      '--train_batch_size=128',
-      '--eval_batch_size=128',
+      '--train_batch_size=64',
+      '--eval_batch_size=64',
     ],
   },
   local v2_32 = {
     accelerator: tpus.v2_32,
     command+: [
-      '--train_batch_size=512',
-      '--eval_batch_size=512',
+      '--train_batch_size=256',
+      '--eval_batch_size=256',
     ],
   },
   local v3_32 = {
     accelerator: tpus.v3_32,
     command+: [
-      '--train_batch_size=512',
-      '--eval_batch_size=512',
+      '--train_batch_size=256',
+      '--eval_batch_size=256',
     ],
   },
 
   configs: [
-    bert + v2_8 + convergence + timeouts.Hours(2),
-    bert + v3_8 + convergence + timeouts.Hours(2),
-    bert + v2_32 + convergence,
-    bert + v3_32 + convergence,
     bert + v2_8 + functional,
     bert + v3_8 + functional,
+    bert + v2_8 + convergence + timeouts.Hours(2),
+    bert + v3_8 + convergence + timeouts.Hours(2),
     bert + v2_32 + functional,
     bert + v3_32 + functional,
+    bert + v2_32 + convergence,
+    bert + v3_32 + convergence,
   ],
 }
