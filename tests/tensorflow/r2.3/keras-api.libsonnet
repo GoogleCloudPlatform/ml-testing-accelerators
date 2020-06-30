@@ -32,7 +32,7 @@ local utils = import "templates/utils.libsonnet";
       ||| % self.testFeature
     ),
     regressionTestConfig: {
-      alert_for_failed_jobs: false,
+      alert_for_failed_jobs: true,
     },
   },
 

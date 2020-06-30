@@ -119,7 +119,7 @@
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
-                  "alert_for_failed_jobs": false
+                  "alert_for_failed_jobs": true
                  },
                  "test_name": "tf-r2.3-keras-api-transfer-learning-v3-8"
                 }
