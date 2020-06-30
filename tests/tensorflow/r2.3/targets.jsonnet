@@ -12,15 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local nightly = import "nightly/targets.jsonnet";
-local r2_3 = import "r2.3/targets.jsonnet";
-local r2_2 = import "r2.2/targets.jsonnet";
-local r1_15 = import "r1.15/targets.jsonnet";
+local bert_mnli = import "bert-mnli.libsonnet";
+local classifier_efficientnet = import "classifier-efficientnet.libsonnet";
+local maskrcnn = import "maskrcnn.libsonnet";
+local mnist = import "mnist.libsonnet";
+local resnet_ctl = import "resnet-ctl.libsonnet";
+local retinanet = import "retinanet.libsonnet";
+local transformer_translate = import "transformer-translate.libsonnet";
 
-# Add new versions here
+# Add new models here
 std.flattenArrays([
-  nightly,
-  r1_15,
-  r2_2,
-  r2_3,
+  bert_mnli.configs,
+  classifier_efficientnet.configs,
+  maskrcnn.configs,
+  mnist.configs,
+  resnet_ctl.configs,
+  retinanet.configs,
+  transformer_translate.configs,
 ])
