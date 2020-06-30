@@ -20,7 +20,6 @@
       "-c",
       |||
         set -u
-        set -e
         set -x
         
         %s
