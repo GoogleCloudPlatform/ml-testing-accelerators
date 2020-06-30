@@ -13,6 +13,7 @@
 # limitations under the License.
 
 local common = import "../common.libsonnet";
+local mixins = import "templates/mixins.libsonnet";
 
 {
  ModelGardenTest:: common.ModelGardenTest {
@@ -38,5 +39,9 @@ local common = import "../common.libsonnet";
         },
       },
     },
+  },
+  # Running convergence test once a week.
+  Convergence:: mixins.Convergence {
+    schedule: "0 8 * * 0",
   },
 }
