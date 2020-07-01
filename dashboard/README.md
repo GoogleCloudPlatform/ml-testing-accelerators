@@ -6,8 +6,16 @@ This guide assumes you have a Google Cloud Platform project and you are running 
 
 ## Running locally
 
-Command to run locally: `python3 -m bokeh serve --show dashboard/dashboard.py dashboard/metrics.py dashboard/compare.py`
+```
+export JOB_HISTORY_TABLE_NAME='your-project-name.metrics_handler_dataset.job_history'
+export METRIC_HISTORY_TABLE_NAME'your-project-name.metrics_handler_dataset.metric_history'
+<optional, if you want to to split tests into multiple tabs or exclude tests>
+export TEST_NAME_PREFIXES='prefix1,prefix2'
 
+python3 -m bokeh serve --show dashboard/dashboard.py dashboard/metrics.py dashboard/compare.py
+```
+
+The arguments to `bokeh serve --show` are paths to dashboard Python files. The command above assumes you are running the command from `ml-testing-accelerators/`
 
 ## Hosting your dashboard
 
@@ -51,7 +59,7 @@ Check out `pytorch-dashboard.yaml` for an example of a secondary dashboard and n
 
 ## Privacy / authentication
 
-You can restrict which tests are shown in the dashboard by using the `TEST_NAME_PREFIXES` environment variable in the .yaml file.
+You can restrict which tests are shown in the dashboard by using the `TEST_NAME_PREFIXES` environment variable in the .yaml file. If this variable is set, only tests with the supplied prefixes will be shown and each prefix will appear in its own tab. If this variable is not set, all tests will be shown and will not be divided into tabs.
 
 The hosted dashboard runs as an App Engine app. You can restrict the URL to specific group(s) of people by following the instructions [here](https://cloud.google.com/iap/docs/app-engine-quickstart). You can configure the IAP (identity-aware proxy) rules such that each dashboard version has its own group of restricted viewers. See also the `Multiple dashboard versions` section above.
 
