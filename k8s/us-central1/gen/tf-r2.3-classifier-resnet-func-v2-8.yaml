@@ -51,9 +51,9 @@
             - "--model_dir=$(MODEL_DIR)"
             - |
               --params_override="evaluation":
-                "epochs_between_evals": 3
+                "epochs_between_evals": 1
               "train":
-                "epochs": 3
+                "epochs": 1
               "train_dataset":
                 "builder": "records"
               "validation_dataset":

@@ -36,11 +36,11 @@
             - "--model_dir=$(MODEL_DIR)"
             - |
               --params_override="evaluation":
-                "epochs_between_evals": 3
+                "epochs_between_evals": 1
               "runtime":
                 "num_gpus": 1
               "train":
-                "epochs": 3
+                "epochs": 1
               "train_dataset":
                 "batch_size": 128
                 "builder": "records"
@@ -140,3 +140,4 @@
           "restartPolicy": "Never"
   "schedule": "0 8 * * *"
   "successfulJobsHistoryLimit": 1
+  "suspend": true

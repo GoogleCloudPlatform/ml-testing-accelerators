@@ -21,7 +21,7 @@
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 7200
+      "activeDeadlineSeconds": 14400
       "backoffLimit": 1
       "template":
         "spec":
@@ -139,3 +139,4 @@
           "restartPolicy": "Never"
   "schedule": "0 8 * * *"
   "successfulJobsHistoryLimit": 1
+  "suspend": true

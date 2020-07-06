@@ -185,7 +185,7 @@ local gpus = import "templates/gpus.libsonnet";
     maskrcnn + convergence + k80x8 + mixins.Experimental,
     maskrcnn + functional + v100,
     maskrcnn + functional + v100x4,
-    maskrcnn + convergence + v100x4 + mixins.Experimental,
+    maskrcnn + convergence + v100x4,
     maskrcnn + functional + v2_8,
     maskrcnn + functional + v3_8,
     maskrcnn + convergence + v2_8,
