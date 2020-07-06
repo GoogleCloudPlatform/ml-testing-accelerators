@@ -160,7 +160,7 @@ local gpus = import "templates/gpus.libsonnet";
     retinanet + convergence + k80x8 + mixins.Experimental,
     retinanet + functional + v100,
     retinanet + functional + v100x4,
-    retinanet + convergence + v100x4 + mixins.Experimental,
+    retinanet + convergence + v100x4,
     retinanet + functional + v2_8,
     retinanet + functional + v3_8,
     retinanet + convergence + v2_8,

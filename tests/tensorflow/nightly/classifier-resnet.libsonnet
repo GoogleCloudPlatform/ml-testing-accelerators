@@ -49,10 +49,10 @@ local gpus = import "templates/gpus.libsonnet";
   local functional = mixins.Functional {
     paramsOverride+: {
       train+: {
-        epochs: 3, 
+        epochs: 1, 
       },
       evaluation+: {
-        epochs_between_evals: 3,
+        epochs_between_evals: 1,
       },
     },
   },
@@ -140,10 +140,10 @@ local gpus = import "templates/gpus.libsonnet";
   },
 
   configs: [
-    resnet + k80 + functional + timeouts.Hours(5),
-    resnet + k80x8 + functional + timeouts.Hours(4),
+    resnet + k80 + functional + timeouts.Hours(5) + mixins.Suspended,
+    resnet + k80x8 + functional + timeouts.Hours(4) + mixins.Suspended,
     resnet + k80x8 + convergence + mixins.Experimental,
-    resnet + v100 + functional + timeouts.Hours(3),
+    resnet + v100 + functional + timeouts.Hours(3) + mixins.Suspended,
     resnet + v100x4 + functional + mixins.Experimental,
     resnet + v100x4 + convergence + mixins.Experimental,
     resnet + v100x8 + functional + mixins.Experimental,

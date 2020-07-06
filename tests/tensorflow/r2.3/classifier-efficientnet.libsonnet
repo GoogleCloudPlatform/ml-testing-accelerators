@@ -124,7 +124,7 @@ local gpus = import "templates/gpus.libsonnet";
   },
 
   configs: [
-    efficientnet + k80x8 + functional + timeouts.Hours(2),
+    efficientnet + k80x8 + functional + timeouts.Hours(4),
     efficientnet + k80x8 + convergence + mixins.Experimental,
     efficientnet + v100 + functional + timeouts.Hours(8),
     efficientnet + v100x4 + functional + timeouts.Hours(2),

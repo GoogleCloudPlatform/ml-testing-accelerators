@@ -41,7 +41,7 @@ local gpus = import "templates/gpus.libsonnet";
   },
   local functional_short = mixins.Functional {
     command+: [
-      "--train_steps=10000",
+      "--train_steps=5000",
     ],
   },
   local convergence = mixins.Convergence {
@@ -128,8 +128,8 @@ local gpus = import "templates/gpus.libsonnet";
     transformer + k80x8 + functional_short + timeouts.Hours(6),
     transformer + k80x8 + convergence + mixins.Experimental,
     transformer + v100 + functional_short + timeouts.Hours(3),
-    transformer + v100x4 + functional_short + timeouts.Hours(3) + mixins.Experimental,
-    transformer + v100x4 + convergence + mixins.Experimental,
+    transformer + v100x4 + functional_short + timeouts.Hours(3),
+    transformer + v100x4 + convergence,
     transformer + k80 + convergence  + mixins.Experimental,
     transformer + v100 + convergence  + mixins.Experimental,
     transformer + v2_8 + functional,

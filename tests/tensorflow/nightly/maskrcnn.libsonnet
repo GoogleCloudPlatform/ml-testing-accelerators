@@ -181,10 +181,10 @@ local gpus = import "templates/gpus.libsonnet";
   },
 
   configs: [
-    maskrcnn + functional + k80x8,
+    maskrcnn + functional + k80x8 + mixins.Suspended,
     maskrcnn + convergence + k80x8 + mixins.Experimental,
-    maskrcnn + functional + v100,
-    maskrcnn + functional + v100x4,
+    maskrcnn + functional + v100 + mixins.Suspended,
+    maskrcnn + functional + v100x4 + mixins.Suspended,
     maskrcnn + convergence + v100x4 + mixins.Experimental,
     maskrcnn + functional + v2_8,
     maskrcnn + functional + v3_8,

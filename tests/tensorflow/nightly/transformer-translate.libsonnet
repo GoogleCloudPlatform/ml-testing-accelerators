@@ -124,10 +124,10 @@ local gpus = import "templates/gpus.libsonnet";
   },
 
   configs: [
-    transformer + k80 + functional_short + timeouts.Hours(6),
-    transformer + k80x8 + functional_short + timeouts.Hours(6),
+    transformer + k80 + functional_short + timeouts.Hours(6) + mixins.Suspended,
+    transformer + k80x8 + functional_short + timeouts.Hours(6) + mixins.Suspended,
     transformer + k80x8 + convergence + mixins.Experimental,
-    transformer + v100 + functional_short + timeouts.Hours(3),
+    transformer + v100 + functional_short + timeouts.Hours(3) + mixins.Suspended,
     transformer + v100x4 + functional_short + timeouts.Hours(3) + mixins.Experimental,
     transformer + v100x4 + convergence + mixins.Experimental,
     transformer + k80 + convergence  + mixins.Experimental,
