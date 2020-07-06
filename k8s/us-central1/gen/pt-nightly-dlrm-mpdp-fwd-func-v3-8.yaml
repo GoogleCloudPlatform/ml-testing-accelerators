@@ -15,7 +15,7 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-mpdp-fwd-func-v3-8"
+  "name": "pt-nightly-dlrm-mpdp-fwd-func-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
@@ -89,7 +89,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/mpdp-fwd/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-nightly/dlrm-mpdp-fwd/func/v3-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
               "value": "0"
             "envFrom":
@@ -130,7 +130,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/mpdp-fwd/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-nightly/dlrm-mpdp-fwd/func/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -181,7 +181,7 @@
                    }
                   }
                  },
-                 "test_name": "pt-nightly-mpdp-fwd-func-v3-8"
+                 "test_name": "pt-nightly-dlrm-mpdp-fwd-func-v3-8"
                 }
             "envFrom":
             - "configMapRef":
