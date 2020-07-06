@@ -57,7 +57,7 @@ local tpus = import "templates/tpus.libsonnet";
       "--model_dir=$(MODEL_DIR)",
     ],
   },
-  local functional = mixins.Functional {
+  local functional = common.Functional {
     command+: [
       "--mode=train",
     ],
@@ -67,7 +67,7 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
   },
-  local convergence = mixins.Convergence {
+  local convergence = common.Convergence {
     command+: [
       "--mode=train",
     ],

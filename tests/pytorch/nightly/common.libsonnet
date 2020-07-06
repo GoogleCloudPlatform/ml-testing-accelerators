@@ -34,7 +34,7 @@ local volumes = import "templates/volumes.libsonnet";
   Functional:: mixins.Functional {
     # Run at 11AM PST daily.
     schedule: "0 19 * * *",
-    accelerator+: {
+    tpuSettings+: {
       preemptible: false,
     },
   },

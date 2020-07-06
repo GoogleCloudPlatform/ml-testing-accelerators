@@ -32,13 +32,13 @@ local gpus = import "templates/gpus.libsonnet";
       "--model_dir=$(MODEL_DIR)",
     ],
   },
-  local functional = mixins.Functional {
+  local functional = common.Functional {
     command+: [
       "--mode=train",
       "--num_train_epochs=1",
     ],
   },
-  local convergence = mixins.Convergence {
+  local convergence = common.Convergence {
     command+: [
       "--num_train_epochs=2",
     ],

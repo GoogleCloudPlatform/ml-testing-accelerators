@@ -48,7 +48,7 @@ local gpus = import "templates/gpus.libsonnet";
       "--model_dir=$(MODEL_DIR)",
     ],
   },
-  local functional = mixins.Functional {
+  local functional = common.Functional {
     command+: [
       "--mode=train",
     ],
@@ -58,7 +58,7 @@ local gpus = import "templates/gpus.libsonnet";
       },
     },
   },
-  local convergence = mixins.Convergence {
+  local convergence = common.Convergence {
     local config = self,
 
     command+: [
