@@ -23,7 +23,6 @@ local base = import 'base.libsonnet';
     version: error "Must override `version`",
     size: error "Must override `size`",
     replicas: tpu.size / 8, # Each TPU replica has 8 cores
-    preemptible: false,
 
     PodTemplate(tpuSettings):: {
       metadata: {

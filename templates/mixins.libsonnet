@@ -20,6 +20,9 @@ local timeouts = import "timeouts.libsonnet";
     timeout: timeouts.one_hour,
     # Run at midnight PST daily
     schedule: "0 8 * * *",
+    tpuSettings+: {
+      preemptible: true,
+    },
   },
   Convergence:: {
     mode: "conv",

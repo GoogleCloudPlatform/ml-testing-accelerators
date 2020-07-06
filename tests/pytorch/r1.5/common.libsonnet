@@ -26,7 +26,7 @@ local volumes = import "templates/volumes.libsonnet";
   },
   Functional:: mixins.Functional {
     schedule: "0 23 * * *",
-    accelerator+: {
+    tpuSettings+: {
       preemptible: false,
     },
   },
