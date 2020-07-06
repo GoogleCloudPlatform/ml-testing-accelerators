@@ -61,7 +61,7 @@ local utils = import "templates/utils.libsonnet";
     },
   },
   local one_core = common.Functional {
-    modelName: "onecore",
+    modelName: "dlrm-onecore",
     command: utils.scriptCommand(
       |||
         %(command_common)s  --mini-batch-size=256 \
@@ -72,7 +72,7 @@ local utils = import "templates/utils.libsonnet";
     ),
   },
   local seq_fwd = common.Functional {
-    modelName: "seq-fwd",
+    modelName: "dlrm-seq-fwd",
     command: utils.scriptCommand(
       |||
         %(command_common)s  --mini-batch-size=2048 \
@@ -83,7 +83,7 @@ local utils = import "templates/utils.libsonnet";
     ),
   },
   local mp_fwd = common.Functional {
-    modelName: "mp-fwd",
+    modelName: "dlrm-mp-fwd",
     command: utils.scriptCommand(
       |||
         %(command_common)s  --mini-batch-size=2048 \
@@ -94,7 +94,7 @@ local utils = import "templates/utils.libsonnet";
     ),
   },
   local mp_dp_fwd = common.Functional {
-    modelName: "mpdp-fwd",
+    modelName: "dlrm-mpdp-fwd",
     command: utils.scriptCommand(
       |||
         %(command_common)s  --mini-batch-size=2048 \
