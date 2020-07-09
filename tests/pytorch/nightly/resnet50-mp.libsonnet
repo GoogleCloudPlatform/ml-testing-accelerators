@@ -49,6 +49,21 @@ local mixins = import "templates/mixins.libsonnet";
       },
     },
   },
+  local resnet50_MP_pod = common.PyTorchGkePodTest {
+    modelName: "resnet50-mp",
+    command: [
+      "python3",
+      "/pytorch/xla/test/test_train_mp_imagenet.py",
+    ],
+
+    workerCpu: "8",
+    workerMemory: "16Gi",
+  },
+  local functional_fake_data = common.Functional {
+    command+: [
+      "--fake_data",
+    ],
+  },
   local functional = common.Functional {
     command+: [
       "--num_epochs=2",
@@ -74,8 +89,12 @@ local mixins = import "templates/mixins.libsonnet";
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+  },
   configs: [
     resnet50_MP + v3_8 + convergence + timeouts.Hours(26) + mixins.PreemptibleTpu,
     resnet50_MP + v3_8 + functional + timeouts.Hours(2),
+    resnet50_MP_pod + v3_32 + functional_fake_data,
   ],
 }

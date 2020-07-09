@@ -14,8 +14,12 @@
 
 FROM google/cloud-sdk:slim
 
+RUN curl https://bootstrap.pypa.io/get-pip.py | python3
+RUN pip install absl-py kubernetes
+
 COPY images/setup.sh /
 COPY images/pytorch-pods/setup-instances.sh /
 COPY images/pytorch-pods/teardown-instances.sh /
 COPY images/pytorch-pods/entrypoint.sh /
+COPY images/pytorch-pods/launch_k8s_workers.py /
 ENTRYPOINT ["/entrypoint.sh"]
