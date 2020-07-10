@@ -39,6 +39,7 @@
             - "--model_dir=$(MODEL_DIR)"
             - "--num_gpus=4"
             - "--steps_between_evals=5000"
+            - "--batch_size=16384"
             - "--train_steps=5000"
             "env":
             - "name": "POD_NAME"

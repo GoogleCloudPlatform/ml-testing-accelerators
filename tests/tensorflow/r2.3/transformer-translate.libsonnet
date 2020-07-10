@@ -82,7 +82,7 @@ local gpus = import "templates/gpus.libsonnet";
       "--batch_size=%d" % (4096 * config.accelerator.replicas),
     ],
   },
-  local v100x4 = gpu_common {
+  local v100x4 = v100 {
     accelerator: gpus.teslaV100 + { count: 4 },
   },
 
