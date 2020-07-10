@@ -31,13 +31,13 @@
             - "official/vision/detection/main.py"
             - |
               --params_override="eval":
-                "batch_size": 4
+                "batch_size": 8
                 "eval_file_pattern": "$(COCO_DIR)/val*"
                 "val_json_file": "$(COCO_DIR)/instances_val2017.json"
               "predict":
-                "batch_size": 4
+                "batch_size": 8
               "train":
-                "batch_size": 4
+                "batch_size": 8
                 "checkpoint":
                   "path": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
                   "prefix": "resnet50/"

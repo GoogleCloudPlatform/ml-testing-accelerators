@@ -97,7 +97,7 @@ local gpus = import "templates/gpus.libsonnet";
 
     paramsOverride+:: {
       train+: {
-        batch_size: 4 * config.accelerator.replicas,
+        batch_size: 8,
       },
     },
     accelerator: gpus.teslaV100,
@@ -108,6 +108,11 @@ local gpus = import "templates/gpus.libsonnet";
     },
   },
   local v100x4 = v100 {
+    paramsOverride+:: {
+      train+: {
+        batch_size: 16,
+      },
+    },
     accelerator: gpus.teslaV100 + { count: 4 },
   },
 
