@@ -24,14 +24,19 @@ This script does not clean up created resources. Instead, it sets
 the created pods and services when the invoking pod is deleted.
 
 Example:
-  python3 launch_k8s_workers.py \
-      --name=pytorch-xla-pods \
-      --image=gcr.io/xl-ml-test/pytorch-xla:nightly \
-      --owner_name=$POD_NAME \
-      --owner_uid=$POD_UID \
-      --tpu=$KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS \
-      -- \
-      python3 /pytorch/xla/test/test_train_mp_imagenet.py --fake_data
+
+```
+python3 launch_k8s_workers.py \
+    --name=pytorch-xla-pods \
+    --image=gcr.io/xl-ml-test/pytorch-xla:nightly \
+    --owner_name=$POD_NAME \
+    --owner_uid=$POD_UID \
+    --tpu=$KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS \
+    --cpu=4 \
+    --memory=4Gi \
+    -- \
+    python3 /pytorch/xla/test/test_train_mp_imagenet.py --fake_data
+```
 '''
 
 import concurrent.futures
@@ -67,7 +72,7 @@ def _format_env(envs):
 
 def main(argv):
   if FLAGS.command and len(argv) > 1:
-    logging.warning('`--command` defined. Ignoreing positional arguments.')
+    logging.warning('`--command` defined. Ignoring positional arguments.')
   elif not FLAGS.command and len(argv) > 1:
     FLAGS.command = ' '.join(argv[1:])
   elif not FLAGS.command:
