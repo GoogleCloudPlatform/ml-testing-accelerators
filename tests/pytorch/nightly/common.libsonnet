@@ -24,7 +24,14 @@ local volumes = import "templates/volumes.libsonnet";
     },
     imageTag: "nightly",
   },
-  PyTorchPodTest:: common.PyTorchPodTest {
+  PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest {
+    frameworkPrefix: "pt-nightly",
+    tpuSettings+: {
+      softwareVersion: "pytorch-nightly"
+    },
+    imageTag: "nightly",
+  },
+  PyTorchGkePodTest:: common.PyTorchGkePodTest {
     frameworkPrefix: "pt-nightly",
     tpuSettings+: {
       softwareVersion: "pytorch-nightly"

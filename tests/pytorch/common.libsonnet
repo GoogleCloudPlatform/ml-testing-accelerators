@@ -84,8 +84,45 @@ local volumes = import "templates/volumes.libsonnet";
       }
     }
   },
-  # Pod tests are run by creating an instance group to feed the TPU Pods
-  PyTorchPodTest:: PyTorchBaseTest {
+  PyTorchGkePodTest:: PyTorchBaseTest {
+    local config = self,
+
+    image: "gcr.io/xl-ml-test/pytorch-xla",
+    # Resources for created workers.
+    workerCpu: "4",
+    workerMemory: "4Gi",
+
+    jobSpec+:: {
+      template+: {
+        spec+: {
+          serviceAccountName: "pytorch-xla-pods",
+          containerMap+: {
+            train+: {
+              # Use `image` and `imageTag` for workers instead.
+              image: "gcr.io/xl-ml-test/pytorch-pods:nightly",
+              # Override the Docker ENTRYPOINT.
+              command: [
+                "python3",
+                "launch_k8s_workers.py",
+                "--name=$(JOB_NAME)",
+                "--image=%s:%s" % [config.image, config.imageTag],
+                "--owner_name=$(POD_NAME)",
+                "--owner_uid=$(POD_UID)",
+                "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
+                "--cpu=%s" % config.workerCpu,
+                "--memory=%s" % config.workerMemory,
+                "--",
+                # config.args is distributed to the workers.
+              ],
+            },
+          },
+        },
+      },
+    },
+  },
+  # Use `torch_xla.distributed.xla_dist to create an instance group of client
+  # workers for a TPU pod.
+  PyTorchXlaDistPodTest:: PyTorchBaseTest {
     local config = self,
 
     image: "gcr.io/xl-ml-test/pytorch-pods",

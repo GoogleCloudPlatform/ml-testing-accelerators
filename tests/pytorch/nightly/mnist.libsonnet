@@ -26,7 +26,7 @@ local tpus = import "templates/tpus.libsonnet";
       "--logdir=$(MODEL_DIR)",
     ],
   },
-  local mnist_pod = common.PyTorchPodTest {
+  local mnist_pod = common.PyTorchXlaDistPodTest {
     modelName: "mnist",
     command: [
       "python3",
