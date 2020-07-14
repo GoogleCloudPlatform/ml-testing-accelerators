@@ -47,14 +47,15 @@
             - "--fake_data"
             "command":
             - "python3"
-            - "k8s_worker_launcher.py"
-            - "--name=$(TEST_NAME)"
+            - "launch_k8s_workers.py"
+            - "--name=$(JOB_NAME)"
             - "--image=gcr.io/xl-ml-test/pytorch-xla:nightly"
             - "--owner_name=$(POD_NAME)"
             - "--owner_uid=$(POD_UID)"
             - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
             - "--cpu=8"
             - "--memory=16Gi"
+            - "--volumes="
             - "--"
             "env":
             - "name": "POD_NAME"
@@ -78,7 +79,7 @@
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/pytorch-pods:stable"
+            "image": "gcr.io/xl-ml-test/pytorch-pods:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
@@ -164,5 +165,6 @@
           "nodeSelector":
             "tpu-available": "true"
           "restartPolicy": "Never"
+          "serviceAccountName": "pytorch-xla-pods"
   "schedule": "0 19 * * *"
   "successfulJobsHistoryLimit": 1

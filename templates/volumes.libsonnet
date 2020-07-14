@@ -66,7 +66,7 @@
     readOnly: true,
     claim: {
       persistentVolumeClaim: {
-        claimName: volume.name + "-claim",
+        claimName: volume.name,
       },
     },
   },

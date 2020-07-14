@@ -91,6 +91,10 @@ local volumes = import "templates/volumes.libsonnet";
     # Resources for created workers.
     workerCpu: "4",
     workerMemory: "4Gi",
+    # These should _only_ be PersistentVolumeClaims. Defaults to
+    # config.volumeMap, which also mounts on the coordinator. To mount a volume
+    # on just the workers, directly override config.workerVolumes.
+    workerVolumes: config.volumeMap,
 
     jobSpec+:: {
       template+: {
@@ -111,6 +115,9 @@ local volumes = import "templates/volumes.libsonnet";
                 "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
                 "--cpu=%s" % config.workerCpu,
                 "--memory=%s" % config.workerMemory,
+                "--volumes=%s" % std.join( ",",
+                    ["%(name)s:%(mountPath)s" % config.workerVolumes[k]
+                     for k in std.objectFields(config.workerVolumes)]),
                 "--",
                 # config.args is distributed to the workers.
               ],

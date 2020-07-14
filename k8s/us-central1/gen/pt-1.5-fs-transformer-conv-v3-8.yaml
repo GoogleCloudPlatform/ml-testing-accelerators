@@ -130,7 +130,7 @@
               "name": "dshm"
               "readOnly": false
             - "mountPath": "/datasets"
-              "name": "pytorch-datasets"
+              "name": "pytorch-datasets-claim"
               "readOnly": true
           "initContainers":
           - "env":
@@ -222,7 +222,7 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-          - "name": "pytorch-datasets"
+          - "name": "pytorch-datasets-claim"
             "persistentVolumeClaim":
               "claimName": "pytorch-datasets-claim"
   "schedule": "0 1 * * 1,6"
