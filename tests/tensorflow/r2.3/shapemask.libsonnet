@@ -16,8 +16,17 @@ local common = import "common.libsonnet";
 local mixins = import "templates/mixins.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
+local utils = import "templates/utils.libsonnet";
 
 {
+  local command_common = |||
+    python3 official/vision/detection/main.py \
+      --tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS) \
+      --strategy_type=tpu \
+      --model=shapemask \
+      --model_dir=$(MODEL_DIR) \
+  |||,
+
   local shapemask = common.ModelGardenTest {
     modelName: "shapemask",
     paramsOverride:: {
@@ -25,12 +34,6 @@ local tpus = import "templates/tpus.libsonnet";
         eval_file_pattern: "$(COCO_DIR)/val*",
         batch_size: 40,
         val_json_file: "$(COCO_DIR)/instances_val2017.json",
-      },
-      predict: {
-        batch_size: 40,
-      },
-      architecture: {
-        use_bfloat16: true,
       },
       train: {
         iterations_per_loop: 5000,
@@ -47,30 +50,31 @@ local tpus = import "templates/tpus.libsonnet";
         shape_prior_path: "gs://cloud-tpu-checkpoints/shapemask/kmeans_class_priors_91x20x32x32.npy",
       },
     },
-    command: [
-      "python3",
-      "official/vision/detection/main.py",
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-      "--strategy_type=tpu",
-      "--model=shapemask",
-      "--params_override=%s" % (std.manifestYamlDoc(self.paramsOverride) + "\n"),
-      "--model_dir=$(MODEL_DIR)",
-    ],
+    trainCommand(params_override)::
+      utils.scriptCommand(
+        |||
+          %(common)s --mode=train \
+          --params_override="%(params_override)s"
+        ||| % {common: command_common, params_override: std.manifestYamlDoc(params_override)}
+      ),
+    trainAndEvalCommand(params_override)::
+      utils.scriptCommand(
+        |||
+          %(common)s --mode=train \
+          --params_override="%(params_override)s"
+          %(common)s --mode=eval \
+          --params_override="%(params_override)s"
+        ||| % {common: command_common, params_override: std.manifestYamlDoc(params_override)}
+      ),
   },
-  local functional = common.Functional {
-    command+: [
-      "--mode=train",
-    ],
+  local functional = mixins.Functional {
     paramsOverride+: {
       train+: {
         total_steps: 1000,
       },
     },
   },
-  local convergence = common.Convergence {
-    command+: [
-      "--mode=train",
-    ],
+  local convergence = mixins.Convergence {
     paramsOverride+: {
       train+: {
         total_steps: 22500,
@@ -109,16 +113,31 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
   },
-
+  local shapemask_func_v2_8 = shapemask + functional + v2_8 {
+    command: shapemask.trainCommand(self.paramsOverride)
+  },
+  local shapemask_func_v3_8 = shapemask + functional + v3_8 {
+    command: shapemask.trainCommand(self.paramsOverride)
+  },
+  local shapemask_func_v2_32 = shapemask + functional + v2_32 {
+    command: shapemask.trainCommand(self.paramsOverride)
+  },
+  local shapemask_func_v3_32 = shapemask + functional + v3_32 {
+    command: shapemask.trainCommand(self.paramsOverride)
+  },
+  local shapemask_conv_v3_8 = shapemask + convergence + v3_8 {
+    command: shapemask.trainAndEvalCommand(self.paramsOverride)
+  },
+  local shapemask_conv_v3_32 = shapemask + convergence + v3_32 {
+    command: shapemask.trainAndEvalCommand(self.paramsOverride)
+  },
   configs: [
-    shapemask + functional + v2_8,
-    shapemask + functional + v3_8,
-    shapemask + convergence + v2_8,
-    shapemask + convergence + v3_8,
-    shapemask + functional + v2_32,
-    shapemask + functional + v3_32,
-    shapemask + convergence + v2_32,
-    shapemask + convergence + v3_32,
+    shapemask_func_v2_8,
+    shapemask_func_v3_8,
+    shapemask_func_v2_32,
+    shapemask_func_v3_32,
+    shapemask_conv_v3_8,
+    shapemask_conv_v3_32,
   ],
 }
 
