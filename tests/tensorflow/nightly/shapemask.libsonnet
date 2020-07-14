@@ -50,36 +50,36 @@ local utils = import "templates/utils.libsonnet";
         shape_prior_path: "gs://cloud-tpu-checkpoints/shapemask/kmeans_class_priors_91x20x32x32.npy",
       },
     },
-    trainCommand(params_override)::
-      utils.scriptCommand(
-        |||
-          %(common)s --mode=train \
-          --params_override="%(params_override)s"
-        ||| % {common: command_common, params_override: std.manifestYamlDoc(params_override)}
-      ),
-    trainAndEvalCommand(params_override)::
-      utils.scriptCommand(
-        |||
-          %(common)s --mode=train \
-          --params_override="%(params_override)s"
-          %(common)s --mode=eval \
-          --params_override="%(params_override)s"
-        ||| % {common: command_common, params_override: std.manifestYamlDoc(params_override)}
-      ),
   },
   local functional = mixins.Functional {
+    local config = self,
     paramsOverride+: {
       train+: {
         total_steps: 1000,
       },
     },
+    command: utils.scriptCommand(
+        |||
+            %(common)s --mode=train \
+            --params_override="%(params_override)s"
+        ||| % {common: command_common, params_override: std.manifestYamlDoc(config.paramsOverride)}
+    ),
   },
   local convergence = mixins.Convergence {
+    local config = self,
     paramsOverride+: {
       train+: {
         total_steps: 22500,
       },
     },
+    command: utils.scriptCommand(
+        |||
+            %(common)s --mode=train \
+            --params_override="%(params_override)s"
+            %(common)s --mode=eval \
+            --params_override="%(params_override)s"
+        ||| % {common: command_common, params_override: std.manifestYamlDoc(config.paramsOverride)}
+    ),
   },
   local v2_8 = {
     accelerator: tpus.v2_8,
@@ -119,31 +119,12 @@ local utils = import "templates/utils.libsonnet";
       },
     },
   },
-  local shapemask_func_v2_8 = shapemask + functional + v2_8 {
-    command: shapemask.trainCommand(self.paramsOverride)
-  },
-  local shapemask_func_v3_8 = shapemask + functional + v3_8 {
-    command: shapemask.trainCommand(self.paramsOverride)
-  },
-  local shapemask_func_v2_32 = shapemask + functional + v2_32 {
-    command: shapemask.trainCommand(self.paramsOverride)
-  },
-  local shapemask_func_v3_32 = shapemask + functional + v3_32 {
-    command: shapemask.trainCommand(self.paramsOverride)
-  },
-  local shapemask_conv_v3_8 = shapemask + convergence + v3_8 {
-    command: shapemask.trainAndEvalCommand(self.paramsOverride)
-  },
-  local shapemask_conv_v3_32 = shapemask + convergence + v3_32 {
-    command: shapemask.trainAndEvalCommand(self.paramsOverride)
-  },
   configs: [
-    shapemask_func_v2_8,
-    shapemask_func_v3_8,
-    shapemask_func_v2_32,
-    shapemask_func_v3_32,
-    shapemask_conv_v3_8,
-    shapemask_conv_v3_32,
+    shapemask + functional + v2_8,
+    shapemask + functional + v3_8,
+    shapemask + functional + v2_32,
+    shapemask + functional + v3_32,
+    shapemask + convergence + v3_32,
+    shapemask + convergence + v3_8,
   ],
 }
-
