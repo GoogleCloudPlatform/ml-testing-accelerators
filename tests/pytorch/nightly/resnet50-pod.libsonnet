@@ -41,8 +41,8 @@ local mixins = import "templates/mixins.libsonnet";
       "--log_steps=200",
     ],
 
-    workerCpu: "90",
-    workerMemory: "400Gi",
+    workerCpu: "36",
+    workerMemory: "100Gi",
     workerVolumes: {
       datasets: common.datasetsVolume
     },

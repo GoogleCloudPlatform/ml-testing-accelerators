@@ -56,8 +56,8 @@
             - "--owner_name=$(POD_NAME)"
             - "--owner_uid=$(POD_UID)"
             - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--cpu=90"
-            - "--memory=400Gi"
+            - "--cpu=36"
+            - "--memory=100Gi"
             - "--volumes=pytorch-datasets-claim:/datasets"
             - "--"
             "env":
