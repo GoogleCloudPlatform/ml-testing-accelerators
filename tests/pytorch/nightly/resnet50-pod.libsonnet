@@ -23,7 +23,6 @@ local mixins = import "templates/mixins.libsonnet";
     command: [
       "python3",
       "/pytorch/xla/test/test_train_mp_imagenet.py",
-      # "--logdir=$(MODEL_DIR)",
     ],
   },
   local functional = common.Functional {
