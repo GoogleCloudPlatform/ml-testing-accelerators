@@ -157,9 +157,8 @@ def main(argv):
       name: mount_path for name, mount_path in
       [v.split(':') for v in FLAGS.volumes]
     }
-    print(volumes)
   else:
-    volumes = []
+    volumes = {}
 
   pods = []
   for i in range(num_workers):
