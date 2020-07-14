@@ -65,7 +65,11 @@ flags.DEFINE_string('image', 'gcr.io/tpu-pytorch/xla:nightly',
                     'Docker image used for workers in created StatefulSet.')
 flags.DEFINE_string('cpu', '4', 'CPU request for each worker.')
 flags.DEFINE_string('memory', '4Gi', 'Memory request for each worker.')
-
+flags.DEFINE_list('volumes', None,
+                  'Comma-separated list of [PVC_NAME]:[MOUNT_DIR], where '
+                  '[PVC_NAME] is the name of a Kubernetes PersistentVolumeClaim '
+                  'and [MOUNT_PATH] is the directory where the PVC will be '
+                  'mounted.')
 
 def _format_env(envs):
   return [{'name': k, 'value': v} for k, v in envs.items()]
@@ -148,6 +152,15 @@ def main(argv):
     'TPU_NUM_DEVICES': '8',
   }
 
+  if FLAGS.volumes:
+    volumes = {
+      name: mount_path for name, mount_path in
+      [v.split(':') for v in FLAGS.volumes]
+    }
+    print(volumes)
+  else:
+    volumes = []
+
   pods = []
   for i in range(num_workers):
     body = kubernetes.client.V1Pod(**{
@@ -190,8 +203,32 @@ def main(argv):
               'cpu': FLAGS.cpu,
               'memory': FLAGS.memory,
             }
-          }
-        }]
+          },
+          'volumeMounts': [
+            {
+              'name': 'dshm',
+              'mountPath': '/dev/shm/',
+            },
+            *[
+              {
+                'name': name,
+                'mountPath': mount_path,
+              } for name, mount_path in volumes.items()
+            ],
+          ],
+        }],
+        'volumes': [
+          {
+            'name': 'dshm',
+            'emptyDir': { 'medium': 'Memory' },
+          },
+          *[
+            {
+              'name': name,
+              'persistentVolumeClaim': { 'claimName': name }
+            } for name, _ in volumes.items()
+          ],
+        ],
       }
     })
 
@@ -238,6 +275,8 @@ def main(argv):
     for f in concurrent.futures.as_completed(futures):
       exit_code = f.result()
       if exit_code:
+        for f in futures:
+          f.cancel()
         return exit_code
 
 if __name__ == '__main__':

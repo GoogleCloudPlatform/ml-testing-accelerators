@@ -34,7 +34,7 @@ local volumes = import "templates/volumes.libsonnet";
     schedule: "0 1 * * 1,6",
   },
   datasetsVolume: volumes.PersistentVolumeSpec {
-    name: "pytorch-datasets",
+    name: "pytorch-datasets-claim",
     mountPath: "/datasets",
   },
 }

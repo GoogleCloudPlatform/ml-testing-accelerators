@@ -22,22 +22,7 @@ properties:
     type: string
     description: Name of target GKE cluster.
 
-  small-tpu:
-    type: boolean
-    default: true
-    description: Whether to include a pool of smaller GCE machines to interact with TPUs.
-
   huge-tpu:
     type: boolean
     defualt: true
     description: Whether to include a pool of very large GCE machines to interact with TPUs.
-
-  gpu-v100x4:
-    type: boolean
-    default: true
-    description: Whether to include a pool of GCE machines with 4 V100 GPUs.
-  
-  gpu-k80x8:
-    type: boolean
-    default: true
-    description: Whether to include a pool of GCE machines with 8 K80 GPUs.

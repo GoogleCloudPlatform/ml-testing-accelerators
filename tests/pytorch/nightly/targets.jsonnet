@@ -23,6 +23,7 @@ local mnist_3_7 = import "mnist-3-7.libsonnet";
 local pythonOperations = import "python-ops.libsonnet";
 local resnet50 = import "resnet50.libsonnet";
 local resnet50_mp = import "resnet50-mp.libsonnet";
+local resnet50_pod = import "resnet50-pod.libsonnet";
 local huggingfaceGlue = import "hf-glue.libsonnet";
 
 # Add new models here
@@ -38,5 +39,6 @@ std.flattenArrays([
   pythonOperations.configs,
   resnet50.configs,
   resnet50_mp.configs,
+  resnet50_pod.configs,
   huggingfaceGlue.configs,
 ])
