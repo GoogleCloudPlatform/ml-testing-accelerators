@@ -56,7 +56,7 @@
                 --model_dir=$(MODEL_DIR) \
                --mode=train \
               --params_override=""eval":
-                "batch_size": 40
+                "batch_size": 64
                 "eval_file_pattern": "$(COCO_DIR)/val*"
                 "val_json_file": "$(COCO_DIR)/instances_val2017.json"
               "shapemask_head":

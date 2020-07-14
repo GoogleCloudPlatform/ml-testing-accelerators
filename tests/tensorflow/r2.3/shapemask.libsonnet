@@ -103,6 +103,9 @@ local utils = import "templates/utils.libsonnet";
       train+: {
         batch_size: 128,
       },
+      eval+: {
+        batch_size: 64,
+      },
     },
   },
   local v3_32 = {
@@ -110,6 +113,9 @@ local utils = import "templates/utils.libsonnet";
     paramsOverride+: {
       train+: {
         batch_size: 256,
+      },
+      eval+: {
+        batch_size: 64,
       },
     },
   },
