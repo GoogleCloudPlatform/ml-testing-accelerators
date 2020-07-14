@@ -16,8 +16,17 @@ local common = import "common.libsonnet";
 local mixins = import "templates/mixins.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
+local utils = import "templates/utils.libsonnet";
 
 {
+  local command_common = |||
+    python3 official/vision/detection/main.py \
+      --tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS) \
+      --strategy_type=tpu \
+      --model=shapemask \
+      --model_dir=$(MODEL_DIR) \
+  |||,
+
   local shapemask = common.ModelGardenTest {
     modelName: "shapemask",
     paramsOverride:: {
@@ -25,12 +34,6 @@ local tpus = import "templates/tpus.libsonnet";
         eval_file_pattern: "$(COCO_DIR)/val*",
         batch_size: 40,
         val_json_file: "$(COCO_DIR)/instances_val2017.json",
-      },
-      predict: {
-        batch_size: 40,
-      },
-      architecture: {
-        use_bfloat16: true,
       },
       train: {
         iterations_per_loop: 5000,
@@ -47,35 +50,36 @@ local tpus = import "templates/tpus.libsonnet";
         shape_prior_path: "gs://cloud-tpu-checkpoints/shapemask/kmeans_class_priors_91x20x32x32.npy",
       },
     },
-    command: [
-      "python3",
-      "official/vision/detection/main.py",
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-      "--strategy_type=tpu",
-      "--model=shapemask",
-      "--params_override=%s" % (std.manifestYamlDoc(self.paramsOverride) + "\n"),
-      "--model_dir=$(MODEL_DIR)",
-    ],
   },
   local functional = mixins.Functional {
-    command+: [
-      "--mode=train",
-    ],
+    local config = self,
     paramsOverride+: {
       train+: {
         total_steps: 1000,
       },
     },
+    command: utils.scriptCommand(
+        |||
+            %(common)s --mode=train \
+            --params_override="%(params_override)s"
+        ||| % {common: command_common, params_override: std.manifestYamlDoc(config.paramsOverride)}
+    ),
   },
   local convergence = mixins.Convergence {
-    command+: [
-      "--mode=train",
-    ],
+    local config = self,
     paramsOverride+: {
       train+: {
         total_steps: 22500,
       },
     },
+    command: utils.scriptCommand(
+        |||
+            %(common)s --mode=train \
+            --params_override="%(params_override)s"
+            %(common)s --mode=eval \
+            --params_override="%(params_override)s"
+        ||| % {common: command_common, params_override: std.manifestYamlDoc(config.paramsOverride)}
+    ),
   },
   local v2_8 = {
     accelerator: tpus.v2_8,
@@ -99,6 +103,9 @@ local tpus = import "templates/tpus.libsonnet";
       train+: {
         batch_size: 128,
       },
+      eval+: {
+        batch_size: 64,
+      },
     },
   },
   local v3_32 = {
@@ -107,18 +114,17 @@ local tpus = import "templates/tpus.libsonnet";
       train+: {
         batch_size: 256,
       },
+      eval+: {
+        batch_size: 64,
+      },
     },
   },
-
   configs: [
     shapemask + functional + v2_8,
     shapemask + functional + v3_8,
-    shapemask + convergence + v2_8,
-    shapemask + convergence + v3_8,
     shapemask + functional + v2_32,
     shapemask + functional + v3_32,
-    shapemask + convergence + v2_32,
     shapemask + convergence + v3_32,
+    shapemask + convergence + v3_8,
   ],
 }
-

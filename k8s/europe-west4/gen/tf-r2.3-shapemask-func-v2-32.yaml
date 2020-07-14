@@ -42,20 +42,23 @@
             "imagePullPolicy": "Always"
             "name": "monitor"
           - "args":
-            - "python3"
-            - "official/vision/detection/main.py"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--strategy_type=tpu"
-            - "--model=shapemask"
+            - "/bin/bash"
+            - "-c"
             - |
-              --params_override="architecture":
-                "use_bfloat16": true
-              "eval":
-                "batch_size": 40
+              set -u
+              set -e
+              set -x
+              
+              python3 official/vision/detection/main.py \
+                --tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS) \
+                --strategy_type=tpu \
+                --model=shapemask \
+                --model_dir=$(MODEL_DIR) \
+               --mode=train \
+              --params_override=""eval":
+                "batch_size": 64
                 "eval_file_pattern": "$(COCO_DIR)/val*"
                 "val_json_file": "$(COCO_DIR)/instances_val2017.json"
-              "predict":
-                "batch_size": 40
               "shapemask_head":
                 "shape_prior_path": "gs://cloud-tpu-checkpoints/shapemask/kmeans_class_priors_91x20x32x32.npy"
                 "use_category_for_mask": true
@@ -66,9 +69,8 @@
                   "prefix": "resnet50/"
                 "iterations_per_loop": 5000
                 "total_steps": 1000
-                "train_file_pattern": "$(COCO_DIR)/train*"
-            - "--model_dir=$(MODEL_DIR)"
-            - "--mode=train"
+                "train_file_pattern": "$(COCO_DIR)/train*""
+              
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -96,7 +98,7 @@
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v2": 32
+                "cloud-tpus.google.com/preemptible-v2": 32
           "initContainers":
           - "env":
             - "name": "POD_NAME"
