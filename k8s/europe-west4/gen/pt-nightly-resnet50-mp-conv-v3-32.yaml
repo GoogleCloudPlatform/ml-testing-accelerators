@@ -22,7 +22,7 @@
   "jobTemplate":
     "spec":
       "activeDeadlineSeconds": 36000
-      "backoffLimit": 1
+      "backoffLimit": 0
       "template":
         "metadata":
           "annotations":
@@ -55,6 +55,7 @@
             - "--image=gcr.io/xl-ml-test/pytorch-xla:nightly"
             - "--owner_name=$(POD_NAME)"
             - "--owner_uid=$(POD_UID)"
+            - "--namespace=$(POD_NAMESPACE)"
             - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
             - "--cpu=36"
             - "--memory=100Gi"
