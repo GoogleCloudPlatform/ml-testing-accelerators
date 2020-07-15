@@ -97,6 +97,7 @@ local volumes = import "templates/volumes.libsonnet";
     workerVolumes: config.volumeMap,
 
     jobSpec+:: {
+      backoffLimit: 0,
       template+: {
         spec+: {
           serviceAccountName: "pytorch-xla-pods",
@@ -112,6 +113,7 @@ local volumes = import "templates/volumes.libsonnet";
                 "--image=%s:%s" % [config.image, config.imageTag],
                 "--owner_name=$(POD_NAME)",
                 "--owner_uid=$(POD_UID)",
+                "--namespace=$(POD_NAMESPACE)",
                 "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
                 "--cpu=%s" % config.workerCpu,
                 "--memory=%s" % config.workerMemory,
