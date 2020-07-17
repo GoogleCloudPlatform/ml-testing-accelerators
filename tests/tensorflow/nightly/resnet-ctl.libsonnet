@@ -26,7 +26,6 @@ local tpus = import "templates/tpus.libsonnet";
       "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
       "--data_dir=$(IMAGENET_DIR)",
       "--distribution_strategy=tpu",
-      "--steps_per_loop=500",
       "--use_synthetic_data=false",
       "--dtype=fp32",
       "--enable_eager=true",
