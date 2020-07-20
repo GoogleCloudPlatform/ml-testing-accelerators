@@ -25,5 +25,4 @@ local common = import "../common.libsonnet";
 
     image: "gcr.io/xl-ml-test/tensorflow-tpu-1x",
   },
-
 }
