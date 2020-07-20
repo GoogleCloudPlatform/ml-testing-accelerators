@@ -267,10 +267,13 @@ class CloudMetricsHandler(object):
     query_result = self.bigquery_client.query("""
         SELECT *
         FROM `{}`
-        WHERE test_name like \"{}\" AND uuid in (
+        WHERE test_name LIKE \"{}\" AND
+          (metric_lower_bound IS NULL OR metric_value >= metric_lower_bound) AND
+          (metric_upper_bound IS NULL OR metric_value <= metric_upper_bound) AND
+        uuid IN (
             SELECT uuid
             FROM `{}`
-            WHERE test_name like \"{}\" AND job_status = \"success"\
+            WHERE test_name LIKE \"{}\" AND job_status = \"success"\
         )""".format(
             self.metric_history_table_id,
             self.test_name,
