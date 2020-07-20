@@ -82,11 +82,6 @@ local gpus = import "templates/gpus.libsonnet";
     command+: [
       "--num_gpus=%d" % config.accelerator.count,
     ],
-
-    # TODO: remove this when this model is fixed.
-    regressionTestConfig: {
-      alert_for_failed_jobs: false,
-    },
   },
   local k80 = gpu_common {
     local config = self,
