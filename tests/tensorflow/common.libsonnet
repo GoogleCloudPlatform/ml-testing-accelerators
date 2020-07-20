@@ -13,12 +13,21 @@
 # limitations under the License.
 
 local common = import "../common.libsonnet";
+local volumes = import "templates/volumes.libsonnet";
 
 {
   ModelGardenTest:: common.CloudAcceleratorTest {
     local config = self,
 
     image: "gcr.io/xl-ml-test/tensorflow",
+    cpu: 2,
+    memory: '20G',
+    volumeMap+: {
+      dshm: volumes.MemoryVolumeSpec {
+        name: "dshm",
+        mountPath: "/dev/shm",
+      },
+    },
   },
   LegacyTpuTest:: common.CloudAcceleratorTest {
     local config = self,

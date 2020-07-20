@@ -88,6 +88,13 @@
             "resources":
               "limits":
                 "cloud-tpus.google.com/v3": 32
+              "requests":
+                "cpu": 2
+                "memory": "20G"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -156,5 +163,9 @@
           "nodeSelector":
             "tpu-available": "true"
           "restartPolicy": "Never"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
   "schedule": "0 6 * * 0,5"
   "successfulJobsHistoryLimit": 1
