@@ -24,19 +24,23 @@ class MainHeatmapTest(parameterized.TestCase):
     ('all_success_all_oob', {
         'job_statuses': ['success', 'success', 'success'],
         'metric_statuses': ['failure', 'failure', 'failure'],
-        'expected_overall_statuses': ['failure', 'failure', 'failure']}),
+        'expected_overall_statuses': ['failure', 'failure', 'failure'],
+        'expected_job_status_abbrevs': ['M', 'M', 'M']}),
     ('all_success_some_oob', {
         'job_statuses': ['success', 'success', 'success'],
         'metric_statuses': ['failure', 'failure', 'success'],
-        'expected_overall_statuses': ['failure', 'failure', 'success']}),
+        'expected_overall_statuses': ['failure', 'failure', 'success'],
+        'expected_job_status_abbrevs': ['M', 'M', '']}),
     ('all_success_none_oob', {
         'job_statuses': ['success', 'success', 'success'],
         'metric_statuses': ['success', 'success', 'success'],
-        'expected_overall_statuses': ['success', 'success', 'success']}),
+        'expected_overall_statuses': ['success', 'success', 'success'],
+        'expected_job_status_abbrevs': ['', '', '']}),
     ('some_success_some_oob', {
         'job_statuses': ['success', 'failure', 'success'],
         'metric_statuses': ['success', 'success', 'failure'],
-        'expected_overall_statuses': ['success', 'failure', 'failure']}),
+        'expected_overall_statuses': ['success', 'failure', 'failure'],
+        'expected_job_status_abbrevs': ['', 'F', 'M']}),
   )
   def test_process_dataframes(self, args_dict):
     job_statuses = args_dict['job_statuses']
@@ -85,6 +89,9 @@ class MainHeatmapTest(parameterized.TestCase):
     self.assertEqual(df['overall_status'].tolist(),
                      args_dict['expected_overall_statuses'])
 
+    self.assertEqual(df['job_status_abbrev'].tolist(),
+                     args_dict['expected_job_status_abbrevs'])
+
     # We only want to display metrics as a top-level failure if the job
     # succeeded. For failed jobs, it's not so helpful to know that the
     # metrics were out of bounds.
@@ -102,12 +109,6 @@ class MainHeatmapTest(parameterized.TestCase):
     commands = df['logs_download_command'].tolist()
     # If the command is already populated, it should be left alone.
     self.assertEqual(commands[0], 'my command')
-
-    # If the command is not populated, the empty string should be replaced
-    # by a valid download command.
-    if len(args_dict['expected_overall_statuses']) > 1:
-      for command in commands[1:]:
-        self.assertTrue('gcloud' in command)
 
   def test_make_plot(self):
     input_df = pd.DataFrame({
