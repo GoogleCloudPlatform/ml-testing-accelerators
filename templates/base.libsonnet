@@ -51,6 +51,10 @@ local volumes = import 'volumes.libsonnet';
       preemptible: false,
     },
 
+    # CPU/memory resource requests for the `train` container.
+    # If null, defer to namespace default.
+    cpu: null,
+    memory: null,
     # Map of names to VolumeSpecs.
     volumeMap: { },
     # List of ConfigMaps to pull environment variables from.
@@ -187,6 +191,13 @@ local volumes = import 'volumes.libsonnet';
                 }
                 for key in std.objectFields(main.envMap)
               ],
+              
+              resources+: std.prune({
+                requests+: {
+                  cpu: config.cpu,
+                  memory: config.memory
+                },
+              }),
             },
           },
           containers: [

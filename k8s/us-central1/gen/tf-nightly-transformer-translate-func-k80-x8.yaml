@@ -70,6 +70,13 @@
             "resources":
               "limits":
                 "nvidia.com/gpu": 8
+              "requests":
+                "cpu": 2
+                "memory": "20G"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -132,6 +139,10 @@
           "nodeSelector":
             "cloud.google.com/gke-accelerator": "nvidia-tesla-k80"
           "restartPolicy": "Never"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
   "schedule": "0 8 * * *"
   "successfulJobsHistoryLimit": 1
   "suspend": true
