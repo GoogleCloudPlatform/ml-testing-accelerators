@@ -22,7 +22,6 @@ local utils = import "templates/utils.libsonnet";
     python3 \
       /tpu-examples/deps/fairseq/train.py \
       /datasets/wmt18_en_de_bpej32k \
-      --tensorboard-logdir=$(MODEL_DIR) \
       --metrics_debug \
       --arch=transformer_vaswani_wmt_en_de_big \
       --max-target-positions=64 \
