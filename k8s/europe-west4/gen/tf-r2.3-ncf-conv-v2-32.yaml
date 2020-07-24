@@ -63,7 +63,7 @@
             - "--model_dir=$(MODEL_DIR)"
             - "--train_epochs=14"
             - "--ml_perf=false"
-            - "--keras_use_ctl=false"
+            - "--keras_use_ctl=true"
             "env":
             - "name": "POD_NAME"
               "valueFrom":

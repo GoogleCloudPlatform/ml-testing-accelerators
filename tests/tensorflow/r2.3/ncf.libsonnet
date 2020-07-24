@@ -102,10 +102,10 @@ local gpus = import "templates/gpus.libsonnet";
     ncf + v100 + convergence + no_ctl,
     ncf + v100x4 + functional + no_ctl,
     ncf + v100x4 + convergence + ctl,
-    ncf + v2_8 + functional + no_ctl,
-    ncf + v3_8 + convergence + no_ctl,
-    ncf + v2_32 + convergence + no_ctl,
-    ncf + v3_32 + functional + no_ctl,
+    ncf + v2_8 + functional + ctl,
+    ncf + v3_8 + convergence + ctl,
+    ncf + v2_32 + convergence + ctl,
+    ncf + v3_32 + functional + ctl,
   ],
 }
 
