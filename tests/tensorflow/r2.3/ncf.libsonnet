@@ -55,7 +55,7 @@ local gpus = import "templates/gpus.libsonnet";
     ],
     regressionTestConfig+: {
       metric_success_conditions+: {
-        "hit_rate": {
+        "eval/hit_rate_final": {
           success_threshold: {
             fixed_value: 0.62,
           },

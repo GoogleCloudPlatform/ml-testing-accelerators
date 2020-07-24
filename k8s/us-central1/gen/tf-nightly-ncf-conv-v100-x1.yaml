@@ -121,16 +121,16 @@
                  },
                  "regression_test_config": {
                   "metric_success_conditions": {
+                   "eval/hit_rate_final": {
+                    "comparison": "greater",
+                    "success_threshold": {
+                     "fixed_value": 0.62
+                    }
+                   },
                    "examples_per_second_average": {
                     "comparison": "greater_or_equal",
                     "success_threshold": {
                      "stddevs_from_mean": 2
-                    }
-                   },
-                   "hit_rate": {
-                    "comparison": "greater",
-                    "success_threshold": {
-                     "fixed_value": 0.62
                     }
                    },
                    "total_wall_time": {
