@@ -127,6 +127,12 @@
                      "stddevs_from_mean": 2
                     }
                    },
+                   "hit_rate": {
+                    "comparison": "greater",
+                    "success_threshold": {
+                     "fixed_value": 62
+                    }
+                   },
                    "total_wall_time": {
                     "comparison": "less",
                     "success_threshold": {

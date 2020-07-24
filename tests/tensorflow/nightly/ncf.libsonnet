@@ -53,6 +53,16 @@ local gpus = import "templates/gpus.libsonnet";
       "--train_epochs=14",
       "--ml_perf=false",
     ],
+    regressionTestConfig+: {
+      metric_success_conditions+: {
+        "hit_rate": {
+          success_threshold: {
+            fixed_value: 62.0,
+          },
+          comparison: "greater",
+        },
+      },
+    },
   },
 
   local ctl = {
