@@ -57,7 +57,7 @@ local gpus = import "templates/gpus.libsonnet";
       metric_success_conditions+: {
         "hit_rate": {
           success_threshold: {
-            fixed_value: 62.0,
+            fixed_value: 0.62,
           },
           comparison: "greater",
         },

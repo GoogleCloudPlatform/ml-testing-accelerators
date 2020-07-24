@@ -145,7 +145,7 @@
                    "hit_rate": {
                     "comparison": "greater",
                     "success_threshold": {
-                     "fixed_value": 62
+                     "fixed_value": 0.62
                     }
                    },
                    "total_wall_time": {
