@@ -41,9 +41,16 @@ local utils = import "templates/utils.libsonnet";
           path: "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07",
           prefix: "resnet50/",
         },
+        learning_rate: {
+            learning_rate_levels: [0.008, 0.0008],
+            learning_rate_steps: [15000, 20000],
+        },
         total_steps: error "Must set `train.total_steps`",
         batch_size: error "Must set `train.batch_size`",
         train_file_pattern: "$(COCO_DIR)/train*",
+      },
+      shapemask_parser: {
+        output_size: [1024, 1024],
       },
       shapemask_head: {
         use_category_for_mask: true,
@@ -128,3 +135,4 @@ local utils = import "templates/utils.libsonnet";
     shapemask + convergence + v3_8,
   ],
 }
+
