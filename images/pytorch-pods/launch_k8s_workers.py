@@ -17,7 +17,7 @@ Simple script that launches GKE pods to act as client workers for a TPU pod.
 
 This script strongly assumes that it is running in the context of another GKE
 pod that had a TPU attached. As such, this script expects that you will provide
-the current pod's name, UID, and TPU pod addresses via the downward API (the 
+the current pod's name, UID, and TPU pod addresses via the downward API (the
 TPU addresses are automatically given in $KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS).
 This script does not clean up created resources. Instead, it sets
 `metadata.ownerReferences` such that GKE's garbage collector will clean up
@@ -43,6 +43,7 @@ import concurrent.futures
 import os
 import random
 import string
+import time
 
 from absl import app
 from absl import flags
@@ -239,7 +240,7 @@ def main(argv):
   def _watch_pod(name, namespace):
     logging.info('Waiting for pod %s to start...', name)
     w = kubernetes.watch.Watch()
-    for event in w.stream(k8s_client.list_namespaced_pod, namespace, 
+    for event in w.stream(k8s_client.list_namespaced_pod, namespace,
                           field_selector=f'metadata.name={name}'):
       phase = event['object'].status.phase
       logging.info('Pod %s status: %s', event['object'].metadata.name, phase)
@@ -251,12 +252,14 @@ def main(argv):
     for line in w.stream(k8s_client.read_namespaced_pod_log, name, namespace):
       logging.info('%s] %s', name, line)
 
+    # Allow time for pod to reach "Completed" status.
+    time.sleep(60)
     pod = k8s_client.read_namespaced_pod_status(name, namespace)
     container_status = pod.status.container_statuses[0]
     if not container_status.state.terminated:
       logging.warning('Lost logs stream for %s. Phase: %s.', name, pod.status.phase)
       return 1
-    
+
     exit_code = container_status.state.terminated.exit_code
     if exit_code:
       logging.error('Pod %s had non-zero exit code %d', name, exit_code)
