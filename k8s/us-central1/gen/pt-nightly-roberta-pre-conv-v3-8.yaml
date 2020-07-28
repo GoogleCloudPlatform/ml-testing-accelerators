@@ -53,7 +53,6 @@
               python3 \
                 /tpu-examples/deps/fairseq/train.py \
                 /datasets/wikitext-103 \
-                --tensorboard-logdir=$(MODEL_DIR) \
                 --task=masked_lm --criterion=masked_lm \
                 --arch=roberta_base --sample-break-mode=complete \
                 --tokens-per-sample=512 \
