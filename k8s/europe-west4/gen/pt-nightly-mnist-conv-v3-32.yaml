@@ -167,5 +167,5 @@
           "nodeSelector":
             "tpu-available": "true"
           "restartPolicy": "Never"
-  "schedule": "0 18 * * *"
+  "schedule": "0 17 * * *"
   "successfulJobsHistoryLimit": 1

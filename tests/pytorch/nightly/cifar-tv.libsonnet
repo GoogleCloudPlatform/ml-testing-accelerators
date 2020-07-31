@@ -30,7 +30,7 @@ local tpus = import "templates/tpus.libsonnet";
   },
   local convergence = common.Convergence {
     # Run daily instead of 2x per week since convergence is fast.
-    schedule: "0 18 * * *",
+    schedule: "0 16 * * *",
     regressionTestConfig: {
       metric_subset_to_alert: [
         "ExecuteTime__Percentile_99_sec_final",
