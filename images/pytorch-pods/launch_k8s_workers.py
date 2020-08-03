@@ -42,6 +42,7 @@ python3 launch_k8s_workers.py \
 import concurrent.futures
 import os
 import random
+import re
 import string
 import time
 
@@ -74,6 +75,10 @@ flags.DEFINE_list('volumes', None,
 
 def _format_env(envs):
   return [{'name': k, 'value': v} for k, v in envs.items()]
+
+# Name must consist of lower case alphanumeric characters or '-'.
+def _sanitize_job_name(name):
+  return re.sub(r'[^a-z0-9\-]', '-', name.lower())
 
 def main(argv):
   if FLAGS.command and len(argv) > 1:
@@ -112,7 +117,7 @@ def main(argv):
 
   service_request = kubernetes.client.V1Service(**{
     'metadata': {
-      'name': job_name,
+      'name': _sanitize_job_name(job_name),
       'ownerReferences': ownerReferences,
     },
     'spec': {
