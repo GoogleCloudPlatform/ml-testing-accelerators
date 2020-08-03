@@ -42,6 +42,7 @@ python3 launch_k8s_workers.py \
 import concurrent.futures
 import os
 import random
+import re
 import string
 import time
 
@@ -77,15 +78,7 @@ def _format_env(envs):
 
 # Name must consist of lower case alphanumeric characters or '-'.
 def _sanitize_job_name(name):
-  sanitized_name = ""
-  for c in name:
-    if c.isalnum():
-      sanitized_name += c.lower()
-    elif c == '-':
-      sanitized_name += c
-    else:
-      sanitized_name += '-'
-  return sanitized_name
+  return re.sub(r'[^a-z0-9\-]', '-', name.lower())
 
 def main(argv):
   if FLAGS.command and len(argv) > 1:
