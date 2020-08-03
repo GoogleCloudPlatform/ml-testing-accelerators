@@ -19,8 +19,8 @@ local utils = import "templates/utils.libsonnet";
 
 {
   local command_common = |||
-    git clone https://github.com/huggingface/transformers.git
-    cd transformers && pip install .
+    git clone --recursive -b r1.6 https://github.com/pytorch-tpu/examples.git
+    cd examples/deps/transformers && pip install .
     git log -1
     python examples/xla_spawn.py \
       --num_cores 8 \
@@ -128,34 +128,6 @@ local utils = import "templates/utils.libsonnet";
       },
     },
   },
-  local xlm_mlm_en_2048 = common.Convergence {
-    modelName: "hf-glue-xlm-mlm-en-2048",
-    command: utils.scriptCommand(
-      |||
-        %(common)s --model_name_or_path xlm-mlm-en-2048 \
-        --per_gpu_train_batch_size 8 \
-        --per_gpu_eval_batch_size 8
-        %(common_copy)s
-      ||| % {common: command_common, common_copy: command_copy_metrics}
-    ),
-    regressionTestConfig+: {
-      alert_for_failed_jobs: false,
-      metric_success_conditions+: {
-        "eval_mnli/acc": {
-          success_threshold: {
-            fixed_value: 0.80,
-          },
-          comparison: "greater",
-        },
-        "eval_mnli-mm/acc": {
-          success_threshold: {
-            fixed_value: 0.80,
-          },
-          comparison: "greater",
-        },
-      },
-    },
-  },
   local distilbert_base_uncased = common.Convergence {
     modelName: "hf-glue-distilbert-b-uc",
     command: utils.scriptCommand(
@@ -217,7 +189,6 @@ local utils = import "templates/utils.libsonnet";
     hf_glue + v2_8 + bert_base_cased + timeouts.Hours(2),
     hf_glue + v3_8 + xlnet_large_cased + timeouts.Hours(5),
     hf_glue + v3_8 + roberta_large + timeouts.Hours(4),
-    hf_glue + v3_8 + xlm_mlm_en_2048 + timeouts.Hours(7),
     hf_glue + v3_8 + distilbert_base_uncased + timeouts.Hours(2),
   ],
 }
