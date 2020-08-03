@@ -39,8 +39,7 @@ local volumes = import "templates/volumes.libsonnet";
     imageTag: "nightly",
   },
   Functional:: mixins.Functional {
-    # Run at 11AM PST daily.
-    schedule: "0 19 * * *",
+    schedule: "0 18 * * *",
     tpuSettings+: {
       preemptible: false,
     },

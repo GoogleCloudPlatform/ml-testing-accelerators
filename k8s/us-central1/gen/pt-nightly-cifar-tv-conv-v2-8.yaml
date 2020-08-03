@@ -172,5 +172,5 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-  "schedule": "0 18 * * *"
+  "schedule": "0 16 * * *"
   "successfulJobsHistoryLimit": 1
