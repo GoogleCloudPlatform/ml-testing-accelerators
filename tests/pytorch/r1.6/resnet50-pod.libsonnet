@@ -28,6 +28,7 @@ local mixins = import "templates/mixins.libsonnet";
   local functional = common.Functional {
     command+: [
       "--fake_data",
+      "--num_epochs=5",
     ],
 
     workerCpu: "8",
