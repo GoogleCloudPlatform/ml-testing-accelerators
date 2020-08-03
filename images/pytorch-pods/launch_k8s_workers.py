@@ -75,6 +75,18 @@ flags.DEFINE_list('volumes', None,
 def _format_env(envs):
   return [{'name': k, 'value': v} for k, v in envs.items()]
 
+# Name must consist of lower case alphanumeric characters or '-'.
+def _sanitize_job_name(name):
+  sanitized_name = ""
+  for c in name:
+    if c.isalnum():
+      sanitized_name += c.lower()
+    elif c == '-':
+      sanitized_name += c
+    else:
+      sanitized_name += '-'
+  return sanitized_name
+
 def main(argv):
   if FLAGS.command and len(argv) > 1:
     logging.warning('`--command` defined. Ignoring positional arguments.')
@@ -112,7 +124,7 @@ def main(argv):
 
   service_request = kubernetes.client.V1Service(**{
     'metadata': {
-      'name': job_name,
+      'name': _sanitize_job_name(job_name),
       'ownerReferences': ownerReferences,
     },
     'spec': {
