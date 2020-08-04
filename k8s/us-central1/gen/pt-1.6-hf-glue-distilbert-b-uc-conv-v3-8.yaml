@@ -1,0 +1,220 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "name": "pt-1.6-hf-glue-distilbert-b-uc-conv-v3-8"
+  "namespace": "automated"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "spec":
+      "activeDeadlineSeconds": 7200
+      "backoffLimit": 1
+      "template":
+        "metadata":
+          "annotations":
+            "tf-version.cloud-tpus.google.com": "pytorch-1.6"
+        "spec":
+          "containers":
+          - "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            "image": "gcr.io/xl-ml-test/health-monitor:stable"
+            "imagePullPolicy": "Always"
+            "name": "monitor"
+          - "args":
+            - "/bin/bash"
+            - "-c"
+            - |
+              set -u
+              set -e
+              set -x
+              
+              git clone --recursive -b r1.6 https://github.com/pytorch-tpu/examples.git
+              cd examples/deps/transformers && pip install .
+              git log -1
+              python examples/xla_spawn.py \
+                --num_cores 8 \
+                examples/text-classification/run_glue.py \
+                --logging_dir=./tensorboard-metrics \
+                --task_name MNLI \
+                --data_dir /datasets/glue/MNLI \
+                --cache_dir ./cache_dir \
+                --do_train \
+                --do_eval \
+                --num_train_epochs 3 \
+                --max_seq_length 128 \
+                --learning_rate 3e-5 \
+                --output_dir MNLI \
+                --overwrite_output_dir \
+                --logging_steps 100 \
+                --save_steps 3000 \
+                --overwrite_cache \
+                --tpu_metrics_debug \
+               --model_name_or_path distilbert-base-uncased \
+              --per_gpu_train_batch_size 512 \
+              --per_gpu_eval_batch_size 512
+              gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
+              
+              
+            "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "$(OUTPUT_BUCKET)/pt-1.6/hf-glue-distilbert-b-uc/conv/v3-8/$(JOB_NAME)"
+            - "name": "XLA_USE_BF16"
+              "value": "0"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
+            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.6"
+            "imagePullPolicy": "Always"
+            "name": "train"
+            "resources":
+              "limits":
+                "cloud-tpus.google.com/v3": 8
+              "requests":
+                "cpu": "12.0"
+                "memory": "80Gi"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
+            - "mountPath": "/datasets"
+              "name": "pytorch-datasets-claim"
+              "readOnly": true
+          "initContainers":
+          - "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "$(OUTPUT_BUCKET)/pt-1.6/hf-glue-distilbert-b-uc/conv/v3-8/$(JOB_NAME)"
+            - "name": "METRIC_CONFIG"
+              "value": |
+                {
+                 "metric_collection_config": {
+                  "default_aggregation_strategies": [
+                   "final"
+                  ],
+                  "tags_to_ignore": [
+                   "LearningRate"
+                  ],
+                  "write_to_bigquery": true
+                 },
+                 "regression_test_config": {
+                  "alert_for_failed_jobs": false,
+                  "metric_subset_to_alert": [
+                   "ExecuteTime__Percentile_99_sec_final",
+                   "CompileTime__Percentile_99_sec_final",
+                   "total_wall_time",
+                   "Accuracy/test_final",
+                   "aten_ops_sum_final"
+                  ],
+                  "metric_success_conditions": {
+                   "CompileTime__Percentile_99_sec_final": {
+                    "comparison": "less",
+                    "success_threshold": {
+                     "stddevs_from_mean": 5
+                    },
+                    "wait_for_n_points_of_history": 10
+                   },
+                   "ExecuteTime__Percentile_99_sec_final": {
+                    "comparison": "less",
+                    "success_threshold": {
+                     "stddevs_from_mean": 5
+                    },
+                    "wait_for_n_points_of_history": 10
+                   },
+                   "aten_ops_sum_final": {
+                    "comparison": "less_or_equal",
+                    "success_threshold": {
+                     "stddevs_from_mean": 0
+                    }
+                   },
+                   "eval_mnli-mm/acc": {
+                    "comparison": "greater",
+                    "success_threshold": {
+                     "fixed_value": 0.69999999999999996
+                    }
+                   },
+                   "eval_mnli/acc": {
+                    "comparison": "greater",
+                    "success_threshold": {
+                     "fixed_value": 0.69999999999999996
+                    }
+                   },
+                   "total_wall_time": {
+                    "comparison": "less",
+                    "success_threshold": {
+                     "stddevs_from_mean": 5
+                    },
+                    "wait_for_n_points_of_history": 10
+                   }
+                  }
+                 },
+                 "test_name": "pt-1.6-hf-glue-distilbert-b-uc-conv-v3-8"
+                }
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
+            "image": "gcr.io/xl-ml-test/publisher:stable"
+            "name": "publisher"
+          "nodeSelector":
+            "tpu-available": "true"
+          "restartPolicy": "Never"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+          - "name": "pytorch-datasets-claim"
+            "persistentVolumeClaim":
+              "claimName": "pytorch-datasets-claim"
+  "schedule": "0 2 * * 2,4"
+  "successfulJobsHistoryLimit": 1

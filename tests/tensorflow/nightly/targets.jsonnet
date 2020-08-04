@@ -19,6 +19,7 @@ local classifier_efficientnet = import "classifier-efficientnet.libsonnet";
 local mnist = import "mnist.libsonnet";
 local maskrcnn = import "maskrcnn.libsonnet";
 local perfzero = import "perfzero.libsonnet";
+local ncf = import "ncf.libsonnet";
 local resnet_ctl = import "resnet-ctl.libsonnet";
 local retinanet = import "retinanet.libsonnet";
 local shapemask = import "shapemask.libsonnet";
@@ -34,9 +35,11 @@ std.flattenArrays([
   maskrcnn.configs,
   mnist.configs,
   perfzero.configs,
+  ncf.configs,
   resnet_ctl.configs,
   retinanet.configs,
   shapemask.configs,
   transformer_translate.configs,
   keras_api.configs,
 ])
+

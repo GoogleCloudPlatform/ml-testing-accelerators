@@ -62,12 +62,23 @@
               "shapemask_head":
                 "shape_prior_path": "gs://cloud-tpu-checkpoints/shapemask/kmeans_class_priors_91x20x32x32.npy"
                 "use_category_for_mask": true
+              "shapemask_parser":
+                "output_size":
+                - 1024
+                - 1024
               "train":
                 "batch_size": 64
                 "checkpoint":
                   "path": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
                   "prefix": "resnet50/"
                 "iterations_per_loop": 5000
+                "learning_rate":
+                  "learning_rate_levels":
+                  - 0.0080000000000000002
+                  - 0.00080000000000000004
+                  "learning_rate_steps":
+                  - 15000
+                  - 20000
                 "total_steps": 22500
                 "train_file_pattern": "$(COCO_DIR)/train*""
               python3 official/vision/detection/main.py \
@@ -83,12 +94,23 @@
               "shapemask_head":
                 "shape_prior_path": "gs://cloud-tpu-checkpoints/shapemask/kmeans_class_priors_91x20x32x32.npy"
                 "use_category_for_mask": true
+              "shapemask_parser":
+                "output_size":
+                - 1024
+                - 1024
               "train":
                 "batch_size": 64
                 "checkpoint":
                   "path": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
                   "prefix": "resnet50/"
                 "iterations_per_loop": 5000
+                "learning_rate":
+                  "learning_rate_levels":
+                  - 0.0080000000000000002
+                  - 0.00080000000000000004
+                  "learning_rate_steps":
+                  - 15000
+                  - 20000
                 "total_steps": 22500
                 "train_file_pattern": "$(COCO_DIR)/train*""
               
@@ -120,6 +142,13 @@
             "resources":
               "limits":
                 "cloud-tpus.google.com/v3": 8
+              "requests":
+                "cpu": 2
+                "memory": "20G"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -182,5 +211,9 @@
           "nodeSelector":
             "tpu-available": "true"
           "restartPolicy": "Never"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
   "schedule": "0 6 * * 0,5"
   "successfulJobsHistoryLimit": 1

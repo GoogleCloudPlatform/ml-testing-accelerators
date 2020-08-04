@@ -15,18 +15,18 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-nightly-shapemask-conv-v2-8"
+  "name": "pt-1.6-dlrm-mp-fwd-func-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 36000
+      "activeDeadlineSeconds": 10800
       "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
-            "tf-version.cloud-tpus.google.com": "nightly"
+            "tf-version.cloud-tpus.google.com": "pytorch-1.6"
         "spec":
           "containers":
           - "env":
@@ -42,33 +42,35 @@
             "imagePullPolicy": "Always"
             "name": "monitor"
           - "args":
-            - "python3"
-            - "official/vision/detection/main.py"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--strategy_type=tpu"
-            - "--model=shapemask"
+            - "/bin/bash"
+            - "-c"
             - |
-              --params_override="architecture":
-                "use_bfloat16": true
-              "eval":
-                "batch_size": 40
-                "eval_file_pattern": "$(COCO_DIR)/val*"
-                "val_json_file": "$(COCO_DIR)/instances_val2017.json"
-              "predict":
-                "batch_size": 40
-              "shapemask_head":
-                "shape_prior_path": "gs://cloud-tpu-checkpoints/shapemask/kmeans_class_priors_91x20x32x32.npy"
-                "use_category_for_mask": true
-              "train":
-                "batch_size": 32
-                "checkpoint":
-                  "path": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
-                  "prefix": "resnet50/"
-                "iterations_per_loop": 5000
-                "total_steps": 22500
-                "train_file_pattern": "$(COCO_DIR)/train*"
-            - "--model_dir=$(MODEL_DIR)"
-            - "--mode=train"
+              set -u
+              set -e
+              set -x
+              
+              git clone https://github.com/taylanbil/dlrm.git -b tpu
+              pip install onnx
+              python dlrm/dlrm_tpu_runner.py \
+                --arch-sparse-feature-size=64 \
+                --arch-mlp-bot=512-512-64 \
+                --arch-mlp-top=1024-1024-1024-1 \
+                --arch-interaction-op=dot \
+                --lr-num-warmup-steps 10 \
+                --lr-decay-start-step 10 \
+                --num-batches=1000 \
+                --data-generation="random" \
+                --numpy-rand-seed=727 \
+                --print-freq 100 \
+                --num-indices-per-lookup=100 \
+                --use-tpu \
+                --metrics-debug \
+                --num-indices-per-lookup-fixed \
+                --mini-batch-size=2048 \
+                --arch-embedding-size=1000000-1000000-1000000-1000000-1000000-1000000-1000000-1000000 \
+                --tpu-model-parallel-group-len 8 \
+                --tpu-cores=8
+              
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -87,16 +89,28 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/shapemask/conv/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-1.6/dlrm-mp-fwd/func/v3-8/$(JOB_NAME)"
+            - "name": "XLA_USE_BF16"
+              "value": "0"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/tensorflow:nightly"
+            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.6"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v2": 8
+                "cloud-tpus.google.com/v3": 8
+              "requests":
+                "cpu": "9.0"
+                "memory": "30Gi"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
+            - "mountPath": "/datasets"
+              "name": "pytorch-datasets-claim"
+              "readOnly": true
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -116,7 +130,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/shapemask/conv/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-1.6/dlrm-mp-fwd/func/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -124,20 +138,38 @@
                   "default_aggregation_strategies": [
                    "final"
                   ],
-                  "metric_to_aggregation_strategies": {
-                   "examples_per_second": [
-                    "average"
-                   ]
-                  },
-                  "use_run_name_prefix": true,
+                  "tags_to_ignore": [
+                   "LearningRate"
+                  ],
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
+                  "metric_subset_to_alert": [
+                   "ExecuteTime__Percentile_99_sec_final",
+                   "CompileTime__Percentile_99_sec_final",
+                   "total_wall_time",
+                   "Accuracy/test_final",
+                   "aten_ops_sum_final"
+                  ],
                   "metric_success_conditions": {
-                   "examples_per_second_average": {
-                    "comparison": "greater_or_equal",
+                   "CompileTime__Percentile_99_sec_final": {
+                    "comparison": "less",
                     "success_threshold": {
-                     "stddevs_from_mean": 2
+                     "stddevs_from_mean": 5
+                    },
+                    "wait_for_n_points_of_history": 10
+                   },
+                   "ExecuteTime__Percentile_99_sec_final": {
+                    "comparison": "less",
+                    "success_threshold": {
+                     "stddevs_from_mean": 5
+                    },
+                    "wait_for_n_points_of_history": 10
+                   },
+                   "aten_ops_sum_final": {
+                    "comparison": "less_or_equal",
+                    "success_threshold": {
+                     "stddevs_from_mean": 0
                     }
                    },
                    "total_wall_time": {
@@ -149,7 +181,7 @@
                    }
                   }
                  },
-                 "test_name": "tf-nightly-shapemask-conv-v2-8"
+                 "test_name": "pt-1.6-dlrm-mp-fwd-func-v3-8"
                 }
             "envFrom":
             - "configMapRef":
@@ -159,5 +191,12 @@
           "nodeSelector":
             "tpu-available": "true"
           "restartPolicy": "Never"
-  "schedule": "0 6 * * 0,5"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+          - "name": "pytorch-datasets-claim"
+            "persistentVolumeClaim":
+              "claimName": "pytorch-datasets-claim"
+  "schedule": "0 2 * * *"
   "successfulJobsHistoryLimit": 1

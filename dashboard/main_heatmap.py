@@ -129,6 +129,8 @@ def process_dataframes(job_status_dataframe, metrics_dataframe):
 
   job_status_dataframe['overall_status'] = job_status_dataframe[
       'job_status'].apply(lambda x: x)
+  job_status_dataframe['detailed_status'] = job_status_dataframe[
+      'job_status'].apply(lambda x: '{}_in_job'.format(x))
 
   # Record the status of the metrics for every test.
   job_status_dataframe['failed_metrics'] = job_status_dataframe[
@@ -141,11 +143,19 @@ def process_dataframes(job_status_dataframe, metrics_dataframe):
     if failed_metrics and job_status == 'success':
       job_status_dataframe['failed_metrics'][row[0]] = failed_metrics
       job_status_dataframe['overall_status'][row[0]] = 'failure'
+      job_status_dataframe['detailed_status'][row[0]] = 'failure_in_metrics'
 
   # Create a few convenience columns to use in the dashboard.
+  def _get_single_char_test_status(detailed_status):
+    if detailed_status.startswith('success'):
+      return ''
+    elif detailed_status.startswith('failure') and 'metrics' in \
+        detailed_status:
+      return 'M'
+    else:
+      return detailed_status[:1].upper()
   job_status_dataframe['job_status_abbrev'] = job_status_dataframe[
-      'overall_status'].apply(
-          lambda x: '' if x.startswith('success') else x[:1].upper())
+      'detailed_status'].apply(_get_single_char_test_status)
   job_status_dataframe['metrics_link'] = job_status_dataframe[
       'test_name'].apply(lambda x: 'metrics?test_name={}'.format(x))
 
