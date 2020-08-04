@@ -34,5 +34,4 @@ local volumes = import "templates/volumes.libsonnet";
 
     image: "gcr.io/xl-ml-test/tensorflow-tpu-1x",
   },
-
 }

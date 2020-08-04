@@ -28,6 +28,9 @@ RUN mv models-${model_garden_branch} garden/
 RUN pip3 install -r /garden/official/requirements.txt
 ENV PYTHONPATH /garden
 
+RUN curl -L https://github.com/tensorflow/benchmarks/archive/master.tar.gz | tar xz
+RUN mv benchmarks-master benchmarks/
+
 COPY images/setup.sh /
 COPY images/tensorflow/entrypoint.sh /
 

@@ -30,4 +30,5 @@ data:
   T2T_TRANSFORMER_DIR: gs://xl-ml-test-us-central1/data/old-transformer
   LITS_DIR: gs://xl-ml-test-us-central1/data/liver-seg
   SHAPEMASK_DIR: gs://xl-ml-test-us-central1/data/shapemask
+  PERFZERO_DATA_DIR: gs://xl-ml-test-us-central1/data
   NCF_DIR: gs://xl-ml-test-us-central1/data/ncf
