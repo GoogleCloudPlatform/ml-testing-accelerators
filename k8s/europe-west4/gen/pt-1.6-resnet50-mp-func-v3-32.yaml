@@ -45,6 +45,7 @@
             - "python3"
             - "/pytorch/xla/test/test_train_mp_imagenet.py"
             - "--fake_data"
+            - "--num_epochs=5"
             "command":
             - "python3"
             - "launch_k8s_workers.py"
