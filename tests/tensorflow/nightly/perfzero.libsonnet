@@ -9,7 +9,7 @@ local utils = import "templates/utils.libsonnet";
     local config = self,
 
     timeout: timeouts.one_hour,
-    schedule: "0 0 * * *",
+    schedule: "0 8 * * *",
     mode: "perfzero",
     imageTag: "perfzero",
 
