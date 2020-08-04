@@ -46,8 +46,8 @@ local volumes = import "templates/volumes.libsonnet";
     },
   },
   Convergence:: mixins.Convergence {
-    # Run at 2:00 UTC on Tuesday and Friday.
-    schedule: "0 2 * * 2,4",
+    # Run at 2:30 UTC on Tuesday and Friday.
+    schedule: "30 2 * * 2,4",
   },
   datasetsVolume: volumes.PersistentVolumeSpec {
     name: "pytorch-datasets-claim",
