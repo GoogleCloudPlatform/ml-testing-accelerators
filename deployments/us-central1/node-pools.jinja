@@ -69,7 +69,7 @@ resources:
       initialNodeCount: 0
       autoscaling:
         enabled: true
-        minNodeCount: 1
+        minNodeCount: 0
         maxNodeCount: 5
       locations:
       - us-central1-c
@@ -78,6 +78,32 @@ resources:
         accelerators:
         - acceleratorType: nvidia-tesla-v100
           acceleratorCount: 4
+        oauthScopes:
+        - https://www.googleapis.com/auth/cloud-platform
+        taints:
+        - key: expensive
+          value: gpu
+          effect: PREFER_NO_SCHEDULE
+{% endif %}
+{% if properties["gpu-v100x8"] %}
+- type: gcp-types/container-v1beta1:projects.locations.clusters.nodePools
+  name: gpu-v100x8-pool
+  properties:
+    parent: projects/{{ env["project"] }}/locations/us-central1/clusters/{{ properties["cluster-name"] }}
+    nodePool:
+      name: gpu-v100x8-pool
+      initialNodeCount: 0
+      autoscaling:
+        enabled: true
+        minNodeCount: 0
+        maxNodeCount: 5
+      locations:
+      - us-central1-c
+      config:
+        machineType: n1-standard-16
+        accelerators:
+        - acceleratorType: nvidia-tesla-v100
+          acceleratorCount: 8
         oauthScopes:
         - https://www.googleapis.com/auth/cloud-platform
         taints:
@@ -95,7 +121,7 @@ resources:
       initialNodeCount: 0
       autoscaling:
         enabled: true
-        minNodeCount: 1
+        minNodeCount: 0
         maxNodeCount: 10
       locations:
       - us-central1-c
