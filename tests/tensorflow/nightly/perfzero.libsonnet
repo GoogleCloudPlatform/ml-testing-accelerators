@@ -11,7 +11,6 @@ local utils = import "templates/utils.libsonnet";
     timeout: timeouts.one_hour,
     schedule: "0 8 * * *",
     mode: "perfzero",
-    imageTag: "perfzero",
 
     benchmarkOptions:: {
       test: {
