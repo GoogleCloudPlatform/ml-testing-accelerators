@@ -23,6 +23,7 @@ local resnet50 = import "resnet50.libsonnet";
 local resnet50_mp = import "resnet50-mp.libsonnet";
 local resnet50_pod = import "resnet50-pod.libsonnet";
 local huggingfaceGlue = import "hf-glue.libsonnet";
+local tpu_mem = import "tpu-mem.libsonnet";
 
 # Add new models here
 std.flattenArrays([
@@ -37,4 +38,5 @@ std.flattenArrays([
   resnet50_mp.configs,
   resnet50_pod.configs,
   huggingfaceGlue.configs,
+  tpu_mem.configs,
 ])
