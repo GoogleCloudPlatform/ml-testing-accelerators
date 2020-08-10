@@ -57,6 +57,7 @@ local gpus = import "templates/gpus.libsonnet";
     },
   },
   local convergence = common.Convergence {
+    schedule: "0 8 * * 0",
     paramsOverride+: {
       train+: {
         epochs: 90, 
