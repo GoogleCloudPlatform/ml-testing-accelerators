@@ -21,7 +21,7 @@
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 7200
+      "activeDeadlineSeconds": 10800
       "backoffLimit": 1
       "template":
         "spec":
