@@ -426,10 +426,6 @@ def _process_pubsub_message(msg, status_handler, logger):
   project = google.auth.default()[1]
   download_command = util.download_command(
       job_name, job_namespace, zone, cluster, project)
-  workload_link = util.workload_link(
-      job_name, job_namespace, zone, cluster, project)
-  debug_info = alert_handler.DebugInfo(
-      job_name, logs_link, download_command, workload_link)
 
   if not (events_dir and test_name and logs_link and job_name and zone \
           and cluster and project):
@@ -443,6 +439,9 @@ def _process_pubsub_message(msg, status_handler, logger):
 
   status, stop_time, num_failures = status_handler.get_job_status(
       job_name, job_namespace)
+  workload_link = status_handler.workload_link(job_name, job_namespace)
+  debug_info = alert_handler.DebugInfo(
+      job_name, logs_link, download_command, workload_link)
   if status == job_status_handler.UNKNOWN_STATUS:
     logger.warning(
         'Unknown status for job_name: {}. Message will be '
