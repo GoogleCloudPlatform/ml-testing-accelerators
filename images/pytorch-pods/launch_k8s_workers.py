@@ -243,33 +243,33 @@ def main(argv):
     pods.append(body)
 
   def _watch_pod(name, namespace):
-    logging.info('Waiting for pod %s to start...', name)
-    w = kubernetes.watch.Watch()
-    for event in w.stream(k8s_client.list_namespaced_pod, namespace,
-                          field_selector=f'metadata.name={name}'):
-      phase = event['object'].status.phase
-      logging.info('Pod %s status: %s', event['object'].metadata.name, phase)
-      if phase != 'Pending':
-        break
+    logs_watcher = kubernetes.watch.Watch()
 
-    logging.info('Streaming pod logs for %s...', name)
-    w = kubernetes.watch.Watch()
-    for line in w.stream(k8s_client.read_namespaced_pod_log, name, namespace):
-      logging.info('%s] %s', name, line)
+    while True:
+      logging.info('Waiting for pod %s to start...', name)
+      pod_watcher = kubernetes.watch.Watch()
+      for event in pod_watcher.stream(k8s_client.list_namespaced_pod, namespace,
+                                      field_selector=f'metadata.name={name}'):
+        status = event['object'].status
+        logging.info('Pod %s status: %s', event['object'].metadata.name, status.phase)
+        if status.phase != 'Pending':
+          break
 
-    # Allow time for pod to reach "Completed" status.
-    time.sleep(60)
-    pod = k8s_client.read_namespaced_pod_status(name, namespace)
-    container_status = pod.status.container_statuses[0]
-    if not container_status.state.terminated:
-      logging.warning('Lost logs stream for %s. Phase: %s.', name, pod.status.phase)
-      return 1
+      if status.container_statuses:
+        container_status = status.container_statuses[0]
+        if status.container_statuses[0].state.terminated:
+          exit_code = container_status.state.terminated.exit_code
+          if exit_code:
+            logging.error('Pod %s had non-zero exit code %d', name, exit_code)
 
-    exit_code = container_status.state.terminated.exit_code
-    if exit_code:
-      logging.error('Pod %s had non-zero exit code %d', name, exit_code)
+          return exit_code
 
-    return exit_code
+      logging.info('Streaming pod logs for %s...', name)
+      for line in logs_watcher.stream(k8s_client.read_namespaced_pod_log,
+                                      name, namespace, _request_timeout=3600):
+        logging.info('%s] %s', name, line)
+
+      logging.warning('Lost logs stream for %s.', name)
 
   with concurrent.futures.ThreadPoolExecutor() as executor:
     futures = []
@@ -282,8 +282,6 @@ def main(argv):
     for f in concurrent.futures.as_completed(futures):
       exit_code = f.result()
       if exit_code:
-        for f in futures:
-          f.cancel()
         return exit_code
 
 if __name__ == '__main__':
