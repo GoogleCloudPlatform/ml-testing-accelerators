@@ -21,6 +21,8 @@ import kubernetes
 from tempfile import NamedTemporaryFile
 import time
 
+import util
+
 DOES_NOT_EXIST = 'does_not_exist'
 UNKNOWN_STATUS = 'unknown'
 SUCCESS = 'success'
@@ -65,6 +67,7 @@ class JobStatusHandler(object):
             self.project_id, self.zone, self.cluster_name)
         response = container_client.get_cluster(
             None, None, None, name=cluster_path)
+        self.location = self.zone
       except google.api_core.exceptions.NotFound:
         self.logger.warning('No zonal cluster found for {}. Trying regional.'.format(cluster_path))
         # TODO: include this in message instead
@@ -73,8 +76,7 @@ class JobStatusHandler(object):
             self.project_id, region, self.cluster_name)
         response = container_client.get_cluster(
             None, None, None, name=cluster_path)
-      credentials, project = google.auth.default(
-          scopes=['https://www.googleapis.com/auth/cloud-platform'])
+        self.location = region
       creds, projects = google.auth.default()
       auth_req = google.auth.transport.requests.Request()
       creds.refresh(auth_req)
@@ -130,6 +132,25 @@ class JobStatusHandler(object):
                 job_name, namespace, e))
         return FAILURE, None
     return SUCCESS, status
+
+
+  def workload_link(self, job_name, job_namespace):
+    """Build a link to the Kubernetes workload for a specific test run.
+
+    Args:
+      job_name (string): Name of the Kubernetes job. Should include the
+        timestamp, e.g. 'pt-1.5-resnet-func-v3-8-1584453600'.
+      job_namespace (string): Name of the Kubernetes namespace.
+      location (string): GCP zone or region, e.g. 'us-central1-b'.
+
+    Returns:
+      link (string): A link to the Kubernetes workload page for this job.
+    """
+    if not self.location:
+      self._init_k8s_client()
+    
+    return util.workload_link(
+        job_name, job_namespace, self.location, self.cluster_name, self.project_id)
 
 
   def interpret_status(self, status, job_name):

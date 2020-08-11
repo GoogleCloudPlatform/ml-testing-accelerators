@@ -21,7 +21,7 @@ import re
 
 LOGS_DOWNLOAD_COMMAND = """gcloud logging read 'resource.type=k8s_container resource.labels.project_id={project} resource.labels.location={zone} resource.labels.cluster_name={cluster} resource.labels.namespace_name={namespace} resource.labels.pod_name:{pod}' --limit 10000000000000 --order asc --format 'value(textPayload)' --project={project} > {pod}_logs.txt && sed -i '/^$/d' {pod}_logs.txt"""
 UNBOUND_DATE_RANGE = '&dateRangeUnbound=backwardInTime'
-WORKLOAD_LINK = """https://console.cloud.google.com/kubernetes/job/{zone}/{cluster}/{namespace}/{pod}?project={project}&{pod}_events_tablesize=50&tab=events&duration=P30D&pod_summary_list_tablesize=20&service_list_datatablesize=20"""
+WORKLOAD_LINK = """https://console.cloud.google.com/kubernetes/job/{location}/{cluster}/{namespace}/{job}?project={project}"""
 
 
 def add_unbound_time_to_logs_link(logs_link):
@@ -63,14 +63,14 @@ def download_command(job_name, job_namespace, zone, cluster, project):
   return command
 
 
-def workload_link(job_name, job_namespace, zone, cluster, project):
+def workload_link(job_name, job_namespace, location, cluster, project):
   """Build a link to the Kubernetes workload for a specific test run.
 
   Args:
     job_name (string): Name of the Kubernetes job. Should include the
       timestamp, e.g. 'pt-1.5-resnet-func-v3-8-1584453600'.
     job_namespace (string): Name of the Kubernetes namespace.
-    zone (string): GCP zone, e.g. 'us-central1-b'.
+    location (string): GCP zone or region, e.g. 'us-central1-b'.
     cluster (string): Name of the Kubernetes cluster.
     project (string): Name of the GCP project.
 
@@ -79,9 +79,9 @@ def workload_link(job_name, job_namespace, zone, cluster, project):
   """
   link = WORKLOAD_LINK.format(**{
       'project': project,
-      'zone': zone,
+      'location': location,
       'namespace': job_namespace,
-      'pod': job_name,
+      'job': job_name,
       'cluster': cluster
   })
   return link
