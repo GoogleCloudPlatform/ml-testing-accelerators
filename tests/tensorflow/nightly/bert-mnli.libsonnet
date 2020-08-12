@@ -35,12 +35,12 @@ local tpus = import "templates/tpus.libsonnet";
       "--model_dir=$(MODEL_DIR)",
     ],
   },
-  local functional = mixins.Functional {
+  local functional = common.Functional {
     command+: [
       '--num_train_epochs=1',
     ],
   },
-  local convergence = mixins.Convergence {
+  local convergence = common.Convergence {
     command+: [
       '--num_train_epochs=6',
     ],

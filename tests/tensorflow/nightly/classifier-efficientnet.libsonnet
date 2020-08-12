@@ -46,7 +46,7 @@ local gpus = import "templates/gpus.libsonnet";
       "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride) + "\n",
     ],
   },
-  local functional = mixins.Functional {
+  local functional = common.Functional {
     paramsOverride+: {
       train+: {
         epochs: 1, 
@@ -56,7 +56,7 @@ local gpus = import "templates/gpus.libsonnet";
       },
     },
   },
-  local convergence = mixins.Convergence {
+  local convergence = common.Convergence {
     paramsOverride+: {
       train+: {
         epochs: 350, 
