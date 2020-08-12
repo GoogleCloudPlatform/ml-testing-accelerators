@@ -19,6 +19,7 @@ import io
 import itertools
 import json
 import math
+import os
 import time
 import traceback
 import uuid
@@ -138,6 +139,39 @@ class CloudMetricsHandler(object):
     except ValueError as e:
       raise ValueError("Error during metric aggregation: {}".format(e))
     return raw_metrics, final_metrics
+
+  def get_metrics_from_perfzero_summary(self):
+    """Retrieves aggregated metrics from a PerfZero summary file.
+
+    Returns:
+      aggregated_metrics (dict):  Key is metric name and value is a MetricPoint
+        containing the aggregated value for that metric.
+    """
+    glob_pattern = os.path.join(self.events_dir, '*', 'perfzero_summary.json')
+    file_matches = tf.io.gfile.glob(glob_pattern)
+    if not file_matches:
+      self.logger.info('No perfzero summary found.')
+      return {}
+
+    file_path = file_matches[0]
+    with tf.io.gfile.GFile(file_path) as f:
+      summary = json.loads(f.read())
+      timestamp = summary["execution_timestamp"]
+      metrics_dict = {
+        metric["name"]: metric["value"]
+        for metric in summary["benchmark_result"]["metrics"]
+      }
+      process_info = summary["process_info"]
+
+      final_metrics = {
+        key: metrics.MetricPoint(value, timestamp)
+        for key, value in itertools.chain(metrics_dict.items(), process_info.items())
+      }
+
+      wall_time = summary["benchmark_result"]["wall_time"]
+      final_metrics["total_wall_time"] = metrics.MetricPoint(wall_time, timestamp)
+
+      return final_metrics
 
   def _make_bigquery_tables(self):
     if not self.metric_collection_config.get('write_to_bigquery'):
@@ -499,12 +533,18 @@ def _process_pubsub_message(msg, status_handler, logger):
         'job_status was `{}` for test `{}`'.format(
             job_status['final_status'], test_name),
         debug_info=debug_info)
-
+  
   raw_metrics, aggregated_metrics = handler.get_metrics_from_events_dir()
-  computed_metrics = metrics.get_computed_metrics(
-      raw_metrics, job_status, project, job_name,
-      tta_config=metric_collection_config.get('time_to_accuracy'))
-  aggregated_metrics.update(computed_metrics)
+  perfzero_metrics = handler.get_metrics_from_perfzero_summary()
+  # Extra computed metrics (e.g. wall_time) are provided by PerfZero.
+  if perfzero_metrics:
+    aggregated_metrics.update(perfzero_metrics)
+  else:
+    computed_metrics = metrics.get_computed_metrics(
+        raw_metrics, job_status, project, job_name,
+        tta_config=metric_collection_config.get('time_to_accuracy'))
+    aggregated_metrics.update(computed_metrics)
+
   if regression_test_config:
     metrics_history = handler.get_metrics_history_from_bigquery()
     metric_name_to_visual_bounds = handler.compute_bounds_and_report_errors(
