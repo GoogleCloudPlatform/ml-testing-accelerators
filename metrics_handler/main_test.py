@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import pathlib
+import json
+
 from absl import logging
 from absl.testing import absltest
 import tensorflow as tf
@@ -66,6 +70,90 @@ class CloudMetricsHandlerTest(absltest.TestCase):
     self.assertContainsSubset(
         ['foo_final', 'foo_min', 'bar_final', 'bar_min'],
         aggregated_metrics.keys())
+
+  def test_get_metrics_from_perfzero_summary(self):
+    summary_dir = os.path.join(self.temp_dir, 'date_and_time')
+    pathlib.Path(summary_dir).mkdir(parents=True, exist_ok=True)
+    summary_path = os.path.join(summary_dir, 'perfzero_summary.json')
+    with open(summary_path, 'w') as f:
+      json.dump({
+        "execution_id": "execution_id",
+        "execution_timestamp": 1234567890.1,
+        "benchmark_result": {
+          "wall_time": 1234,
+          "metrics": [
+            {
+              "name": "exp_per_second",
+              "value": 1.1,
+            },
+            {
+              "name": "avg_exp_per_second",
+              "value": 2.2,
+            },
+            {
+              "name": "startup_time",
+              "value": 3.3
+            }
+          ],
+        },
+        "benchmark_info": {
+          "not": "important",
+        },
+        "setup_info": {},
+        "ml_framework_info": {
+          "not": "important",
+        },
+        "system_info": {
+          "not": "important"
+        },
+        "process_info": {
+          "max_rss": 4.4,
+          "max_vms": 5.5,
+          "max_cpu_percent": 6.6,
+        }
+        }, f)
+
+    metrics_handler = main.CloudMetricsHandler(
+      test_name="test",
+      events_dir=self.temp_dir,
+      debug_info=None,
+      metric_collection_config={},
+      regression_test_config={},
+      test_type=None,
+      accelerator=None,
+      framework_version=None,
+      logger=self.logger,
+    )
+
+    aggregated_metrics = metrics_handler.get_metrics_from_perfzero_summary()
+    self.assertDictEqual(
+      {
+        "total_wall_time": metrics.MetricPoint(1234, 1234567890.1),
+        "exp_per_second": metrics.MetricPoint(1.1, 1234567890.1),
+        "avg_exp_per_second": metrics.MetricPoint(2.2, 1234567890.1),
+        "startup_time": metrics.MetricPoint(3.3, 1234567890.1),
+        "max_rss": metrics.MetricPoint(4.4, 1234567890.1),
+        "max_vms": metrics.MetricPoint(5.5, 1234567890.1),
+        "max_cpu_percent": metrics.MetricPoint(6.6, 1234567890.1),
+      },
+      aggregated_metrics
+    )
+
+  def test_get_metrics_from_perfzero_summary_not_found(self):
+    metrics_handler = main.CloudMetricsHandler(
+      test_name="test",
+      events_dir=self.temp_dir,
+      debug_info=None,
+      metric_collection_config={},
+      regression_test_config={},
+      test_type=None,
+      accelerator=None,
+      framework_version=None,
+      logger=self.logger,
+    )
+
+    aggregated_metrics = metrics_handler.get_metrics_from_perfzero_summary()
+    self.assertEmpty(aggregated_metrics)
 
   def test_compute_bounds_and_report_errors_fixed_value(self):
     metrics_handler = main.CloudMetricsHandler(
