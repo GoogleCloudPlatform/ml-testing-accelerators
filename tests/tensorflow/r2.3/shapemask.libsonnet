@@ -58,7 +58,7 @@ local utils = import "templates/utils.libsonnet";
       },
     },
   },
-  local functional = mixins.Functional {
+  local functional = common.Functional {
     local config = self,
     paramsOverride+: {
       train+: {
@@ -72,7 +72,7 @@ local utils = import "templates/utils.libsonnet";
         ||| % {common: command_common, params_override: std.manifestYamlDoc(config.paramsOverride)}
     ),
   },
-  local convergence = mixins.Convergence {
+  local convergence = common.Convergence {
     local config = self,
     paramsOverride+: {
       train+: {
