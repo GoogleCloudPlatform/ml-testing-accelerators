@@ -533,7 +533,7 @@ def _process_pubsub_message(msg, status_handler, logger):
         'job_status was `{}` for test `{}`'.format(
             job_status['final_status'], test_name),
         debug_info=debug_info)
-  
+
   raw_metrics, aggregated_metrics = handler.get_metrics_from_events_dir()
   perfzero_metrics = handler.get_metrics_from_perfzero_summary()
   # Extra computed metrics (e.g. wall_time) are provided by PerfZero.
