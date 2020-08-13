@@ -21,7 +21,7 @@
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 10800
+      "activeDeadlineSeconds": 3600
       "backoffLimit": 1
       "template":
         "spec":
@@ -44,7 +44,7 @@
                 export BENCHMARK_TPU=${TPU_NAME#*/}
               fi
               
-              python3 /benchmarks/perfzero/lib/benchmark.py --gcloud_key_file= --bigquery_project_name=xl-ml-test --bigquery_dataset_table_name=perfzero_dataset.perfzero_table --benchmark_methods=official.benchmark.transformer_benchmark.TransformerKerasBenchmark.benchmark_1_gpu --output_gcs_url=$(MODEL_DIR) --root_data_dir=$(PERFZERO_DATA_DIR)
+              python3 /benchmarks/perfzero/lib/benchmark.py --gcloud_key_file= --bigquery_project_name=xl-ml-test --bigquery_dataset_table_name=perfzero_dataset.perfzero_table --benchmark_methods=official.benchmark.transformer_benchmark.TransformerBaseKerasBenchmarkReal.benchmark_1_gpu --output_gcs_url=$(MODEL_DIR) --root_data_dir=$(PERFZERO_DATA_DIR)
               
             "env":
             - "name": "POD_NAME"
