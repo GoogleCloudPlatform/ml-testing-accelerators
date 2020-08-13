@@ -194,7 +194,7 @@ local utils = import "templates/utils.libsonnet";
     benchmarkOptions+:: {
       test+: {
         module: "official.benchmark.retinanet_benchmark",
-        class: "RetinanetBenchmarkReal",
+        class: "MaskRCNNBenchmarkReal",
       },
     },
   },
@@ -203,7 +203,7 @@ local utils = import "templates/utils.libsonnet";
     benchmarkOptions+:: {
       test+: {
         module: "official.benchmark.retinanet_benchmark",
-        class: "RetinanetBenchmarkReal",
+        class: "ShapeMaskBenchmarkReal",
       },
     },
   },
@@ -222,7 +222,7 @@ local utils = import "templates/utils.libsonnet";
     benchmarkOptions+:: {
       test+: {
         module: "official.benchmark.transformer_benchmark",
-        class: "TransformerKerasBenchmark",
+        class: "TransformerBaseKerasBenchmarkReal",
       },
     },
   },
@@ -267,8 +267,8 @@ local utils = import "templates/utils.libsonnet";
     shapemask + benchmark_8_gpu + coco,
     shapemask + benchmark_2x2_tpu + coco,
     shapemask + benchmark_4x4_tpu + coco,
-    transformer + benchmark_1_gpu + timeouts.Hours(3),
-    transformer + benchmark_8_gpu + static_batch + timeouts.Hours(4),
+    transformer + benchmark_1_gpu,
+    transformer + benchmark_8_gpu + static_batch,
     transformerBig + benchmark_2x2_tpu,
     transformerBig + benchmark_4x4_tpu,
   ],
