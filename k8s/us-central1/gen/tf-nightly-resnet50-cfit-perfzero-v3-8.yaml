@@ -21,13 +21,14 @@
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 3600
+      "activeDeadlineSeconds": 10800
       "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
             "tf-version.cloud-tpus.google.com": "nightly"
         "spec":
+          "activeDeadlineSeconds": 3600
           "containers":
           - "env":
             - "name": "POD_NAME"

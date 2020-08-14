@@ -21,10 +21,11 @@
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 7200
+      "activeDeadlineSeconds": 21600
       "backoffLimit": 1
       "template":
         "spec":
+          "activeDeadlineSeconds": 7200
           "containers":
           - "args":
             - "/bin/bash"
