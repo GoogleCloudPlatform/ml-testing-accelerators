@@ -374,12 +374,23 @@ class CloudMetricsHandler(object):
         'metric_success_conditions')
     if not success_conditions:
       return {}
+    required_metrics = set(
+        self.regression_test_config.get('required_metrics', []))
 
     metrics_history = metrics_history.copy()
 
     # Add the metrics from the latest run. These aren't in Bigquery yet.
     for metric_name, metric_value in new_metrics.items():
+      try:
+        required_metrics.remove(metric_name)
+      except KeyError:
+        pass
       metrics_history[metric_name].append(metric_value)
+    if required_metrics:
+      self.logger.error(
+          'Required metric(s) missing from latest run: `{}`'.format(
+              required_metrics),
+          debug_info=self.debug_info)
 
     metric_name_to_visual_bounds = {}
     metric_subset_to_report = set(

@@ -166,6 +166,7 @@ class CloudMetricsHandlerTest(absltest.TestCase):
       },
       regression_test_config={
         'metric_subset_to_alert': ['foo_final'],
+        'required_metrics': ['foo_final'],
         'metric_success_conditions': {
           'foo_final': {
             'success_threshold': {
@@ -195,6 +196,51 @@ class CloudMetricsHandlerTest(absltest.TestCase):
             {'foo_final': [], 'total_wall_time': []},
             aggregated_metrics, job_status_handler.FAILURE
         )
+
+  def test_compute_bounds_and_report_errors_missing_metric(self):
+    metrics_handler = main.CloudMetricsHandler(
+      test_name="test",
+      events_dir=self.temp_dir,
+      debug_info=None,
+      metric_collection_config={
+        'default_aggregation_strategies': ['final'],
+        'tags_to_ignore': ['bar'],
+      },
+      regression_test_config={
+        'metric_subset_to_alert': ['foo_final'],
+        'required_metrics': ['foo_final', 'fake_metric'],
+        'metric_success_conditions': {
+          'foo_final': {
+            # foo_final=2.0 from the setUp() method above.
+            'success_threshold': {
+              'fixed_value': 1.
+            },
+            'comparison': 'greater',
+            'wait_for_n_points_of_history': 0,
+          },
+        },
+      },
+      test_type=None,
+      accelerator=None,
+      framework_version=None,
+      logger=self.logger,
+    )
+
+    _, aggregated_metrics = metrics_handler.get_metrics_from_events_dir()
+    # Metrics are within bounds but are missing the `fake_metric`, which
+    # is in `required_metrics`, so an error should be created.
+    with self.assertLogs(level='ERROR'):
+      metrics_handler.compute_bounds_and_report_errors(
+          {'foo_final': [], 'total_wall_time': []},
+          aggregated_metrics, job_status_handler.SUCCESS
+      )
+    # Error should be logged for missing required_metrics even if the test
+    # run ended in failure.
+    with self.assertLogs(level='ERROR'):
+      metrics_handler.compute_bounds_and_report_errors(
+          {'foo_final': [], 'total_wall_time': []},
+          aggregated_metrics, job_status_handler.FAILURE
+      )
 
   def test_compute_bounds_and_report_errors_stddevs(self):
     metrics_handler = main.CloudMetricsHandler(
