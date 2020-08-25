@@ -32,7 +32,7 @@ local utils = import "templates/utils.libsonnet";
       ||| % self.testFeature
     ),
     regressionTestConfig: {
-      alert_for_failed_jobs: false,
+      alert_for_failed_jobs: true,
     },
   },
 
@@ -80,35 +80,35 @@ local utils = import "templates/utils.libsonnet";
     mode: "save-load-localhost",
     testFeature:: "save_and_load_io_device_local_drive",
     # Run at 2:30AM PST daily
-    schedule: "0 10 30 * *",
+    schedule: "30 10 * * *",
   },
 
   local save_and_load = API {
     mode: "save-and-load",
     testFeature:: "save_and_load",
     # Run at 2:30AM PST daily
-    schedule: "0 10 30 * *",
+    schedule: "30 10 * * *",
   },
 
   local train_and_evaluate = API {
     mode: "train-and-evaluate",
     testFeature:: "train_and_evaluate",
     # Run at 2:30AM PST daily
-    schedule: "0 10 30 * *",
+    schedule: "30 10 * * *",
   },
 
   local train_validation_dataset = API {
     mode: "train-eval-dataset",
     testFeature:: "train_validation_dataset",
     # Run at 2:30AM PST daily
-    schedule: "0 10 30 * *",
+    schedule: "30 10 * * *",
   },
 
   local transfer_learning = API {
     mode: "transfer-learning",
     testFeature:: "transfer_learning",
     # Run at 2:30AM PST daily
-    schedule: "0 10 30 * *",
+    schedule: "30 10 * * *",
   },
 
   local v2_8 = {
@@ -128,37 +128,37 @@ local utils = import "templates/utils.libsonnet";
     keras_test + v2_8 + connection,
     keras_test + v2_8 + custom_layers,
     keras_test + v2_8 + custom_training_loop,
-    keras_test + v2_8 + feature_column + timeouts.Hours(1),
+    keras_test + v2_8 + feature_column + timeouts.Hours(2),
     keras_test + v2_8 + preprocessing_layers,
     keras_test + v2_8 + rnn,
-    keras_test + v2_8 + save_and_load + mixins.Experimental,
-    keras_test + v2_8 + save_load_io_device_local,
-    keras_test + v2_8 + train_and_evaluate + mixins.Experimental,
+    keras_test + v2_8 + save_and_load + timeouts.Hours(2),
+    keras_test + v2_8 + save_load_io_device_local + timeouts.Hours(2),
+    keras_test + v2_8 + train_and_evaluate + timeouts.Hours(3),
     keras_test + v2_8 + train_validation_dataset,
     keras_test + v2_8 + transfer_learning,
     keras_test + v3_8 + connection,
     keras_test + v3_8 + custom_layers,
     keras_test + v3_8 + custom_training_loop,
-    keras_test + v3_8 + feature_column + timeouts.Hours(1),
+    keras_test + v3_8 + feature_column + timeouts.Hours(2),
     keras_test + v3_8 + preprocessing_layers,
     keras_test + v3_8 + rnn,
-    keras_test + v3_8 + save_and_load + mixins.Experimental,
-    keras_test + v3_8 + save_load_io_device_local,
-    keras_test + v3_8 + train_and_evaluate,
-    keras_test + v3_8 + train_validation_dataset + mixins.Experimental,
+    keras_test + v3_8 + save_and_load + timeouts.Hours(2),
+    keras_test + v3_8 + save_load_io_device_local + timeouts.Hours(2),
+    keras_test + v3_8 + train_and_evaluate + timeouts.Hours(3),
+    keras_test + v3_8 + train_validation_dataset,
     keras_test + v3_8 + transfer_learning,
     keras_test + v3_32 + connection,
     keras_test + v2_32 + connection,
     keras_test + v2_32 + custom_layers + timeouts.Hours(2),
     keras_test + v3_32 + custom_training_loop,
     keras_test + v2_32 + custom_training_loop,
-    keras_test + v3_32 + feature_column + timeouts.Hours(1),
+    keras_test + v3_32 + feature_column + timeouts.Hours(2),
     keras_test + v3_32 + preprocessing_layers,
     keras_test + v2_32 + rnn,
-    keras_test + v2_32 + save_and_load,
-    keras_test + v2_32 + save_load_io_device_local,
-    keras_test + v2_32 + train_and_evaluate,
-    keras_test + v3_32 + train_and_evaluate,
+    keras_test + v2_32 + save_and_load + timeouts.Hours(2),
+    keras_test + v2_32 + save_load_io_device_local + timeouts.Hours(2),
+    keras_test + v2_32 + train_and_evaluate + timeouts.Hours(3),
+    keras_test + v3_32 + train_and_evaluate + timeouts.Hours(3),
     keras_test + v3_32 + train_validation_dataset,
     keras_test + v3_32 + transfer_learning,
   ],

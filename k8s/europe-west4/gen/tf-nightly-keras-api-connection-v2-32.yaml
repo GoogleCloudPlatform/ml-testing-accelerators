@@ -126,7 +126,7 @@
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
-                  "alert_for_failed_jobs": false
+                  "alert_for_failed_jobs": true
                  },
                  "test_name": "tf-nightly-keras-api-connection-v2-32"
                 }
