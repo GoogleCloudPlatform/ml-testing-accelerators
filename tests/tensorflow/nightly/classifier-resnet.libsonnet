@@ -126,6 +126,18 @@ local tpus = import 'templates/tpus.libsonnet';
   local v100x8 = v100 {
     accelerator: gpus.teslaV100 { count: 8 },
   },
+  local a100x4 = gpu_common {
+    paramsOverride+:: {
+      train_dataset+: {
+        batch_size: 512,
+      },
+      validation_dataset+: {
+        batch_size: 512,
+      },
+    },
+
+    accelerator: gpus.teslaA100 + { count: 4 },
+  },
 
   local tpu_common = {
     command+: [
@@ -156,6 +168,7 @@ local tpus = import 'templates/tpus.libsonnet';
     resnet + v100x4 + convergence + mixins.Experimental,
     resnet + v100x8 + functional + mixins.Unsuspended,
     resnet + v100x8 + convergence + timeouts.Hours(14),
+    resnet + a100x4 + convergence,
     resnet + v2_8 + functional,
     resnet + v2_8 + functional + tpuVm,
     resnet + v3_8 + functional,
