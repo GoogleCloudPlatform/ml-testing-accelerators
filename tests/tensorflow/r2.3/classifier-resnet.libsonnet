@@ -17,6 +17,8 @@ local mixins = import "templates/mixins.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 local gpus = import "templates/gpus.libsonnet";
+local volumes = import "templates/volumes.libsonnet";
+local utils = import "templates/utils.libsonnet";
 
 {
   local resnet = common.ModelGardenTest {
@@ -140,7 +142,67 @@ local gpus = import "templates/gpus.libsonnet";
     accelerator: tpus.v3_32,
   },
 
+  # HACK: Use TF Enterprise 2.3 build since it uses CUDA 11.
+  local dlvm_a100x4 = gpu_common {
+    local config = self,
+
+    image: "gcr.io/deeplearning-platform-release/tf2-gpu.2-3",
+    imageTag: "latest",
+
+    paramsOverride+:: {
+      train_dataset+: {
+        batch_size: 512, 
+      },
+      validation_dataset+: {
+        batch_size: 512,
+      },
+    },
+
+    accelerator: gpus.teslaA100 + { count: 4 },
+    volumeMap+: {
+      workspace: volumes.MemoryVolumeSpec {
+        name: "workspace",
+        mountPath: "/workspace/",
+      },
+    },
+
+    jobSpec+: {
+      template+: {
+        spec+: {
+          initContainerMap+:: {
+            cloner: config.volumeMap.workspace.ContainerMixin {
+              image: "gcr.io/cloud-builders/git",
+              args: [
+                "clone",
+                "--single-branch",
+                "--branch",
+                "r2.3.0",
+                "https://github.com/tensorflow/models.git"
+              ],
+              workingDir: "/workspace",
+            },
+          },
+          containerMap+:: {
+            train+: {
+              args: utils.scriptCommand(
+                |||
+                  pip install -r official/requirements.txt
+                  %s
+                ||| % std.join(" ", [("'%s'" % term) for term in config.command])
+              ),
+              envMap+: {
+                PYTHONPATH: "/workspace/models"
+              },
+              workingDir: "/workspace/models",
+            },
+          },
+        },
+      },
+    },
+  },
+
   configs: [
+    resnet + dlvm_a100x4 + convergence,
     resnet + k80 + functional + timeouts.Hours(5) + mixins.Experimental,
     resnet + k80x8 + functional + timeouts.Hours(4),
     resnet + k80x8 + convergence + mixins.Experimental,

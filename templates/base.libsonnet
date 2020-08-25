@@ -136,7 +136,7 @@ local volumes = import 'volumes.libsonnet';
           ],
 
           restartPolicy: "Never",
-          initContainerMap:: {
+          initContainerMap:: if config.publisherImage != null then {
             publisher: {
               image: config.publisherImage,
               envFrom: [
@@ -158,7 +158,7 @@ local volumes = import 'volumes.libsonnet';
                 }
               ],
             },
-          },
+          } else { },
           initContainers: [
             { name: name } + pod.initContainerMap[name]
               for name in std.objectFields(pod.initContainerMap)
@@ -210,15 +210,12 @@ local volumes = import 'volumes.libsonnet';
 
     oneshotJob:: {
       local oneshotConfig = config {
+        # Don't publish PubSub message for oneshot jobs.
+        publisherImage: null,
+
         jobSpec+: {
           # Don't retry oneshot jobs.
           backoffLimit: 0,
-          template+: {
-            spec+: {
-              # Don't publish PubSub message for oneshot jobs.
-              initContainerMap: {},
-            },
-          },
         },
       },
 
