@@ -22,6 +22,15 @@
     claim: error "Must set `claim`",
     readOnly: error "Must set `readOnly",
 
+    ContainerMixin:: {
+      volumeMounts+: [
+        {
+          name: volume.name,
+          mountPath: volume.mountPath,
+          readOnly: volume.readOnly,
+        }
+      ],
+    },
     PodSpecMixin:: {
       volumes+: [
         {
@@ -29,15 +38,7 @@
         } + volume.claim,
       ],
       containerMap+: {
-        train+: {
-          volumeMounts+: [
-            {
-              name: volume.name,
-              mountPath: volume.mountPath,
-              readOnly: volume.readOnly,
-            }
-          ],
-        },
+        train+: volume.ContainerMixin,
       },
     },
   },
