@@ -19,9 +19,9 @@ local utils = import "templates/utils.libsonnet";
 
 {
   local command_common = |||
-    git clone https://github.com/taylanbil/dlrm.git -b tpu
     pip install onnx
-    python dlrm/dlrm_tpu_runner.py \
+    git clone --recursive https://github.com/pytorch-tpu/examples.git
+    python examples/deps/dlrm/dlrm_tpu_runner.py \
       --arch-sparse-feature-size=64 \
       --arch-mlp-bot=512-512-64 \
       --arch-mlp-top=1024-1024-1024-1 \
@@ -52,6 +52,29 @@ local utils = import "templates/utils.libsonnet";
                 requests: {
                   cpu: "9.0",
                   memory: "30Gi",
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  local dlrm_convergence = common.PyTorchTest {
+    modelName: "dlrm-convergence",
+    schedule: "0 21 * * *",
+    volumeMap+: {
+      datasets: common.datasetsVolume,
+    },
+    jobSpec+:: {
+      template+: {
+        spec+: {
+          containerMap+: {
+            train+: {
+              resources+: {
+                requests: {
+                  cpu: "40.0",
+                  memory: "500Gi",
                 },
               },
             },
@@ -104,6 +127,41 @@ local utils = import "templates/utils.libsonnet";
       ||| % command_common
     ),
   },
+  local criteo_kaggle = common.Convergence {
+    command: utils.scriptCommand(
+      |||
+        apt-get install -y bc
+        pip install onnx
+        git clone --recursive https://github.com/pytorch-tpu/examples.git
+        python examples/deps/dlrm/dlrm_tpu_runner.py \
+            --arch-sparse-feature-size=16 \
+            --arch-mlp-bot="13-512-256-64-16" \
+            --arch-mlp-top="512-256-1" \
+            --data-generation=dataset \
+            --data-set=kaggle \
+            --raw-data-file=/datasets/criteo-kaggle/train.txt \
+            --processed-data-file=/datasets/criteo-kaggle/kaggleAdDisplayChallenge_processed.npz \
+            --loss-function=bce \
+            --round-targets=True \
+            --learning-rate=0.1 \
+            --mini-batch-size=128 \
+            --print-freq=1024 \
+            --print-time \
+            --test-mini-batch-size=16384 \
+            --test-num-workers=4 \
+            --test-freq=101376 \
+                --use-tpu \
+                --num-indices-per-lookup=1 \
+                --num-indices-per-lookup-fixed \
+                --tpu-model-parallel-group-len 8 \
+                --tpu-metrics-debug \
+                --tpu-cores=8 |& tee dlrm_logs.txt
+        acc=`grep Testing dlrm_logs.txt | tail -1 | grep -oP 'best \K[+-]?([0-9]*[.])?[0-9]+'`
+        echo 'Accuracy is' $acc
+        test $(echo $acc'>'78.75 | bc -l) -eq 1  # assert cls acc higher than 78.75
+      |||
+    ),
+  },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
@@ -112,5 +170,6 @@ local utils = import "templates/utils.libsonnet";
     dlrm + v3_8 + seq_fwd + timeouts.Hours(3),
     dlrm + v3_8 + mp_fwd + timeouts.Hours(3),
     dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
+    dlrm_convergence + v3_8 + criteo_kaggle + timeouts.Hours(6),
   ]
 }
