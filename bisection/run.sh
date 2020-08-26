@@ -10,7 +10,7 @@ IMAGE_NAME=gcr.io/tpu-pytorch/xla_debug
 MIN_TIMESTAMP='20200825_02_12'
 MAX_TIMESTAMP='20200825_08_00'
 TAG_PREFIX='nightly_3.6_'
-MAX_CHECKS=60  # Check 30 times w/ 30 sec wait = 1800s total.
+MAX_CHECKS=60  # Check 60 times w/ 30 sec wait = 1800s total.
 LOGS_DIR=bisection_logs/
 
 OLD_IFS=$IFS
@@ -76,7 +76,6 @@ while true; do
   echo "new_mid: $new_mid"
   echo "Indices already tried: ${indices_already_tried[@]}"
 
-
   # Check termination condition.
   if [[ ${indices_already_tried[$new_mid]} -gt -2 ]] ; then
     # If we've already tried this index, then it's time to stop.
@@ -86,7 +85,6 @@ while true; do
     for j in {0..${#images_to_try[@]}}
     do
       if [[ ${indices_already_tried[$new_mid]} -gt -2 ]] && [[ ${indices_already_tried[$new_mid]} -ne 0 ]] && [[ $j -gt $max_failing_index ]]; then
-        echo "NEW FAILING INDEX: $j"
         max_failing_index=$j
       fi
     done
@@ -97,6 +95,7 @@ while true; do
     else
       echo "No failing image was found."
     fi
+    # End the bisection loop.
     break
   fi
 
