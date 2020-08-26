@@ -27,10 +27,7 @@ local debugJob = base.BaseTest {
   },
   command: utils.scriptCommand(
     |||
-      echo "In the VM now."
-      echo "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS: $KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
       export XRT_TPU_CONFIG="tpu_worker;0;${KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS:7}"
-      echo "XRT_TPU_CONFIG: $XRT_TPU_CONFIG"
       python3 pytorch/xla/test/test_train_mp_mnist.py --fake_data |& tee test_logs.txt
       global_rate=$(grep 'GlobalRate=' test_logs.txt | tail -1 | grep -oP 'GlobalRate=([0-9]*[.])?[0-9]+ ' | sed 's/[^0-9.]*//g')
       echo "Final GlobalRate was: $global_rate"
