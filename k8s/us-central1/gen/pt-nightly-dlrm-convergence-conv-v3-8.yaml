@@ -15,13 +15,13 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-dlrm-mpdp-fwd-func-v3-8"
+  "name": "pt-nightly-dlrm-convergence-conv-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 10800
+      "activeDeadlineSeconds": 21600
       "backoffLimit": 1
       "template":
         "metadata":
@@ -49,27 +49,35 @@
               set -e
               set -x
               
+              apt-get install -y bc
               pip install onnx
               git clone --recursive https://github.com/pytorch-tpu/examples.git
               python examples/deps/dlrm/dlrm_tpu_runner.py \
-                --arch-sparse-feature-size=64 \
-                --arch-mlp-bot=512-512-64 \
-                --arch-mlp-top=1024-1024-1024-1 \
-                --arch-interaction-op=dot \
-                --lr-num-warmup-steps 10 \
-                --lr-decay-start-step 10 \
-                --num-batches=1000 \
-                --data-generation="random" \
-                --numpy-rand-seed=727 \
-                --print-freq 100 \
-                --num-indices-per-lookup=100 \
-                --use-tpu \
-                --metrics-debug \
-                --num-indices-per-lookup-fixed \
-                --mini-batch-size=2048 \
-                --arch-embedding-size=1000000-1000000-1000000-1000000-1000000-1000000-1000000-1000000 \
-                --tpu-model-parallel-group-len 4 \
-                --tpu-cores=8
+                  --arch-sparse-feature-size=16 \
+                  --arch-mlp-bot="13-512-256-64-16" \
+                  --arch-mlp-top="512-256-1" \
+                  --data-generation=dataset \
+                  --data-set=kaggle \
+                  --raw-data-file=/datasets/criteo-kaggle/train.txt \
+                  --processed-data-file=/datasets/criteo-kaggle/kaggleAdDisplayChallenge_processed.npz \
+                  --loss-function=bce \
+                  --round-targets=True \
+                  --learning-rate=0.1 \
+                  --mini-batch-size=128 \
+                  --print-freq=1024 \
+                  --print-time \
+                  --test-mini-batch-size=16384 \
+                  --test-num-workers=4 \
+                  --test-freq=101376 \
+                      --use-tpu \
+                      --num-indices-per-lookup=1 \
+                      --num-indices-per-lookup-fixed \
+                      --tpu-model-parallel-group-len 8 \
+                      --tpu-metrics-debug \
+                      --tpu-cores=8 |& tee dlrm_logs.txt
+              acc=`grep Testing dlrm_logs.txt | tail -1 | grep -oP 'best \K[+-]?([0-9]*[.])?[0-9]+'`
+              echo 'Accuracy is' $acc
+              test $(echo $acc'>'78.75 | bc -l) -eq 1  # assert cls acc higher than 78.75
               
             "env":
             - "name": "POD_NAME"
@@ -89,7 +97,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/dlrm-mpdp-fwd/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-nightly/dlrm-convergence/conv/v3-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
               "value": "0"
             "envFrom":
@@ -102,8 +110,8 @@
               "limits":
                 "cloud-tpus.google.com/v3": 8
               "requests":
-                "cpu": "9.0"
-                "memory": "30Gi"
+                "cpu": "40.0"
+                "memory": "500Gi"
             "volumeMounts":
             - "mountPath": "/dev/shm"
               "name": "dshm"
@@ -130,7 +138,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/dlrm-mpdp-fwd/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-nightly/dlrm-convergence/conv/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -181,7 +189,7 @@
                    }
                   }
                  },
-                 "test_name": "pt-nightly-dlrm-mpdp-fwd-func-v3-8"
+                 "test_name": "pt-nightly-dlrm-convergence-conv-v3-8"
                 }
             "envFrom":
             - "configMapRef":
@@ -198,5 +206,5 @@
           - "name": "pytorch-datasets-claim"
             "persistentVolumeClaim":
               "claimName": "pytorch-datasets-claim"
-  "schedule": "0 18 * * *"
+  "schedule": "0 6 * * 1,6"
   "successfulJobsHistoryLimit": 1
