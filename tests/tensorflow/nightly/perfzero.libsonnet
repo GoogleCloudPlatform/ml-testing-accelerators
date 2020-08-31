@@ -34,8 +34,10 @@ local utils = import "templates/utils.libsonnet";
     ],
 
     jobSpec+:: {
+      activeDeadlineSeconds: config.timeout * (self.backoffLimit + 2),
       template+: {
         spec+: {
+          activeDeadlineSeconds: config.timeout,
           containerMap+:: {
             train+: {
               envMap+:: {
