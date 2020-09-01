@@ -55,7 +55,7 @@ local utils = import "templates/utils.libsonnet";
       ||| % {common: command_common, common_copy: command_copy_metrics}
     ),
     regressionTestConfig+: {
-      alert_for_failed_jobs: false,
+      required_metrics: ['eval_mnli/acc', 'eval_mnli-mm/acc'],
       metric_success_conditions+: {
         "eval_mnli/acc": {
           success_threshold: {
@@ -83,7 +83,7 @@ local utils = import "templates/utils.libsonnet";
       ||| % {common: command_common, common_copy: command_copy_metrics}
     ),
     regressionTestConfig+: {
-      alert_for_failed_jobs: false,
+      required_metrics: ['eval_mnli/acc', 'eval_mnli-mm/acc'],
       metric_success_conditions+: {
         "eval_mnli/acc": {
           success_threshold: {
@@ -111,7 +111,7 @@ local utils = import "templates/utils.libsonnet";
       ||| % {common: command_common, common_copy: command_copy_metrics}
     ),
     regressionTestConfig+: {
-      alert_for_failed_jobs: false,
+      required_metrics: ['eval_mnli/acc', 'eval_mnli-mm/acc'],
       metric_success_conditions+: {
         "eval_mnli/acc": {
           success_threshold: {
@@ -139,7 +139,7 @@ local utils = import "templates/utils.libsonnet";
       ||| % {common: command_common, common_copy: command_copy_metrics}
     ),
     regressionTestConfig+: {
-      alert_for_failed_jobs: false,
+      required_metrics: ['eval_mnli/acc', 'eval_mnli-mm/acc'],
       metric_success_conditions+: {
         "eval_mnli/acc": {
           success_threshold: {
