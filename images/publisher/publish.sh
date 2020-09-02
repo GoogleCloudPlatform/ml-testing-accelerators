@@ -24,6 +24,7 @@ runtime_vars="{
   \"job_name\": \"$JOB_NAME\",
   \"job_namespace\": \"$POD_NAMESPACE\",
   \"zone\": \"$ZONE\",
+  \"region\": \"$REGION\",
   \"cluster_name\": \"$CLUSTER\"
 }"
 pubsub_message=`echo ${runtime_vars} | jq ". + ${METRIC_CONFIG}"`
