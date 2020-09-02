@@ -467,16 +467,18 @@ def _process_pubsub_message(msg, status_handler, logger):
   accelerator = msg.get('accelerator')
   framework_version = msg.get('framework_version')
   zone = msg.get('zone')
+  region = msg.get('region')
   cluster = msg.get('cluster_name')
   project = google.auth.default()[1]
   download_command = util.download_command(
-      job_name, job_namespace, zone, cluster, project)
+      job_name, job_namespace, region or zone, cluster, project)
 
-  if not (events_dir and test_name and logs_link and job_name and zone \
-          and cluster and project):
+  if not (events_dir and test_name and logs_link and job_name and (
+      zone or region) and cluster and project):
     raise ValueError('Pubsub message must contain 7 required fields: '
                      'events_dir, test_name, logs_link, job_name, '
-                     'zone, cluster, project. Message was: {}'.format(event))
+                     'zone/region, cluster, project. '
+                     'Message was: {}'.format(event))
   if not regression_test_config and not metric_collection_config:
     raise ValueError('metric_collection_config and regression_test_config '
                      'were both null; stopping early. See README for '
