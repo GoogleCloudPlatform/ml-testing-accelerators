@@ -15,13 +15,13 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-hf-glue-xlm-mlm-en-2048-conv-v3-8"
+  "name": "pt-nightly-hf-mlm-roberta-b-pre-conv-v2-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 25200
+      "activeDeadlineSeconds": 14400
       "backoffLimit": 1
       "template":
         "metadata":
@@ -54,25 +54,24 @@
               git log -1
               python examples/xla_spawn.py \
                 --num_cores 8 \
-                examples/text-classification/run_glue.py \
-                --logging_dir=./tensorboard-metrics \
-                --task_name MNLI \
-                --data_dir /datasets/glue/MNLI \
+                examples/language-modeling/run_language_modeling.py \
+                --logging_dir ./tensorboard-metrics \
                 --cache_dir ./cache_dir \
+                --train_data_file /datasets/wikitext-103-raw/wiki.train.raw \
                 --do_train \
                 --do_eval \
-                --num_train_epochs 3 \
-                --max_seq_length 128 \
-                --learning_rate 3e-5 \
-                --output_dir MNLI \
+                --eval_data_file /datasets/wikitext-103-raw/wiki.valid.raw \
                 --overwrite_output_dir \
+                --output_dir language-modeling \
                 --logging_steps 100 \
                 --save_steps 3000 \
                 --overwrite_cache \
                 --tpu_metrics_debug \
-               --model_name_or_path xlm-mlm-en-2048 \
-              --per_gpu_train_batch_size 8 \
-              --per_gpu_eval_batch_size 8
+               --mlm --model_type=roberta \
+              --tokenizer=roberta-base \
+              --num_train_epochs 5 \
+              --per_device_train_batch_size 8 \
+              --per_device_eval_batch_size 8
               gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
               
               
@@ -94,7 +93,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/hf-glue-xlm-mlm-en-2048/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-nightly/hf-mlm-roberta-b-pre/conv/v2-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
               "value": "0"
             "envFrom":
@@ -105,7 +104,7 @@
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v3": 8
+                "cloud-tpus.google.com/v2": 8
               "requests":
                 "cpu": "12.0"
                 "memory": "80Gi"
@@ -135,7 +134,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/hf-glue-xlm-mlm-en-2048/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-nightly/hf-mlm-roberta-b-pre/conv/v2-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -149,7 +148,6 @@
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
-                  "alert_for_failed_jobs": false,
                   "metric_subset_to_alert": [
                    "ExecuteTime__Percentile_99_sec_final",
                    "CompileTime__Percentile_99_sec_final",
@@ -178,16 +176,10 @@
                      "stddevs_from_mean": 0
                     }
                    },
-                   "eval_mnli-mm/acc": {
-                    "comparison": "greater",
+                   "eval_loss": {
+                    "comparison": "less",
                     "success_threshold": {
-                     "fixed_value": 0.80000000000000004
-                    }
-                   },
-                   "eval_mnli/acc": {
-                    "comparison": "greater",
-                    "success_threshold": {
-                     "fixed_value": 0.80000000000000004
+                     "fixed_value": 6.5
                     }
                    },
                    "total_wall_time": {
@@ -197,9 +189,12 @@
                     },
                     "wait_for_n_points_of_history": 10
                    }
-                  }
+                  },
+                  "required_metrics": [
+                   "eval_loss"
+                  ]
                  },
-                 "test_name": "pt-nightly-hf-glue-xlm-mlm-en-2048-conv-v3-8"
+                 "test_name": "pt-nightly-hf-mlm-roberta-b-pre-conv-v2-8"
                 }
             "envFrom":
             - "configMapRef":

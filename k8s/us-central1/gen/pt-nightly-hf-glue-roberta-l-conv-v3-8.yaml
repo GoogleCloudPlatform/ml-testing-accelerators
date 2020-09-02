@@ -71,8 +71,8 @@
                 --overwrite_cache \
                 --tpu_metrics_debug \
                --model_name_or_path roberta-large \
-              --per_gpu_train_batch_size 16 \
-              --per_gpu_eval_batch_size 16
+              --per_device_train_batch_size 16 \
+              --per_device_eval_batch_size 16
               gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
               
               
@@ -149,7 +149,6 @@
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
-                  "alert_for_failed_jobs": false,
                   "metric_subset_to_alert": [
                    "ExecuteTime__Percentile_99_sec_final",
                    "CompileTime__Percentile_99_sec_final",
@@ -197,7 +196,11 @@
                     },
                     "wait_for_n_points_of_history": 10
                    }
-                  }
+                  },
+                  "required_metrics": [
+                   "eval_mnli/acc",
+                   "eval_mnli-mm/acc"
+                  ]
                  },
                  "test_name": "pt-nightly-hf-glue-roberta-l-conv-v3-8"
                 }

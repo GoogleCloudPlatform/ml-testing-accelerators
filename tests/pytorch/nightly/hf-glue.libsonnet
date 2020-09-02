@@ -49,13 +49,13 @@ local utils = import "templates/utils.libsonnet";
     command: utils.scriptCommand(
       |||
         %(common)s --model_name_or_path bert-base-cased \
-        --per_gpu_train_batch_size 64 \
-        --per_gpu_eval_batch_size 64
+        --per_device_train_batch_size 64 \
+        --per_device_eval_batch_size 64
         %(common_copy)s
       ||| % {common: command_common, common_copy: command_copy_metrics}
     ),
     regressionTestConfig+: {
-      alert_for_failed_jobs: false,
+      required_metrics: ['eval_mnli/acc', 'eval_mnli-mm/acc'],
       metric_success_conditions+: {
         "eval_mnli/acc": {
           success_threshold: {
@@ -77,13 +77,13 @@ local utils = import "templates/utils.libsonnet";
     command: utils.scriptCommand(
       |||
         %(common)s --model_name_or_path xlnet-large-cased \
-        --per_gpu_train_batch_size 32 \
-        --per_gpu_eval_batch_size 32
+        --per_device_train_batch_size 32 \
+        --per_device_eval_batch_size 32
         %(common_copy)s
       ||| % {common: command_common, common_copy: command_copy_metrics}
     ),
     regressionTestConfig+: {
-      alert_for_failed_jobs: false,
+      required_metrics: ['eval_mnli/acc', 'eval_mnli-mm/acc'],
       metric_success_conditions+: {
         "eval_mnli/acc": {
           success_threshold: {
@@ -105,13 +105,13 @@ local utils = import "templates/utils.libsonnet";
     command: utils.scriptCommand(
       |||
         %(common)s --model_name_or_path roberta-large \
-        --per_gpu_train_batch_size 16 \
-        --per_gpu_eval_batch_size 16
+        --per_device_train_batch_size 16 \
+        --per_device_eval_batch_size 16
         %(common_copy)s
       ||| % {common: command_common, common_copy: command_copy_metrics}
     ),
     regressionTestConfig+: {
-      alert_for_failed_jobs: false,
+      required_metrics: ['eval_mnli/acc', 'eval_mnli-mm/acc'],
       metric_success_conditions+: {
         "eval_mnli/acc": {
           success_threshold: {
@@ -122,34 +122,6 @@ local utils = import "templates/utils.libsonnet";
         "eval_mnli-mm/acc": {
           success_threshold: {
             fixed_value: 0.85,
-          },
-          comparison: "greater",
-        },
-      },
-    },
-  },
-  local xlm_mlm_en_2048 = common.Convergence {
-    modelName: "hf-glue-xlm-mlm-en-2048",
-    command: utils.scriptCommand(
-      |||
-        %(common)s --model_name_or_path xlm-mlm-en-2048 \
-        --per_gpu_train_batch_size 8 \
-        --per_gpu_eval_batch_size 8
-        %(common_copy)s
-      ||| % {common: command_common, common_copy: command_copy_metrics}
-    ),
-    regressionTestConfig+: {
-      alert_for_failed_jobs: false,
-      metric_success_conditions+: {
-        "eval_mnli/acc": {
-          success_threshold: {
-            fixed_value: 0.80,
-          },
-          comparison: "greater",
-        },
-        "eval_mnli-mm/acc": {
-          success_threshold: {
-            fixed_value: 0.80,
           },
           comparison: "greater",
         },
@@ -161,13 +133,13 @@ local utils = import "templates/utils.libsonnet";
     command: utils.scriptCommand(
       |||
         %(common)s --model_name_or_path distilbert-base-uncased \
-        --per_gpu_train_batch_size 512 \
-        --per_gpu_eval_batch_size 512
+        --per_device_train_batch_size 512 \
+        --per_device_eval_batch_size 512
         %(common_copy)s
       ||| % {common: command_common, common_copy: command_copy_metrics}
     ),
     regressionTestConfig+: {
-      alert_for_failed_jobs: false,
+      required_metrics: ['eval_mnli/acc', 'eval_mnli-mm/acc'],
       metric_success_conditions+: {
         "eval_mnli/acc": {
           success_threshold: {
@@ -217,7 +189,6 @@ local utils = import "templates/utils.libsonnet";
     hf_glue + v2_8 + bert_base_cased + timeouts.Hours(2),
     hf_glue + v3_8 + xlnet_large_cased + timeouts.Hours(5),
     hf_glue + v3_8 + roberta_large + timeouts.Hours(4),
-    hf_glue + v3_8 + xlm_mlm_en_2048 + timeouts.Hours(7),
     hf_glue + v3_8 + distilbert_base_uncased + timeouts.Hours(2),
   ],
 }
