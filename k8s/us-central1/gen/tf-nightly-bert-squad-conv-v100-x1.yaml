@@ -135,6 +135,7 @@
             - "configMapRef":
                 "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/publisher:stable"
+            "imagePullPolicy": "Always"
             "name": "publisher"
           "nodeSelector":
             "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"

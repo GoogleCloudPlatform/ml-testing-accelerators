@@ -139,6 +139,7 @@ local volumes = import 'volumes.libsonnet';
           initContainerMap:: if config.publisherImage != null then {
             publisher: {
               image: config.publisherImage,
+              imagePullPolicy: "Always",
               envFrom: [
                 {
                   configMapRef: {

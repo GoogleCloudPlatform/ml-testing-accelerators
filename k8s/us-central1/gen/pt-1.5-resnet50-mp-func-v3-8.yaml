@@ -167,6 +167,7 @@
             - "configMapRef":
                 "name": "gcs-buckets"
             "image": "gcr.io/xl-ml-test/publisher:stable"
+            "imagePullPolicy": "Always"
             "name": "publisher"
           "nodeSelector":
             "tpu-available": "true"
