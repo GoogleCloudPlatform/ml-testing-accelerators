@@ -65,6 +65,30 @@ local utils = import "templates/utils.libsonnet";
       },
     },
   },
+  local bert_base_fine = common.Convergence {
+    modelName: "hf-mlm-bert-b-fine",
+    command: utils.scriptCommand(
+      |||
+        %(common)s --mlm --model_type=bert \
+        --model_name_or_path bert-base-cased \
+        --num_train_epochs 3 \
+        --per_device_train_batch_size 16 \
+        --per_device_eval_batch_size 16
+        %(common_copy)s
+      ||| % {common: command_common, common_copy: command_copy_metrics}
+    ),
+    regressionTestConfig+: {
+      required_metrics: ['eval_loss'],
+      metric_success_conditions+: {
+        "eval_loss": {
+          success_threshold: {
+            fixed_value: 1.5,
+          },
+          comparison: "less",
+        },
+      },
+    },
+  },
   local roberta_base_pre = common.Convergence {
     modelName: "hf-mlm-roberta-b-pre",
     command: utils.scriptCommand(
@@ -74,6 +98,30 @@ local utils = import "templates/utils.libsonnet";
         --num_train_epochs 5 \
         --per_device_train_batch_size 8 \
         --per_device_eval_batch_size 8
+        %(common_copy)s
+      ||| % {common: command_common, common_copy: command_copy_metrics}
+    ),
+    regressionTestConfig+: {
+      required_metrics: ['eval_loss'],
+      metric_success_conditions+: {
+        "eval_loss": {
+          success_threshold: {
+            fixed_value: 6.5,
+          },
+          comparison: "less",
+        },
+      },
+    },
+  },
+  local bert_base_pre = common.Convergence {
+    modelName: "hf-mlm-bert-b-pre",
+    command: utils.scriptCommand(
+      |||
+        %(common)s --mlm --model_type=bert \
+        --tokenizer=bert-base-cased \
+        --num_train_epochs 5 \
+        --per_device_train_batch_size 16 \
+        --per_device_eval_batch_size 16
         %(common_copy)s
       ||| % {common: command_common, common_copy: command_copy_metrics}
     ),
@@ -121,5 +169,7 @@ local utils = import "templates/utils.libsonnet";
     hf_lm + v3_8 + roberta_base_pre + timeouts.Hours(4),
     hf_lm + v2_8 + roberta_base_pre + timeouts.Hours(5),
     hf_lm + v3_8 + roberta_base_fine + timeouts.Hours(3),
+    hf_lm + v3_8 + bert_base_pre + timeouts.Hours(6),
+    hf_lm + v3_8 + bert_base_fine + timeouts.Hours(5),
   ],
 }
