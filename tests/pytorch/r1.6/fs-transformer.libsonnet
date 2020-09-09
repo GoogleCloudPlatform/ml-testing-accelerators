@@ -134,7 +134,7 @@ local utils = import "templates/utils.libsonnet";
           --log_steps=200 \
           --train-subset=train \
           --valid-subset=valid \
-          --input_shapes 256x64 512x32 640x16
+          --input_shapes 256x64 512x32
         bleu=`fairseq-generate \
            /datasets/wmt18_en_de_bpej32k \
            --remove-bpe --quiet --lenpen 0.6 --beam 4 \
