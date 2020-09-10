@@ -473,20 +473,28 @@ def _process_pubsub_message(msg, status_handler, logger):
   download_command = util.download_command(
       job_name, job_namespace, region or zone, cluster, project)
 
-  if not (events_dir and test_name and logs_link and job_name and (
-      zone or region) and cluster and project):
-    raise ValueError('Pubsub message must contain 7 required fields: '
-                     'events_dir, test_name, logs_link, job_name, '
-                     'zone/region, cluster, project. '
-                     'Message was: {}'.format(event))
+  if not (events_dir and test_name and logs_link and job_name and \
+          (zone or region) and project):
+    raise ValueError('Pubsub message must contain 6 required fields: '
+                     'model_dir, test_name, logs_link, job_name, '
+                     'zone/region, project. Message was: {}'.format(msg))
   if not regression_test_config and not metric_collection_config:
     raise ValueError('metric_collection_config and regression_test_config '
                      'were both null; stopping early. See README for '
                      'documentation on writing these configs.')
 
-  status, stop_time, num_failures = status_handler.get_job_status(
-      job_name, job_namespace)
-  workload_link = status_handler.workload_link(job_name, job_namespace)
+  job_info = msg.get('job_info')
+  if job_info:
+    status = job_info['status']
+    stop_time = job_info['stop_time']
+    num_failures = job_info['num_failures']
+    download_command = ''
+    workload_link = ''
+  else:
+    status, stop_time, num_failures = status_handler.get_job_status(
+        job_name, job_namespace)
+    workload_link = status_handler.workload_link(job_name, job_namespace)
+
   debug_info = alert_handler.DebugInfo(
       job_name, logs_link, download_command, workload_link)
   if status == job_status_handler.UNKNOWN_STATUS:
@@ -643,13 +651,18 @@ def run_main(event, context):
   # so that we will retry again later once that test has finished running.
   status_handlers_dict = {}
   for msg in msgs_to_process:
-    zone = msg['zone']
-    cluster = msg['cluster_name']
-    key = '{}_{}'.format(zone, cluster)
-    if key not in status_handlers_dict:
-      status_handlers_dict[key] = job_status_handler.JobStatusHandler(
-          project_id, zone, cluster, logger)
-    status_handler = status_handlers_dict[key]
+    if 'cluster_name' in msg:
+      zone = msg['zone']
+      cluster = msg['cluster_name']
+      key = '{}_{}'.format(zone, cluster)
+      if key not in status_handlers_dict:
+        status_handlers_dict[key] = job_status_handler.JobStatusHandler(
+            project_id, zone, cluster, logger)
+      status_handler = status_handlers_dict[key]
+    else:
+      if 'job_info' not in msg:
+        raise ValueError('Must provide `cluster_name` or `job_info`.')
+      status_handler = None
 
     try:
       logger.info('Pubsub message to process: {}'.format(msg))
