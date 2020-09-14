@@ -57,7 +57,8 @@ FROM (
       `{METRIC_HISTORY_TABLE_NAME}`
     WHERE
       test_name = @test_name AND
-      (metric_name NOT LIKE '%%__Percentile_%%' OR metric_name LIKE '%%__Percentile_99%%')
+      (metric_name NOT LIKE '%%__Percentile_%%' OR metric_name LIKE '%%__Percentile_99%%') AND
+      timestamp >= @cutoff_timestamp
     GROUP BY
       test_name, metric_name, run_date
   ) AS y
@@ -74,7 +75,7 @@ ORDER BY
   run_date DESC
 """
 
-def _get_query_config(test_name):
+def _get_query_config(test_name, cutoff_timestamp):
   return {
     'query': {
       'parameterMode': 'NAMED',
@@ -84,15 +85,20 @@ def _get_query_config(test_name):
           'parameterType': {'type': 'STRING'},
           'parameterValue': {'value': test_name},
         },
+        {
+          'name': 'cutoff_timestamp',
+          'parameterType': {'type': 'TIMESTAMP'},
+          'parameterValue': {'value': cutoff_timestamp},
+        },
       ]
     }
   }
 
-def fetch_data(test_name):
+def fetch_data(test_name, cutoff_timestamp):
   dataframe = utils.run_query(
     QUERY,
     cache_key=('metrics-%s' % test_name),
-    config=_get_query_config(test_name))
+    config=_get_query_config(test_name, cutoff_timestamp))
   return dataframe
 
 def make_plots(test_name, metric_name_substr, dataframe):

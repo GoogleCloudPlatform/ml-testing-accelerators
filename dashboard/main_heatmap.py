@@ -49,7 +49,8 @@ FROM (
   FROM
     `{JOB_HISTORY_TABLE_NAME}`
   WHERE
-    test_name like @test_name_prefix
+    test_name like @test_name_prefix AND
+    timestamp >= @cutoff_timestamp
   GROUP BY
     test_name, run_date
 ) AS y
@@ -75,11 +76,12 @@ FROM
 WHERE
   test_name LIKE @test_name_prefix AND
   (metric_lower_bound IS NOT NULL OR metric_upper_bound IS NOT NULL) AND
-  (metric_value < metric_lower_bound OR metric_value > metric_upper_bound)
+  (metric_value < metric_lower_bound OR metric_value > metric_upper_bound) AND
+  timestamp >= @cutoff_timestamp
 LIMIT 1000
 """
 
-def _get_query_config(test_name_prefix):
+def _get_query_config(test_name_prefix, cutoff_timestamp):
   return {
     'query': {
       'parameterMode': 'NAMED',
@@ -89,21 +91,26 @@ def _get_query_config(test_name_prefix):
           'parameterType': {'type': 'STRING'},
           'parameterValue': {'value': '{}%'.format(test_name_prefix)},
         },
+        {
+          'name': 'cutoff_timestamp',
+          'parameterType': {'type': 'TIMESTAMP'},
+          'parameterValue': {'value': cutoff_timestamp},
+        },
       ]
     }
   }
 
 COLORS = {'success': '#02cf17', 'failure': '#a10606'}
 
-def fetch_data(test_name_prefix):
+def fetch_data(test_name_prefix, cutoff_timestamp):
   job_status_dataframe = utils.run_query(
     JOB_STATUS_QUERY,
     cache_key=('job-status-%s' % test_name_prefix),
-    config=_get_query_config(test_name_prefix))
+    config=_get_query_config(test_name_prefix, cutoff_timestamp))
   metrics_dataframe = utils.run_query(
     METRIC_STATUS_QUERY,
     cache_key=('metric-status-%s' % test_name_prefix),
-    config=_get_query_config(test_name_prefix))
+    config=_get_query_config(test_name_prefix, cutoff_timestamp))
   combined_dataframe = process_dataframes(
       job_status_dataframe, metrics_dataframe)
   return combined_dataframe

@@ -8,7 +8,7 @@ This guide assumes you have a Google Cloud Platform project and you are running 
 
 ```
 export JOB_HISTORY_TABLE_NAME='your-project-name.metrics_handler_dataset.job_history'
-export METRIC_HISTORY_TABLE_NAME'your-project-name.metrics_handler_dataset.metric_history'
+export METRIC_HISTORY_TABLE_NAME='your-project-name.metrics_handler_dataset.metric_history'
 <optional, if you want to to split tests into multiple tabs or exclude tests>
 export TEST_NAME_PREFIXES='prefix1,prefix2'
 

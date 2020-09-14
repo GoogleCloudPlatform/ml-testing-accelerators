@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import logging
 import os
 import time
@@ -59,7 +60,9 @@ def update(attr, old, new):
     timer.text = 'Invalid test_name: {}'.format(test_name)
     return
   metric_substr = metric_select.value
-  data = metric_history.fetch_data(test_name)
+  cutoff_timestamp = (datetime.datetime.now() - datetime.timedelta(
+      days=30)).strftime('%Y-%m-%d %H:%M:%S UTC')
+  data = metric_history.fetch_data(test_name, cutoff_timestamp)
   plots = metric_history.make_plots(test_name, metric_substr, data)
   plot_rows = [row(p) for p in plots] if plots else []
   curdoc().clear()
