@@ -3,7 +3,7 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import "templates/utils.libsonnet";
 
 local tputests = base.BaseTest {
-  frameworkPrefix: 'pl',
+  frameworkPrefix: 'ci-pt',
   modelName: 'tpu-tests',
   mode: 'postsubmit',
   configMaps: [],
