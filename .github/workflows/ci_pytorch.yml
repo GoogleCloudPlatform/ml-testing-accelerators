@@ -55,8 +55,8 @@ jobs:
       # Google Cloud Build and push them to gcr.
       # Configure Docker to use the gcloud command-line tool as a credential helper for authentication.
       - name: Configure Docker
-        if: false  # SKIP THIS STEP.
-        #run: |-
+        #if: false  # SKIP THIS STEP.
+        run: |-
           gcloud --quiet auth configure-docker
         shell: bash
       - name: Build and Push Docker Image
