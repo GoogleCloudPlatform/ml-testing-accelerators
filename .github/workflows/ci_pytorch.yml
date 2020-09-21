@@ -75,7 +75,7 @@ jobs:
 
       # Get the GKE credentials so we can deploy to the cluster
       # Use either zone or region depending on cluster setup.
-      - namr: Get cluster credentials
+      - name: Get cluster credentials
         run: |-
           gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --region "$GKE_LOCATION"
 
