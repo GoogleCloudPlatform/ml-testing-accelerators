@@ -1,6 +1,7 @@
 local base = import 'templates/base.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 local utils = import "templates/utils.libsonnet";
+local volumes = import "templates/volumes.libsonnet";
 
 local tputests = base.BaseTest {
   frameworkPrefix: 'ci-pt',
@@ -15,8 +16,33 @@ local tputests = base.BaseTest {
 
   tpuSettings+: {
     softwareVersion: 'pytorch-nightly',
+    requireTpuAvailableLabel: true,
   },
   accelerator: tpus.v3_8,
+
+  volumeMap+: {
+    dshm: volumes.MemoryVolumeSpec {
+      name: "dshm",
+      mountPath: "/dev/shm",
+    },
+  },
+
+  jobSpec+:: {
+    template+: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            resources+: {
+              requests: {
+                cpu: "4.5",
+                memory: "8Gi",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 
   command: utils.scriptCommand(
     |||
