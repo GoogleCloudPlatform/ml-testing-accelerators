@@ -45,9 +45,9 @@ RUN pip uninstall -y torch && \
 
 ENV LD_LIBRARY_PATH=root/miniconda3/envs/container/lib
 
-RUN git clone https://github.com/pytorch/xla.git
+RUN git clone https://github.com/pytorch/xla.git && pip install six
 
-# Clone your repo. Optionally checkout 
+# Clone your repo. Optionally checkout pending code.
 RUN git clone https://github.com/GoogleCloudPlatform/ml-testing-accelerators.git && \
     cd ml-testing-accelerators && \
     git fetch origin $GITHUB_REF:CI && \
