@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Pytorch TPU CI
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -9,6 +9,13 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+
+env:
+  GKE_LOCATIONE: us-central1
+  IMAGE: gcr.io/${{ secrets.GKE_PROJECT }}/pytorch-xla
+  IMAGE_TAG: "nightly"  # If building images, use $GITHUB_RUN_ID.
+  MAX_CHECKS: 120
+  CHECK_SPEED: 15
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -64,4 +71,16 @@ jobs:
       - name: Install jsonnet
         run: |-
           go get github.com/google/go-jsonnet/cmd/jsonnet
+        shell: bash
+
+      # Get the GKE credentials so we can deploy to the cluster
+      # Use either zone or region depending on cluster setup.
+      - namr: Get cluster credentials
+        run: |-
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER }} --region "$GKE_LOCATION"
+
+      - name: Deploy the job on the kubernetes cluster
+        run: |-
+          job_name=$(jsonnet -J ml-testing-accelerators/ dockers/tpu-tests/tpu_test_cases.jsonnet --ext-str image=$IMAGE --ext-str image-tag=$IMAGE_TAG) && \
+          echo $job_name
         shell: bash
