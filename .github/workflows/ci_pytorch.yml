@@ -81,6 +81,7 @@ jobs:
 
       - name: Deploy the job on the kubernetes cluster
         run: |-
+          ls && \
           job_name=$(jsonnet -J ml-testing-accelerators/ ci_pytorch/tpu_test.jsonnet --ext-str image=$IMAGE --ext-str image-tag=$IMAGE_TAG) && \
           echo $job_name
         shell: bash
