@@ -19,8 +19,15 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      # Grab latest code from master or pending PR.
+      # NOTE: This affects only the code that runs here on the Github Action
+      # machine. It will not affect the code that runs on the Docker image in
+      # GKE. To do that, modify the Dockerfile tot checkout the desired code/branch.
+      - name: Code checkout
+        uses: actions/checkout@v2
+        with:
+          repository: GoogleCloudPlatform/ml-testing-accelerators
+          ref: ${{ github.event.pull_request.head.sha }}
 
       # Runs a single command using the runners shell
       - name: Run a one-line script
