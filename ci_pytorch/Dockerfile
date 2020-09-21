@@ -2,7 +2,6 @@ FROM google/cloud-sdk:slim
 
 # Build args.
 ARG GITHUB_REF=refs/heads/master
-ARG TEST_IMAGE=0
 
 # This Dockerfile installs pytorch/xla 3.7 wheels. There are also 3.6
 # wheels available; see below.

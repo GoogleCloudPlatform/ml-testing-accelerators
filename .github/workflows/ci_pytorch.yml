@@ -29,12 +29,40 @@ jobs:
           repository: GoogleCloudPlatform/ml-testing-accelerators
           ref: ${{ github.event.pull_request.head.sha }}
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.14.x
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Setup gcloud CLI
+        if: false
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '290.0.1'
+          service_account_key: ${{ secrets.GKE_SA_KEY_BASE64 }}
+          project_id: ${{ secrets.GKE_PROJECT }}
+          export_default_credentials: true
+
+      #########################################################################
+      # Example of building and pushing a Docker image to use in GKE.
+      # For our repo, this is not necessary since we build daily images using
+      # Google Cloud Build and push them to gcr.
+      # Configure Docker to use the gcloud command-line tool as a credential helper for authentication.
+      - name: Configure Docker
+        if: false  # SKIP THIS STEP.
+        run: |-
+          gcloud --quiet auth configure-docker
+        shell: bash
+      - name: Build and Push Docker Image
+        if: false  # SKIP THIS STEP.
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          cd ci_pytorch
+          docker build --tag "$IMAGE:$GITHUB_RUN_ID" -f Dockerfile --build-arg "GITHUB_REF=$GITHUB_REF"  .
+          docker push "$IMAGE:$GITHUB_RUN_ID"
+        shell: bash
+      #########################################################################
+
+      - name: Install jsonnet
+        run: |-
+          go get github.com/google/go-jsonnet/cmd/jsonnet
+        shell: bash
