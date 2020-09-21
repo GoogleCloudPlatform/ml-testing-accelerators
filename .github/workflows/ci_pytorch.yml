@@ -11,7 +11,7 @@ on:
     branches: [ master ]
 
 env:
-  GKE_LOCATIONE: us-central1
+  GKE_LOCATION: us-central1
   IMAGE: gcr.io/${{ secrets.GKE_PROJECT }}/pytorch-xla
   IMAGE_TAG: "nightly"  # If building images, use $GITHUB_RUN_ID.
   MAX_CHECKS: 120
