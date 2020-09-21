@@ -48,7 +48,7 @@ local tputests = base.BaseTest {
     |||
       echo "before testings"
       echo $XRT_TPU_CONFIG
-      python3 pytorch/xla/test/test_train_mp_mnist.py
+      python3 xla/test/test_train_mp_mnist.py
     |||
   ),
 };
