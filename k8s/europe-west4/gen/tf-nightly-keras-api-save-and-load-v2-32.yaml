@@ -53,7 +53,7 @@
               gcloud source repos clone tf2-api-tests --project=xl-ml-test
               cd tf2-api-tests
               pip3 install behave
-              behave -e ipynb_checkpoints --tags=-fails -i save_and_load
+              behave -e ipynb_checkpoints --tags=-fails -i --tags=-failspod save_and_load
               
             "env":
             - "name": "POD_NAME"
