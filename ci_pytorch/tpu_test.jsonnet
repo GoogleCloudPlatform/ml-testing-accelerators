@@ -46,9 +46,9 @@ local tputests = base.BaseTest {
 
   command: utils.scriptCommand(
     |||
-      echo "before testings"
+      echo "Running commands on GKE machine..."
       echo $XRT_TPU_CONFIG
-      python xla/test/test_train_mp_mnist.py
+      python pytorch/xla/test/test_train_mp_mnist.py
     |||
   ),
 };

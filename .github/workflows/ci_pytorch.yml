@@ -55,12 +55,12 @@ jobs:
       # Google Cloud Build and push them to gcr.
       # Configure Docker to use the gcloud command-line tool as a credential helper for authentication.
       - name: Configure Docker
-        #if: false  # SKIP THIS STEP.
+        if: false  # SKIP THIS STEP.
         run: |-
           gcloud --quiet auth configure-docker
         shell: bash
       - name: Build and Push Docker Image
-        #if: false  # SKIP THIS STEP.
+        if: false  # SKIP THIS STEP.
         run: |
           cd ci_pytorch
           docker build --tag "$IMAGE:$GITHUB_RUN_ID" -f Dockerfile --build-arg "GITHUB_REF=$GITHUB_REF" .
@@ -81,8 +81,7 @@ jobs:
 
       - name: Deploy the job on the kubernetes cluster
         run: |-
-          job_name=$(jsonnet -J . ci_pytorch/tpu_test.jsonnet --ext-str image=$IMAGE --ext-str image-tag=$GITHUB_RUN_ID | kubectl create -f -) && \
-          #job_name=$(jsonnet -J . ci_pytorch/tpu_test.jsonnet --ext-str image=$IMAGE --ext-str image-tag=$IMAGE_TAG | kubectl create -f -) && \
+          job_name=$(jsonnet -J . ci_pytorch/tpu_test.jsonnet --ext-str image=$IMAGE --ext-str image-tag=$IMAGE_TAG | kubectl create -f -) && \
           job_name=${job_name#job.batch/} && \
           job_name=${job_name% created} && \
           echo "Waiting on kubernetes job: $job_name" && \
@@ -98,7 +97,7 @@ jobs:
           echo "GKE pod name: $pod_name" && \
           kubectl logs -f $pod_name --container=train && \
           echo "Done with log retrieval attempt." && \
-          # If building a single-use Docker image for this test, maybe delete.
-          gcloud container images delete "$IMAGE:$GITHUB_RUN_ID" --force-delete-tags && \
+          # Uncomment if building a single-use Docker image for this test.
+          # gcloud container images delete "$IMAGE:$GITHUB_RUN_ID" --force-delete-tags && \
           exit $status_code
         shell: bash
