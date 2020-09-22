@@ -29,8 +29,8 @@ local utils = import "templates/utils.libsonnet";
         gcloud source repos clone tf2-api-tests --project=xl-ml-test
         cd tf2-api-tests
         pip3 install behave
-        behave -e ipynb_checkpoints --tags=-fails -i %s%s
-      ||| % [if self.isTPUPod then "--tags=-failspod " else "", self.testFeature]
+        behave -e ipynb_checkpoints --tags=-fails %s -i %s
+      ||| % [if self.isTPUPod then "--tags=-failspod" else "", self.testFeature]
     ),
     regressionTestConfig: {
       alert_for_failed_jobs: true,
