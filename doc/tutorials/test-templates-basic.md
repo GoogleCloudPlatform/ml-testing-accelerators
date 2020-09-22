@@ -6,7 +6,7 @@
 1. A clone of this repository.
 1. Build dependencies from [developing.md](/doc/developing.md).
 1. A GKE cluster with GPUs and (optionally) Cloud TPUs. Accelerator availability depends on GCE zone. All of the accelerators used in this tutorial are available in `us-central1-b`.
-  - Example command:
+  - Example commands:
     ```
       gcloud beta container clusters create tutorial-cluster \
         --zone us-central1-b \
@@ -19,6 +19,8 @@
         --enable-autoupgrade \
         --enable-tpu \
         --project=$PROJECT_ID
+    ```
+    ```
       kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded.yaml
     ```
 1. A GCS bucket.
@@ -269,9 +271,9 @@ local tpus = import 'templates/tpus.libsonnet';
 
 local mnist = base.BaseTest {
   [...]
-  tpuSettings: {
+  tpuSettings+: {
     softwareVersion: '2.2',
-  }
+  },
   accelerator: tpus.v2_8,
 
   command: [
@@ -283,6 +285,7 @@ local mnist = base.BaseTest {
     '--model_dir=$(MODEL_DIR)',
   ],
   [...]
+}
 ```
 
 We added `tpu_version: '2.2'` and `accelerator: tpus.v2_8` to the test config and updated the model `command`, removing `--num_gpu` and adding `--distribution_strategy=tpu`. Build the Kubernetes `Job` with `jsonnet`: 
