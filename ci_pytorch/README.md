@@ -42,12 +42,12 @@ difference here is that the user has access both to CI machines using your quota
 1. Go to the "Actions" page in your Github repo and create a new sample workflow. Submit the auto-generated PR.
 2. Set up a GKE cluster following instructions in the [deployments dir](../deployments).
 3. Collect a service account key for Github Actions to use.
-    a. https://console.cloud.google.com/iam-admin/serviceaccounts?project=MY-PROJECT
-    b. Click “Create Service Account” at the top of page.
-    c. Add 3 roles to the account: "Kubernetes Engine Developer", "Logs Viewer", "Storage Admin".
-    d. Once the account is created, click the “...” button on the Service Accounts page for the new account and click “Create Key” (use the JSON option).
+    1. https://console.cloud.google.com/iam-admin/serviceaccounts?project=MY-PROJECT
+    2. Click “Create Service Account” at the top of page.
+    3. Add 3 roles to the account: "Kubernetes Engine Developer", "Logs Viewer", "Storage Admin".
+    4. Once the account is created, click the “...” button on the Service Accounts page for the new account and click “Create Key” (use the JSON option).
 4. Navigate to Github -> Settings -> Secrets and set some Key:Value pairs:
-    a. `GKE_PROJECT`: my-project
-    b. `GKE_CLUSTER`: my-cluster-name
-    c. `GKE_SA_KEY_BASE64`: `cat ~/Downloads/my-project-3aaad123f0a.json | base64` (use the service account key you downloaded in step 3. Make sure there are no newlines in the base-64 encoded string you paste into the Secret).
+    1. `GKE_PROJECT`: my-project
+    2. `GKE_CLUSTER`: my-cluster-name
+    3. `GKE_SA_KEY_BASE64`: `cat ~/Downloads/my-project-3aaad123f0a.json | base64` (use the service account key you downloaded in step 3. Make sure there are no newlines in the base-64 encoded string you paste into the Secret).
 5. Begin work on a new PR where you modify the files in this directory as needed and replace the contents of your auto-generated workflow with the contents of [this example workflow](../.github/workflows/ci_pytorch.yml) (modified as needed). Recommended to uncomment "pull_request" in the workflow so that it runs for every commit rather than only when you submit the PR.
