@@ -22,14 +22,15 @@ local utils = import "templates/utils.libsonnet";
   local keras_test = common.ModelGardenTest {
     testFeature:: error "Must override `testFeature`",
     modelName: "keras-api",
+    isTPUPod:: error "Must set `isTPUPod`",
     command: utils.scriptCommand(
       |||
         export PATH=$PATH:/root/google-cloud-sdk/bin
         gcloud source repos clone tf2-api-tests --project=xl-ml-test
         cd tf2-api-tests
         pip3 install behave
-        behave -e ipynb_checkpoints --tags=-fails -i %s
-      ||| % self.testFeature
+        behave -e ipynb_checkpoints --tags=-fails %s -i %s
+      ||| % [if self.isTPUPod then "--tags=-failspod" else "", self.testFeature]
     ),
     regressionTestConfig: {
       alert_for_failed_jobs: true,
@@ -113,15 +114,19 @@ local utils = import "templates/utils.libsonnet";
 
   local v2_8 = {
     accelerator: tpus.v2_8,
+    isTPUPod: false,
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
+    isTPUPod: false,
   },
   local v2_32 = {
     accelerator: tpus.v2_32,
+    isTPUPod: true,
   },
   local v3_32 = {
     accelerator: tpus.v3_32,
+    isTPUPod: true,
   },
 
   configs: [
