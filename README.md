@@ -7,7 +7,7 @@ This is not an officially supported Google product.
 
 ## Getting Started (full-featured standalone mode)
 
-In this mode, your tests and/or models run on an automated timer in GKE. Results
+In this mode, your tests and/or models run on an automated schedule in GKE. Results
 are collected by the "Metrics Handler" and written to BigQuery.
 
 This route is recommended if you have many tests that run for a long time and
@@ -33,8 +33,7 @@ relatively short-running.
 
 1. Install all of our [development prerequisites](doc/developing.md#Prerequisites).
 1. Follow instructions in the [`deployments`](deployments/README.md) directory to set up a Kubernetes Cluster.
-1. Follow instructions in the [`images`](images/README.md) directory to set up the Docker image that your tests will run.
-1. See the [ ci_pytorch ](ci_pytorch/README.md)  directory for the last few setup steps.
+1. See the [ci_pytorch](ci_pytorch/README.md) directory for the last few setup steps.
 
 
 Are you interested in using ML Testing Accelerators? E-mail [ml-testing-accelerators-users@googlegroups.com](mailto:ml-testing-accelerators-users@googlegroups.com) and tell us about your use-case. We're happy to help you get started.
