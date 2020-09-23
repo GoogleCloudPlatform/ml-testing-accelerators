@@ -15,6 +15,10 @@
     --enable-autoupgrade \
     --project=$PROJECT_ID
     ```
+    ```bash
+    # Connect to your cluster
+    gcloud container clusters get-credentials tutorial-cluster --project $PROJECT_ID --zone us-central1-b
+    ```
 1. Enable the [BiqQuery](console.cloud.google.com/apis/api/bigquery.googleapis.com) and [Stackdriver Error Reporting](console.cloud.google.com/apis/api/clouderrorreporting.googleapis.com) APIs.
 
 ## Automating tests with `CronJobs`
