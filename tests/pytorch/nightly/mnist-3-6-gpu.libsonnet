@@ -49,11 +49,7 @@ local utils = import "templates/utils.libsonnet";
   local v100 = {
     accelerator: gpus.teslaV100,
   },
-  local k80 = {
-    accelerator: gpus.teslaK80,
-  },
   configs: [
     mnist + v100 + convergence + timeouts.Hours(1),
-    mnist + k80 + convergence + timeouts.Hours(1),
   ],
 }
