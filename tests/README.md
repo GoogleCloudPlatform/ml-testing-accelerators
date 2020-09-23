@@ -15,7 +15,7 @@ jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$TEST_NAME | kubectl create
 To build all of the templates and output Kubernetes resources, run the following:
 
 ```bash
-jsonnet tests/multifile.jsonnet -J . -S -m k8s/
+scripts/gen-tests.sh
 ```
 
 This command will output Kubernetes `CronJob` resources into [`k8s/`](../k8s) directory.
