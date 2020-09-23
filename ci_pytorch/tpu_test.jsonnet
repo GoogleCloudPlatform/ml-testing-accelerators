@@ -27,22 +27,8 @@ local tputests = base.BaseTest {
     },
   },
 
-  jobSpec+:: {
-    template+: {
-      spec+: {
-        containerMap+: {
-          train+: {
-            resources+: {
-              requests: {
-                cpu: "4.5",
-                memory: "8Gi",
-              },
-            },
-          },
-        },
-      },
-    },
-  },
+  cpu: "4.5",
+  memory: "8Gi",
 
   command: utils.scriptCommand(
     |||
