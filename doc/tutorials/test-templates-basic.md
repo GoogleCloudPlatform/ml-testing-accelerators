@@ -20,7 +20,11 @@
       --enable-tpu \
       --project=$PROJECT_ID
     ```
+    ```bash
+    # Connect to your cluster
+    gcloud container clusters get-credentials tutorial-cluster --project $PROJECT_ID --zone us-central1-b
     ```
+    ```bash
     # Install GPU drivers
     kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded.yaml
     ```
@@ -32,12 +36,6 @@ Before you begin, set the following environment variables:
 ```bash
 export PROJECT_ID=...
 export GCS_BUCKET=gs://... 
-```
-
-Finally, get the credentials for your test cluster with `gcloud`. For example:
-
-```bash
-gcloud container clusters get-credentials tutorial-cluster --project $PROJECT_ID --zone us-central1-b
 ```
 
 ## Creating a simple test without accelerators
