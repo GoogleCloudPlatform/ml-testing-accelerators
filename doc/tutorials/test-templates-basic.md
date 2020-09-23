@@ -7,21 +7,26 @@
 1. Build dependencies from [developing.md](/doc/developing.md).
 1. A GKE cluster with GPUs and (optionally) Cloud TPUs. Accelerator availability depends on GCE zone. All of the accelerators used in this tutorial are available in `us-central1-b`.
   - Example commands:
+    ```bash
+    gcloud beta container clusters create tutorial-cluster \
+      --zone us-central1-b \
+      --release-channel regular \
+      --machine-type n1-standard-4 \
+      --accelerator "type=nvidia-tesla-v100,count=1" \
+      --scopes "https://www.googleapis.com/auth/cloud-platform" \
+      --num-nodes 1 \
+      --enable-ip-alias \
+      --enable-autoupgrade \
+      --enable-tpu \
+      --project=$PROJECT_ID
     ```
-      gcloud beta container clusters create tutorial-cluster \
-        --zone us-central1-b \
-        --release-channel regular \
-        --machine-type n1-standard-4 \
-        --accelerator "type=nvidia-tesla-v100,count=1" \
-        --scopes "https://www.googleapis.com/auth/cloud-platform" \
-        --num-nodes 1 \
-        --enable-ip-alias \
-        --enable-autoupgrade \
-        --enable-tpu \
-        --project=$PROJECT_ID
+    ```bash
+    # Connect to your cluster
+    gcloud container clusters get-credentials tutorial-cluster --project $PROJECT_ID --zone us-central1-b
     ```
-    ```
-      kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded.yaml
+    ```bash
+    # Install GPU drivers
+    kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded.yaml
     ```
 1. A GCS bucket.
   - To create a new GCS bucket, run `gsutil mb -c standard -l us-central1 gs://your-bucket-name`
