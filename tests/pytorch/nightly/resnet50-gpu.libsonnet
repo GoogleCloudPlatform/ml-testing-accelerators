@@ -19,64 +19,41 @@ local timeouts = import "templates/timeouts.libsonnet";
 local utils = import "templates/utils.libsonnet";
 
 {
-  local command_common = |||
+  local gpu_command_base = |||
     unset XRT_TPU_CONFIG
-    export GPU_NUM_DEVICES=4
+    export GPU_NUM_DEVICES=%(num_gpus)s
     python3 pytorch/xla/test/test_train_mp_imagenet.py \
     --logdir=$(MODEL_DIR) \
     --model=resnet50 \
     --batch_size=128 \
     --log_steps=200 \
+    --num_workers=4 \
+    --num_epochs=2 \
+    --datadir=/datasets/imagenet-mini \
   |||,
-  local resnet50_MP = common.PyTorchTest {
+  local resnet50_gpu = common.PyTorchTest {
     imageTag: "nightly_3.6_cuda",
     modelName: "resnet50-mp",
     volumeMap+: {
       datasets: common.datasetsVolume
     },
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          containerMap+: {
-            train+: {
-              resources+: {
-                requests: {
-                  cpu: "13.0",
-                  memory: "40Gi",
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-  local functional = common.Functional {
-    command: utils.scriptCommand(
-      |||
-        %(command_common)s  --num_workers=4 \
-          --num_epochs=2 \
-          --datadir=/datasets/imagenet-mini \
-      ||| % command_common
-    ),
-    #command: utils.scriptCommand(
-    #  |||
-    #    %(command_common)s  --no-save \
-    #      --max-epoch=1 \
-    #      --log_steps=10 \
-    #      --train-subset=valid \
-    #      --valid-subset=test \
-    #      --input_shapes=128x64
-    #  ||| % command_common
-    #),
+    cpu: "13.0",
+    memory: "40Gi",
   },
   local v100 = {
     accelerator: gpus.teslaV100,
+    command: utils.scriptCommand(
+      gpu_command_base % 1
+    ),
   },
   local v100x4 = v100 {
     accelerator: gpus.teslaV100 + { count: 4 },
+    command: utils.scriptCommand(
+      gpu_command_base % 4
+    ),
   },
   configs: [
-    resnet50_MP + v100x4 + functional + timeouts.Hours(2),
+    resnet50_gpu + v100 + common.Functional + timeouts.Hours(2),
+    resnet50_gpu + v100x4 + common.Functional + timeouts.Hours(2),
   ],
 }

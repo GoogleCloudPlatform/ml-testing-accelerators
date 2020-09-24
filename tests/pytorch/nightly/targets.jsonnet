@@ -20,7 +20,6 @@ local fairseqRobertaPretrain = import "roberta-pre.libsonnet";
 local fairseqTransformer = import "fs-transformer.libsonnet";
 local mnist = import "mnist.libsonnet";
 local mnist_3_7 = import "mnist-3-7.libsonnet";
-local mnist_3_6_gpu = import "mnist-3-6-gpu.libsonnet";
 local pythonOperations = import "python-ops.libsonnet";
 local resnet50 = import "resnet50.libsonnet";
 local resnet50_gpu = import "resnet50-gpu.libsonnet";
@@ -39,7 +38,6 @@ std.flattenArrays([
   fairseqTransformer.configs,
   mnist.configs,
   mnist_3_7.configs,
-  mnist_3_6_gpu.configs,
   pythonOperations.configs,
   resnet50.configs,
   resnet50_gpu.configs,

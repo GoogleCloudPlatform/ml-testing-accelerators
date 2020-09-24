@@ -13,9 +13,11 @@
 # limitations under the License.
 
 local common = import "common.libsonnet";
+local gpus = import "templates/gpus.libsonnet";
 local mixins = import "templates/mixins.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
+local utils = import "templates/utils.libsonnet";
 
 {
   local mnist = common.PyTorchTest {
@@ -26,6 +28,18 @@ local tpus = import "templates/tpus.libsonnet";
       "--logdir=$(MODEL_DIR)",
     ],
   },
+
+  local gpu_command_base = |||
+    unset XRT_TPU_CONFIG
+    export GPU_NUM_DEVICES=%(num_gpus)s
+    python3 pytorch/xla/test/test_train_mp_mnist.py --logdir=$(MODEL_DIR)
+  |||,
+
+  local mnist_gpu = common.PyTorchTest {
+    imageTag: "nightly_3.6_cuda",
+    modelName: "mnist",
+  },
+
   local mnist_pod = common.PyTorchXlaDistPodTest {
     modelName: "mnist",
     command: [
@@ -62,11 +76,25 @@ local tpus = import "templates/tpus.libsonnet";
   local v3_32 = {
     accelerator: tpus.v3_32,
   },
+  local v100 = {
+    accelerator: gpus.teslaV100,
+    command: utils.scriptCommand(
+      gpu_command_base % 1
+    ),
+  },
+  local v100x4 = v100 {
+    accelerator: gpus.teslaV100 + { count: 4 },
+    command: utils.scriptCommand(
+      gpu_command_base % 4
+    ),
+  },
 
   configs: [
     mnist + v2_8 + convergence + timeouts.Hours(1),
     mnist + v3_8 + convergence + timeouts.Hours(1),
     mnist_pod + v2_32 + convergence,
     mnist_pod + v3_32 + convergence,
+    mnist_gpu + v100 + convergence + timeouts.Hours(1),
+    mnist_gpu + v100x4 + convergence + timeouts.Hours(1),
   ],
 }
