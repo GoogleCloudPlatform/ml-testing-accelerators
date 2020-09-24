@@ -4,18 +4,21 @@ name: CI
 
 # Controls when the action will run.
 #
+# If `push` is enabled, the workflow will run for every PR that is merged into
+# the `master` branch.
+#
 # If `pull_requests` is enabled, the workflow will run for every commit
-# pushed to a pending PR.
+# pushed to a pending PR on the `master` branch.
 #
 # If `schedule` is enabled, the workflow will run at the specified times.
 on:
-  push:
-    branches: [ master ]
+  # push:
+  #  branches: [ master ]
   # pull_request:
   #  branches: [ master ]
-  # schedule:
-  #  # * is a special character in YAML so you have to quote this string
-  #  - cron:  '*/15 * * * *'
+  schedule:
+    # Run every day at 5:00 UTC.
+    - cron:  '0 5 * * *'
 
 env:
   GKE_LOCATION: us-central1
