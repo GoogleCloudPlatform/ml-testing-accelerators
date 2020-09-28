@@ -45,4 +45,11 @@ local timeouts = import "timeouts.libsonnet";
       },
     },
   },
+  Unsuspended:: {
+    cronJob+:: {
+      spec+: {
+        suspend: false,
+      },
+    },
+  },
 }
