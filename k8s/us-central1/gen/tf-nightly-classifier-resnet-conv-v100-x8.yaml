@@ -134,7 +134,7 @@
                    "validation/epoch_accuracy_final": {
                     "comparison": "greater",
                     "success_threshold": {
-                     "fixed_value": 0.76
+                     "fixed_value": 0.76000000000000001
                     }
                    }
                   }
