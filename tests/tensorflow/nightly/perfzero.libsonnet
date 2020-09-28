@@ -70,7 +70,7 @@ local utils = import "templates/utils.libsonnet";
           success_threshold: {
             stddevs_from_mean: 3.0,
           },
-          comparison: 'less',
+          comparison: 'greater_or_equal',
           wait_for_n_points_of_history: 10,
         },
         startup_time: {

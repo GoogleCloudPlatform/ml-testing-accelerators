@@ -122,7 +122,7 @@
                  "regression_test_config": {
                   "metric_success_conditions": {
                    "exp_per_second": {
-                    "comparison": "less",
+                    "comparison": "greater_or_equal",
                     "success_threshold": {
                      "stddevs_from_mean": 3
                     },
