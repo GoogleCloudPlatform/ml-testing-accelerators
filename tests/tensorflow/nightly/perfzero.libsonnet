@@ -63,6 +63,25 @@ local utils = import "templates/utils.libsonnet";
         },
       },
     },
+
+    regressionTestConfig+: {
+      metric_success_conditions: {
+        exp_per_second: {
+          success_threshold: {
+            stddevs_from_mean: 3.0,
+          },
+          comparison: 'less',
+          wait_for_n_points_of_history: 10,
+        },
+        startup_time: {
+          success_threshold: {
+            stddevs_from_mean: 4.0,
+          },
+          comparison: 'less',
+          wait_for_n_points_of_history: 10,
+        },
+      },
+    },
   },
 
   # Common benchmark methods.

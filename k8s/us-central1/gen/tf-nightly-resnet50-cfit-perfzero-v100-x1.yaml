@@ -121,16 +121,17 @@
                  },
                  "regression_test_config": {
                   "metric_success_conditions": {
-                   "examples_per_second_average": {
-                    "comparison": "greater_or_equal",
-                    "success_threshold": {
-                     "stddevs_from_mean": 2
-                    }
-                   },
-                   "total_wall_time": {
+                   "exp_per_second": {
                     "comparison": "less",
                     "success_threshold": {
-                     "stddevs_from_mean": 5
+                     "stddevs_from_mean": 3
+                    },
+                    "wait_for_n_points_of_history": 10
+                   },
+                   "startup_time": {
+                    "comparison": "less",
+                    "success_threshold": {
+                     "stddevs_from_mean": 4
                     },
                     "wait_for_n_points_of_history": 10
                    }
