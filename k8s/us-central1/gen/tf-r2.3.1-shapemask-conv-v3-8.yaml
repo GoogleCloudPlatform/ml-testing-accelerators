@@ -15,18 +15,18 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-r2.3-keras-api-transfer-learning-v2-8"
+  "name": "tf-r2.3.1-shapemask-conv-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 3600
+      "activeDeadlineSeconds": 36000
       "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
-            "tf-version.cloud-tpus.google.com": "2.3"
+            "tf-version.cloud-tpus.google.com": "2.3.1"
         "spec":
           "containers":
           - "env":
@@ -49,11 +49,70 @@
               set -e
               set -x
               
-              export PATH=$PATH:/root/google-cloud-sdk/bin
-              gcloud source repos clone tf2-api-tests --project=xl-ml-test
-              cd tf2-api-tests
-              pip3 install behave
-              behave -e ipynb_checkpoints --tags=-fails -i transfer_learning
+              python3 official/vision/detection/main.py \
+                --tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS) \
+                --strategy_type=tpu \
+                --model=shapemask \
+                --model_dir=$(MODEL_DIR) \
+               --mode=train \
+              --params_override=""eval":
+                "batch_size": 40
+                "eval_file_pattern": "$(COCO_DIR)/val*"
+                "val_json_file": "$(COCO_DIR)/instances_val2017.json"
+              "shapemask_head":
+                "shape_prior_path": "gs://cloud-tpu-checkpoints/shapemask/kmeans_class_priors_91x20x32x32.npy"
+                "use_category_for_mask": true
+              "shapemask_parser":
+                "output_size":
+                - 1024
+                - 1024
+              "train":
+                "batch_size": 64
+                "checkpoint":
+                  "path": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
+                  "prefix": "resnet50/"
+                "iterations_per_loop": 5000
+                "learning_rate":
+                  "learning_rate_levels":
+                  - 0.0080000000000000002
+                  - 0.00080000000000000004
+                  "learning_rate_steps":
+                  - 15000
+                  - 20000
+                "total_steps": 22500
+                "train_file_pattern": "$(COCO_DIR)/train*""
+              python3 official/vision/detection/main.py \
+                --tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS) \
+                --strategy_type=tpu \
+                --model=shapemask \
+                --model_dir=$(MODEL_DIR) \
+               --mode=eval \
+              --params_override=""eval":
+                "batch_size": 40
+                "eval_file_pattern": "$(COCO_DIR)/val*"
+                "val_json_file": "$(COCO_DIR)/instances_val2017.json"
+              "shapemask_head":
+                "shape_prior_path": "gs://cloud-tpu-checkpoints/shapemask/kmeans_class_priors_91x20x32x32.npy"
+                "use_category_for_mask": true
+              "shapemask_parser":
+                "output_size":
+                - 1024
+                - 1024
+              "train":
+                "batch_size": 64
+                "checkpoint":
+                  "path": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
+                  "prefix": "resnet50/"
+                "iterations_per_loop": 5000
+                "learning_rate":
+                  "learning_rate_levels":
+                  - 0.0080000000000000002
+                  - 0.00080000000000000004
+                  "learning_rate_steps":
+                  - 15000
+                  - 20000
+                "total_steps": 22500
+                "train_file_pattern": "$(COCO_DIR)/train*""
               
             "env":
             - "name": "POD_NAME"
@@ -73,16 +132,16 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r2.3/keras-api/transfer-learning/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.1/shapemask/conv/v3-8/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/tensorflow:r2.3"
+            "image": "gcr.io/xl-ml-test/tensorflow:r2.3.1"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v2": 8
+                "cloud-tpus.google.com/v3": 8
               "requests":
                 "cpu": 2
                 "memory": "20G"
@@ -109,7 +168,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r2.3/keras-api/transfer-learning/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.1/shapemask/conv/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -126,9 +185,23 @@
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
-                  "alert_for_failed_jobs": true
+                  "metric_success_conditions": {
+                   "examples_per_second_average": {
+                    "comparison": "greater_or_equal",
+                    "success_threshold": {
+                     "stddevs_from_mean": 2
+                    }
+                   },
+                   "total_wall_time": {
+                    "comparison": "less",
+                    "success_threshold": {
+                     "stddevs_from_mean": 5
+                    },
+                    "wait_for_n_points_of_history": 10
+                   }
+                  }
                  },
-                 "test_name": "tf-r2.3-keras-api-transfer-learning-v2-8"
+                 "test_name": "tf-r2.3.1-shapemask-conv-v3-8"
                 }
             "envFrom":
             - "configMapRef":
@@ -143,5 +216,5 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-  "schedule": "0 10 30 * *"
+  "schedule": "0 6 * * 0,5"
   "successfulJobsHistoryLimit": 1
