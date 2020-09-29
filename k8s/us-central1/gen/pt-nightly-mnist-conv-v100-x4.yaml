@@ -15,36 +15,29 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-mnist-conv-v2-32"
+  "name": "pt-nightly-mnist-conv-v100-x4"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 36000
-      "backoffLimit": 0
+      "activeDeadlineSeconds": 3600
+      "backoffLimit": 1
       "template":
-        "metadata":
-          "annotations":
-            "tf-version.cloud-tpus.google.com": "pytorch-nightly"
         "spec":
           "containers":
-          - "env":
-            - "name": "POD_NAME"
-              "valueFrom":
-                "fieldRef":
-                  "fieldPath": "metadata.name"
-            - "name": "POD_NAMESPACE"
-              "valueFrom":
-                "fieldRef":
-                  "fieldPath": "metadata.namespace"
-            "image": "gcr.io/xl-ml-test/health-monitor:stable"
-            "imagePullPolicy": "Always"
-            "name": "monitor"
           - "args":
-            - "python3"
-            - "/usr/share/torch-xla-nightly/pytorch/xla/test/test_train_mp_mnist.py"
-            - "--logdir=$(MODEL_DIR)"
+            - "/bin/bash"
+            - "-c"
+            - |
+              set -u
+              set -e
+              set -x
+              
+              unset XRT_TPU_CONFIG
+              export GPU_NUM_DEVICES=4
+              python3 pytorch/xla/test/test_train_mp_mnist.py
+              
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -63,24 +56,25 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/mnist/conv/v2-32/$(JOB_NAME)"
-            - "name": "ACCELERATOR_TYPE"
-              "value": "v2-32"
-            - "name": "CONDA_ENV"
-              "value": "torch-xla-nightly"
-            - "name": "MACHINE_TYPE"
-              "value": "n1-standard-8"
-            - "name": "XLA_DIST_FLAGS"
-              "value": ""
+              "value": "$(OUTPUT_BUCKET)/pt-nightly/mnist/conv/v100-x4/$(JOB_NAME)"
+            - "name": "XLA_USE_BF16"
+              "value": "0"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/pytorch-pods:nightly"
+            "image": "gcr.io/xl-ml-test/pytorch-xla:nightly_3.6_cuda"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v2": 32
+                "nvidia.com/gpu": 4
+              "requests":
+                "cpu": "4.5"
+                "memory": "8Gi"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -100,7 +94,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/mnist/conv/v2-32/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-nightly/mnist/conv/v100-x4/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -157,7 +151,7 @@
                    }
                   }
                  },
-                 "test_name": "pt-nightly-mnist-conv-v2-32"
+                 "test_name": "pt-nightly-mnist-conv-v100-x4"
                 }
             "envFrom":
             - "configMapRef":
@@ -166,7 +160,11 @@
             "imagePullPolicy": "Always"
             "name": "publisher"
           "nodeSelector":
-            "tpu-available": "true"
+            "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
           "restartPolicy": "Never"
-  "schedule": "6 17 * * *"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+  "schedule": "2 19 * * *"
   "successfulJobsHistoryLimit": 1
