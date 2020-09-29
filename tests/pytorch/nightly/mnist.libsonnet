@@ -32,12 +32,13 @@ local utils = import "templates/utils.libsonnet";
   local gpu_command_base = |||
     unset XRT_TPU_CONFIG
     export GPU_NUM_DEVICES=%(num_gpus)s
-    python3 pytorch/xla/test/test_train_mp_mnist.py --logdir=$(MODEL_DIR)
+    python3 pytorch/xla/test/test_train_mp_mnist.py
   |||,
 
   local mnist_gpu = common.PyTorchTest {
     imageTag: "nightly_3.6_cuda",
     modelName: "mnist",
+    schedule: "0 19 * * *",
   },
 
   local mnist_pod = common.PyTorchXlaDistPodTest {
