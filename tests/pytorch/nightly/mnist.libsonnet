@@ -38,7 +38,6 @@ local utils = import "templates/utils.libsonnet";
   local mnist_gpu = common.PyTorchTest {
     imageTag: "nightly_3.6_cuda",
     modelName: "mnist",
-    schedule: "0 19 * * *",
   },
 
   local mnist_pod = common.PyTorchXlaDistPodTest {
@@ -51,8 +50,6 @@ local utils = import "templates/utils.libsonnet";
   },
 
   local convergence = common.Convergence {
-    # Run daily instead of 2x per week since convergence is fast.
-    schedule: "0 17 * * *",
     regressionTestConfig+: {
       metric_success_conditions+: {
         "Accuracy/test_final": {
@@ -67,35 +64,41 @@ local utils = import "templates/utils.libsonnet";
 
   local v2_8 = {
     accelerator: tpus.v2_8,
+    schedule: "10 17 * * *",
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
+    schedule: "4 17 * * *",
   },
   local v2_32 = {
     accelerator: tpus.v2_32,
+    schedule: "6 17 * * *",
   },
   local v3_32 = {
     accelerator: tpus.v3_32,
+    schedule: "8 17 * * *",
   },
   local v100 = {
     accelerator: gpus.teslaV100,
     command: utils.scriptCommand(
       gpu_command_base % 1
     ),
+    schedule: "0 19 * * *",
   },
   local v100x4 = v100 {
     accelerator: gpus.teslaV100 + { count: 4 },
     command: utils.scriptCommand(
       gpu_command_base % 4
     ),
+    schedule: "2 19 * * *",
   },
 
   configs: [
-    mnist + v2_8 + convergence + timeouts.Hours(1),
-    mnist + v3_8 + convergence + timeouts.Hours(1),
-    mnist_pod + v2_32 + convergence,
-    mnist_pod + v3_32 + convergence,
-    mnist_gpu + v100 + convergence + timeouts.Hours(1),
-    mnist_gpu + v100x4 + convergence + timeouts.Hours(1),
+    mnist + convergence + v2_8 + timeouts.Hours(1),
+    mnist + convergence + v3_8 + timeouts.Hours(1),
+    mnist_pod + convergence + v2_32,
+    mnist_pod + convergence + v3_32 ,
+    mnist_gpu + convergence + v100 + timeouts.Hours(1),
+    mnist_gpu + convergence + v100x4 + timeouts.Hours(1),
   ],
 }
