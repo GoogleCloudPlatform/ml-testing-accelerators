@@ -146,7 +146,7 @@ local gpus = import "templates/gpus.libsonnet";
     resnet + v100 + functional + timeouts.Hours(3) + mixins.Suspended,
     resnet + v100x4 + functional + mixins.Experimental,
     resnet + v100x4 + convergence + mixins.Experimental,
-    resnet + v100x8 + functional,
+    resnet + v100x8 + functional + mixins.Unsuspended,
     resnet + v100x8 + convergence,
     resnet + v2_8 + functional,
     resnet + v3_8 + functional,
