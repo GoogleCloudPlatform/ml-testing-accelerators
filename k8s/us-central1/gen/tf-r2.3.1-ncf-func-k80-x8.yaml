@@ -15,37 +15,40 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-r2.3-classifier-resnet-conv-v100-x4"
+  "name": "tf-r2.3.1-ncf-func-k80-x8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 36000
+      "activeDeadlineSeconds": 3600
       "backoffLimit": 1
       "template":
         "spec":
           "containers":
           - "args":
             - "python3"
-            - "official/vision/image_classification/classifier_trainer.py"
-            - "--data_dir=$(IMAGENET_DIR)"
-            - "--model_type=resnet"
-            - "--dataset=imagenet"
-            - "--mode=train_and_eval"
+            - "official/recommendation/ncf_keras_main.py"
+            - "--train_dataset_path=$(NCF_DIR)/tpu_data_dir/training_cycle_*/*"
+            - "--eval_dataset_path=$(NCF_DIR)/tpu_data_dir/eval_data/*"
+            - "--input_meta_data_path=$(NCF_DIR)/tpu_data_dir/metadata"
+            - "--data_dir=$(NCF_DIR)/movielens_data"
+            - "--batch_size=99000"
+            - "--learning_rate=3e-5"
+            - "--dataset=ml-20m"
+            - "--eval_batch_size=160000"
+            - "--learning_rate=0.00382059"
+            - "--beta1=0.783529"
+            - "--beta2=0.909003"
+            - "--epsilon=1.45439e-07"
+            - "--num_factors=64"
+            - "--hr_threshold=0.635"
+            - "--layers=256,256,128,64"
+            - "--use_synthetic_data=false"
             - "--model_dir=$(MODEL_DIR)"
-            - |
-              --params_override="evaluation":
-                "epochs_between_evals": 1
-              "runtime":
-                "num_gpus": 4
-              "train":
-                "epochs": 90
-              "train_dataset":
-                "builder": "records"
-              "validation_dataset":
-                "builder": "records"
-            - "--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/gpu.yaml"
+            - "--train_epochs=1"
+            - "--ml_perf=true"
+            - "--keras_use_ctl=false"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -64,16 +67,16 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r2.3/classifier-resnet/conv/v100-x4/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.1/ncf/func/k80-x8/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/tensorflow:r2.3"
+            "image": "gcr.io/xl-ml-test/tensorflow:r2.3.1"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "nvidia.com/gpu": 4
+                "nvidia.com/gpu": 8
               "requests":
                 "cpu": 2
                 "memory": "20G"
@@ -100,7 +103,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r2.3/classifier-resnet/conv/v100-x4/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.1/ncf/func/k80-x8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -130,16 +133,10 @@
                      "stddevs_from_mean": 5
                     },
                     "wait_for_n_points_of_history": 10
-                   },
-                   "validation/epoch_accuracy_final": {
-                    "comparison": "greater",
-                    "success_threshold": {
-                     "fixed_value": 0.76000000000000001
-                    }
                    }
                   }
                  },
-                 "test_name": "tf-r2.3-classifier-resnet-conv-v100-x4"
+                 "test_name": "tf-r2.3.1-ncf-func-k80-x8"
                 }
             "envFrom":
             - "configMapRef":
@@ -148,11 +145,11 @@
             "imagePullPolicy": "Always"
             "name": "publisher"
           "nodeSelector":
-            "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
+            "cloud.google.com/gke-accelerator": "nvidia-tesla-k80"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-  "schedule": "0 8 * * 0"
+  "schedule": "0 8 * * *"
   "successfulJobsHistoryLimit": 1

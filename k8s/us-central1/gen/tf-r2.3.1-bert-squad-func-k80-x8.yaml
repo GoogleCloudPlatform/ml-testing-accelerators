@@ -15,51 +15,35 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-r2.3-classifier-resnet-conv-v3-32"
+  "name": "tf-r2.3.1-bert-squad-func-k80-x8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 36000
+      "activeDeadlineSeconds": 7200
       "backoffLimit": 1
       "template":
-        "metadata":
-          "annotations":
-            "tf-version.cloud-tpus.google.com": "2.3"
         "spec":
           "containers":
-          - "env":
-            - "name": "POD_NAME"
-              "valueFrom":
-                "fieldRef":
-                  "fieldPath": "metadata.name"
-            - "name": "POD_NAMESPACE"
-              "valueFrom":
-                "fieldRef":
-                  "fieldPath": "metadata.namespace"
-            "image": "gcr.io/xl-ml-test/health-monitor:stable"
-            "imagePullPolicy": "Always"
-            "name": "monitor"
           - "args":
             - "python3"
-            - "official/vision/image_classification/classifier_trainer.py"
-            - "--data_dir=$(IMAGENET_DIR)"
-            - "--model_type=resnet"
-            - "--dataset=imagenet"
-            - "--mode=train_and_eval"
+            - "official/nlp/bert/run_squad.py"
+            - "--input_meta_data_path=gs://xl-ml-test-us-central1/data/squad/squad_v1.1_meta_data.json"
+            - "--train_data_path=gs://xl-ml-test-us-central1/data/squad/squad_v1.1_train.tfrecord"
+            - "--predict_file=gs://xl-ml-test-us-central1/data/squad/dev-v1.1.json"
+            - "--learning_rate=8e-5"
+            - "--do_lower_case=true"
             - "--model_dir=$(MODEL_DIR)"
-            - |
-              --params_override="evaluation":
-                "epochs_between_evals": 1
-              "train":
-                "epochs": 90
-              "train_dataset":
-                "builder": "records"
-              "validation_dataset":
-                "builder": "records"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/tpu.yaml"
+            - "--vocab_file=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/vocab.txt"
+            - "--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/bert_config.json"
+            - "--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/bert_model.ckpt"
+            - "--num_gpus=8"
+            - "--train_batch_size=64"
+            - "--predict_batch_size=64"
+            - "--all_reduce_alg=hierarchical_copy"
+            - "--mode=train"
+            - "--num_train_epochs=1"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -78,16 +62,16 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r2.3/classifier-resnet/conv/v3-32/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.1/bert-squad/func/k80-x8/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/tensorflow:r2.3"
+            "image": "gcr.io/xl-ml-test/tensorflow:r2.3.1"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v3": 32
+                "nvidia.com/gpu": 8
               "requests":
                 "cpu": 2
                 "memory": "20G"
@@ -114,7 +98,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r2.3/classifier-resnet/conv/v3-32/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.1/bert-squad/func/k80-x8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -144,16 +128,10 @@
                      "stddevs_from_mean": 5
                     },
                     "wait_for_n_points_of_history": 10
-                   },
-                   "validation/epoch_accuracy_final": {
-                    "comparison": "greater",
-                    "success_threshold": {
-                     "fixed_value": 0.76000000000000001
-                    }
                    }
                   }
                  },
-                 "test_name": "tf-r2.3-classifier-resnet-conv-v3-32"
+                 "test_name": "tf-r2.3.1-bert-squad-func-k80-x8"
                 }
             "envFrom":
             - "configMapRef":
@@ -162,11 +140,11 @@
             "imagePullPolicy": "Always"
             "name": "publisher"
           "nodeSelector":
-            "tpu-available": "true"
+            "cloud.google.com/gke-accelerator": "nvidia-tesla-k80"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-  "schedule": "0 8 * * 0"
+  "schedule": "0 8 * * *"
   "successfulJobsHistoryLimit": 1

@@ -15,7 +15,7 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-r2.3-classifier-resnet-conv-v2-32"
+  "name": "tf-r2.3.1-retinanet-conv-v100-x4"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
@@ -24,42 +24,28 @@
       "activeDeadlineSeconds": 36000
       "backoffLimit": 1
       "template":
-        "metadata":
-          "annotations":
-            "tf-version.cloud-tpus.google.com": "2.3"
         "spec":
           "containers":
-          - "env":
-            - "name": "POD_NAME"
-              "valueFrom":
-                "fieldRef":
-                  "fieldPath": "metadata.name"
-            - "name": "POD_NAMESPACE"
-              "valueFrom":
-                "fieldRef":
-                  "fieldPath": "metadata.namespace"
-            "image": "gcr.io/xl-ml-test/health-monitor:stable"
-            "imagePullPolicy": "Always"
-            "name": "monitor"
           - "args":
             - "python3"
-            - "official/vision/image_classification/classifier_trainer.py"
-            - "--data_dir=$(IMAGENET_DIR)"
-            - "--model_type=resnet"
-            - "--dataset=imagenet"
-            - "--mode=train_and_eval"
-            - "--model_dir=$(MODEL_DIR)"
+            - "official/vision/detection/main.py"
             - |
-              --params_override="evaluation":
-                "epochs_between_evals": 1
+              --params_override="eval":
+                "batch_size": 16
+                "eval_file_pattern": "$(COCO_DIR)/val*"
+                "val_json_file": "$(COCO_DIR)/instances_val2017.json"
+              "predict":
+                "batch_size": 16
               "train":
-                "epochs": 90
-              "train_dataset":
-                "builder": "records"
-              "validation_dataset":
-                "builder": "records"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/tpu.yaml"
+                "batch_size": 16
+                "checkpoint":
+                  "path": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
+                  "prefix": "resnet50/"
+                "total_steps": 5625
+                "train_file_pattern": "$(COCO_DIR)/train*"
+            - "--model_dir=$(MODEL_DIR)"
+            - "--mode=train"
+            - "--num_gpus=4"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -78,16 +64,16 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r2.3/classifier-resnet/conv/v2-32/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.1/retinanet/conv/v100-x4/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/tensorflow:r2.3"
+            "image": "gcr.io/xl-ml-test/tensorflow:r2.3.1"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v2": 32
+                "nvidia.com/gpu": 4
               "requests":
                 "cpu": 2
                 "memory": "20G"
@@ -114,7 +100,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r2.3/classifier-resnet/conv/v2-32/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.1/retinanet/conv/v100-x4/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -131,29 +117,9 @@
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
-                  "metric_success_conditions": {
-                   "examples_per_second_average": {
-                    "comparison": "greater_or_equal",
-                    "success_threshold": {
-                     "stddevs_from_mean": 2
-                    }
-                   },
-                   "total_wall_time": {
-                    "comparison": "less",
-                    "success_threshold": {
-                     "stddevs_from_mean": 5
-                    },
-                    "wait_for_n_points_of_history": 10
-                   },
-                   "validation/epoch_accuracy_final": {
-                    "comparison": "greater",
-                    "success_threshold": {
-                     "fixed_value": 0.76000000000000001
-                    }
-                   }
-                  }
+                  "alert_for_failed_jobs": false
                  },
-                 "test_name": "tf-r2.3-classifier-resnet-conv-v2-32"
+                 "test_name": "tf-r2.3.1-retinanet-conv-v100-x4"
                 }
             "envFrom":
             - "configMapRef":
@@ -162,11 +128,11 @@
             "imagePullPolicy": "Always"
             "name": "publisher"
           "nodeSelector":
-            "tpu-available": "true"
+            "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-  "schedule": "0 8 * * 0"
+  "schedule": "0 6 * * 0,5"
   "successfulJobsHistoryLimit": 1
