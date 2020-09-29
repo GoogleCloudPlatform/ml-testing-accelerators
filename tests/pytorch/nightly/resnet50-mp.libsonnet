@@ -34,7 +34,6 @@ local utils = import "templates/utils.libsonnet";
   local resnet50_gpu = common.PyTorchTest {
     imageTag: "nightly_3.6_cuda",
     modelName: "resnet50-mp",
-    schedule: "0 20 * * *",
     volumeMap+: {
       datasets: common.datasetsVolume
     },
@@ -121,17 +120,19 @@ local utils = import "templates/utils.libsonnet";
     command: utils.scriptCommand(
       gpu_command_base % 1
     ),
+    schedule: "0 20 * * *",
   },
   local v100x4 = v100 {
     accelerator: gpus.teslaV100 + { count: 4 },
     command: utils.scriptCommand(
       gpu_command_base % 4
     ),
+    schedule: "2 20 * * *",
   },
   configs: [
     resnet50_MP + v3_8 + convergence + timeouts.Hours(26) + mixins.PreemptibleTpu,
     resnet50_MP + v3_8 + functional + timeouts.Hours(2),
-    resnet50_gpu + v100 + common.Functional + timeouts.Hours(2),
-    resnet50_gpu + v100x4 + common.Functional + timeouts.Hours(2),
+    resnet50_gpu + common.Functional + v100 + timeouts.Hours(2),
+    resnet50_gpu + common.Functional + v100x4 + timeouts.Hours(1),
   ],
 }

@@ -21,7 +21,7 @@
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 7200
+      "activeDeadlineSeconds": 3600
       "backoffLimit": 1
       "template":
         "spec":
@@ -172,5 +172,5 @@
           - "name": "pytorch-datasets-claim"
             "persistentVolumeClaim":
               "claimName": "pytorch-datasets-claim"
-  "schedule": "0 18 * * *"
+  "schedule": "2 20 * * *"
   "successfulJobsHistoryLimit": 1
