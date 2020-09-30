@@ -50,6 +50,8 @@ validate()
 
   region=
   case $accelerator in
+    # Pods are in europe-west4. Add in more cases here
+    # as necessary.
     "v2-32" | "v3-32" ) region="europe-west4"
                         ;;
     * )                 region="us-central1"
@@ -67,6 +69,9 @@ validate()
 
 set_test_name()
 {
+  # Splits the test filename by forward slash and
+  # constructs the test name. This follows the convention of:
+  # tests/{tensorflow|pytorch}/{nightly|r2.3|...}/testname.libsonnet
   IFS=/ read -a split <<< "$filename"
   platform="${split[1]}"
   if grep -q "tensorflow" <<< "$platform"; then
@@ -93,18 +98,13 @@ run()
   set -x
   cd -
 
-  if [ -z "$dryrun" ]
-  then
-    gcloud container clusters get-credentials oneshots-$region --region $region --project xl-ml-test
-  else
-    echo "gcloud container clusters get-credentials oneshots-$region --region $region --project xl-ml-test"
-  fi
-
   which jsonnet &> /dev/null
   if [ -z "$dryrun" ]
   then
+    gcloud container clusters get-credentials oneshots-$region --region $region --project xl-ml-test
     jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$test_name | kubectl create -f -
   else
+    echo "gcloud container clusters get-credentials oneshots-$region --region $region --project xl-ml-test"
     echo "jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$test_name | kubectl create -f -"
   fi
 }
