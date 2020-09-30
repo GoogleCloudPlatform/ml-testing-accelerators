@@ -25,7 +25,7 @@ local tpus = import "templates/tpus.libsonnet";
       "official/nlp/xlnet/run_squad.py",
       "--strategy_type=tpu",
       "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-      "--init_checkpoint=$(XLNET_CHECKPOINT_DIR)/xlnet_cased-L-24_H-1024_A-16",
+      "--init_checkpoint=$(XLNET_CHECKPOINT_DIR)/xlnet_model.ckpt",
       "--model_dir=$(MODEL_DIR)",
       "--train_tfrecord_path=$(XLNET_SQUAD_DIR)",
       "--test_tfrecord_path=$(XLNET_SQUAD_DIR)/12048.eval.tf_record",
