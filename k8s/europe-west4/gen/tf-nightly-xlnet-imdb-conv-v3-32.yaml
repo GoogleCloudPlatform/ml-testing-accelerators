@@ -15,13 +15,13 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-nightly-transformer-translate-func-v3-8"
+  "name": "tf-nightly-xlnet-imdb-conv-v3-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 3600
+      "activeDeadlineSeconds": 36000
       "backoffLimit": 1
       "template":
         "metadata":
@@ -43,25 +43,31 @@
             "name": "monitor"
           - "args":
             - "python3"
-            - "official/nlp/transformer/transformer_main.py"
-            - "--param_set=big"
-            - "--max_length=64"
-            - "--data_dir=$(TRANSFORMER_DIR)"
-            - "--vocab_file=$(TRANSFORMER_DIR)/vocab.ende.32768"
-            - "--bleu_source=$(TRANSFORMER_DIR)/newstest2014.en"
-            - "--bleu_ref=$(TRANSFORMER_DIR)/newstest2014.de"
-            - "--enable_tensorboard"
-            - "--model_dir=$(MODEL_DIR)"
+            - "official/nlp/xlnet/run_classifier.py"
+            - "--strategy_type=tpu"
             - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--distribution_strategy=tpu"
-            - "--steps_between_evals=10000"
-            - "--static_batch=true"
-            - "--use_ctl=true"
-            - "--padded_decode=true"
-            - "--decode_batch_size=32"
-            - "--decode_max_length=97"
-            - "--batch_size=6144"
-            - "--train_steps=20000"
+            - "--train_tfrecord_path=$(XLNET_IMDB_DIR)/spiece.model.len-512.train.tfrecord"
+            - "--test_tfrecord_path=$(XLNET_IMDB_DIR)/spiece.model.len-512.dev.eval.tfrecord"
+            - "--init_checkpoint=$(XLNET_CHECKPOINT_DIR)/xlnet_model.ckpt"
+            - "--model_dir=$(MODEL_DIR)"
+            - "--test_data_size=25024"
+            - "--seq_len=512"
+            - "--n_layer=24"
+            - "--d_model=1024"
+            - "--d_embed=1024"
+            - "--n_head=16"
+            - "--d_head=64"
+            - "--d_inner=4096"
+            - "--untie_r=true"
+            - "--n_class=2"
+            - "--ff_activation=gelu"
+            - "--learning_rate=2e-5"
+            - "--warmup_steps=500"
+            - "--iterations=500"
+            - "--bi_data=false"
+            - "--summary_type=last"
+            - "--train_batch_size=128"
+            - "--train_steps=4000"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -80,7 +86,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/transformer-translate/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/xlnet-imdb/conv/v3-32/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
@@ -89,7 +95,7 @@
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v3": 8
+                "cloud-tpus.google.com/v3": 32
               "requests":
                 "cpu": 2
                 "memory": "20G"
@@ -116,7 +122,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/transformer-translate/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/xlnet-imdb/conv/v3-32/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -137,7 +143,7 @@
                    "examples_per_second_average": {
                     "comparison": "greater_or_equal",
                     "success_threshold": {
-                     "stddevs_from_mean": 4
+                     "stddevs_from_mean": 2
                     }
                    },
                    "total_wall_time": {
@@ -149,7 +155,7 @@
                    }
                   }
                  },
-                 "test_name": "tf-nightly-transformer-translate-func-v3-8"
+                 "test_name": "tf-nightly-xlnet-imdb-conv-v3-32"
                 }
             "envFrom":
             - "configMapRef":
@@ -164,6 +170,5 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-  "schedule": "0 8 * * *"
+  "schedule": "0 6 * * 0,5"
   "successfulJobsHistoryLimit": 1
-  "suspend": true

@@ -15,18 +15,18 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-r2.3-keras-api-transfer-learning-v3-8"
+  "name": "tf-nightly-xlnet-imdb-conv-v2-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 3600
+      "activeDeadlineSeconds": 36000
       "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
-            "tf-version.cloud-tpus.google.com": "2.3"
+            "tf-version.cloud-tpus.google.com": "nightly"
         "spec":
           "containers":
           - "env":
@@ -42,19 +42,32 @@
             "imagePullPolicy": "Always"
             "name": "monitor"
           - "args":
-            - "/bin/bash"
-            - "-c"
-            - |
-              set -u
-              set -e
-              set -x
-              
-              export PATH=$PATH:/root/google-cloud-sdk/bin
-              gcloud source repos clone tf2-api-tests --project=xl-ml-test
-              cd tf2-api-tests
-              pip3 install behave
-              behave -e ipynb_checkpoints --tags=-fails -i transfer_learning
-              
+            - "python3"
+            - "official/nlp/xlnet/run_classifier.py"
+            - "--strategy_type=tpu"
+            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
+            - "--train_tfrecord_path=$(XLNET_IMDB_DIR)/spiece.model.len-512.train.tfrecord"
+            - "--test_tfrecord_path=$(XLNET_IMDB_DIR)/spiece.model.len-512.dev.eval.tfrecord"
+            - "--init_checkpoint=$(XLNET_CHECKPOINT_DIR)/xlnet_model.ckpt"
+            - "--model_dir=$(MODEL_DIR)"
+            - "--test_data_size=25024"
+            - "--seq_len=512"
+            - "--n_layer=24"
+            - "--d_model=1024"
+            - "--d_embed=1024"
+            - "--n_head=16"
+            - "--d_head=64"
+            - "--d_inner=4096"
+            - "--untie_r=true"
+            - "--n_class=2"
+            - "--ff_activation=gelu"
+            - "--learning_rate=2e-5"
+            - "--warmup_steps=500"
+            - "--iterations=500"
+            - "--bi_data=false"
+            - "--summary_type=last"
+            - "--train_batch_size=128"
+            - "--train_steps=4000"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -73,16 +86,16 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r2.3/keras-api/transfer-learning/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/xlnet-imdb/conv/v2-32/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/tensorflow:r2.3"
+            "image": "gcr.io/xl-ml-test/tensorflow:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v3": 8
+                "cloud-tpus.google.com/v2": 32
               "requests":
                 "cpu": 2
                 "memory": "20G"
@@ -109,7 +122,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r2.3/keras-api/transfer-learning/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/xlnet-imdb/conv/v2-32/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -126,9 +139,23 @@
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
-                  "alert_for_failed_jobs": true
+                  "metric_success_conditions": {
+                   "examples_per_second_average": {
+                    "comparison": "greater_or_equal",
+                    "success_threshold": {
+                     "stddevs_from_mean": 2
+                    }
+                   },
+                   "total_wall_time": {
+                    "comparison": "less",
+                    "success_threshold": {
+                     "stddevs_from_mean": 5
+                    },
+                    "wait_for_n_points_of_history": 10
+                   }
+                  }
                  },
-                 "test_name": "tf-r2.3-keras-api-transfer-learning-v3-8"
+                 "test_name": "tf-nightly-xlnet-imdb-conv-v2-32"
                 }
             "envFrom":
             - "configMapRef":
@@ -143,5 +170,5 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-  "schedule": "0 10 30 * *"
+  "schedule": "0 6 * * 0,5"
   "successfulJobsHistoryLimit": 1
