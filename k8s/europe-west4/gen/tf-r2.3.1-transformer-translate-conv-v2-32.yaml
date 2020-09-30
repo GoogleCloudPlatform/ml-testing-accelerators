@@ -15,18 +15,18 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-mnist-conv-v2-32"
+  "name": "tf-r2.3.1-transformer-translate-conv-v2-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
       "activeDeadlineSeconds": 36000
-      "backoffLimit": 0
+      "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
-            "tf-version.cloud-tpus.google.com": "pytorch-nightly"
+            "tf-version.cloud-tpus.google.com": "2.3.1"
         "spec":
           "containers":
           - "env":
@@ -43,8 +43,25 @@
             "name": "monitor"
           - "args":
             - "python3"
-            - "/usr/share/torch-xla-nightly/pytorch/xla/test/test_train_mp_mnist.py"
-            - "--logdir=$(MODEL_DIR)"
+            - "official/nlp/transformer/transformer_main.py"
+            - "--param_set=big"
+            - "--max_length=64"
+            - "--data_dir=$(TRANSFORMER_DIR)"
+            - "--vocab_file=$(TRANSFORMER_DIR)/vocab.ende.32768"
+            - "--bleu_source=$(TRANSFORMER_DIR)/newstest2014.en"
+            - "--bleu_ref=$(TRANSFORMER_DIR)/newstest2014.de"
+            - "--enable_tensorboard"
+            - "--model_dir=$(MODEL_DIR)"
+            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
+            - "--distribution_strategy=tpu"
+            - "--steps_between_evals=10000"
+            - "--static_batch=true"
+            - "--use_ctl=true"
+            - "--padded_decode=true"
+            - "--decode_batch_size=32"
+            - "--decode_max_length=97"
+            - "--batch_size=24576"
+            - "--train_steps=50000"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -63,24 +80,23 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/mnist/conv/v2-32/$(JOB_NAME)"
-            - "name": "ACCELERATOR_TYPE"
-              "value": "v2-32"
-            - "name": "CONDA_ENV"
-              "value": "torch-xla-nightly"
-            - "name": "MACHINE_TYPE"
-              "value": "n1-standard-8"
-            - "name": "XLA_DIST_FLAGS"
-              "value": ""
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.1/transformer-translate/conv/v2-32/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/pytorch-pods:nightly"
+            "image": "gcr.io/xl-ml-test/tensorflow:r2.3.1"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
                 "cloud-tpus.google.com/v2": 32
+              "requests":
+                "cpu": 2
+                "memory": "20G"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -100,7 +116,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/mnist/conv/v2-32/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.1/transformer-translate/conv/v2-32/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -108,44 +124,20 @@
                   "default_aggregation_strategies": [
                    "final"
                   ],
-                  "tags_to_ignore": [
-                   "LearningRate"
-                  ],
+                  "metric_to_aggregation_strategies": {
+                   "examples_per_second": [
+                    "average"
+                   ]
+                  },
+                  "use_run_name_prefix": true,
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
-                  "metric_subset_to_alert": [
-                   "ExecuteTime__Percentile_99_sec_final",
-                   "CompileTime__Percentile_99_sec_final",
-                   "total_wall_time",
-                   "Accuracy/test_final",
-                   "aten_ops_sum_final"
-                  ],
                   "metric_success_conditions": {
-                   "Accuracy/test_final": {
-                    "comparison": "greater",
+                   "examples_per_second_average": {
+                    "comparison": "greater_or_equal",
                     "success_threshold": {
-                     "fixed_value": 98
-                    }
-                   },
-                   "CompileTime__Percentile_99_sec_final": {
-                    "comparison": "less",
-                    "success_threshold": {
-                     "stddevs_from_mean": 5
-                    },
-                    "wait_for_n_points_of_history": 10
-                   },
-                   "ExecuteTime__Percentile_99_sec_final": {
-                    "comparison": "less",
-                    "success_threshold": {
-                     "stddevs_from_mean": 5
-                    },
-                    "wait_for_n_points_of_history": 10
-                   },
-                   "aten_ops_sum_final": {
-                    "comparison": "less_or_equal",
-                    "success_threshold": {
-                     "stddevs_from_mean": 0
+                     "stddevs_from_mean": 2
                     }
                    },
                    "total_wall_time": {
@@ -157,7 +149,7 @@
                    }
                   }
                  },
-                 "test_name": "pt-nightly-mnist-conv-v2-32"
+                 "test_name": "tf-r2.3.1-transformer-translate-conv-v2-32"
                 }
             "envFrom":
             - "configMapRef":
@@ -168,5 +160,9 @@
           "nodeSelector":
             "tpu-available": "true"
           "restartPolicy": "Never"
-  "schedule": "6 17 * * *"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+  "schedule": "0 6 * * 0,5"
   "successfulJobsHistoryLimit": 1

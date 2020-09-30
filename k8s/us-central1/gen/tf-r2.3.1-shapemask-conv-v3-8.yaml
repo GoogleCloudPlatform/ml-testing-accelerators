@@ -15,18 +15,18 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-mnist-conv-v3-8"
+  "name": "tf-r2.3.1-shapemask-conv-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 3600
+      "activeDeadlineSeconds": 36000
       "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
-            "tf-version.cloud-tpus.google.com": "pytorch-nightly"
+            "tf-version.cloud-tpus.google.com": "2.3.1"
         "spec":
           "containers":
           - "env":
@@ -42,9 +42,78 @@
             "imagePullPolicy": "Always"
             "name": "monitor"
           - "args":
-            - "python3"
-            - "pytorch/xla/test/test_train_mp_mnist.py"
-            - "--logdir=$(MODEL_DIR)"
+            - "/bin/bash"
+            - "-c"
+            - |
+              set -u
+              set -e
+              set -x
+              
+              python3 official/vision/detection/main.py \
+                --tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS) \
+                --strategy_type=tpu \
+                --model=shapemask \
+                --model_dir=$(MODEL_DIR) \
+               --mode=train \
+              --params_override=""eval":
+                "batch_size": 40
+                "eval_file_pattern": "$(COCO_DIR)/val*"
+                "val_json_file": "$(COCO_DIR)/instances_val2017.json"
+              "shapemask_head":
+                "shape_prior_path": "gs://cloud-tpu-checkpoints/shapemask/kmeans_class_priors_91x20x32x32.npy"
+                "use_category_for_mask": true
+              "shapemask_parser":
+                "output_size":
+                - 1024
+                - 1024
+              "train":
+                "batch_size": 64
+                "checkpoint":
+                  "path": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
+                  "prefix": "resnet50/"
+                "iterations_per_loop": 5000
+                "learning_rate":
+                  "learning_rate_levels":
+                  - 0.0080000000000000002
+                  - 0.00080000000000000004
+                  "learning_rate_steps":
+                  - 15000
+                  - 20000
+                "total_steps": 22500
+                "train_file_pattern": "$(COCO_DIR)/train*""
+              python3 official/vision/detection/main.py \
+                --tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS) \
+                --strategy_type=tpu \
+                --model=shapemask \
+                --model_dir=$(MODEL_DIR) \
+               --mode=eval \
+              --params_override=""eval":
+                "batch_size": 40
+                "eval_file_pattern": "$(COCO_DIR)/val*"
+                "val_json_file": "$(COCO_DIR)/instances_val2017.json"
+              "shapemask_head":
+                "shape_prior_path": "gs://cloud-tpu-checkpoints/shapemask/kmeans_class_priors_91x20x32x32.npy"
+                "use_category_for_mask": true
+              "shapemask_parser":
+                "output_size":
+                - 1024
+                - 1024
+              "train":
+                "batch_size": 64
+                "checkpoint":
+                  "path": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
+                  "prefix": "resnet50/"
+                "iterations_per_loop": 5000
+                "learning_rate":
+                  "learning_rate_levels":
+                  - 0.0080000000000000002
+                  - 0.00080000000000000004
+                  "learning_rate_steps":
+                  - 15000
+                  - 20000
+                "total_steps": 22500
+                "train_file_pattern": "$(COCO_DIR)/train*""
+              
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -63,21 +132,19 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/mnist/conv/v3-8/$(JOB_NAME)"
-            - "name": "XLA_USE_BF16"
-              "value": "0"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.1/shapemask/conv/v3-8/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/pytorch-xla:nightly"
+            "image": "gcr.io/xl-ml-test/tensorflow:r2.3.1"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
                 "cloud-tpus.google.com/v3": 8
               "requests":
-                "cpu": "4.5"
-                "memory": "8Gi"
+                "cpu": 2
+                "memory": "20G"
             "volumeMounts":
             - "mountPath": "/dev/shm"
               "name": "dshm"
@@ -101,7 +168,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/mnist/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.1/shapemask/conv/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -109,44 +176,20 @@
                   "default_aggregation_strategies": [
                    "final"
                   ],
-                  "tags_to_ignore": [
-                   "LearningRate"
-                  ],
+                  "metric_to_aggregation_strategies": {
+                   "examples_per_second": [
+                    "average"
+                   ]
+                  },
+                  "use_run_name_prefix": true,
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
-                  "metric_subset_to_alert": [
-                   "ExecuteTime__Percentile_99_sec_final",
-                   "CompileTime__Percentile_99_sec_final",
-                   "total_wall_time",
-                   "Accuracy/test_final",
-                   "aten_ops_sum_final"
-                  ],
                   "metric_success_conditions": {
-                   "Accuracy/test_final": {
-                    "comparison": "greater",
+                   "examples_per_second_average": {
+                    "comparison": "greater_or_equal",
                     "success_threshold": {
-                     "fixed_value": 98
-                    }
-                   },
-                   "CompileTime__Percentile_99_sec_final": {
-                    "comparison": "less",
-                    "success_threshold": {
-                     "stddevs_from_mean": 5
-                    },
-                    "wait_for_n_points_of_history": 10
-                   },
-                   "ExecuteTime__Percentile_99_sec_final": {
-                    "comparison": "less",
-                    "success_threshold": {
-                     "stddevs_from_mean": 5
-                    },
-                    "wait_for_n_points_of_history": 10
-                   },
-                   "aten_ops_sum_final": {
-                    "comparison": "less_or_equal",
-                    "success_threshold": {
-                     "stddevs_from_mean": 0
+                     "stddevs_from_mean": 2
                     }
                    },
                    "total_wall_time": {
@@ -158,7 +201,7 @@
                    }
                   }
                  },
-                 "test_name": "pt-nightly-mnist-conv-v3-8"
+                 "test_name": "tf-r2.3.1-shapemask-conv-v3-8"
                 }
             "envFrom":
             - "configMapRef":
@@ -173,5 +216,5 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-  "schedule": "4 17 * * *"
+  "schedule": "0 6 * * 0,5"
   "successfulJobsHistoryLimit": 1

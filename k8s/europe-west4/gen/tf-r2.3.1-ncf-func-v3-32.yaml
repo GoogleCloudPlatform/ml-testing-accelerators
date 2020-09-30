@@ -15,18 +15,18 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-mnist-conv-v2-32"
+  "name": "tf-r2.3.1-ncf-func-v3-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 36000
-      "backoffLimit": 0
+      "activeDeadlineSeconds": 3600
+      "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
-            "tf-version.cloud-tpus.google.com": "pytorch-nightly"
+            "tf-version.cloud-tpus.google.com": "2.3.1"
         "spec":
           "containers":
           - "env":
@@ -43,8 +43,27 @@
             "name": "monitor"
           - "args":
             - "python3"
-            - "/usr/share/torch-xla-nightly/pytorch/xla/test/test_train_mp_mnist.py"
-            - "--logdir=$(MODEL_DIR)"
+            - "official/recommendation/ncf_keras_main.py"
+            - "--train_dataset_path=$(NCF_DIR)/tpu_data_dir/training_cycle_*/*"
+            - "--eval_dataset_path=$(NCF_DIR)/tpu_data_dir/eval_data/*"
+            - "--input_meta_data_path=$(NCF_DIR)/tpu_data_dir/metadata"
+            - "--data_dir=$(NCF_DIR)/movielens_data"
+            - "--batch_size=99000"
+            - "--learning_rate=3e-5"
+            - "--dataset=ml-20m"
+            - "--eval_batch_size=160000"
+            - "--learning_rate=0.00382059"
+            - "--beta1=0.783529"
+            - "--beta2=0.909003"
+            - "--epsilon=1.45439e-07"
+            - "--num_factors=64"
+            - "--hr_threshold=0.635"
+            - "--layers=256,256,128,64"
+            - "--use_synthetic_data=false"
+            - "--model_dir=$(MODEL_DIR)"
+            - "--train_epochs=1"
+            - "--ml_perf=true"
+            - "--keras_use_ctl=true"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -63,24 +82,23 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/mnist/conv/v2-32/$(JOB_NAME)"
-            - "name": "ACCELERATOR_TYPE"
-              "value": "v2-32"
-            - "name": "CONDA_ENV"
-              "value": "torch-xla-nightly"
-            - "name": "MACHINE_TYPE"
-              "value": "n1-standard-8"
-            - "name": "XLA_DIST_FLAGS"
-              "value": ""
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.1/ncf/func/v3-32/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/pytorch-pods:nightly"
+            "image": "gcr.io/xl-ml-test/tensorflow:r2.3.1"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v2": 32
+                "cloud-tpus.google.com/v3": 32
+              "requests":
+                "cpu": 2
+                "memory": "20G"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -100,7 +118,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/mnist/conv/v2-32/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.1/ncf/func/v3-32/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -108,44 +126,20 @@
                   "default_aggregation_strategies": [
                    "final"
                   ],
-                  "tags_to_ignore": [
-                   "LearningRate"
-                  ],
+                  "metric_to_aggregation_strategies": {
+                   "examples_per_second": [
+                    "average"
+                   ]
+                  },
+                  "use_run_name_prefix": true,
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
-                  "metric_subset_to_alert": [
-                   "ExecuteTime__Percentile_99_sec_final",
-                   "CompileTime__Percentile_99_sec_final",
-                   "total_wall_time",
-                   "Accuracy/test_final",
-                   "aten_ops_sum_final"
-                  ],
                   "metric_success_conditions": {
-                   "Accuracy/test_final": {
-                    "comparison": "greater",
+                   "examples_per_second_average": {
+                    "comparison": "greater_or_equal",
                     "success_threshold": {
-                     "fixed_value": 98
-                    }
-                   },
-                   "CompileTime__Percentile_99_sec_final": {
-                    "comparison": "less",
-                    "success_threshold": {
-                     "stddevs_from_mean": 5
-                    },
-                    "wait_for_n_points_of_history": 10
-                   },
-                   "ExecuteTime__Percentile_99_sec_final": {
-                    "comparison": "less",
-                    "success_threshold": {
-                     "stddevs_from_mean": 5
-                    },
-                    "wait_for_n_points_of_history": 10
-                   },
-                   "aten_ops_sum_final": {
-                    "comparison": "less_or_equal",
-                    "success_threshold": {
-                     "stddevs_from_mean": 0
+                     "stddevs_from_mean": 2
                     }
                    },
                    "total_wall_time": {
@@ -157,7 +151,7 @@
                    }
                   }
                  },
-                 "test_name": "pt-nightly-mnist-conv-v2-32"
+                 "test_name": "tf-r2.3.1-ncf-func-v3-32"
                 }
             "envFrom":
             - "configMapRef":
@@ -168,5 +162,9 @@
           "nodeSelector":
             "tpu-available": "true"
           "restartPolicy": "Never"
-  "schedule": "6 17 * * *"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+  "schedule": "0 8 * * *"
   "successfulJobsHistoryLimit": 1

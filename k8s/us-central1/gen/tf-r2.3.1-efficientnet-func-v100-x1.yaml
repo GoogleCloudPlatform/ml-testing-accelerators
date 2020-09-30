@@ -15,36 +15,37 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-nightly-mnist-conv-v2-32"
+  "name": "tf-r2.3.1-efficientnet-func-v100-x1"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 36000
-      "backoffLimit": 0
+      "activeDeadlineSeconds": 28800
+      "backoffLimit": 1
       "template":
-        "metadata":
-          "annotations":
-            "tf-version.cloud-tpus.google.com": "pytorch-nightly"
         "spec":
           "containers":
-          - "env":
-            - "name": "POD_NAME"
-              "valueFrom":
-                "fieldRef":
-                  "fieldPath": "metadata.name"
-            - "name": "POD_NAMESPACE"
-              "valueFrom":
-                "fieldRef":
-                  "fieldPath": "metadata.namespace"
-            "image": "gcr.io/xl-ml-test/health-monitor:stable"
-            "imagePullPolicy": "Always"
-            "name": "monitor"
           - "args":
             - "python3"
-            - "/usr/share/torch-xla-nightly/pytorch/xla/test/test_train_mp_mnist.py"
-            - "--logdir=$(MODEL_DIR)"
+            - "official/vision/image_classification/classifier_trainer.py"
+            - "--data_dir=$(IMAGENET_DIR)"
+            - "--model_type=efficientnet"
+            - "--dataset=imagenet"
+            - "--mode=train_and_eval"
+            - "--model_dir=$(MODEL_DIR)"
+            - |
+              --params_override="evaluation":
+                "epochs_between_evals": 1
+              "runtime":
+                "num_gpus": 1
+              "train":
+                "epochs": 1
+              "train_dataset":
+                "builder": "records"
+              "validation_dataset":
+                "builder": "records"
+            - "--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-gpu.yaml"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -63,24 +64,23 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/mnist/conv/v2-32/$(JOB_NAME)"
-            - "name": "ACCELERATOR_TYPE"
-              "value": "v2-32"
-            - "name": "CONDA_ENV"
-              "value": "torch-xla-nightly"
-            - "name": "MACHINE_TYPE"
-              "value": "n1-standard-8"
-            - "name": "XLA_DIST_FLAGS"
-              "value": ""
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.1/efficientnet/func/v100-x1/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/pytorch-pods:nightly"
+            "image": "gcr.io/xl-ml-test/tensorflow:r2.3.1"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v2": 32
+                "nvidia.com/gpu": 1
+              "requests":
+                "cpu": 2
+                "memory": "20G"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -100,7 +100,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/mnist/conv/v2-32/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.1/efficientnet/func/v100-x1/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -108,44 +108,20 @@
                   "default_aggregation_strategies": [
                    "final"
                   ],
-                  "tags_to_ignore": [
-                   "LearningRate"
-                  ],
+                  "metric_to_aggregation_strategies": {
+                   "examples_per_second": [
+                    "average"
+                   ]
+                  },
+                  "use_run_name_prefix": true,
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
-                  "metric_subset_to_alert": [
-                   "ExecuteTime__Percentile_99_sec_final",
-                   "CompileTime__Percentile_99_sec_final",
-                   "total_wall_time",
-                   "Accuracy/test_final",
-                   "aten_ops_sum_final"
-                  ],
                   "metric_success_conditions": {
-                   "Accuracy/test_final": {
-                    "comparison": "greater",
+                   "examples_per_second_average": {
+                    "comparison": "greater_or_equal",
                     "success_threshold": {
-                     "fixed_value": 98
-                    }
-                   },
-                   "CompileTime__Percentile_99_sec_final": {
-                    "comparison": "less",
-                    "success_threshold": {
-                     "stddevs_from_mean": 5
-                    },
-                    "wait_for_n_points_of_history": 10
-                   },
-                   "ExecuteTime__Percentile_99_sec_final": {
-                    "comparison": "less",
-                    "success_threshold": {
-                     "stddevs_from_mean": 5
-                    },
-                    "wait_for_n_points_of_history": 10
-                   },
-                   "aten_ops_sum_final": {
-                    "comparison": "less_or_equal",
-                    "success_threshold": {
-                     "stddevs_from_mean": 0
+                     "stddevs_from_mean": 2
                     }
                    },
                    "total_wall_time": {
@@ -157,7 +133,7 @@
                    }
                   }
                  },
-                 "test_name": "pt-nightly-mnist-conv-v2-32"
+                 "test_name": "tf-r2.3.1-efficientnet-func-v100-x1"
                 }
             "envFrom":
             - "configMapRef":
@@ -166,7 +142,11 @@
             "imagePullPolicy": "Always"
             "name": "publisher"
           "nodeSelector":
-            "tpu-available": "true"
+            "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
           "restartPolicy": "Never"
-  "schedule": "6 17 * * *"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+  "schedule": "0 8 * * *"
   "successfulJobsHistoryLimit": 1
