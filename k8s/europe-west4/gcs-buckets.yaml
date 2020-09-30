@@ -32,3 +32,6 @@ data:
   SHAPEMASK_DIR: gs://xl-ml-test-europe-west4/data/shapemask
   PERFZERO_DATA_DIR: gs://xl-ml-test-europe-west4/data
   NCF_DIR: gs://xl-ml-test-europe-west4/data/ncf
+  XLNET_CHECKPOINT_DIR: gs://cloud-tpu-checkpoints/xlnet/keras_xlnet
+  XLNET_IMDB_DIR: gs://xl-ml-test-europe-west4/data/xlnet-imdb
+  XLNET_SQUAD_DIR: gs://xl-ml-test-europe-west4/data/xlnet-squad
