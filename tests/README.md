@@ -7,10 +7,8 @@ See [our developing doc](../doc/developing) for build pre-requisites.
 To run a single test, first [connect to a cluster](https://console.cloud.google.com/kubernetes/list) and then run the following:
 
 ```bash
-jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$TEST_NAME | kubectl create -f -
+scripts/run-oneshot.sh --accelerator v2-8 --file tests/tensorflow/nightly/mnist.libsonnet --type functional
 ```
-
-`$TEST_NAME` is the generated name of a test, such as `tf-nightly-mnist-functional-v2-8`.
 
 To build all of the templates and output Kubernetes resources, run the following:
 
