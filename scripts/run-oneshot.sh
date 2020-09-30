@@ -14,7 +14,7 @@ help()
   echo
   echo "Syntax: ./scripts/run-oneshot.sh [-a|d|f|h|t]"
   echo "-a | --accelerator   The accelerator type, e.g. v2-8, v3-8, 8xv100, etc."
-  echo "-d | --dryrun        Dryrun. If True, then the test does not run."
+  echo "-d | --dryrun        Dryrun. If set, then the test does not run and only prints commands."
   echo "-f | --file          The filepath for the test."
   echo "-h | --help          Print this help."
   echo "-t | --type          Test type, e.g. [func|conv|functional|convergence]."
