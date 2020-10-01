@@ -99,10 +99,18 @@ run()
   if [ -z "$dryrun" ]
   then
     gcloud container clusters get-credentials oneshots-$region --region $region --project xl-ml-test
-    jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$test_name | kubectl create -f -
+    temp_file=$(mktemp)
+    jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$test_name > $temp_file
+    
+    job_name=$(kubectl create -f $temp_file -o name)
+    pod_name=$(kubectl get pod -l job-name=${job_name#job.batch/} -o name)
+
+    echo "GKE pod name: ${pod_name#pod/}"
+    kubectl wait --for=condition=ready --timeout=10m $pod_name 
+    kubectl logs -f $pod_name --container=train
   else
     echo "gcloud container clusters get-credentials oneshots-$region --region $region --project xl-ml-test"
-    echo "jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$test_name"
+    jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$test_name
   fi
 }
 
