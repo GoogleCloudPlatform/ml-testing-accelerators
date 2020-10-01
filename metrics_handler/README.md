@@ -159,7 +159,12 @@ Full config options:
 
   # (Optional) Defaults to True. If set to False, this test will not create
   # any alerts emails if the test crashes or times out.
-  "alert_for_failed_jobs": "True"
+  "alert_for_failed_jobs": "True",
+
+  # (Optional) Defaults to True. If set to False, this test will send alerts
+  # for every failure. If set to True, this test will wait for 2 failures in
+  # a row before sending an alert.
+  "alert_after_second_test_failure": "True"
 }
 ```
 ## Config "Recipes"

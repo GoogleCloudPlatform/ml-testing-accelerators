@@ -395,7 +395,6 @@ class CloudMetricsHandler(object):
     Returns:
       bool: True if alerting should be skipped for any oob metrics.
     """
-    # Skip alerts if disabled by config.
     if not self.regression_test_config.get('alert_for_oob_metrics', True):
       return True
     # Skip alerts if job failed since metrics are unreliable for partial runs.
