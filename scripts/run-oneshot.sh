@@ -43,9 +43,6 @@ validate()
                              ;;
     "convergence" | "conv" ) testtype="conv"
                              ;;
-    * )                      echo "Invalid test type provided."
-                             exit
-                             ;;
   esac
 
   region=
@@ -105,7 +102,7 @@ run()
     jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$test_name | kubectl create -f -
   else
     echo "gcloud container clusters get-credentials oneshots-$region --region $region --project xl-ml-test"
-    echo "jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$test_name | kubectl create -f -"
+    echo "jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$test_name"
   fi
 }
 
