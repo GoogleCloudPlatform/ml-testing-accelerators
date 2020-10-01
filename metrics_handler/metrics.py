@@ -293,8 +293,8 @@ def metric_bounds(value_history, threshold, comparison):
     comparison (string): Comparison to given threshold.
 
   Returns:
-    tuple(is_within_bounds (bool), lower_bound (float), upper_bound (float)).
-      lower_bound and/or upper_bound can be None.
+    lower_bound (float): Lower boundary that this metric should be above.
+    upper_bound (float): Upper boundary that this metric should be below.
 
   Raises:
     ValueError if the regression test config is invalid.

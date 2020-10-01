@@ -165,6 +165,7 @@ class CloudMetricsHandlerTest(absltest.TestCase):
         'tags_to_ignore': ['bar'],
       },
       regression_test_config={
+        'alert_after_second_test_failure': False,
         'metric_subset_to_alert': ['foo_final'],
         'required_metrics': ['foo_final'],
         'metric_success_conditions': {
@@ -252,6 +253,7 @@ class CloudMetricsHandlerTest(absltest.TestCase):
         'tags_to_ignore': ['foo'],
       },
       regression_test_config={
+        'alert_after_second_test_failure': False,
         'metric_subset_to_alert': ['bar_final'],
         'metric_success_conditions': {
           'bar_final': {
@@ -300,6 +302,124 @@ class CloudMetricsHandlerTest(absltest.TestCase):
              'total_wall_time': []},
             aggregated_metrics, job_status_handler.SUCCESS
         )
+
+
+  def test_skip_oob_alerting(self):
+    handler_base_args = {
+      'test_name': 'test',
+      'events_dir': self.temp_dir,
+      'debug_info': None,
+      'metric_collection_config': {},
+      'regression_test_config': {
+        'alert_after_second_test_failure': True,
+      },
+      'test_type': None,
+      'accelerator': None,
+      'framework_version': None,
+      'logger': self.logger,
+    }
+    metrics_handler = main.CloudMetricsHandler(**handler_base_args)
+    # Both current and previous runs were OOB. Should alert.
+    self.assertFalse(metrics_handler.skip_oob_alerting(
+        job_status_handler.SUCCESS,
+        [metrics.MetricPoint(0.8, 111),
+         metrics.MetricPoint(0.8, 112),
+         metrics.MetricPoint(1.0, 113)],
+        metrics.Threshold('fixed_value', 0.9),
+        'greater'
+    ))
+    # Job was FAILURE; should skip metrics alerting.
+    self.assertTrue(metrics_handler.skip_oob_alerting(
+        job_status_handler.FAILURE,
+        [metrics.MetricPoint(1.0, 111),
+         metrics.MetricPoint(1.0, 112),
+         metrics.MetricPoint(1.0, 113)],
+        metrics.Threshold('fixed_value', 0.9),
+        'greater'
+    ))
+    # Job was TIMEOUT; should skip metrics alerting.
+    self.assertTrue(metrics_handler.skip_oob_alerting(
+        job_status_handler.TIMEOUT,
+        [metrics.MetricPoint(1.0, 111),
+         metrics.MetricPoint(1.0, 112),
+         metrics.MetricPoint(1.0, 113)],
+        metrics.Threshold('fixed_value', 0.9),
+        'greater'
+    ))
+    # Latest run was OOB but previous run was not; should skip alerting.
+    self.assertTrue(metrics_handler.skip_oob_alerting(
+        job_status_handler.SUCCESS,
+        [metrics.MetricPoint(0.8, 110),
+         metrics.MetricPoint(1.0, 112),
+         metrics.MetricPoint(1.0, 113)],
+        metrics.Threshold('fixed_value', 0.9),
+        'greater'
+    ))
+
+    handler_base_args['regression_test_config'] = {
+      'alert_after_second_test_failure': False,
+    }
+    metrics_handler = main.CloudMetricsHandler(**handler_base_args)
+    # Latest run was OOB but previous run was not; should alert since now the
+    # config has 'alert_after_second_test_failure': False.
+    self.assertFalse(metrics_handler.skip_oob_alerting(
+        job_status_handler.SUCCESS,
+        [metrics.MetricPoint(0.8, 110),
+         metrics.MetricPoint(1.0, 112),
+         metrics.MetricPoint(1.0, 113)],
+        metrics.Threshold('fixed_value', 0.9),
+        'greater'
+    ))
+
+  def test_skip_job_status_alerting(self):
+    handler_base_args = {
+      'test_name': 'test',
+      'events_dir': self.temp_dir,
+      'debug_info': None,
+      'metric_collection_config': {},
+      'regression_test_config': {
+        'alert_after_second_test_failure': False,
+      },
+      'test_type': None,
+      'accelerator': None,
+      'framework_version': None,
+      'logger': self.logger,
+    }
+    metrics_handler = main.CloudMetricsHandler(**handler_base_args)
+    # Job succeeded, should not alert for job status.
+    self.assertTrue(metrics_handler.skip_job_status_alerting(
+        job_status_handler.SUCCESS,
+        'tf-nightly-keras-api-save-and-load-v2-8'))
+    # Job failed and alerts not disabled by config. Should alert.
+    self.assertFalse(metrics_handler.skip_job_status_alerting(
+        job_status_handler.FAILURE,
+        'tf-nightly-keras-api-save-and-load-v2-8'))
+
+    # regression_test_config is None; should skip alerting.
+    handler_base_args['regression_test_config'] = {}
+    metrics_handler = main.CloudMetricsHandler(**handler_base_args)
+    self.assertTrue(metrics_handler.skip_job_status_alerting(
+        job_status_handler.FAILURE,
+        'tf-nightly-keras-api-save-and-load-v2-8'))
+
+    # alert_for_failed_jobs set to False, should not alert for job status.
+    handler_base_args['regression_test_config'] = {
+      'alert_for_failed_jobs': False,
+    }
+    metrics_handler = main.CloudMetricsHandler(**handler_base_args)
+    self.assertTrue(metrics_handler.skip_job_status_alerting(
+        job_status_handler.FAILURE,
+        'tf-nightly-keras-api-save-and-load-v2-8'))
+
+    # alert_after_second_test_failure set to True but Bigquery unreachable.
+    # Should default to not skipping alerts.
+    handler_base_args['regression_test_config'] = {
+        'alert_after_second_test_failure': True,
+    }
+    metrics_handler = main.CloudMetricsHandler(**handler_base_args)
+    self.assertFalse(metrics_handler.skip_job_status_alerting(
+        job_status_handler.FAILURE,
+        'tf-nightly-keras-api-save-and-load-v2-8'))
 
 
 if __name__ == '__main__':

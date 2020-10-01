@@ -347,6 +347,80 @@ class CloudMetricsHandler(object):
       publish_time = row['msg_publish_time']
     return uuid, publish_time
 
+  def skip_job_status_alerting(self, job_status, test_name):
+    """Decide whether to skip alerts for any job status abnormalities.
+
+    Args:
+      job_status (string): Final state of the most recent run of the test.
+        Should be one of the status constants found in job_status_handler.py.
+      test_name (string): Name of the test to check. Should correspond to the
+        `test_name` field in the Bigquery table.
+
+    Returns:
+      bool: True if alerting about job status should be skipped.
+    """
+    if job_status == job_status_handler.SUCCESS:
+      return True
+    if not self.regression_test_config:
+      return True
+    if not self.regression_test_config.get('alert_for_failed_jobs', True):
+      return True
+
+    if self.regression_test_config.get(
+        'alert_after_second_test_failure', True):
+      try:
+        query_result = self.bigquery_client.query(
+            'SELECT job_status FROM `{}` WHERE test_name=\"{}\" ORDER BY '
+            'timestamp DESC LIMIT 1'.format(
+                self.job_history_table_id,
+                test_name)).result()
+        for row in query_result:
+          # If previous job was a success then we should skip alerts.
+          return row['job_status'] == job_status_handler.SUCCESS
+      except Exception as e:
+        self.logger.warning(
+            'Failed to find job status of previous run: {}'.format(e))
+    return False  # Default is to not skip alerting.
+
+  def skip_oob_alerting(self, job_status, value_history, threshold, comparison):
+    """Decide whether to skip alerts for any out-of-bounds metrics.
+
+    Args:
+      job_status (string): Final state of the most recent run of the test.
+        Should be one of the status constants found in job_status_handler.py.
+      value_history (list[MetricValue]): Full history of values for this metric.
+      threshold (metrics.Threshold): Threshold to use for comparison.
+      comparison (string): Comparison type to use for metrics.
+
+    Returns:
+      bool: True if alerting should be skipped for any oob metrics.
+    """
+    # Skip alerts if disabled by config.
+    if not self.regression_test_config.get('alert_for_oob_metrics', True):
+      return True
+    # Skip alerts if job failed since metrics are unreliable for partial runs.
+    if job_status != job_status_handler.SUCCESS:
+      return True
+    # Check the metric status of the previous run depending on config.
+    if self.regression_test_config.get(
+        'alert_after_second_test_failure', True):
+      try:
+        previous_value = value_history[-2].metric_value
+        previous_lower_bound, previous_upper_bound = metrics.metric_bounds(
+            value_history[:-1], threshold, comparison)
+        previous_within_bounds = metrics.within_bounds(
+            previous_value, previous_lower_bound, previous_upper_bound,
+            inclusive=('equal' in comparison))
+        if previous_within_bounds:
+          # Since the previous run was OK, there is no chance of triggering an
+          # alert since we are guaranteed to not have 2 consecutive oob runs.
+          return True
+      except Exception as e:
+        self.logger.warning(
+            'Failed to find metric status of previous run: {}.'
+            'value_history: {}'.format(e, value_history))
+    return False
+
   def compute_bounds_and_report_errors(self, metrics_history, new_metrics,
                                        job_status):
     """Compute the bounds for metrics and report abnormal values.
@@ -427,16 +501,14 @@ class CloudMetricsHandler(object):
           value_history, threshold, comparison)
       metric_name_to_visual_bounds[metric_name] = (lower_bound, upper_bound)
 
+      # Maybe send an alert for this metric if the value was out of bounds.
+      if self.skip_oob_alerting(
+          job_status, value_history, threshold, comparison):
+        continue
       metric_value = value_history[-1].metric_value
-      within_bounds = metrics.within_bounds(metric_value, lower_bound, upper_bound, inclusive=('equal' in comparison))
-
-      # Generate an alert unless one of these is True:
-      #   1. metrics are within bounds.
-      #   2. alerting is disabled by config.
-      #   3. the job failed and therefore metrics are unreliable.
-      if within_bounds or not self.regression_test_config.get(
-          'alert_for_oob_metrics', True) or \
-              job_status != job_status_handler.SUCCESS:
+      if metrics.within_bounds(
+          metric_value, lower_bound, upper_bound,
+          inclusive=('equal' in comparison)):
         continue
       self.logger.error(
           'Metric `{}` was out of bounds for test `{}`. Bounds were '
@@ -547,9 +619,8 @@ def _process_pubsub_message(msg, status_handler, logger):
 
   # Alert for failing jobs unless the user has explicitly added a config
   # that disables alerts for this test.
-  if job_status['final_status'] != job_status_handler.SUCCESS and (
-      not regression_test_config or regression_test_config.get(
-          'alert_for_failed_jobs', True)):
+  if not handler.skip_job_status_alerting(
+      job_status['final_status'], test_name):
     logger.error(
         'job_status was `{}` for test `{}`'.format(
             job_status['final_status'], test_name),
