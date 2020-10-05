@@ -62,12 +62,6 @@ local tpus = import "templates/tpus.libsonnet";
       "--train_steps=8000",
     ],
   },
-  local v2_8 = {
-    accelerator: tpus.v2_8,
-    command+: [
-      "--train_batch_size=8",
-    ],
-  },
   local v3_8 = {
     accelerator: tpus.v3_8,
     command+: [
