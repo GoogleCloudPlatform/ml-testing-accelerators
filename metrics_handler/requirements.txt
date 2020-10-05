@@ -9,4 +9,4 @@ google-cloud-secret-manager==0.1.1
 google-cloud-storage==1.23.0
 sendgrid==6.0.5
 tensorboard==2.3
-tensorflow==2.3
+tensorflow==2.3.1
