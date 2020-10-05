@@ -17,14 +17,13 @@ local mixins = import "templates/mixins.libsonnet";
 
 {
   ModelGardenTest:: common.ModelGardenTest {
-    frameworkPrefix: "tf-r2.2",
+    frameworkPrefix: "tf-r2.2.1",
     tpuSettings+: {
-      softwareVersion: "2.2",
+      softwareVersion: "2.2.1",
     },
-    imageTag: "r2.2",
+    imageTag: "r2.2.1",
   },
   # Don't run tests manually by default since this release is stable.
   Convergence:: mixins.Convergence {
-    schedule: null
   },
 }
