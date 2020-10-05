@@ -32,7 +32,6 @@ local tpus = import "templates/tpus.libsonnet";
       "--test_feature_path=$(XLNET_SQUAD_DIR)/spiece.model.slen-512.qlen-64.eval.features.pkl",
       "--predict_file=$(XLNET_SQUAD_DIR)/dev-v2.0.json",
       "--predict_dir=$(MODEL_DIR)",
-      "--train_batch_size=48",
       "--seq_len=512",
       "--reuse_len=256",
       "--mem_len=0",
@@ -63,12 +62,6 @@ local tpus = import "templates/tpus.libsonnet";
       "--train_steps=8000",
     ],
   },
-  local v2_8 = {
-    accelerator: tpus.v2_8,
-    command+: [
-      "--train_batch_size=48",
-    ],
-  },
   local v3_8 = {
     accelerator: tpus.v3_8,
     command+: [
@@ -77,9 +70,7 @@ local tpus = import "templates/tpus.libsonnet";
   },
 
   configs: [
-    xlnet + v2_8 + functional,
     xlnet + v3_8 + functional,
-    xlnet + v2_8 + convergence,
     xlnet + v3_8 + convergence,
   ],
 }
