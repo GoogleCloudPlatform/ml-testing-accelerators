@@ -28,7 +28,7 @@ resources:
       locations:
       - us-central1-b
       config:
-        machineType: n1-highmem-16
+        machineType: e2-highmem-16
         oauthScopes:
         - https://www.googleapis.com/auth/cloud-platform
         labels:
@@ -44,7 +44,7 @@ resources:
       initialNodeCount: 0
       autoscaling:
         enabled: true
-        minNodeCount: 1
+        minNodeCount: 0
         maxNodeCount: 5
       locations:
       - us-central1-b
