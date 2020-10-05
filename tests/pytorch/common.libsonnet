@@ -64,6 +64,9 @@ local volumes = import "templates/volumes.libsonnet";
       },
     },
 
+    cpu: "4.5",
+    memory: "8Gi",
+
     jobSpec+:: {
       template+: {
         spec+: {
@@ -72,13 +75,7 @@ local volumes = import "templates/volumes.libsonnet";
               envMap+: {
                 XLA_USE_BF16: "0",
               },
-              resources+: {
-                requests+: {
-                  cpu: "4.5",
-                  memory: "8Gi",
-                },
-              },
-            },
+            }
           }
         }
       }
