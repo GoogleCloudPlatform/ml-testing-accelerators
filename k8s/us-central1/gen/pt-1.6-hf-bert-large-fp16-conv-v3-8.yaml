@@ -15,13 +15,13 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-1.6-dlrm-mpdp-fwd-func-v3-8"
+  "name": "pt-1.6-hf-bert-large-fp16-conv-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 10800
+      "activeDeadlineSeconds": 36000
       "backoffLimit": 1
       "template":
         "metadata":
@@ -49,27 +49,30 @@
               set -e
               set -x
               
-              git clone https://github.com/taylanbil/dlrm.git -b tpu
-              pip install onnx
-              python dlrm/dlrm_tpu_runner.py \
-                --arch-sparse-feature-size=64 \
-                --arch-mlp-bot=512-512-64 \
-                --arch-mlp-top=1024-1024-1024-1 \
-                --arch-interaction-op=dot \
-                --lr-num-warmup-steps 10 \
-                --lr-decay-start-step 10 \
-                --num-batches=1000 \
-                --data-generation="random" \
-                --numpy-rand-seed=727 \
-                --print-freq 100 \
-                --num-indices-per-lookup=100 \
-                --use-tpu \
-                --metrics-debug \
-                --num-indices-per-lookup-fixed \
-                --mini-batch-size=2048 \
-                --arch-embedding-size=1000000-1000000-1000000-1000000-1000000-1000000-1000000-1000000 \
-                --tpu-model-parallel-group-len 4 \
-                --tpu-cores=8
+              git clone -v 3.2.0 https://github.com/huggingface/transformers.git
+              cd transformers && pip install .
+              git log -1
+              python -m torch.distributed.launch --nproc_per_node 4 \
+                examples/language-modeling/run_language_modeling.py \
+                --logging_dir ./tensorboard-metrics \
+                --cache_dir ./cache_dir \
+                --train_data_file /datasets/wikitext-103-raw/wiki.train.raw \
+                --do_train \
+                --do_eval \
+                --eval_data_file /datasets/wikitext-103-raw/wiki.valid.raw \
+                --overwrite_output_dir \
+                --output_dir language-modeling \
+                --logging_steps 100 \
+                --save_steps 3000 \
+                --overwrite_cache \
+                --tpu_metrics_debug \
+               --fp16 --mlm --model_type=bert \
+              --model_name_or_path bert-large-uncased \
+              --num_train_epochs 3 \
+              --per_device_train_batch_size 8 \
+              --per_device_eval_batch_size 8
+              gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
+              
               
             "env":
             - "name": "POD_NAME"
@@ -89,7 +92,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-1.6/dlrm-mpdp-fwd/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-1.6/hf-bert-large-fp16/conv/v3-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
               "value": "0"
             "envFrom":
@@ -102,8 +105,8 @@
               "limits":
                 "cloud-tpus.google.com/v3": 8
               "requests":
-                "cpu": "9.0"
-                "memory": "30Gi"
+                "cpu": "48.0"
+                "memory": "100Gi"
             "volumeMounts":
             - "mountPath": "/dev/shm"
               "name": "dshm"
@@ -130,7 +133,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-1.6/dlrm-mpdp-fwd/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-1.6/hf-bert-large-fp16/conv/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -181,7 +184,7 @@
                    }
                   }
                  },
-                 "test_name": "pt-1.6-dlrm-mpdp-fwd-func-v3-8"
+                 "test_name": "pt-1.6-hf-bert-large-fp16-conv-v3-8"
                 }
             "envFrom":
             - "configMapRef":
@@ -199,5 +202,5 @@
           - "name": "pytorch-datasets-claim"
             "persistentVolumeClaim":
               "claimName": "pytorch-datasets-claim"
-  "schedule": "0 2 * * *"
+  "schedule": "30 2 * * 2,4"
   "successfulJobsHistoryLimit": 1

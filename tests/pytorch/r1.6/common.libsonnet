@@ -24,6 +24,10 @@ local volumes = import "templates/volumes.libsonnet";
     },
     imageTag: "r1.6",
   },
+  PyTorchGpuTest:: common.PyTorchGpuTest {
+    frameworkPrefix: "pt-1.6",
+    imageTag: "1.6.0-cuda10.1-cudnn7-runtime",
+  },
   PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest {
     frameworkPrefix: "pt-1.6",
     tpuSettings+: {

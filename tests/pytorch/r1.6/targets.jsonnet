@@ -12,29 +12,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local cppOperations = import "cpp-ops.libsonnet";
-local dlrm = import "dlrm.libsonnet";
-local fairseqRobertaPretrain = import "roberta-pre.libsonnet";
-local fairseqTransformer = import "fs-transformer.libsonnet";
-local mnist = import "mnist.libsonnet";
-local mnist_3_7 = import "mnist-3-7.libsonnet";
-local pythonOperations = import "python-ops.libsonnet";
-local resnet50_mp = import "resnet50-mp.libsonnet";
-local resnet50_pod = import "resnet50-pod.libsonnet";
-local huggingfaceGlue = import "hf-glue.libsonnet";
-local tpu_mem = import "tpu-mem.libsonnet";
+#local cppOperations = import "cpp-ops.libsonnet";
+#local dlrm = import "dlrm.libsonnet";
+#local fairseqRobertaPretrain = import "roberta-pre.libsonnet";
+#local fairseqTransformer = import "fs-transformer.libsonnet";
+#local mnist = import "mnist.libsonnet";
+#local mnist_3_7 = import "mnist-3-7.libsonnet";
+#local pythonOperations = import "python-ops.libsonnet";
+#local resnet50_mp = import "resnet50-mp.libsonnet";
+#local resnet50_pod = import "resnet50-pod.libsonnet";
+#local huggingfaceGlue = import "hf-glue.libsonnet";
+#local tpu_mem = import "tpu-mem.libsonnet";
+
+# blogpost benchmarking
+local huggingfaceBenchmarking = import "hf-lm.libsonnet";
+local huggingfaceGpuBenchmarking = import "hf-lm-gpu.libsonnet";
 
 # Add new models here
 std.flattenArrays([
-  cppOperations.configs,
-  dlrm.configs,
-  fairseqRobertaPretrain.configs,
-  fairseqTransformer.configs,
-  mnist.configs,
-  mnist_3_7.configs,
-  pythonOperations.configs,
-  resnet50_mp.configs,
-  resnet50_pod.configs,
-  huggingfaceGlue.configs,
-  tpu_mem.configs,
+  #cppOperations.configs,
+  #dlrm.configs,
+  #fairseqRobertaPretrain.configs,
+  #fairseqTransformer.configs,
+  #mnist.configs,
+  #mnist_3_7.configs,
+  #pythonOperations.configs,
+  #resnet50_mp.configs,
+  #resnet50_pod.configs,
+  #huggingfaceGlue.configs,
+  #tpu_mem.configs,
+  huggingfaceBenchmarking.configs,
+  huggingfaceGpuBenchmarking.configs,
 ])

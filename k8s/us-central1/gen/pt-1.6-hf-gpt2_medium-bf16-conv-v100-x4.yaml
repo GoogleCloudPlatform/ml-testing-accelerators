@@ -15,32 +15,17 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-1.6-fs-transformer-func-v3-8"
+  "name": "pt-1.6-hf-gpt2_medium-bf16-conv-v100-x4"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 3600
+      "activeDeadlineSeconds": 36000
       "backoffLimit": 1
       "template":
-        "metadata":
-          "annotations":
-            "tf-version.cloud-tpus.google.com": "pytorch-1.6"
         "spec":
           "containers":
-          - "env":
-            - "name": "POD_NAME"
-              "valueFrom":
-                "fieldRef":
-                  "fieldPath": "metadata.name"
-            - "name": "POD_NAMESPACE"
-              "valueFrom":
-                "fieldRef":
-                  "fieldPath": "metadata.namespace"
-            "image": "gcr.io/xl-ml-test/health-monitor:stable"
-            "imagePullPolicy": "Always"
-            "name": "monitor"
           - "args":
             - "/bin/bash"
             - "-c"
@@ -49,37 +34,31 @@
               set -e
               set -x
               
-              python3 \
-                /tpu-examples/deps/fairseq/train.py \
-                /datasets/wmt18_en_de_bpej32k \
-                --metrics_debug \
-                --arch=transformer_vaswani_wmt_en_de_big \
-                --max-target-positions=64 \
-                --attention-dropout=0.1 \
-                --no-progress-bar \
-                --criterion=label_smoothed_cross_entropy \
-                --source-lang=en \
-                --lr-scheduler=inverse_sqrt  \
-                --min-lr=1e-09 \
-                --skip-invalid-size-inputs-valid-test \
-                --target-lang=de \
-                --label-smoothing=0.1 \
-                --update-freq=1 \
-                --optimizer=adam \
-                --adam-betas='(0.9,0.98)' \
-                --warmup-init-lr=1e-07 \
-                --lr=0.0005 \
-                --warmup-updates=4000 \
-                --share-all-embeddings \
-                --dropout=0.3 \
-                --weight-decay=0.0 \
-                --num_cores=8 \
-                --no-save \
-                --max-epoch=1 \
-                --log_steps=10 \
-                --train-subset=valid \
-                --valid-subset=test \
-                --input_shapes=128x64
+              git clone https://github.com/huggingface/transformers.git
+              cd transformers && pip install .
+              git log -1
+              python examples/xla_spawn.py \
+                --num_cores 8 \
+                examples/language-modeling/run_language_modeling.py \
+                --logging_dir ./tensorboard-metrics \
+                --cache_dir ./cache_dir \
+                --train_data_file /datasets/wikitext-103-raw/wiki.train.raw \
+                --do_train \
+                --do_eval \
+                --eval_data_file /datasets/wikitext-103-raw/wiki.valid.raw \
+                --overwrite_output_dir \
+                --output_dir language-modeling \
+                --logging_steps 100 \
+                --save_steps 3000 \
+                --overwrite_cache \
+                --tpu_metrics_debug \
+               --mlm --model_type=gpt2 \
+              --model_name_or_path gpt2-medium \
+              --num_train_epochs 3 \
+              --per_device_train_batch_size 4 \
+              --per_device_eval_batch_size 4
+              gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
+              
               
             "env":
             - "name": "POD_NAME"
@@ -99,9 +78,9 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-1.6/fs-transformer/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-1.6/hf-gpt2_medium-bf16/conv/v100-x4/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
-              "value": "0"
+              "value": "1"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
@@ -110,10 +89,10 @@
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v3": 8
+                "nvidia.com/gpu": 4
               "requests":
-                "cpu": "9.0"
-                "memory": "30Gi"
+                "cpu": "48.0"
+                "memory": "100Gi"
             "volumeMounts":
             - "mountPath": "/dev/shm"
               "name": "dshm"
@@ -140,7 +119,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-1.6/fs-transformer/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-1.6/hf-gpt2_medium-bf16/conv/v100-x4/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -191,7 +170,7 @@
                    }
                   }
                  },
-                 "test_name": "pt-1.6-fs-transformer-func-v3-8"
+                 "test_name": "pt-1.6-hf-gpt2_medium-bf16-conv-v100-x4"
                 }
             "envFrom":
             - "configMapRef":
@@ -200,7 +179,7 @@
             "imagePullPolicy": "Always"
             "name": "publisher"
           "nodeSelector":
-            "tpu-available": "true"
+            "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":
@@ -209,5 +188,5 @@
           - "name": "pytorch-datasets-claim"
             "persistentVolumeClaim":
               "claimName": "pytorch-datasets-claim"
-  "schedule": "0 2 * * *"
+  "schedule": "30 2 * * 2,4"
   "successfulJobsHistoryLimit": 1

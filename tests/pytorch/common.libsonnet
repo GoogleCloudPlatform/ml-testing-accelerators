@@ -81,6 +81,19 @@ local volumes = import "templates/volumes.libsonnet";
       }
     }
   },
+  PyTorchGpuTest:: common.CloudAcceleratorTest {
+    local config = self,
+
+    image: "pytorch/pytorch",
+    volumeMap+: {
+      dshm: volumes.MemoryVolumeSpec {
+        name: "dshm",
+        mountPath: "/dev/shm",
+      },
+    },
+    cpu: "4.5",
+    memory: "8Gi",
+  },
   PyTorchGkePodTest:: PyTorchBaseTest {
     local config = self,
 
