@@ -89,7 +89,7 @@ def _get_query_config(test_name_prefix, cutoff_timestamp):
         {
           'name': 'test_name_prefix',
           'parameterType': {'type': 'STRING'},
-          'parameterValue': {'value': '{}%'.format(test_name_prefix)},
+          'parameterValue': {'value': '{}-%'.format(test_name_prefix)},
         },
         {
           'name': 'cutoff_timestamp',
