@@ -37,22 +37,8 @@ local utils = import "templates/utils.libsonnet";
     volumeMap+: {
       datasets: common.datasetsVolume
     },
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          containerMap+: {
-            train+: {
-              resources+: {
-                requests: {
-                  cpu: "13.0",
-                  memory: "40Gi",
-                },
-              },
-            },
-          },
-        },
-      },
-    },
+    cpu: "13.0",
+    memory: "40Gi",
   },
 
   local resnet50_MP = common.PyTorchTest {
