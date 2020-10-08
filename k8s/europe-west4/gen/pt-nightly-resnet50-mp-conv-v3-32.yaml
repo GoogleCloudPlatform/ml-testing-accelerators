@@ -177,5 +177,5 @@
             "tpu-available": "true"
           "restartPolicy": "Never"
           "serviceAccountName": "pytorch-xla-pods"
-  "schedule": "0 6 * * 1,6"
+  "schedule": "0 6 * * 1,3,6"
   "successfulJobsHistoryLimit": 1
