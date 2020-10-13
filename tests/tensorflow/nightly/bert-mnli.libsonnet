@@ -44,6 +44,16 @@ local tpus = import "templates/tpus.libsonnet";
     command+: [
       '--num_train_epochs=6',
     ],
+    regressionTestConfig+: {
+      metric_success_conditions+: {
+        "examples_per_second_average": {
+          comparison: "greater_or_equal",
+          success_threshold: {
+            stddevs_from_mean: 4.0,
+          },
+        },
+      },
+    },
   },
   local v2_8 = {
     accelerator: tpus.v2_8,
@@ -77,11 +87,12 @@ local tpus = import "templates/tpus.libsonnet";
   configs: [
     bert + v2_8 + functional,
     bert + v3_8 + functional,
-    bert + v2_8 + convergence + timeouts.Hours(2),
-    bert + v3_8 + convergence + timeouts.Hours(2),
+    bert + v2_8 + convergence + timeouts.Hours(4),
+    bert + v3_8 + convergence + timeouts.Hours(3),
     bert + v2_32 + functional,
     bert + v3_32 + functional,
     bert + v2_32 + convergence,
     bert + v3_32 + convergence,
   ],
 }
+

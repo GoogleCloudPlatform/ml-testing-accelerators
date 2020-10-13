@@ -56,7 +56,9 @@ local base = import "templates/base.libsonnet";
               },
             }
           else { },
-        },
+        } + if config.accelerator.type == "gpu" then {
+          priorityClassName: "gpu-%(version)s" % config.accelerator,
+        } else { },
       },
     },
 

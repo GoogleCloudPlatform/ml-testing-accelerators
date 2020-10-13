@@ -139,6 +139,7 @@
             "name": "publisher"
           "nodeSelector":
             "cloud.google.com/gke-accelerator": "nvidia-tesla-k80"
+          "priorityClassName": "gpu-k80"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":
