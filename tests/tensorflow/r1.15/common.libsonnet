@@ -17,17 +17,18 @@ local mixins = import "templates/mixins.libsonnet";
 
 {
   LegacyTpuTest:: common.LegacyTpuTest {
-    frameworkPrefix: "tf-r1.15",
+    frameworkPrefix: "tf-r1.15.4",
     tpuSettings+: {
-      softwareVersion: "1.15.3",
+      softwareVersion: "1.15.4",
     },
-    imageTag: "r1.15.3",
+    imageTag: "r1.15.4",
   },
-  # Don't run tests manually by default since this release is stable.
+  # Running convergence tests at Midnight PST daily..
   Convergence:: mixins.Convergence {
-    schedule: null
+    schedule: "0 8 * * *"
   },
+  # Running convergence tests at 10PM PST daily..
   Functional:: mixins.Functional {
-    schedule: null
+    schedule: "0 6 * * *"
   },
 }
