@@ -73,6 +73,12 @@ local gpus = import "templates/gpus.libsonnet";
           },
           comparison: "greater",
         },
+        "examples_per_second_average": {
+          comparison: "greater_or_equal",
+          success_threshold: {
+            stddevs_from_mean: 4.0,
+          },
+        },
       },
     },
   },
@@ -147,7 +153,7 @@ local gpus = import "templates/gpus.libsonnet";
     resnet + v100x4 + functional + mixins.Experimental,
     resnet + v100x4 + convergence + mixins.Experimental,
     resnet + v100x8 + functional + mixins.Unsuspended,
-    resnet + v100x8 + convergence,
+    resnet + v100x8 + convergence + timeouts.Hours(14),
     resnet + v2_8 + functional,
     resnet + v3_8 + functional,
     resnet + v2_8 + convergence,
@@ -158,3 +164,4 @@ local gpus = import "templates/gpus.libsonnet";
     resnet + v3_32 + convergence,
   ],
 }
+
