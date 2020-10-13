@@ -164,6 +164,7 @@
             "name": "publisher"
           "nodeSelector":
             "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
+          "priorityClassName": "gpu-v100"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":
