@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local tensorflow_targets = import "tensorflow/targets.jsonnet";
-local pytorch_targets = import "pytorch/targets.jsonnet";
+# TODO: Add more repos here if desired.
+local pytorch_examples_targets = import "pytorch_examples/targets.jsonnet";
 
-local all_targets = tensorflow_targets + pytorch_targets;
+local all_targets = pytorch_examples_targets;
 
 # Mapping from unique test name to test config
 {
