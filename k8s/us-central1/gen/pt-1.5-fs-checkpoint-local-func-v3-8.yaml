@@ -191,19 +191,11 @@
                  "regression_test_config": {
                   "metric_subset_to_alert": [
                    "ExecuteTime__Percentile_99_sec_final",
-                   "CompileTime__Percentile_99_sec_final",
                    "total_wall_time",
                    "Accuracy/test_final",
                    "aten_ops_sum_final"
                   ],
                   "metric_success_conditions": {
-                   "CompileTime__Percentile_99_sec_final": {
-                    "comparison": "less",
-                    "success_threshold": {
-                     "stddevs_from_mean": 5
-                    },
-                    "wait_for_n_points_of_history": 10
-                   },
                    "ExecuteTime__Percentile_99_sec_final": {
                     "comparison": "less",
                     "success_threshold": {
