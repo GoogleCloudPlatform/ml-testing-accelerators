@@ -83,7 +83,7 @@ local tpus = import "templates/tpus.libsonnet";
   },
 
   configs: [
-    xlnet + v2_8 + convergence + timeouts.Hours(1),
+    xlnet + v2_8 + convergence + timeouts.Hours(2),
     xlnet + v3_8 + convergence + timeouts.Hours(1),
     xlnet + v2_32 + convergence,
     xlnet + v3_32 + convergence,
