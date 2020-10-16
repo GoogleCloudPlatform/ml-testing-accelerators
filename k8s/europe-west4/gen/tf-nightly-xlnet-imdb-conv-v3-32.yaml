@@ -67,6 +67,7 @@
             - "--bi_data=false"
             - "--summary_type=last"
             - "--train_batch_size=128"
+            - "--test_batch_size=128"
             - "--train_steps=4000"
             "env":
             - "name": "POD_NAME"

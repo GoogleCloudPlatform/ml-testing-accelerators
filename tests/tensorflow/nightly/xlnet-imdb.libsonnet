@@ -56,30 +56,34 @@ local tpus = import "templates/tpus.libsonnet";
   local v2_8 = {
     accelerator: tpus.v2_8,
     command+: [
-      '--train_batch_size=32',
+      '--train_batch_size=16',
+      '--test_batch_size=16',
     ],
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
     command+: [
       '--train_batch_size=32',
+      '--test_batch_size=32',
     ],
   },
   local v2_32 = {
     accelerator: tpus.v2_32,
     command+: [
-      '--train_batch_size=128',
+      '--train_batch_size=64',
+      '--test_batch_size=64',
     ],
   },
   local v3_32 = {
     accelerator: tpus.v3_32,
     command+: [
       '--train_batch_size=128',
+      '--test_batch_size=128',
     ],
   },
 
   configs: [
-    xlnet + v2_8 + convergence + timeouts.Hours(1),
+    xlnet + v2_8 + convergence + timeouts.Hours(2),
     xlnet + v3_8 + convergence + timeouts.Hours(1),
     xlnet + v2_32 + convergence,
     xlnet + v3_32 + convergence,

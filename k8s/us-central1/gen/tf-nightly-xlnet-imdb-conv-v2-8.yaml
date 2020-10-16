@@ -21,7 +21,7 @@
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 3600
+      "activeDeadlineSeconds": 7200
       "backoffLimit": 1
       "template":
         "metadata":
@@ -66,7 +66,8 @@
             - "--iterations=500"
             - "--bi_data=false"
             - "--summary_type=last"
-            - "--train_batch_size=32"
+            - "--train_batch_size=16"
+            - "--test_batch_size=16"
             - "--train_steps=4000"
             "env":
             - "name": "POD_NAME"
