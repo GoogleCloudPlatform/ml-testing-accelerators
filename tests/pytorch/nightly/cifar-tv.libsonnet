@@ -34,7 +34,6 @@ local tpus = import "templates/tpus.libsonnet";
     regressionTestConfig: {
       metric_subset_to_alert: [
         "ExecuteTime__Percentile_99_sec_final",
-        "CompileTime__Percentile_99_sec_final",
         "total_wall_time",
         "Accuracy/test_final",
         "aten_ops_sum_final",
@@ -43,12 +42,6 @@ local tpus = import "templates/tpus.libsonnet";
         "ExecuteTime__Percentile_99_sec_final": {
           success_threshold: {
             fixed_value: 0.5,
-          },
-          comparison: "less",
-        },
-        "CompileTime__Percentile_99_sec_final": {
-          success_threshold: {
-            fixed_value: 6.0,
           },
           comparison: "less",
         },
