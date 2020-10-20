@@ -15,7 +15,7 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-nightly-xlnet-squad-func-v3-8"
+  "name": "tf-nightly-xlnet-imdb-func-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
@@ -43,19 +43,15 @@
             "name": "monitor"
           - "args":
             - "python3"
-            - "official/nlp/xlnet/run_squad.py"
+            - "official/nlp/xlnet/run_classifier.py"
             - "--strategy_type=tpu"
             - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
+            - "--train_tfrecord_path=$(XLNET_IMDB_DIR)/spiece.model.len-512.train.tf_record"
+            - "--test_tfrecord_path=$(XLNET_IMDB_DIR)/spiece.model.len-512.dev.eval.tf_record"
             - "--init_checkpoint=$(XLNET_CHECKPOINT_DIR)/xlnet_model.ckpt"
             - "--model_dir=$(MODEL_DIR)"
-            - "--train_tfrecord_path=$(XLNET_SQUAD_DIR)"
-            - "--test_tfrecord_path=$(XLNET_SQUAD_DIR)/12048.eval.tf_record"
-            - "--test_feature_path=$(XLNET_SQUAD_DIR)/spiece.model.slen-512.qlen-64.eval.features.pkl"
-            - "--predict_file=$(XLNET_SQUAD_DIR)/dev-v2.0.json"
-            - "--predict_dir=$(MODEL_DIR)"
+            - "--test_data_size=25024"
             - "--seq_len=512"
-            - "--reuse_len=256"
-            - "--mem_len=0"
             - "--n_layer=24"
             - "--d_model=1024"
             - "--d_embed=1024"
@@ -63,15 +59,15 @@
             - "--d_head=64"
             - "--d_inner=4096"
             - "--untie_r=true"
+            - "--n_class=2"
             - "--ff_activation=gelu"
-            - "--learning_rate=.00003"
-            - "--warmup_steps=1000"
-            - "--iterations=1000"
+            - "--learning_rate=2e-5"
+            - "--warmup_steps=500"
+            - "--iterations=500"
             - "--bi_data=false"
-            - "--query_len=64"
-            - "--adam_epsilon=.000001"
-            - "--lr_layer_decay_rate=0.75"
-            - "--train_batch_size=48"
+            - "--summary_type=last"
+            - "--train_batch_size=32"
+            - "--test_batch_size=32"
             - "--train_steps=1000"
             "env":
             - "name": "POD_NAME"
@@ -91,7 +87,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/xlnet-squad/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/xlnet-imdb/func/v3-8/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
@@ -127,7 +123,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/xlnet-squad/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/xlnet-imdb/func/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -160,7 +156,7 @@
                    }
                   }
                  },
-                 "test_name": "tf-nightly-xlnet-squad-func-v3-8"
+                 "test_name": "tf-nightly-xlnet-imdb-func-v3-8"
                 }
             "envFrom":
             - "configMapRef":
