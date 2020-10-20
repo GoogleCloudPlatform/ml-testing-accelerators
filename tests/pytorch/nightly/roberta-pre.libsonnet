@@ -18,7 +18,7 @@ local tpus = import "templates/tpus.libsonnet";
 local utils = import "templates/utils.libsonnet";
 
 {
-  local roberta = common.PyTorchTest {
+  local roberta = {
     modelName: "roberta-pre",
     paramsOverride: {
       maxEpoch: error "Must set `maxEpoch`",
@@ -91,8 +91,12 @@ local utils = import "templates/utils.libsonnet";
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+  },
   configs: [
-    roberta + v3_8 + functional + timeouts.Hours(1),
-    roberta + v3_8 + convergence + timeouts.Hours(2),
+    common.PyTorchGkePodTest + roberta + v3_32 + functional + timeouts.Hours(1),
+    common.PyTorchTest + roberta + v3_8 + functional + timeouts.Hours(1),
+    common.PyTorchTest + roberta + v3_8 + convergence + timeouts.Hours(2),
   ],
 }
