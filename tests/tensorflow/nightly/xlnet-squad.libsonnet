@@ -70,7 +70,7 @@ local tpus = import "templates/tpus.libsonnet";
   },
 
   configs: [
-    xlnet + v3_8 + functional,
+    xlnet + v3_8 + functional + mixins.Unsuspended,
     xlnet + v3_8 + convergence,
   ],
 }

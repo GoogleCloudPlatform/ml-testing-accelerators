@@ -17,7 +17,6 @@ local mixins = import "templates/mixins.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 
-# XLNet Classification training takes around 30 minutes, so only include convergence tests.
 {
   local xlnet = common.ModelGardenTest {
     modelName: "xlnet-imdb",
@@ -46,6 +45,11 @@ local tpus = import "templates/tpus.libsonnet";
       "--iterations=500",
       "--bi_data=false",
       "--summary_type=last",
+    ],
+  },
+  local functional = common.Functional {
+    command+: [
+      '--train_steps=1000',
     ],
   },
   local convergence = common.Convergence {
@@ -83,6 +87,7 @@ local tpus = import "templates/tpus.libsonnet";
   },
 
   configs: [
+    xlnet + v3_8 + functional + mixins.Unsuspended,
     xlnet + v2_8 + convergence + timeouts.Hours(2),
     xlnet + v3_8 + convergence + timeouts.Hours(1),
     xlnet + v2_32 + convergence,

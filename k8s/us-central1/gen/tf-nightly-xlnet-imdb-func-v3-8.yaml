@@ -15,18 +15,18 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-r1.15.4-transformer-conv-v2-32"
+  "name": "tf-nightly-xlnet-imdb-func-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 36000
+      "activeDeadlineSeconds": 3600
       "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
-            "tf-version.cloud-tpus.google.com": "1.15.4"
+            "tf-version.cloud-tpus.google.com": "nightly"
         "spec":
           "containers":
           - "env":
@@ -42,18 +42,33 @@
             "imagePullPolicy": "Always"
             "name": "monitor"
           - "args":
-            - "t2t-trainer"
-            - "--model=transformer"
-            - "--hparams_set=transformer_packed_tpu"
-            - "--problem=translate_ende_wmt32k_packed"
-            - "--use_tpu=True"
-            - "--schedule=train"
-            - "--data_dir=$(T2T_TRANSFORMER_DIR)"
-            - "--cloud_tpu_name=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--output_dir=$(MODEL_DIR)"
-            - "--iterations_per_loop=5000"
-            - "--tpu_num_shards=32"
-            - "--train_steps=62500"
+            - "python3"
+            - "official/nlp/xlnet/run_classifier.py"
+            - "--strategy_type=tpu"
+            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
+            - "--train_tfrecord_path=$(XLNET_IMDB_DIR)/spiece.model.len-512.train.tf_record"
+            - "--test_tfrecord_path=$(XLNET_IMDB_DIR)/spiece.model.len-512.dev.eval.tf_record"
+            - "--init_checkpoint=$(XLNET_CHECKPOINT_DIR)/xlnet_model.ckpt"
+            - "--model_dir=$(MODEL_DIR)"
+            - "--test_data_size=25024"
+            - "--seq_len=512"
+            - "--n_layer=24"
+            - "--d_model=1024"
+            - "--d_embed=1024"
+            - "--n_head=16"
+            - "--d_head=64"
+            - "--d_inner=4096"
+            - "--untie_r=true"
+            - "--n_class=2"
+            - "--ff_activation=gelu"
+            - "--learning_rate=2e-5"
+            - "--warmup_steps=500"
+            - "--iterations=500"
+            - "--bi_data=false"
+            - "--summary_type=last"
+            - "--train_batch_size=32"
+            - "--test_batch_size=32"
+            - "--train_steps=1000"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -72,16 +87,23 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r1.15.4/transformer/conv/v2-32/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/xlnet-imdb/func/v3-8/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/tensorflow-tpu-1x:r1.15.4"
+            "image": "gcr.io/xl-ml-test/tensorflow:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v2": 32
+                "cloud-tpus.google.com/preemptible-v3": 8
+              "requests":
+                "cpu": 2
+                "memory": "20G"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -101,7 +123,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r1.15.4/transformer/conv/v2-32/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/xlnet-imdb/func/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -109,10 +131,22 @@
                   "default_aggregation_strategies": [
                    "final"
                   ],
+                  "metric_to_aggregation_strategies": {
+                   "examples_per_second": [
+                    "average"
+                   ]
+                  },
+                  "use_run_name_prefix": true,
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
                   "metric_success_conditions": {
+                   "examples_per_second_average": {
+                    "comparison": "greater_or_equal",
+                    "success_threshold": {
+                     "stddevs_from_mean": 4
+                    }
+                   },
                    "total_wall_time": {
                     "comparison": "less",
                     "success_threshold": {
@@ -122,7 +156,7 @@
                    }
                   }
                  },
-                 "test_name": "tf-r1.15.4-transformer-conv-v2-32"
+                 "test_name": "tf-nightly-xlnet-imdb-func-v3-8"
                 }
             "envFrom":
             - "configMapRef":
@@ -133,5 +167,10 @@
           "nodeSelector":
             "tpu-available": "true"
           "restartPolicy": "Never"
-  "schedule": "0 8 * * 0"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+  "schedule": "0 8 * * *"
   "successfulJobsHistoryLimit": 1
+  "suspend": false
