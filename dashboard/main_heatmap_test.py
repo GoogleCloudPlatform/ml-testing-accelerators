@@ -123,6 +123,11 @@ class MainHeatmapTest(parameterized.TestCase):
     plot = main_heatmap.make_plot(input_df)
     self.assertTrue(plot is not None and len(plot.renderers) > 0)
 
+  def test_make_plot_empty_data(self):
+    input_df = pd.DataFrame()
+    # Make sure nothing crashes.
+    plot = main_heatmap.make_plot(input_df)
+
 
 if __name__ == '__main__':
   absltest.main()

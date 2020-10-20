@@ -170,7 +170,11 @@ def process_dataframes(job_status_dataframe, metrics_dataframe):
 
 def make_plot(dataframe):
   source = ColumnDataSource(data=dataframe)
+  if 'run_date' not in source.data:
+    return None  # No dates to render.
   all_dates = np.unique(source.data['run_date']).tolist()
+  if not all_dates:
+    return None  # No dates to render.
 
   # The heatmap doesn't render correctly if there are very few dates.
   MIN_DATES_TO_RENDER = 15

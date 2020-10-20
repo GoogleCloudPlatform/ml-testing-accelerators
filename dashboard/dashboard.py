@@ -73,7 +73,8 @@ cutoff_timestamp = (datetime.datetime.now() - datetime.timedelta(
 all_data = parallel_fetch_data(test_name_prefixes, cutoff_timestamp)
 for test_prefix, data in all_data.items():
   plot = main_heatmap.make_plot(data)
-  all_tabs.append(Panel(child=plot, title=test_prefix))
+  if plot:
+    all_tabs.append(Panel(child=plot, title=test_prefix))
 
 curdoc().title = "Test pass/fail Dashboard"
 curdoc().add_root(column(children=[row(timer), row(Tabs(tabs=all_tabs))]))
