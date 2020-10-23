@@ -18,7 +18,7 @@ local tpus = import "templates/tpus.libsonnet";
 local utils = import "templates/utils.libsonnet";
 
 {
-  local roberta = common.PyTorchTest {
+  local roberta = {
     modelName: "roberta-pre",
     paramsOverride: {
       maxEpoch: error "Must set `maxEpoch`",
@@ -29,7 +29,6 @@ local utils = import "templates/utils.libsonnet";
         python3 \
           /tpu-examples/deps/fairseq/train.py \
           /datasets/wikitext-103 \
-          --tensorboard-logdir=$(MODEL_DIR) \
           --task=masked_lm --criterion=masked_lm \
           --arch=roberta_base --sample-break-mode=complete \
           --tokens-per-sample=512 \
@@ -69,6 +68,7 @@ local utils = import "templates/utils.libsonnet";
                 requests: {
                   cpu: "9.0",
                   memory: "30Gi",
+		  "ephemeral-storage": "10Gi",
                 },
               },
             },
@@ -91,8 +91,12 @@ local utils = import "templates/utils.libsonnet";
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+  },
   configs: [
-    roberta + v3_8 + functional + timeouts.Hours(1),
-    roberta + v3_8 + convergence + timeouts.Hours(2),
+    common.PyTorchGkePodTest + roberta + v3_32 + functional + timeouts.Hours(1),
+    common.PyTorchTest + roberta + v3_8 + functional + timeouts.Hours(1),
+    common.PyTorchTest + roberta + v3_8 + convergence + timeouts.Hours(2),
   ],
 }

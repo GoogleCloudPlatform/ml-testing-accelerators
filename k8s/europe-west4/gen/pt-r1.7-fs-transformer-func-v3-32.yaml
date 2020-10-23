@@ -15,18 +15,18 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-1.5-roberta-pre-conv-v3-8"
+  "name": "pt-r1.7-fs-transformer-func-v3-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 7200
-      "backoffLimit": 1
+      "activeDeadlineSeconds": 3600
+      "backoffLimit": 0
       "template":
         "metadata":
           "annotations":
-            "tf-version.cloud-tpus.google.com": "pytorch-1.5"
+            "tf-version.cloud-tpus.google.com": "pytorch-1.7"
         "spec":
           "containers":
           - "env":
@@ -49,37 +49,51 @@
               set -e
               set -x
               
-              pip install --editable tpu-examples/deps/fairseq
               python3 \
                 /tpu-examples/deps/fairseq/train.py \
-                /datasets/wikitext-103 \
-                --tensorboard-logdir=$(MODEL_DIR) \
-                --task=masked_lm --criterion=masked_lm \
-                --arch=roberta_base --sample-break-mode=complete \
-                --tokens-per-sample=512 \
+                /datasets/wmt18_en_de_bpej32k \
+                --metrics_debug \
+                --arch=transformer_vaswani_wmt_en_de_big \
+                --max-target-positions=64 \
+                --attention-dropout=0.1 \
+                --no-progress-bar \
+                --criterion=label_smoothed_cross_entropy \
+                --source-lang=en \
+                --lr-scheduler=inverse_sqrt  \
+                --min-lr=1e-09 \
+                --skip-invalid-size-inputs-valid-test \
+                --target-lang=de \
+                --label-smoothing=0.1 \
+                --update-freq=1 \
                 --optimizer=adam \
                 --adam-betas='(0.9,0.98)' \
-                --adam-eps=1e-6 \
-                --clip-norm=0.0 \
-                --lr-scheduler=polynomial_decay \
+                --warmup-init-lr=1e-07 \
                 --lr=0.0005 \
-                --warmup-updates=10000 \
-                --dropout=0.1 \
-                --attention-dropout=0.1 \
-                --weight-decay=0.01 \
-                --update-freq=16 \
-                --log-format=simple \
-                --train-subset=train \
-                --valid-subset=valid \
+                --warmup-updates=4000 \
+                --share-all-embeddings \
+                --dropout=0.3 \
+                --weight-decay=0.0 \
                 --num_cores=8 \
-                --metrics_debug \
-                --save-dir=checkpoints \
-                --log_steps=30 \
-                --skip-invalid-size-inputs-valid-test \
-                --suppress_loss_report \
-                --input_shapes 16x512 18x480 21x384 \
-                --max-epoch=5
+                --no-save \
+                --max-epoch=1 \
+                --log_steps=10 \
+                --train-subset=valid \
+                --valid-subset=test \
+                --input_shapes=128x64
               
+            "command":
+            - "python3"
+            - "launch_k8s_workers.py"
+            - "--name=$(JOB_NAME)"
+            - "--image=gcr.io/xl-ml-test/pytorch-xla:r1.7"
+            - "--owner_name=$(POD_NAME)"
+            - "--owner_uid=$(POD_UID)"
+            - "--namespace=$(POD_NAMESPACE)"
+            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
+            - "--cpu=4"
+            - "--memory=4Gi"
+            - "--volumes=pytorch-datasets-claim:/datasets"
+            - "--"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -98,25 +112,20 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-1.5/roberta-pre/conv/v3-8/$(JOB_NAME)"
-            - "name": "XLA_USE_BF16"
-              "value": "0"
+              "value": "$(OUTPUT_BUCKET)/pt-r1.7/fs-transformer/func/v3-32/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.5"
+            "image": "gcr.io/xl-ml-test/pytorch-pods:nightly"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v3": 8
+                "cloud-tpus.google.com/v3": 32
               "requests":
                 "cpu": "9.0"
                 "memory": "30Gi"
             "volumeMounts":
-            - "mountPath": "/dev/shm"
-              "name": "dshm"
-              "readOnly": false
             - "mountPath": "/datasets"
               "name": "pytorch-datasets-claim"
               "readOnly": true
@@ -139,7 +148,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-1.5/roberta-pre/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-r1.7/fs-transformer/func/v3-32/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -182,7 +191,7 @@
                    }
                   }
                  },
-                 "test_name": "pt-1.5-roberta-pre-conv-v3-8"
+                 "test_name": "pt-r1.7-fs-transformer-func-v3-32"
                 }
             "envFrom":
             - "configMapRef":
@@ -193,12 +202,10 @@
           "nodeSelector":
             "tpu-available": "true"
           "restartPolicy": "Never"
+          "serviceAccountName": "pytorch-xla-pods"
           "volumes":
-          - "emptyDir":
-              "medium": "Memory"
-            "name": "dshm"
           - "name": "pytorch-datasets-claim"
             "persistentVolumeClaim":
               "claimName": "pytorch-datasets-claim"
-  "schedule": "0 1 * * 1,6"
+  "schedule": "0 22 * * *"
   "successfulJobsHistoryLimit": 1

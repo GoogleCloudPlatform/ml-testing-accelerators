@@ -22,7 +22,6 @@ local utils = import "templates/utils.libsonnet";
     python3 \
       /tpu-examples/deps/fairseq/train.py \
       /datasets/wmt18_en_de_bpej32k \
-      --tensorboard-logdir=$(MODEL_DIR) \
       --metrics_debug \
       --arch=transformer_vaswani_wmt_en_de_big \
       --max-target-positions=64 \
@@ -53,27 +52,13 @@ local utils = import "templates/utils.libsonnet";
         --save-interval=1 \
         --input_shapes=128x64 \
   ||| % command_common,
-  local transformer = common.PyTorchTest {
+  local transformer = {
     modelName: "fs-transformer",
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          containerMap+: {
-            train+: {
-              resources+: {
-                requests: {
-                  cpu: "9.0",
-                  memory: "30Gi",
-                },
-              },
-            },
-          },
-        },
-      },
-    },
+    cpu: "9.0",
+    memory: "30Gi",
   },
   local checkpoint_local = common.Functional {
     modelName: "fs-checkpoint-local",
@@ -135,7 +120,7 @@ local utils = import "templates/utils.libsonnet";
           --log_steps=200 \
           --train-subset=train \
           --valid-subset=valid \
-          --input_shapes 256x64 512x32 640x16
+          --input_shapes 256x64 512x32
         bleu=`fairseq-generate \
            /datasets/wmt18_en_de_bpej32k \
            --remove-bpe --quiet --lenpen 0.6 --beam 4 \
@@ -143,7 +128,7 @@ local utils = import "templates/utils.libsonnet";
            --skip-invalid-size-inputs-valid-test | grep BLEU \
            | grep -v loadi | tail -1 | cut -d '=' -f 3| cut -d'.' -f 1`
         echo 'BLEU score is' $bleu
-        test $bleu -gt 26
+        test $bleu -gt 27
       ||| % command_common
     ),
     jobSpec+:: {
@@ -173,10 +158,14 @@ local utils = import "templates/utils.libsonnet";
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+  },
   configs: [
-    transformer + v3_8 + functional + timeouts.Hours(1),
-    transformer + v3_8 + convergence + timeouts.Hours(25),
-    transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
-    transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
+    common.PyTorchGkePodTest + transformer + v3_32 + functional + timeouts.Hours(1),
+    common.PyTorchTest + transformer + v3_8 + functional + timeouts.Hours(1),
+    common.PyTorchTest + transformer + v3_8 + convergence + timeouts.Hours(25),
+    common.PyTorchTest + transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
+    common.PyTorchTest + transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
   ],
 }

@@ -18,20 +18,35 @@ local volumes = import "templates/volumes.libsonnet";
 
 {
   PyTorchTest:: common.PyTorchTest {
-    frameworkPrefix: "pt-1.5",
+    frameworkPrefix: "pt-r1.7",
     tpuSettings+: {
-      softwareVersion: "pytorch-1.5",
+      softwareVersion: "pytorch-1.7",
     },
-    imageTag: "r1.5",
+    imageTag: "r1.7",
+  },
+  PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest {
+    frameworkPrefix: "pt-r1.7",
+    tpuSettings+: {
+      softwareVersion: "pytorch-1.7"
+    },
+    imageTag: "r1.7",
+  },
+  PyTorchGkePodTest:: common.PyTorchGkePodTest {
+    frameworkPrefix: "pt-r1.7",
+    tpuSettings+: {
+      softwareVersion: "pytorch-1.7"
+    },
+    imageTag: "r1.7",
   },
   Functional:: mixins.Functional {
-    schedule: "0 23 * * *",
+    schedule: "0 22 * * *",
     tpuSettings+: {
       preemptible: false,
     },
   },
   Convergence:: mixins.Convergence {
-    schedule: "0 1 * * 1,6",
+    # Run 3 times/week.
+    schedule: "0 0 * * 0,2,4",
   },
   datasetsVolume: volumes.PersistentVolumeSpec {
     name: "pytorch-datasets-claim",
