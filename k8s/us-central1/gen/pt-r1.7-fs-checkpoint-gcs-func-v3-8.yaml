@@ -15,7 +15,7 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-1.5-fs-checkpoint-gcs-func-v3-8"
+  "name": "pt-r1.7-fs-checkpoint-gcs-func-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
@@ -26,7 +26,7 @@
       "template":
         "metadata":
           "annotations":
-            "tf-version.cloud-tpus.google.com": "pytorch-1.5"
+            "tf-version.cloud-tpus.google.com": "pytorch-1.7"
         "spec":
           "containers":
           - "env":
@@ -52,7 +52,6 @@
               python3 \
                 /tpu-examples/deps/fairseq/train.py \
                 /datasets/wmt18_en_de_bpej32k \
-                --tensorboard-logdir=$(MODEL_DIR) \
                 --metrics_debug \
                 --arch=transformer_vaswani_wmt_en_de_big \
                 --max-target-positions=64 \
@@ -86,7 +85,6 @@
               python3 \
                 /tpu-examples/deps/fairseq/train.py \
                 /datasets/wmt18_en_de_bpej32k \
-                --tensorboard-logdir=$(MODEL_DIR) \
                 --metrics_debug \
                 --arch=transformer_vaswani_wmt_en_de_big \
                 --max-target-positions=64 \
@@ -137,13 +135,13 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-1.5/fs-checkpoint-gcs/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-r1.7/fs-checkpoint-gcs/func/v3-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
               "value": "1"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.5"
+            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.7"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
@@ -178,7 +176,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-1.5/fs-checkpoint-gcs/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-r1.7/fs-checkpoint-gcs/func/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -221,7 +219,7 @@
                    }
                   }
                  },
-                 "test_name": "pt-1.5-fs-checkpoint-gcs-func-v3-8"
+                 "test_name": "pt-r1.7-fs-checkpoint-gcs-func-v3-8"
                 }
             "envFrom":
             - "configMapRef":
@@ -239,5 +237,5 @@
           - "name": "pytorch-datasets-claim"
             "persistentVolumeClaim":
               "claimName": "pytorch-datasets-claim"
-  "schedule": "0 23 * * *"
+  "schedule": "0 22 * * *"
   "successfulJobsHistoryLimit": 1

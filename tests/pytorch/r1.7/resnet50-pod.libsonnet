@@ -18,48 +18,36 @@ local tpus = import "templates/tpus.libsonnet";
 local mixins = import "templates/mixins.libsonnet";
 
 {
-  local resnet50_MP = common.PyTorchTest {
+  local resnet50_pod = common.PyTorchGkePodTest {
     modelName: "resnet50-mp",
     command: [
       "python3",
-      "pytorch/xla/test/test_train_mp_imagenet.py",
-      "--logdir=$(MODEL_DIR)",
-      "--model=resnet50",
-      "--num_workers=8",
-      "--batch_size=128",
-      "--log_steps=200",
+      "/pytorch/xla/test/test_train_mp_imagenet.py",
     ],
-    volumeMap+: {
-      datasets: common.datasetsVolume
-    },
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          containerMap+: {
-            train+: {
-              resources+: {
-                requests: {
-                  cpu: "90.0",
-                  memory: "400Gi",
-                },
-              },
-            },
-          },
-        },
-      },
-    },
   },
   local functional = common.Functional {
     command+: [
-      "--num_epochs=2",
-      "--datadir=/datasets/imagenet-mini",
+      "--fake_data",
+      "--num_epochs=5",
     ],
+
+    workerCpu: "8",
+    workerMemory: "16Gi",
   },
   local convergence = common.Convergence {
     command+: [
       "--num_epochs=90",
       "--datadir=/datasets/imagenet",
+      "--batch_size=128",
+      "--log_steps=200",
     ],
+
+    workerCpu: "36",
+    workerMemory: "100Gi",
+    workerVolumes: {
+      datasets: common.datasetsVolume
+    },
+
     regressionTestConfig+: {
       metric_success_conditions+: {
         "Accuracy/test_final": {
@@ -74,8 +62,11 @@ local mixins = import "templates/mixins.libsonnet";
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+  },
   configs: [
-    resnet50_MP + v3_8 + convergence + timeouts.Hours(26) + mixins.PreemptibleTpu,
-    resnet50_MP + v3_8 + functional + timeouts.Hours(2),
+    resnet50_pod + v3_32 + functional,
+    resnet50_pod + v3_32 + convergence,
   ],
 }

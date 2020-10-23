@@ -15,18 +15,18 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "pt-1.5-resnet50-mp-conv-v3-8"
+  "name": "pt-r1.7-cpp-ops-func-v2-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 93600
+      "activeDeadlineSeconds": 14400
       "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
-            "tf-version.cloud-tpus.google.com": "pytorch-1.5"
+            "tf-version.cloud-tpus.google.com": "pytorch-1.7"
         "spec":
           "containers":
           - "env":
@@ -42,15 +42,8 @@
             "imagePullPolicy": "Always"
             "name": "monitor"
           - "args":
-            - "python3"
-            - "pytorch/xla/test/test_train_mp_imagenet.py"
-            - "--logdir=$(MODEL_DIR)"
-            - "--model=resnet50"
-            - "--num_workers=8"
-            - "--batch_size=128"
-            - "--log_steps=200"
-            - "--num_epochs=90"
-            - "--datadir=/datasets/imagenet"
+            - "bash"
+            - "pytorch/xla/test/cpp/run_tests.sh"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -69,28 +62,25 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-1.5/resnet50-mp/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-r1.7/cpp-ops/func/v2-8/$(JOB_NAME)"
             - "name": "XLA_USE_BF16"
               "value": "0"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.5"
+            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.7"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v3": 8
+                "cloud-tpus.google.com/v2": 8
               "requests":
-                "cpu": "90.0"
-                "memory": "400Gi"
+                "cpu": "4.5"
+                "memory": "8Gi"
             "volumeMounts":
             - "mountPath": "/dev/shm"
               "name": "dshm"
               "readOnly": false
-            - "mountPath": "/datasets"
-              "name": "pytorch-datasets-claim"
-              "readOnly": true
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -110,7 +100,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-1.5/resnet50-mp/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-r1.7/cpp-ops/func/v2-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -123,43 +113,8 @@
                   ],
                   "write_to_bigquery": true
                  },
-                 "regression_test_config": {
-                  "metric_subset_to_alert": [
-                   "ExecuteTime__Percentile_99_sec_final",
-                   "total_wall_time",
-                   "Accuracy/test_final",
-                   "aten_ops_sum_final"
-                  ],
-                  "metric_success_conditions": {
-                   "Accuracy/test_final": {
-                    "comparison": "greater",
-                    "success_threshold": {
-                     "fixed_value": 75
-                    }
-                   },
-                   "ExecuteTime__Percentile_99_sec_final": {
-                    "comparison": "less",
-                    "success_threshold": {
-                     "stddevs_from_mean": 5
-                    },
-                    "wait_for_n_points_of_history": 10
-                   },
-                   "aten_ops_sum_final": {
-                    "comparison": "less_or_equal",
-                    "success_threshold": {
-                     "stddevs_from_mean": 0
-                    }
-                   },
-                   "total_wall_time": {
-                    "comparison": "less",
-                    "success_threshold": {
-                     "stddevs_from_mean": 5
-                    },
-                    "wait_for_n_points_of_history": 10
-                   }
-                  }
-                 },
-                 "test_name": "pt-1.5-resnet50-mp-conv-v3-8"
+                 "regression_test_config": null,
+                 "test_name": "pt-r1.7-cpp-ops-func-v2-8"
                 }
             "envFrom":
             - "configMapRef":
@@ -174,8 +129,5 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-          - "name": "pytorch-datasets-claim"
-            "persistentVolumeClaim":
-              "claimName": "pytorch-datasets-claim"
-  "schedule": "0 1 * * 1,6"
+  "schedule": "0 22 * * *"
   "successfulJobsHistoryLimit": 1
