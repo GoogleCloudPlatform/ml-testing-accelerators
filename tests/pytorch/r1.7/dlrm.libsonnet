@@ -43,22 +43,8 @@ local utils = import "templates/utils.libsonnet";
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          containerMap+: {
-            train+: {
-              resources+: {
-                requests: {
-                  cpu: "9.0",
-                  memory: "30Gi",
-                },
-              },
-            },
-          },
-        },
-      },
-    },
+    cpu: "9.0",
+    memory: "30Gi",
   },
   local dlrm_convergence = common.PyTorchTest {
     modelName: "dlrm-convergence",
@@ -66,22 +52,8 @@ local utils = import "templates/utils.libsonnet";
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          containerMap+: {
-            train+: {
-              resources+: {
-                requests: {
-                  cpu: "40.0",
-                  memory: "500Gi",
-                },
-              },
-            },
-          },
-        },
-      },
-    },
+    cpu: "40.0",
+    memory: "500Gi",
   },
   local mp_dp_fwd = common.Functional {
     modelName: "dlrm-mpdp-fwd",
