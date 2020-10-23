@@ -12,14 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM tensorflow/tensorflow:1.15.2
+FROM tensorflow/tensorflow:1.15.4
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   curl \
   git \
   libsm6 \
   libxext6 \
-  libxrender-dev
+  libxrender-dev \
+  ffmpeg
 RUN pip install \
   pyyaml \
   google-cloud-storage \
@@ -30,10 +31,10 @@ RUN pip install \
   opencv-python-headless \
   pyyaml \
   Pillow \
-  tensor2tensor \
+  dopamine-rl==3.0.1 \
+  tensorflow-datasets==1.2.0 \
+  tensor2tensor \ 
   'git+https://github.com/cocodataset/cocoapi#egg=pycocotools&subdirectory=PythonAPI'
-# Use 1.15.3 base image when it's available.
-RUN pip install -U tensorflow==1.15.3
 
 WORKDIR /
 RUN curl -L https://github.com/tensorflow/tpu/archive/r1.15.tar.gz | tar zx
@@ -48,6 +49,6 @@ RUN curl -L https://github.com/google-research/bert/archive/master.tar.gz | tar 
 RUN mv bert-* bert/
 
 COPY images/setup.sh /
-COPY images/tensorflow/entrypoint.sh /
+COPY images/tensorflow-tpu-1x/entrypoint.sh /
 
 ENTRYPOINT ["/entrypoint.sh"]
