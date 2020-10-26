@@ -21,7 +21,7 @@ local tpus = import "templates/tpus.libsonnet";
     modelName: "transformer-translate",
     command: [
       "python3",
-      "official/nlp/transformer/transformer_main.py",
+      "official/transformer/v2/transformer_main.py",
       "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
       "--static_batch=true",
       "--use_ctl=true",
