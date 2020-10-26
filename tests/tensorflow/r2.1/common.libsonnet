@@ -12,17 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local nightly = import "nightly/targets.jsonnet";
-local r2_3 = import "r2.3/targets.jsonnet";
-local r2_2 = import "r2.2/targets.jsonnet";
-local r2_1 = import "r2.1/targets.jsonnet";
-local r1_15 = import "r1.15/targets.jsonnet";
+local common = import "../common.libsonnet";
+local mixins = import "templates/mixins.libsonnet";
 
-# Add new versions here
-std.flattenArrays([
-  nightly,
-  r1_15,
-  r2_1,
-  r2_2,
-  r2_3,
-])
+{
+  ModelGardenTest:: common.ModelGardenTest {
+    frameworkPrefix: "tf-r2.1.2",
+    tpuSettings+: {
+      softwareVersion: "2.1.2",
+    },
+    imageTag: "r2.1.2",
+  },
+  Functional:: mixins.Functional {
+    # Run at 20:00 PST daily
+    schedule: "0 3 * * 0-6"
+  },
+  # Don't run tests manually by default since this release is stable.
+  Convergence:: mixins.Convergence {
+    schedule: null
+  },
+}
