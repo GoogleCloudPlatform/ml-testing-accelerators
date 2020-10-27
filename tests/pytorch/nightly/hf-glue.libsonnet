@@ -158,9 +158,6 @@ local utils = import "templates/utils.libsonnet";
   },
   local hf_glue = common.PyTorchTest {
     modelName: "hf-glue",
-    volumeMap+: {
-      datasets: common.datasetsVolume,
-    },
     jobSpec+:: {
       template+: {
         spec+: {

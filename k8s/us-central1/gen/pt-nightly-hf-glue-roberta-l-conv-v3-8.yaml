@@ -113,9 +113,6 @@
             - "mountPath": "/dev/shm"
               "name": "dshm"
               "readOnly": false
-            - "mountPath": "/datasets"
-              "name": "pytorch-datasets-claim"
-              "readOnly": true
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -209,8 +206,5 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-          - "name": "pytorch-datasets-claim"
-            "persistentVolumeClaim":
-              "claimName": "pytorch-datasets-claim"
   "schedule": "0 6 * * 1,3,6"
   "successfulJobsHistoryLimit": 1
