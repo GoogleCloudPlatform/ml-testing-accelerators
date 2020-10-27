@@ -32,7 +32,7 @@ local utils = import "templates/utils.libsonnet";
     modelName: "mnist",
     command: [
       "python3",
-      "/usr/share/torch-xla-nightly/pytorch/xla/test/test_train_mp_mnist.py",
+      "/usr/share/torch-xla-1.7/pytorch/xla/test/test_train_mp_mnist.py",
       "--logdir=$(MODEL_DIR)",
     ],
   },
