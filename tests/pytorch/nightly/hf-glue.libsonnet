@@ -22,12 +22,12 @@ local utils = import "templates/utils.libsonnet";
     git clone https://github.com/huggingface/transformers.git
     cd transformers && pip install .
     git log -1
+    pip install datasets
     python examples/xla_spawn.py \
       --num_cores 8 \
       examples/text-classification/run_glue.py \
       --logging_dir=./tensorboard-metrics \
       --task_name MNLI \
-      --data_dir /datasets/glue/MNLI \
       --cache_dir ./cache_dir \
       --do_train \
       --do_eval \

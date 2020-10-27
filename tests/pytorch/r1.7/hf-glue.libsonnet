@@ -19,8 +19,8 @@ local utils = import "templates/utils.libsonnet";
 
 {
   local command_common = |||
-    git clone https://github.com/huggingface/transformers.git
-    cd transformers && pip install .
+    git clone --recursive -b r1.7 https://github.com/pytorch-tpu/examples.git
+    cd examples/deps/transformers && pip install .
     git log -1
     python examples/xla_spawn.py \
       --num_cores 8 \
