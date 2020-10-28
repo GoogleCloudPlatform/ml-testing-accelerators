@@ -67,7 +67,7 @@
             - "name": "ACCELERATOR_TYPE"
               "value": "v3-32"
             - "name": "CONDA_ENV"
-              "value": "torch-xla-nightly"
+              "value": "torch-xla-1.7"
             - "name": "MACHINE_TYPE"
               "value": "n1-standard-8"
             - "name": "XLA_DIST_FLAGS"

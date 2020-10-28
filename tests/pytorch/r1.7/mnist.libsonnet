@@ -30,6 +30,7 @@ local utils = import "templates/utils.libsonnet";
 
   local mnist_pod = common.PyTorchXlaDistPodTest {
     modelName: "mnist",
+    condaEnv: "torch-xla-1.7",
     command: [
       "python3",
       "/usr/share/torch-xla-1.7/pytorch/xla/test/test_train_mp_mnist.py",
