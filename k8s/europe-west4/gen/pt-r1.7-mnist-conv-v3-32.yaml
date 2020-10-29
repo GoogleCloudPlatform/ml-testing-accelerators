@@ -43,7 +43,7 @@
             "name": "monitor"
           - "args":
             - "python3"
-            - "/usr/share/torch-xla-nightly/pytorch/xla/test/test_train_mp_mnist.py"
+            - "/usr/share/torch-xla-1.7/pytorch/xla/test/test_train_mp_mnist.py"
             - "--logdir=$(MODEL_DIR)"
             "env":
             - "name": "POD_NAME"
@@ -67,7 +67,7 @@
             - "name": "ACCELERATOR_TYPE"
               "value": "v3-32"
             - "name": "CONDA_ENV"
-              "value": "torch-xla-nightly"
+              "value": "torch-xla-1.7"
             - "name": "MACHINE_TYPE"
               "value": "n1-standard-8"
             - "name": "XLA_DIST_FLAGS"
