@@ -42,18 +42,16 @@
             "imagePullPolicy": "Always"
             "name": "monitor"
           - "args":
-            - "t2t-trainer"
-            - "--model=transformer"
-            - "--hparams_set=transformer_packed_tpu"
-            - "--problem=translate_ende_wmt32k_packed"
-            - "--use_tpu=True"
-            - "--schedule=train"
-            - "--data_dir=$(T2T_TRANSFORMER_DIR)"
-            - "--cloud_tpu_name=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--output_dir=$(MODEL_DIR)"
-            - "--iterations_per_loop=5000"
-            - "--tpu_num_shards=32"
-            - "--train_steps=10"
+            - "/bin/bash"
+            - "-c"
+            - |
+              set -u
+              set -e
+              set -x
+              
+              unset KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS
+              t2t-trainer --model=transformer --hparams_set=transformer_packed_tpu --problem=translate_ende_wmt32k_packed --use_tpu=True --schedule=train --data_dir=$(T2T_TRANSFORMER_DIR) --output_dir=$(MODEL_DIR) --iterations_per_loop=5000 --tpu_num_shards=32 --train_steps=10 --cloud_tpu_name="${TPU_NAME##*/}"
+              
             "env":
             - "name": "POD_NAME"
               "valueFrom":

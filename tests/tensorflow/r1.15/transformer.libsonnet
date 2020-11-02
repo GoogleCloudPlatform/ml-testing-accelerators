@@ -14,9 +14,12 @@
 
 local common = import "common.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
+local utils = import "templates/utils.libsonnet";
 
 {
   local transformer = common.LegacyTpuTest {
+    local config = self,
+
     modelName: "transformer",
     command: [
       "t2t-trainer",
@@ -26,9 +29,25 @@ local tpus = import "templates/tpus.libsonnet";
       "--use_tpu=True",
       "--schedule=train",
       "--data_dir=$(T2T_TRANSFORMER_DIR)",
-      "--cloud_tpu_name=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
       "--output_dir=$(MODEL_DIR)",
     ],
+
+    jobSpec+:: {
+      template+: {
+        spec+: {
+          containerMap+:: {
+            train+: {
+              args: utils.scriptCommand(
+                # HACK: Trim TPU name from `zone/name` to `name`.
+                |||
+                  unset KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS
+                  %s --cloud_tpu_name="${TPU_NAME##*/}"
+                ||| % std.join(" ", config.command))
+            },
+          },
+        },
+      },
+    },
   },
   local v2_8 = {
     accelerator: tpus.v2_8,
