@@ -25,6 +25,11 @@ local gpus = import "templates/gpus.libsonnet";
       train: {
         epochs: error "Must set `train.epochs`",
       },
+      model: {
+        model_params: {
+          model_name: error "Must set `model.model_params.name`",
+        },
+      },
       evaluation: {
         epochs_between_evals: error "Must set `evaluation.epochs_between_evals`",
       },
@@ -46,10 +51,31 @@ local gpus = import "templates/gpus.libsonnet";
       "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride) + "\n",
     ],
   },
+  local functional_b7 = common.Functional {
+    mode: "hbm",
+    paramsOverride+: {
+      train+: {
+        epochs: 1, 
+      },
+      model+: {
+        model_params+: {
+          model_name: "efficientnet-b7",
+        },
+      },
+      evaluation+: {
+        epochs_between_evals: 1,
+      },
+    },
+  },
   local functional = common.Functional {
     paramsOverride+: {
       train+: {
         epochs: 1, 
+      },
+      model+: {
+        model_params+: {
+          model_name: "efficientnet-b0",
+        },
       },
       evaluation+: {
         epochs_between_evals: 1,
@@ -60,6 +86,11 @@ local gpus = import "templates/gpus.libsonnet";
     paramsOverride+: {
       train+: {
         epochs: 350, 
+      },
+      model+: {
+        model_params+: {
+          model_name: "efficientnet-b0",
+        },
       },
       evaluation+: {
         epochs_between_evals: 10,
@@ -131,6 +162,7 @@ local gpus = import "templates/gpus.libsonnet";
     efficientnet + v100x4 + convergence + mixins.Experimental,
     efficientnet + v2_8 + functional,
     efficientnet + v3_8 + functional,
+    efficientnet + v3_8 + functional_b7 + mixins.Unsuspended,
     efficientnet + v2_8 + convergence + timeouts.Hours(45),
     efficientnet + v3_8 + convergence + timeouts.Hours(45),
     efficientnet + v2_32 + functional,
