@@ -51,9 +51,6 @@ local gpus = import "templates/gpus.libsonnet";
       "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride) + "\n",
     ],
   },
-  local b0 = {
-
-  },
   local hbm = common.Functional {
     # Tests EfficientNet-b7 to check for HBM OOM.
     mode: "hbm",
