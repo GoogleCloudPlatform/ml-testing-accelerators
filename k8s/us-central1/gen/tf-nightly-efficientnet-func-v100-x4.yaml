@@ -37,6 +37,9 @@
             - |
               --params_override="evaluation":
                 "epochs_between_evals": 1
+              "model":
+                "model_params":
+                  "model_name": "efficientnet-b0"
               "runtime":
                 "num_gpus": 4
               "train":

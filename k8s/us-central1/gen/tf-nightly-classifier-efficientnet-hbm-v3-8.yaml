@@ -15,17 +15,32 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "name": "tf-nightly-efficientnet-func-v100-x1"
+  "name": "tf-nightly-classifier-efficientnet-hbm-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "spec":
-      "activeDeadlineSeconds": 28800
+      "activeDeadlineSeconds": 3600
       "backoffLimit": 1
       "template":
+        "metadata":
+          "annotations":
+            "tf-version.cloud-tpus.google.com": "nightly"
         "spec":
           "containers":
+          - "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            "image": "gcr.io/xl-ml-test/health-monitor:stable"
+            "imagePullPolicy": "Always"
+            "name": "monitor"
           - "args":
             - "python3"
             - "official/vision/image_classification/classifier_trainer.py"
@@ -39,16 +54,15 @@
                 "epochs_between_evals": 1
               "model":
                 "model_params":
-                  "model_name": "efficientnet-b0"
-              "runtime":
-                "num_gpus": 1
+                  "model_name": "efficientnet-b7"
               "train":
                 "epochs": 1
               "train_dataset":
                 "builder": "records"
               "validation_dataset":
                 "builder": "records"
-            - "--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-gpu.yaml"
+            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
+            - "--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-tpu.yaml"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -67,7 +81,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/efficientnet/func/v100-x1/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/classifier-efficientnet/hbm/v3-8/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
@@ -76,7 +90,7 @@
             "name": "train"
             "resources":
               "limits":
-                "nvidia.com/gpu": 1
+                "cloud-tpus.google.com/preemptible-v3": 8
               "requests":
                 "cpu": 2
                 "memory": "20G"
@@ -103,7 +117,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/efficientnet/func/v100-x1/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/classifier-efficientnet/hbm/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -136,7 +150,7 @@
                    }
                   }
                  },
-                 "test_name": "tf-nightly-efficientnet-func-v100-x1"
+                 "test_name": "tf-nightly-classifier-efficientnet-hbm-v3-8"
                 }
             "envFrom":
             - "configMapRef":
@@ -145,8 +159,7 @@
             "imagePullPolicy": "Always"
             "name": "publisher"
           "nodeSelector":
-            "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
-          "priorityClassName": "gpu-v100"
+            "tpu-available": "true"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":
@@ -154,4 +167,4 @@
             "name": "dshm"
   "schedule": "0 8 * * *"
   "successfulJobsHistoryLimit": 1
-  "suspend": true
+  "suspend": false

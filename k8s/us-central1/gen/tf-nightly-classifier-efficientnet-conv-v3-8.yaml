@@ -52,6 +52,9 @@
             - |
               --params_override="evaluation":
                 "epochs_between_evals": 10
+              "model":
+                "model_params":
+                  "model_name": "efficientnet-b0"
               "train":
                 "epochs": 350
               "train_dataset":
