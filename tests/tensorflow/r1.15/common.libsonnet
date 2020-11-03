@@ -27,8 +27,8 @@ local mixins = import "templates/mixins.libsonnet";
   Convergence:: mixins.Convergence {
     schedule: "0 8 * * 0"
   },
-  # Running convergence tests at 10PM PST daily.
+  # Running functional tests at 10PM PST on Monday, Wednesday..
   Functional:: mixins.Functional {
-    schedule: "0 6 * * *"
+    schedule: "0 6 * * 1,3"
   },
 }
