@@ -47,7 +47,8 @@ local mixins = import "templates/mixins.libsonnet";
       preemptible: false,
     },
   },
+  # Running convergence tests at Midnight PST on Saturday.
   Convergence:: mixins.Convergence {
-    schedule: null,
+    schedule: "0 8 * * 6",
   },
 }
