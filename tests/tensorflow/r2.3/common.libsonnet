@@ -40,9 +40,9 @@ local mixins = import "templates/mixins.libsonnet";
       },
     },
   },
-  # Running convergence tests at 10 PM PST on Tuesday, Thursday.
+  # Don't run tests manually by default since this release is stable.
   Functional:: mixins.Functional {
-    schedule: "0 6 * * 2,4",
+    schedule: null,
     tpuSettings+: {
       preemptible: false,
     },
