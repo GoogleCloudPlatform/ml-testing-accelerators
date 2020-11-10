@@ -54,7 +54,7 @@
               git log -1
               python examples/xla_spawn.py \
                 --num_cores 8 \
-                examples/language-modeling/run_language_modeling.py \
+                examples/contrib/legacy/run_language_modeling.py \
                 --logging_dir ./tensorboard-metrics \
                 --cache_dir ./cache_dir \
                 --train_data_file /datasets/wikitext-103-raw/wiki.train.raw \
