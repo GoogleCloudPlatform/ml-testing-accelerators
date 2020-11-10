@@ -72,7 +72,7 @@
                 --tpu_metrics_debug \
                --model_name_or_path xlnet-large-cased \
               --per_device_train_batch_size 32 \
-              --per_device_eval_batch_size 32
+              --per_device_eval_batch_size 16
               gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
               
               

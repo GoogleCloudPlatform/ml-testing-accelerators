@@ -78,7 +78,7 @@ local utils = import "templates/utils.libsonnet";
       |||
         %(common)s --model_name_or_path xlnet-large-cased \
         --per_device_train_batch_size 32 \
-        --per_device_eval_batch_size 32
+        --per_device_eval_batch_size 16
         %(common_copy)s
       ||| % {common: command_common, common_copy: command_copy_metrics}
     ),
