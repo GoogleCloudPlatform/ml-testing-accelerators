@@ -263,6 +263,13 @@ class CloudMetricsHandler(object):
     for metric_name, metric_point in aggregated_metrics_dict.items():
       lower_bound, upper_bound = metric_name_to_visual_bounds.get(
           metric_name, (None, None))
+      if not util.is_valid_bigquery_value(metric_point.metric_value):
+        self.logger.warning(
+            'Found metric row with invalid value: {} {} {}'.format(
+                self.test_name,
+                metric_name,
+                metric_point.metric_value))
+        continue
       metric_history_rows.append([
         unique_key,
         self.test_name,

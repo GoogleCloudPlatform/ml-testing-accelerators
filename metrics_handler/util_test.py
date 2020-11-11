@@ -65,8 +65,11 @@ class UtilTest(parameterized.TestCase):
 
   @parameterized.named_parameters(
     ('inf', [1, 2, 3, math.inf, 4, 5], [1, 2, 3, None, 4, 5]),
+    ('inf_parsed', [1, 2, 3, float('inf'), 4, 5], [1, 2, 3, None, 4, 5]),
     ('-inf', [1, 2, 3, -math.inf, 4, 5], [1, 2, 3, None, 4, 5]),
     ('nan', [1, 2, 3, math.nan, 4, 5], [1, 2, 3, None, 4, 5]),
+    ('nan_parsed', [1, 2, 3, float("nan"), 4, 5], [1, 2, 3, None, 4, 5]),
+    ('nan_cap_parsed', [1, 2, 3, float("NAN"), 4, 5], [1, 2, 3, None, 4, 5]),
     ('all', [math.inf, -math.inf, math.nan], [None, None, None]),
     ('one_element', [math.inf], [None]),
     ('empty', [], []),
@@ -74,6 +77,21 @@ class UtilTest(parameterized.TestCase):
   def test_replace_invalid_values(self, row, expected_row):
     clean_row = util.replace_invalid_values(row)
     self.assertSequenceEqual(clean_row, expected_row)
+
+  @parameterized.named_parameters(
+    ('inf', math.inf, False),
+    ('-inf', -math.inf, False),
+    ('inf_parsed', float('inf'), False),
+    ('-inf_parsed', float('-inf'), False),
+    ('nan_parsed', float('nan'), False),
+    ('nan_cap_parsed', float('NAN'), False),
+    ('int', 9, True),
+    ('int_parsed', float('9'), True),
+    ('float', 9.0, True),
+    ('float_parsed', float('9.0'), True),
+  )
+  def test_is_valid_bigquery_value(self, value, expected_bool):
+    self.assertEqual(util.is_valid_bigquery_value(value), expected_bool)
 
 
 if __name__ == '__main__':
