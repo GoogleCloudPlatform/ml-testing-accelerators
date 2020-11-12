@@ -65,6 +65,7 @@ class UtilTest(parameterized.TestCase):
 
   @parameterized.named_parameters(
     ('inf', [1, 2, 3, math.inf, 4, 5], [1, 2, 3, None, 4, 5]),
+    ('inf_and_str', ['1', 2, 3, math.inf, 4, 5], ['1', 2, 3, None, 4, 5]),
     ('inf_parsed', [1, 2, 3, float('inf'), 4, 5], [1, 2, 3, None, 4, 5]),
     ('-inf', [1, 2, 3, -math.inf, 4, 5], [1, 2, 3, None, 4, 5]),
     ('nan', [1, 2, 3, math.nan, 4, 5], [1, 2, 3, None, 4, 5]),
