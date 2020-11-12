@@ -87,6 +87,24 @@ def workload_link(job_name, job_namespace, location, cluster, project):
   return link
 
 
+def is_valid_bigquery_value(v):
+  """Return True if value is valid for writing to BigQuery.
+
+  Args:
+    v (float): Value to check.
+
+  Returns:
+    Bool, True if v is valid and False otherwise.
+
+  """
+  invalid_values = [math.inf, -math.inf, math.nan]
+  if v in invalid_values:
+    return False
+  if math.isnan(v):
+    return False
+  return True
+
+
 def replace_invalid_values(row):
   """Replace float values that are not available in BigQuery.
 
@@ -96,5 +114,4 @@ def replace_invalid_values(row):
   Returns:
     List, `row` with invalid values replaced with `None`.
   """
-  invalid_values = [math.inf, -math.inf, math.nan]
-  return [x if x not in invalid_values else None for x in row]
+  return [x if is_valid_bigquery_value(x) else None for x in row]
