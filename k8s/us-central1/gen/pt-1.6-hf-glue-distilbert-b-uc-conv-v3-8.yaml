@@ -173,13 +173,13 @@
                    "eval_mnli-mm/acc": {
                     "comparison": "greater",
                     "success_threshold": {
-                     "fixed_value": 0.69999999999999996
+                     "fixed_value": 0.7
                     }
                    },
                    "eval_mnli/acc": {
                     "comparison": "greater",
                     "success_threshold": {
-                     "fixed_value": 0.69999999999999996
+                     "fixed_value": 0.7
                     }
                    },
                    "total_wall_time": {
