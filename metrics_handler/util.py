@@ -91,19 +91,20 @@ def is_valid_bigquery_value(v):
   """Return True if value is valid for writing to BigQuery.
 
   Args:
-    v (str or numeric): Value to check.
+    v (anything): Value to check.
 
   Returns:
     Bool, True if v is valid and False otherwise.
 
   """
-  if isinstance(v, str):
-    return True
   invalid_values = [math.inf, -math.inf, math.nan]
   if v in invalid_values:
     return False
-  if math.isnan(v):
-    return False
+  try:
+    if math.isnan(v):
+      return False
+  except TypeError:
+    pass
   return True
 
 
