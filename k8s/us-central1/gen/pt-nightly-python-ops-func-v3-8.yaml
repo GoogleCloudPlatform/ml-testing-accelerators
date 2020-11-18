@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v3-8"
+    "benchmarkId": "pt-nightly-python-ops-func-v3-8"
+    "frameworkVersion": "pt-nightly"
+    "mode": "func"
+    "model": "python-ops"
   "name": "pt-nightly-python-ops-func-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v3-8"
+        "benchmarkId": "pt-nightly-python-ops-func-v3-8"
+        "frameworkVersion": "pt-nightly"
+        "mode": "func"
+        "model": "python-ops"
     "spec":
       "activeDeadlineSeconds": 7200
       "backoffLimit": 1

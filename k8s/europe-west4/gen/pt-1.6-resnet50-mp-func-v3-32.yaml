@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v3-32"
+    "benchmarkId": "pt-1.6-resnet50-mp-func-v3-32"
+    "frameworkVersion": "pt-1.6"
+    "mode": "func"
+    "model": "resnet50-mp"
   "name": "pt-1.6-resnet50-mp-func-v3-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v3-32"
+        "benchmarkId": "pt-1.6-resnet50-mp-func-v3-32"
+        "frameworkVersion": "pt-1.6"
+        "mode": "func"
+        "model": "resnet50-mp"
     "spec":
       "activeDeadlineSeconds": 3600
       "backoffLimit": 0

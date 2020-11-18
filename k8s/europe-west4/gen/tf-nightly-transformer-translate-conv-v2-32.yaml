@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v2-32"
+    "benchmarkId": "tf-nightly-transformer-translate-conv-v2-32"
+    "frameworkVersion": "tf-nightly"
+    "mode": "conv"
+    "model": "transformer-translate"
   "name": "tf-nightly-transformer-translate-conv-v2-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v2-32"
+        "benchmarkId": "tf-nightly-transformer-translate-conv-v2-32"
+        "frameworkVersion": "tf-nightly"
+        "mode": "conv"
+        "model": "transformer-translate"
     "spec":
       "activeDeadlineSeconds": 36000
       "backoffLimit": 1

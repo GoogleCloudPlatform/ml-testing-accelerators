@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v100-x4"
+    "benchmarkId": "tf-nightly-bert-squad-conv-v100-x4"
+    "frameworkVersion": "tf-nightly"
+    "mode": "conv"
+    "model": "bert-squad"
   "name": "tf-nightly-bert-squad-conv-v100-x4"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v100-x4"
+        "benchmarkId": "tf-nightly-bert-squad-conv-v100-x4"
+        "frameworkVersion": "tf-nightly"
+        "mode": "conv"
+        "model": "bert-squad"
     "spec":
       "activeDeadlineSeconds": 14400
       "backoffLimit": 1

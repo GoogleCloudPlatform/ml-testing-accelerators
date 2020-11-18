@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v3-8"
+    "benchmarkId": "tf-r1.15.4-bert-conv-v3-8"
+    "frameworkVersion": "tf-r1.15.4"
+    "mode": "conv"
+    "model": "bert"
   "name": "tf-r1.15.4-bert-conv-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v3-8"
+        "benchmarkId": "tf-r1.15.4-bert-conv-v3-8"
+        "frameworkVersion": "tf-r1.15.4"
+        "mode": "conv"
+        "model": "bert"
     "spec":
       "activeDeadlineSeconds": 36000
       "backoffLimit": 1

@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v100-x8"
+    "benchmarkId": "tf-r2.4.0-classifier-resnet-conv-v100-x8"
+    "frameworkVersion": "tf-r2.4.0"
+    "mode": "conv"
+    "model": "classifier-resnet"
   "name": "tf-r2.4.0-classifier-resnet-conv-v100-x8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v100-x8"
+        "benchmarkId": "tf-r2.4.0-classifier-resnet-conv-v100-x8"
+        "frameworkVersion": "tf-r2.4.0"
+        "mode": "conv"
+        "model": "classifier-resnet"
     "spec":
       "activeDeadlineSeconds": 50400
       "backoffLimit": 1

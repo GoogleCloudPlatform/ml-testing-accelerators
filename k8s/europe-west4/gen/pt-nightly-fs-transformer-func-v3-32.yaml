@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v3-32"
+    "benchmarkId": "pt-nightly-fs-transformer-func-v3-32"
+    "frameworkVersion": "pt-nightly"
+    "mode": "func"
+    "model": "fs-transformer"
   "name": "pt-nightly-fs-transformer-func-v3-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v3-32"
+        "benchmarkId": "pt-nightly-fs-transformer-func-v3-32"
+        "frameworkVersion": "pt-nightly"
+        "mode": "func"
+        "model": "fs-transformer"
     "spec":
       "activeDeadlineSeconds": 3600
       "backoffLimit": 0

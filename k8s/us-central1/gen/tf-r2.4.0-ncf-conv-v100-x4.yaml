@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v100-x4"
+    "benchmarkId": "tf-r2.4.0-ncf-conv-v100-x4"
+    "frameworkVersion": "tf-r2.4.0"
+    "mode": "conv"
+    "model": "ncf"
   "name": "tf-r2.4.0-ncf-conv-v100-x4"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v100-x4"
+        "benchmarkId": "tf-r2.4.0-ncf-conv-v100-x4"
+        "frameworkVersion": "tf-r2.4.0"
+        "mode": "conv"
+        "model": "ncf"
     "spec":
       "activeDeadlineSeconds": 36000
       "backoffLimit": 1

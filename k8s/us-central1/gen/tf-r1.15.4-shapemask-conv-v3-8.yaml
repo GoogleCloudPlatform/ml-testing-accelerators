@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v3-8"
+    "benchmarkId": "tf-r1.15.4-shapemask-conv-v3-8"
+    "frameworkVersion": "tf-r1.15.4"
+    "mode": "conv"
+    "model": "shapemask"
   "name": "tf-r1.15.4-shapemask-conv-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v3-8"
+        "benchmarkId": "tf-r1.15.4-shapemask-conv-v3-8"
+        "frameworkVersion": "tf-r1.15.4"
+        "mode": "conv"
+        "model": "shapemask"
     "spec":
       "activeDeadlineSeconds": 36000
       "backoffLimit": 1

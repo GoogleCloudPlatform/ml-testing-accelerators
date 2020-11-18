@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v3-8"
+    "benchmarkId": "pt-nightly-fs-checkpoint-local-func-v3-8"
+    "frameworkVersion": "pt-nightly"
+    "mode": "func"
+    "model": "fs-checkpoint-local"
   "name": "pt-nightly-fs-checkpoint-local-func-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v3-8"
+        "benchmarkId": "pt-nightly-fs-checkpoint-local-func-v3-8"
+        "frameworkVersion": "pt-nightly"
+        "mode": "func"
+        "model": "fs-checkpoint-local"
     "spec":
       "activeDeadlineSeconds": 7200
       "backoffLimit": 1

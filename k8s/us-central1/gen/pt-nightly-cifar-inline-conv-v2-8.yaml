@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v2-8"
+    "benchmarkId": "pt-nightly-cifar-inline-conv-v2-8"
+    "frameworkVersion": "pt-nightly"
+    "mode": "conv"
+    "model": "cifar-inline"
   "name": "pt-nightly-cifar-inline-conv-v2-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v2-8"
+        "benchmarkId": "pt-nightly-cifar-inline-conv-v2-8"
+        "frameworkVersion": "pt-nightly"
+        "mode": "conv"
+        "model": "cifar-inline"
     "spec":
       "activeDeadlineSeconds": 3600
       "backoffLimit": 1

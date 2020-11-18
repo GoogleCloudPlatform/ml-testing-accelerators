@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v3-8"
+    "benchmarkId": "pt-nightly-hf-glue-distilbert-b-uc-conv-v3-8"
+    "frameworkVersion": "pt-nightly"
+    "mode": "conv"
+    "model": "hf-glue-distilbert-b-uc"
   "name": "pt-nightly-hf-glue-distilbert-b-uc-conv-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v3-8"
+        "benchmarkId": "pt-nightly-hf-glue-distilbert-b-uc-conv-v3-8"
+        "frameworkVersion": "pt-nightly"
+        "mode": "conv"
+        "model": "hf-glue-distilbert-b-uc"
     "spec":
       "activeDeadlineSeconds": 7200
       "backoffLimit": 1

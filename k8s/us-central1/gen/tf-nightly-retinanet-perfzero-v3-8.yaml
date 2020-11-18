@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v3-8"
+    "benchmarkId": "tf-nightly-retinanet-perfzero-v3-8"
+    "frameworkVersion": "tf-nightly"
+    "mode": "perfzero"
+    "model": "retinanet"
   "name": "tf-nightly-retinanet-perfzero-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v3-8"
+        "benchmarkId": "tf-nightly-retinanet-perfzero-v3-8"
+        "frameworkVersion": "tf-nightly"
+        "mode": "perfzero"
+        "model": "retinanet"
     "spec":
       "activeDeadlineSeconds": 10800
       "backoffLimit": 1

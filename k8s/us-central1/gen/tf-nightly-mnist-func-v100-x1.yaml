@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v100-x1"
+    "benchmarkId": "tf-nightly-mnist-func-v100-x1"
+    "frameworkVersion": "tf-nightly"
+    "mode": "func"
+    "model": "mnist"
   "name": "tf-nightly-mnist-func-v100-x1"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v100-x1"
+        "benchmarkId": "tf-nightly-mnist-func-v100-x1"
+        "frameworkVersion": "tf-nightly"
+        "mode": "func"
+        "model": "mnist"
     "spec":
       "activeDeadlineSeconds": 3600
       "backoffLimit": 1
