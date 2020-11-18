@@ -88,6 +88,14 @@ local volumes = import 'volumes.libsonnet';
         error "Test name %s has %d characters. The limit is 46 characters." % 
             [fullTestName, fullTestNameLen],
 
+    labels: {
+      benchmarkId: config.testName,
+      frameworkVersion: config.frameworkPrefix,
+      model: config.modelName,
+      mode: config.mode,
+      accelerator: config.accelerator.name,
+    },
+
     jobSpec:: {
       # Try 2 times before giving up.
       backoffLimit: 1,
@@ -233,12 +241,16 @@ local volumes = import 'volumes.libsonnet';
       kind: "CronJob",
       metadata: {
         name: config.testName,
+        labels: config.labels,
       },
       spec: {
         schedule: config.schedule,
         concurrencyPolicy: "Forbid",
         successfulJobsHistoryLimit: 1,
         jobTemplate: {
+          metadata: {
+            labels: config.labels,
+          },
           spec: config.jobSpec,
         },
       },

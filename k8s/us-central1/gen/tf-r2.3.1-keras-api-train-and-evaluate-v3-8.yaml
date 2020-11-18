@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v3-8"
+    "benchmarkId": "tf-r2.3.1-keras-api-train-and-evaluate-v3-8"
+    "frameworkVersion": "tf-r2.3.1"
+    "mode": "train-and-evaluate"
+    "model": "keras-api"
   "name": "tf-r2.3.1-keras-api-train-and-evaluate-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v3-8"
+        "benchmarkId": "tf-r2.3.1-keras-api-train-and-evaluate-v3-8"
+        "frameworkVersion": "tf-r2.3.1"
+        "mode": "train-and-evaluate"
+        "model": "keras-api"
     "spec":
       "activeDeadlineSeconds": 3600
       "backoffLimit": 1

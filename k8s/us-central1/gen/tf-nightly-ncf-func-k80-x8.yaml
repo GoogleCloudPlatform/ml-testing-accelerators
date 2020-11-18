@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "k80-x8"
+    "benchmarkId": "tf-nightly-ncf-func-k80-x8"
+    "frameworkVersion": "tf-nightly"
+    "mode": "func"
+    "model": "ncf"
   "name": "tf-nightly-ncf-func-k80-x8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "k80-x8"
+        "benchmarkId": "tf-nightly-ncf-func-k80-x8"
+        "frameworkVersion": "tf-nightly"
+        "mode": "func"
+        "model": "ncf"
     "spec":
       "activeDeadlineSeconds": 3600
       "backoffLimit": 1

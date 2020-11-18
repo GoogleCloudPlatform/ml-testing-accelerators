@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v3-32"
+    "benchmarkId": "pt-r1.7-roberta-pre-func-v3-32"
+    "frameworkVersion": "pt-r1.7"
+    "mode": "func"
+    "model": "roberta-pre"
   "name": "pt-r1.7-roberta-pre-func-v3-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v3-32"
+        "benchmarkId": "pt-r1.7-roberta-pre-func-v3-32"
+        "frameworkVersion": "pt-r1.7"
+        "mode": "func"
+        "model": "roberta-pre"
     "spec":
       "activeDeadlineSeconds": 3600
       "backoffLimit": 0

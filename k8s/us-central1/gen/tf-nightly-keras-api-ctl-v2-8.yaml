@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v2-8"
+    "benchmarkId": "tf-nightly-keras-api-ctl-v2-8"
+    "frameworkVersion": "tf-nightly"
+    "mode": "ctl"
+    "model": "keras-api"
   "name": "tf-nightly-keras-api-ctl-v2-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v2-8"
+        "benchmarkId": "tf-nightly-keras-api-ctl-v2-8"
+        "frameworkVersion": "tf-nightly"
+        "mode": "ctl"
+        "model": "keras-api"
     "spec":
       "activeDeadlineSeconds": 3600
       "backoffLimit": 1

@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v3-8"
+    "benchmarkId": "pt-r1.7-hf-glue-bert-b-c-conv-v3-8"
+    "frameworkVersion": "pt-r1.7"
+    "mode": "conv"
+    "model": "hf-glue-bert-b-c"
   "name": "pt-r1.7-hf-glue-bert-b-c-conv-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v3-8"
+        "benchmarkId": "pt-r1.7-hf-glue-bert-b-c-conv-v3-8"
+        "frameworkVersion": "pt-r1.7"
+        "mode": "conv"
+        "model": "hf-glue-bert-b-c"
     "spec":
       "activeDeadlineSeconds": 7200
       "backoffLimit": 1

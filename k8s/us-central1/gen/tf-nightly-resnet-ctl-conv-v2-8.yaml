@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v2-8"
+    "benchmarkId": "tf-nightly-resnet-ctl-conv-v2-8"
+    "frameworkVersion": "tf-nightly"
+    "mode": "conv"
+    "model": "resnet-ctl"
   "name": "tf-nightly-resnet-ctl-conv-v2-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v2-8"
+        "benchmarkId": "tf-nightly-resnet-ctl-conv-v2-8"
+        "frameworkVersion": "tf-nightly"
+        "mode": "conv"
+        "model": "resnet-ctl"
     "spec":
       "activeDeadlineSeconds": 57600
       "backoffLimit": 1

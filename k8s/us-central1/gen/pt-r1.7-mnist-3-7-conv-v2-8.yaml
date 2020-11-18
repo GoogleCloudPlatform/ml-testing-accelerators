@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v2-8"
+    "benchmarkId": "pt-r1.7-mnist-3-7-conv-v2-8"
+    "frameworkVersion": "pt-r1.7"
+    "mode": "conv"
+    "model": "mnist-3-7"
   "name": "pt-r1.7-mnist-3-7-conv-v2-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v2-8"
+        "benchmarkId": "pt-r1.7-mnist-3-7-conv-v2-8"
+        "frameworkVersion": "pt-r1.7"
+        "mode": "conv"
+        "model": "mnist-3-7"
     "spec":
       "activeDeadlineSeconds": 3600
       "backoffLimit": 1

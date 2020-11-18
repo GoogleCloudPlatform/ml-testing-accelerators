@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v100-x1"
+    "benchmarkId": "tf-r2.4.0-efficientnet-func-v100-x1"
+    "frameworkVersion": "tf-r2.4.0"
+    "mode": "func"
+    "model": "efficientnet"
   "name": "tf-r2.4.0-efficientnet-func-v100-x1"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v100-x1"
+        "benchmarkId": "tf-r2.4.0-efficientnet-func-v100-x1"
+        "frameworkVersion": "tf-r2.4.0"
+        "mode": "func"
+        "model": "efficientnet"
     "spec":
       "activeDeadlineSeconds": 28800
       "backoffLimit": 1

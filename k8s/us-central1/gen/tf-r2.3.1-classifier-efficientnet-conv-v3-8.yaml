@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v3-8"
+    "benchmarkId": "tf-r2.3.1-classifier-efficientnet-conv-v3-8"
+    "frameworkVersion": "tf-r2.3.1"
+    "mode": "conv"
+    "model": "classifier-efficientnet"
   "name": "tf-r2.3.1-classifier-efficientnet-conv-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v3-8"
+        "benchmarkId": "tf-r2.3.1-classifier-efficientnet-conv-v3-8"
+        "frameworkVersion": "tf-r2.3.1"
+        "mode": "conv"
+        "model": "classifier-efficientnet"
     "spec":
       "activeDeadlineSeconds": 162000
       "backoffLimit": 1

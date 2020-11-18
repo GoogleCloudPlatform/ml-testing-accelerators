@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "k80-x8"
+    "benchmarkId": "tf-nightly-efficientnet-func-k80-x8"
+    "frameworkVersion": "tf-nightly"
+    "mode": "func"
+    "model": "efficientnet"
   "name": "tf-nightly-efficientnet-func-k80-x8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "k80-x8"
+        "benchmarkId": "tf-nightly-efficientnet-func-k80-x8"
+        "frameworkVersion": "tf-nightly"
+        "mode": "func"
+        "model": "efficientnet"
     "spec":
       "activeDeadlineSeconds": 14400
       "backoffLimit": 1

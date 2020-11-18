@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v3-8"
+    "benchmarkId": "pt-nightly-dlrm-mp-fwd-func-v3-8"
+    "frameworkVersion": "pt-nightly"
+    "mode": "func"
+    "model": "dlrm-mp-fwd"
   "name": "pt-nightly-dlrm-mp-fwd-func-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v3-8"
+        "benchmarkId": "pt-nightly-dlrm-mp-fwd-func-v3-8"
+        "frameworkVersion": "pt-nightly"
+        "mode": "func"
+        "model": "dlrm-mp-fwd"
     "spec":
       "activeDeadlineSeconds": 10800
       "backoffLimit": 1

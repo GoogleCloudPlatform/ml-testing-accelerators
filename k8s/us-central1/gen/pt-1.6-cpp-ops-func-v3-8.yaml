@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v3-8"
+    "benchmarkId": "pt-1.6-cpp-ops-func-v3-8"
+    "frameworkVersion": "pt-1.6"
+    "mode": "func"
+    "model": "cpp-ops"
   "name": "pt-1.6-cpp-ops-func-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v3-8"
+        "benchmarkId": "pt-1.6-cpp-ops-func-v3-8"
+        "frameworkVersion": "pt-1.6"
+        "mode": "func"
+        "model": "cpp-ops"
     "spec":
       "activeDeadlineSeconds": 14400
       "backoffLimit": 1

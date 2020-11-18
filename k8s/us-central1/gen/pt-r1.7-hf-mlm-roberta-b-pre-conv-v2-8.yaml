@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v2-8"
+    "benchmarkId": "pt-r1.7-hf-mlm-roberta-b-pre-conv-v2-8"
+    "frameworkVersion": "pt-r1.7"
+    "mode": "conv"
+    "model": "hf-mlm-roberta-b-pre"
   "name": "pt-r1.7-hf-mlm-roberta-b-pre-conv-v2-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v2-8"
+        "benchmarkId": "pt-r1.7-hf-mlm-roberta-b-pre-conv-v2-8"
+        "frameworkVersion": "pt-r1.7"
+        "mode": "conv"
+        "model": "hf-mlm-roberta-b-pre"
     "spec":
       "activeDeadlineSeconds": 18000
       "backoffLimit": 1

@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v3-32"
+    "benchmarkId": "tf-nightly-shapemask-perfzero-v3-32"
+    "frameworkVersion": "tf-nightly"
+    "mode": "perfzero"
+    "model": "shapemask"
   "name": "tf-nightly-shapemask-perfzero-v3-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v3-32"
+        "benchmarkId": "tf-nightly-shapemask-perfzero-v3-32"
+        "frameworkVersion": "tf-nightly"
+        "mode": "perfzero"
+        "model": "shapemask"
     "spec":
       "activeDeadlineSeconds": 10800
       "backoffLimit": 1

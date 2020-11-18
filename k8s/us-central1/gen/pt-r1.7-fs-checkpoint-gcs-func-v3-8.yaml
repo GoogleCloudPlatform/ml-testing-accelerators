@@ -15,11 +15,24 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "labels":
+    "accelerator": "v3-8"
+    "benchmarkId": "pt-r1.7-fs-checkpoint-gcs-func-v3-8"
+    "frameworkVersion": "pt-r1.7"
+    "mode": "func"
+    "model": "fs-checkpoint-gcs"
   "name": "pt-r1.7-fs-checkpoint-gcs-func-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
+    "metadata":
+      "labels":
+        "accelerator": "v3-8"
+        "benchmarkId": "pt-r1.7-fs-checkpoint-gcs-func-v3-8"
+        "frameworkVersion": "pt-r1.7"
+        "mode": "func"
+        "model": "fs-checkpoint-gcs"
     "spec":
       "activeDeadlineSeconds": 7200
       "backoffLimit": 1
