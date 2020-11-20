@@ -1,0 +1,3 @@
+kubernetes
+protobuf
+absl-py

@@ -1,0 +1,158 @@
+syntax = "proto3";
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+message TestCompletedEvent {
+  enum TestStatus {
+    COMPLETED = 0;
+    FAILED = 1;
+    TIMEOUT = 2;
+  }
+
+  string benchmark_id = 1;
+  string output_path = 2;
+
+  TestStatus status = 3;
+
+  google.protobuf.Timestamp start_time = 4;
+  google.protobuf.Duration duration = 5;
+  DebugInfo debug_info = 6;
+  MetricCollectionConfig metric_collection_config = 7;
+  map<string, float> extras = 8;
+  map<string, string> labels = 9;
+}
+
+message MetricCollectionConfig {
+  repeated MetricSource sources = 1;
+
+  // Use historical data from another test. E.g. compare release to historical average for nightly.
+  string compare_to_benchmark_id = 2;
+}
+
+message DebugInfo {
+  string logs_link = 1;
+  string workload_link = 2;
+
+  // e.g. save the JobSpec
+  string resource_def = 3;
+  // Is this necessary?
+  //KubernetesInfo cluster_info = 4;
+}
+
+message KubernetesInfo  {
+  string cluster_name = 1;
+  string namespace = 2;
+  string job_name = 3;
+  oneof cluster_location {
+    string zone = 4;
+    string region = 5;
+  }
+}
+
+message MetricSource {
+  oneof source_type {
+    TensorBoardSource tensorboard = 1;
+    LiteralSource literals = 2;
+    PerfZeroSource perfzero = 3;
+  }
+}
+
+message TensorBoardSource {
+  enum AggregationStrategy {
+    FINAL = 0;
+    MIN = 1;
+    MAX = 2;
+    AVERAGE = 3;
+    MEDIAN = 4;
+  }
+  message AgggregateAssertions {
+    message AggregateAssertion {
+      AggregationStrategy strategy = 1;
+      Assertion assertion = 2;
+    }
+    repeated AggregateAssertion aggregate_assertion = 1;
+  }
+  // Should this be specified in the collection config?
+  // string logdir = 1;
+  bool merge_runs = 2;
+  // should be list
+  map<string, AggregationStrategy> include_tags = 3;
+  // Should exclude also have AggregationStrategy?
+  repeated string exclude_tags = 4;
+
+  map<string, AgggregateAssertions> assertions = 5;
+}
+
+message LiteralSource {
+  map<string, Assertion> assertions = 1;
+}
+
+message PerfZeroSource {
+  // string benchmark_dir = 1;
+  map<string, Assertion> assertions = 2;
+}
+
+message Assertion {
+  enum Comparison {
+    EQUAL = 0;
+    LESS = 1;
+    LESS_OR_EQUAL = 2;
+    GREATER = 3;
+    GREATED_OR_EQUAL = 4;
+    WITHIN = 5;
+  }
+  message StdDevsFromMean {
+    Comparison comparison = 1;
+    int32 std_devs = 2;
+  }
+  message PercentDifference {
+    double percent = 1;
+    oneof want {
+      double value = 2;
+      bool use_historical_mean = 3;
+    } 
+  }
+  message FixedValue {
+    Comparison comparison = 1;
+    double value = 2;
+  }
+  oneof assertion_type {
+    StdDevsFromMean std_devs_from_mean = 1;
+    PercentDifference percent_difference = 2;
+    FixedValue fixed_value = 3;
+  }
+  bool fail_if_missing = 4;
+
+  // Only relevant for types with historical data
+  int32 wait_for_n_data_points = 5;
+  google.protobuf.Duration time_window = 6;
+  google.protobuf.Timestamp start_time = 7;
+}
+
+/*
+
+
+mcc {
+  source {
+    tensorboard {
+      logdir: 'gs://blah'
+      prepend_run: true
+      metric: {
+        tag: 'blah'
+        strategy: final
+        assertion: {
+          std_devs_from_mean: {
+            comparison: LESS
+            std_devs: 2
+          }
+        }
+      }
+      collect_tags: [ '*' ]
+      exclude_tags: [ '*' ]
+    }
+  }
+}
+
+
+*/
