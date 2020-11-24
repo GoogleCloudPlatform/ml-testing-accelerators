@@ -22,15 +22,16 @@ local utils = import "templates/utils.libsonnet";
     git clone https://github.com/huggingface/transformers.git
     cd transformers && pip install .
     git log -1
+    pip install datasets
     python examples/xla_spawn.py \
       --num_cores 8 \
-      examples/contrib/legacy/run_language_modeling.py \
+      examples/language-modeling/run_mlm.py \
       --logging_dir ./tensorboard-metrics \
       --cache_dir ./cache_dir \
-      --train_data_file /datasets/wikitext-103-raw/wiki.train.raw \
+      --dataset_name wikitext \
+      --dataset_config_name wikitext-2-raw-v1 \
       --do_train \
       --do_eval \
-      --eval_data_file /datasets/wikitext-103-raw/wiki.valid.raw \
       --overwrite_output_dir \
       --output_dir language-modeling \
       --logging_steps 100 \
@@ -45,7 +46,7 @@ local utils = import "templates/utils.libsonnet";
     modelName: "hf-mlm-roberta-b-fine",
     command: utils.scriptCommand(
       |||
-        %(common)s --mlm --model_type=roberta \
+        %(common)s --model_type=roberta \
         --model_name_or_path roberta-base \
         --num_train_epochs 3 \
         --per_device_train_batch_size 8 \
@@ -69,7 +70,7 @@ local utils = import "templates/utils.libsonnet";
     modelName: "hf-mlm-bert-b-fine",
     command: utils.scriptCommand(
       |||
-        %(common)s --mlm --model_type=bert \
+        %(common)s --model_type=bert \
         --model_name_or_path bert-base-cased \
         --num_train_epochs 3 \
         --per_device_train_batch_size 16 \
@@ -93,7 +94,7 @@ local utils = import "templates/utils.libsonnet";
     modelName: "hf-mlm-roberta-b-pre",
     command: utils.scriptCommand(
       |||
-        %(common)s --mlm --model_type=roberta \
+        %(common)s --model_type=roberta \
         --tokenizer=roberta-base \
         --num_train_epochs 5 \
         --per_device_train_batch_size 8 \
@@ -117,7 +118,7 @@ local utils = import "templates/utils.libsonnet";
     modelName: "hf-mlm-bert-b-pre",
     command: utils.scriptCommand(
       |||
-        %(common)s --mlm --model_type=bert \
+        %(common)s --model_type=bert \
         --tokenizer=bert-base-cased \
         --num_train_epochs 5 \
         --per_device_train_batch_size 16 \
@@ -139,9 +140,6 @@ local utils = import "templates/utils.libsonnet";
   },
   local hf_lm = common.PyTorchTest {
     modelName: "hf-lm",
-    volumeMap+: {
-      datasets: common.datasetsVolume,
-    },
     jobSpec+:: {
       template+: {
         spec+: {
