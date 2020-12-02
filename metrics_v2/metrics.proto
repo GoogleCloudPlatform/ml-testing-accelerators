@@ -14,13 +14,14 @@ message TestCompletedEvent {
   string output_path = 2;
 
   TestStatus status = 3;
+  int32 num_attempts = 4;
 
-  google.protobuf.Timestamp start_time = 4;
-  google.protobuf.Duration duration = 5;
-  DebugInfo debug_info = 6;
-  MetricCollectionConfig metric_collection_config = 7;
-  map<string, float> extras = 8;
-  map<string, string> labels = 9;
+  google.protobuf.Timestamp start_time = 5;
+  google.protobuf.Duration duration = 6;
+  DebugInfo debug_info = 7;
+  MetricCollectionConfig metric_collection_config = 8;
+  map<string, float> extras = 9;
+  map<string, string> labels = 10;
 }
 
 message MetricCollectionConfig {
@@ -28,14 +29,17 @@ message MetricCollectionConfig {
 
   // Use historical data from another test. E.g. compare release to historical average for nightly.
   string compare_to_benchmark_id = 2;
+
+  bool silence_alerts = 3;
 }
 
 message DebugInfo {
   string logs_link = 1;
-  string workload_link = 2;
+  string logs_download_command = 2;
+  string details_link = 3;
 
   // e.g. save the JobSpec
-  string resource_def = 3;
+  string resource_def = 4;
   // Is this necessary?
   //KubernetesInfo cluster_info = 4;
 }
@@ -66,22 +70,22 @@ message TensorBoardSource {
     AVERAGE = 3;
     MEDIAN = 4;
   }
-  message AgggregateAssertions {
+  message TagStrategy {
+    string tag_pattern = 1;
+    repeated AggregationStrategy strategies = 2;
+  }
+  message AggregateAssertions {
     message AggregateAssertion {
       AggregationStrategy strategy = 1;
       Assertion assertion = 2;
     }
-    repeated AggregateAssertion aggregate_assertion = 1;
+    repeated AggregateAssertion aggregate_assertions = 1;
   }
-  // Should this be specified in the collection config?
-  // string logdir = 1;
-  bool merge_runs = 2;
-  // should be list
-  map<string, AggregationStrategy> include_tags = 3;
-  // Should exclude also have AggregationStrategy?
-  repeated string exclude_tags = 4;
+  bool merge_runs = 1;
+  repeated TagStrategy include_tags = 2;
+  repeated string exclude_tags = 3;
 
-  map<string, AgggregateAssertions> assertions = 5;
+  map<string, AggregateAssertions> assertions = 4;
 }
 
 message LiteralSource {
@@ -89,45 +93,49 @@ message LiteralSource {
 }
 
 message PerfZeroSource {
-  // string benchmark_dir = 1;
-  map<string, Assertion> assertions = 2;
+  map<string, Assertion> assertions = 1;
 }
 
 message Assertion {
   enum Comparison {
     EQUAL = 0;
     LESS = 1;
-    LESS_OR_EQUAL = 2;
-    GREATER = 3;
-    GREATED_OR_EQUAL = 4;
-    WITHIN = 5;
+    GREATER = 2;
+    WITHIN = 3;
+  }
+  message FixedValue {
+    Comparison comparison = 1;
+    double value = 2;
+  }
+  message WithinBounds {
+    double upper_bound = 1;
+    double lower_bound = 2;
   }
   message StdDevsFromMean {
     Comparison comparison = 1;
     int32 std_devs = 2;
   }
   message PercentDifference {
-    double percent = 1;
-    oneof want {
-      double value = 2;
-      bool use_historical_mean = 3;
+    Comparison comparison = 1;
+    double percent = 2;
+    oneof target_type {
+      double value = 3;
+      bool use_historical_mean = 4;
     } 
   }
-  message FixedValue {
-    Comparison comparison = 1;
-    double value = 2;
-  }
   oneof assertion_type {
-    StdDevsFromMean std_devs_from_mean = 1;
-    PercentDifference percent_difference = 2;
-    FixedValue fixed_value = 3;
+    FixedValue fixed_value = 1;
+    WithinBounds within_bounds = 2;
+    StdDevsFromMean std_devs_from_mean = 3;
+    PercentDifference percent_difference = 4;
   }
-  bool fail_if_missing = 4;
+  bool inclusive_bounds = 5;
+  bool fail_if_missing = 6;
 
   // Only relevant for types with historical data
-  int32 wait_for_n_data_points = 5;
-  google.protobuf.Duration time_window = 6;
-  google.protobuf.Timestamp start_time = 7;
+  int32 wait_for_n_data_points = 7;
+  google.protobuf.Duration time_window = 8;
+  google.protobuf.Timestamp start_time = 9;
 }
 
 /*
