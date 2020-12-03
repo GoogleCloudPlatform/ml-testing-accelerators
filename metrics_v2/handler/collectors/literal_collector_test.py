@@ -4,6 +4,7 @@ from absl.testing import absltest
 from absl.testing import parameterized
 from google.protobuf import duration_pb2
 
+from handler import utils
 from handler.collectors import base
 from handler.collectors import literal_collector
 
@@ -36,8 +37,8 @@ class LiteralCollectorTest(parameterized.TestCase):
     self.assertLen(points, 1)
     self.assertEqual(points[0].metric_key, 'duration')
     self.assertEqual(points[0].metric_value, 150)
-    self.assertSequenceEqual(
-        points[0].bounds, base.Bounds(100, 200, False))
+    self.assertEqual(
+        points[0].bounds, utils.Bounds(100, 200, False))
 
 if __name__ == '__main__':
   absltest.main()

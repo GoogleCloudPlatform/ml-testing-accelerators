@@ -4,6 +4,7 @@ from absl.testing import parameterized
 import numpy as np
 import tensorflow as tf
 
+from handler import utils
 from handler.collectors import base
 from handler.collectors import tensorboard_collector
 import metrics_pb2
@@ -81,7 +82,7 @@ class TensorBoardCollectorTest(parameterized.TestCase):
     )
 
     for _, _, bounds in points:
-      self.assertEqual(bounds, base.NO_BOUNDS)
+      self.assertEqual(bounds, utils.NO_BOUNDS)
 
 
   def test_aggregate_metrics_with_assertion(self):
@@ -128,9 +129,9 @@ class TensorBoardCollectorTest(parameterized.TestCase):
     self.assertCountEqual(
       points,
       [
-        base.MetricPoint('eval/accuracy_max', .5, base.Bounds(.4, 1.0, True)),
-        base.MetricPoint('eval/accuracy_min', .125, base.NO_BOUNDS),
-        base.MetricPoint('eval/accuracy_final', .25, base.NO_BOUNDS),
+        utils.MetricPoint('eval/accuracy_max', .5, utils.Bounds(.4, 1.0, True)),
+        utils.MetricPoint('eval/accuracy_min', .125, utils.NO_BOUNDS),
+        utils.MetricPoint('eval/accuracy_final', .25, utils.NO_BOUNDS),
       ],
     )
 
@@ -179,8 +180,8 @@ class TensorBoardCollectorTest(parameterized.TestCase):
     self.assertCountEqual(
       points,
       [
-        base.MetricPoint('eval/accuracy_final', .25, base.NO_BOUNDS),
-        base.MetricPoint('foo_min', 1, base.Bounds(0., 2., False)),
+        utils.MetricPoint('eval/accuracy_final', .25, utils.NO_BOUNDS),
+        utils.MetricPoint('foo_min', 1, utils.Bounds(0., 2., False)),
       ],
     )
 

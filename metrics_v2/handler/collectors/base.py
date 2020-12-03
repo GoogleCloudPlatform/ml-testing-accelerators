@@ -1,26 +1,13 @@
 import abc
 import collections
-from dataclasses import dataclass
 import math
+import typing
 
 import numpy as np
 
+from handler import utils
 import metrics_pb2
 
-Bounds = collections.namedtuple('Bounds', ['lower', 'upper', 'inclusive'])
-NO_BOUNDS = Bounds(-math.inf, math.inf, True)
-
-
-@dataclass(frozen=True)
-class MetricPoint:
-  metric_key: str
-  metric_value: float
-  bounds: Bounds
-
-  def __iter__(self):
-    yield self.metric_key
-    yield self.metric_value
-    yield self.bounds
 
 def _get_historical_data_for_metric(benchmark_id, metric_key, time_window=None, start_time=None):
   raise NotImplementedError
@@ -50,9 +37,9 @@ class BaseCollector:
   def read_metrics_and_assertions(self):
     raise NotImplementedError
 
-  def compute_bounds(self, name, assertion):
+  def compute_bounds(self, name, assertion) -> utils.Bounds:
     if assertion is None:
-      return NO_BOUNDS
+      return utils.NO_BOUNDS
 
     lower_bound = -math.inf
     upper_bound = math.inf
@@ -108,9 +95,9 @@ class BaseCollector:
       logging.error(
           '%s: comparison %s is not implemented for assertion type `%s`',
           name, metrics_pb2.Assertion.Comparison.Name(c), assertion_type)
-      return NO_BOUNDS
+      return utils.NO_BOUNDS
 
-    return Bounds(lower_bound, upper_bound, inclusive)
+    return utils.Bounds(lower_bound, upper_bound, inclusive)
 
-  def metric_points(self):
-    return [MetricPoint(key, value, self.compute_bounds(key, assertion)) for key, value, assertion in self.read_metrics_and_assertions()]
+  def metric_points(self) -> typing.Iterable[utils.MetricPoint]:
+    return [utils.MetricPoint(key, value, self.compute_bounds(key, assertion)) for key, value, assertion in self.read_metrics_and_assertions()]

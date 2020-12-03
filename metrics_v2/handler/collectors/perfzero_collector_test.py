@@ -4,6 +4,7 @@ import pathlib
 
 from absl.testing import absltest
 
+from handler import utils
 from handler.collectors import base
 from handler.collectors import perfzero_collector
 import metrics_pb2
@@ -83,13 +84,13 @@ class PerfZeroCollectorTest(absltest.TestCase):
     self.assertCountEqual(
       points,
       {
-        base.MetricPoint("total_wall_time", 1234, base.Bounds(1230., 1240., False)),
-        base.MetricPoint("exp_per_second", 1.1, base.Bounds(1., 100., False)),
-        base.MetricPoint("avg_exp_per_second", 2.2, base.NO_BOUNDS),
-        base.MetricPoint("startup_time", 3.3, base.NO_BOUNDS),
-        base.MetricPoint("process_info/max_rss", 4.4, base.NO_BOUNDS),
-        base.MetricPoint("process_info/max_vms", 5.5, base.NO_BOUNDS),
-        base.MetricPoint("process_info/max_cpu_percent", 6.6, base.NO_BOUNDS),
+        utils.MetricPoint("total_wall_time", 1234, utils.Bounds(1230., 1240., False)),
+        utils.MetricPoint("exp_per_second", 1.1, utils.Bounds(1., 100., False)),
+        utils.MetricPoint("avg_exp_per_second", 2.2, utils.NO_BOUNDS),
+        utils.MetricPoint("startup_time", 3.3, utils.NO_BOUNDS),
+        utils.MetricPoint("process_info/max_rss", 4.4, utils.NO_BOUNDS),
+        utils.MetricPoint("process_info/max_vms", 5.5, utils.NO_BOUNDS),
+        utils.MetricPoint("process_info/max_cpu_percent", 6.6, utils.NO_BOUNDS),
       },
     )
 

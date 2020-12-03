@@ -1,9 +1,11 @@
+import dataclasses
 import math
 
 from absl.testing import absltest
 from absl.testing import parameterized
 
-import base
+from handler import utils
+from handler.collectors import base
 import metrics_pb2
 
 class BaseCollectorTest(parameterized.TestCase):
@@ -28,10 +30,12 @@ class BaseCollectorTest(parameterized.TestCase):
       inclusive_bounds=inclusive,
     )
     bounds = self._collector.compute_bounds("metric_key", assertion)
-    # EQUAL is always inclusive
-    want = base.Bounds(*expected_bounds,
-        inclusive or comparison == 'EQUAL')
-    self.assertSequenceAlmostEqual(bounds, want, places=3)
+    self.assertSequenceAlmostEqual(
+        dataclasses.astuple(bounds),
+        # EQUAL is always inclusive
+        dataclasses.astuple(utils.Bounds(*expected_bounds,
+            inclusive or comparison == 'EQUAL')),
+        places=3)
 
   @parameterized.named_parameters(
     ('less', 'LESS', 1, (-math.inf, 4.414)),
@@ -55,8 +59,12 @@ class BaseCollectorTest(parameterized.TestCase):
       inclusive_bounds=inclusive,
     )
     bounds = self._collector.compute_bounds("metric_key", assertion)
-    want = base.Bounds(*expected_bounds, inclusive)
-    self.assertSequenceAlmostEqual(bounds, want, places=3)
+    self.assertSequenceAlmostEqual(
+        dataclasses.astuple(bounds),
+        # EQUAL is always inclusive
+        dataclasses.astuple(utils.Bounds(*expected_bounds,
+            inclusive or comparison == 'EQUAL')),
+        places=3)
 
 if __name__ == '__main__':
   absltest.main()
