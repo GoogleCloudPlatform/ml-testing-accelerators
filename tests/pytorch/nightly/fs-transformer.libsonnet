@@ -120,7 +120,8 @@ local utils = import "templates/utils.libsonnet";
           --log_steps=200 \
           --train-subset=train \
           --valid-subset=valid \
-          --input_shapes 256x64 512x32
+          --input_shapes 256x64 512x32 \
+          2>&1 | tee training_logs.txt
         bleu=`fairseq-generate \
            /datasets/wmt18_en_de_bpej32k \
            --remove-bpe --quiet --lenpen 0.6 --beam 4 \
@@ -128,7 +129,9 @@ local utils = import "templates/utils.libsonnet";
            --skip-invalid-size-inputs-valid-test | grep BLEU \
            | grep -v loadi | tail -1 | cut -d '=' -f 3| cut -d'.' -f 1`
         echo 'BLEU score is' $bleu
-        test $bleu -gt 27
+        wps=$(cat training_logs.txt | grep '| wps ' | tail -1 | grep -o -E ' wps [0-9]+' | sed 's/[^0-9]*//g')
+        echo 'final words per second (wps) is' $wps
+        test $bleu -gt 27 -a $wps -gt 10000
       ||| % command_common
     ),
     jobSpec+:: {
@@ -141,16 +144,6 @@ local utils = import "templates/utils.libsonnet";
               },
             },
           },
-        },
-      },
-    },
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        "train-wps_final": {
-          success_threshold: {
-            fixed_value: 11700,
-          },
-          comparison: "greater",
         },
       },
     },

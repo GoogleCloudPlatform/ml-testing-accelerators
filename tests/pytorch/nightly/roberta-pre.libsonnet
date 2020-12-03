@@ -53,7 +53,11 @@ local utils = import "templates/utils.libsonnet";
           --skip-invalid-size-inputs-valid-test \
           --suppress_loss_report \
           --input_shapes 16x512 18x480 21x384 \
-          --max-epoch=%(maxEpoch)d
+          --max-epoch=%(maxEpoch)d \
+          2>&1 | tee training_logs.txt
+        wps=$(cat training_logs.txt | grep '| wps ' | tail -1 | grep -o -E ' wps [0-9]+' | sed 's/[^0-9]*//g')
+        echo 'final words per second (wps) is' $wps
+        test $wps -gt 17000
       ||| % self.paramsOverride,
     ),
     volumeMap+: {
