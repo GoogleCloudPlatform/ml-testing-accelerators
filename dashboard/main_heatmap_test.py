@@ -110,6 +110,18 @@ class MainHeatmapTest(parameterized.TestCase):
     # If the command is already populated, it should be left alone.
     self.assertEqual(commands[0], 'my command')
 
+  def test_process_dataframes_no_job_status(self):
+    job_status_df = pd.DataFrame({
+        'test_name': pd.Series(['a', 'b']),
+        'run_date': pd.Series(['2020-04-10', '2020-04-11']),
+        'logs_link': pd.Series(['c', 'd']),
+        'logs_download_command': pd.Series(['e', 'f']),
+    })
+    df = main_heatmap.process_dataframes(job_status_df, pd.DataFrame())
+    self.assertTrue(df.empty)
+    df = main_heatmap.process_dataframes(pd.DataFrame(), pd.DataFrame())
+    self.assertTrue(df.empty)
+
   def test_make_plot(self):
     input_df = pd.DataFrame({
         'test_name': pd.Series(['test1', 'test2', 'test3']),

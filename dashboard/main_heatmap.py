@@ -116,6 +116,9 @@ def fetch_data(test_name_prefix, cutoff_timestamp):
   return combined_dataframe
 
 def process_dataframes(job_status_dataframe, metrics_dataframe):
+  if job_status_dataframe.empty or 'job_status' not in job_status_dataframe:
+    return pd.DataFrame()
+
   # Collect all test+date combinations where metrics were out of bounds.
   oob_tests = collections.defaultdict(list)
   def _test_date_key(test, date):
