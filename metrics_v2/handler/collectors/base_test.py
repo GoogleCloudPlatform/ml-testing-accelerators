@@ -1,18 +1,16 @@
 import dataclasses
+import datetime
 import math
 
 from absl.testing import absltest
 from absl.testing import parameterized
 
+from handler import bigquery_client
 from handler import utils
 from handler.collectors import base
 import metrics_pb2
 
 class BaseCollectorTest(parameterized.TestCase):
-  def setUp(self):
-    self._collector = base.BaseCollector(
-        metrics_pb2.TestCompletedEvent(benchmark_id="test_benchmark"), None)
-
   @parameterized.named_parameters(
     ('equal', 'EQUAL', 5., (5., 5.)),
     ('less', 'LESS', 5., (-math.inf, 5.)),
@@ -29,7 +27,9 @@ class BaseCollectorTest(parameterized.TestCase):
       ),
       inclusive_bounds=inclusive,
     )
-    bounds = self._collector.compute_bounds("metric_key", assertion)
+    collector = base.BaseCollector(
+        metrics_pb2.TestCompletedEvent(benchmark_id="test_benchmark"), None)
+    bounds = collector.compute_bounds("metric_key", assertion)
     self.assertSequenceAlmostEqual(
         dataclasses.astuple(bounds),
         # EQUAL is always inclusive
@@ -49,7 +49,12 @@ class BaseCollectorTest(parameterized.TestCase):
       self, comparison, std_devs, expected_bounds, inclusive=False):
     # mean = 3, stddev = ~1.414
     value_history = list(range(1, 6))
-    base._get_historical_data_for_metric = lambda *args: value_history
+    class _FakeMetricStore:
+      def get_metric_history(*args, **kwargs):
+        return [
+          bigquery_client.MetricHistoryRow(
+              '', '', datetime.datetime.now(), '', v)
+          for v in value_history]
 
     assertion = metrics_pb2.Assertion(
       std_devs_from_mean=metrics_pb2.Assertion.StdDevsFromMean(
@@ -58,7 +63,11 @@ class BaseCollectorTest(parameterized.TestCase):
       ),
       inclusive_bounds=inclusive,
     )
-    bounds = self._collector.compute_bounds("metric_key", assertion)
+    collector = base.BaseCollector(
+        metrics_pb2.TestCompletedEvent(benchmark_id="test_benchmark"),
+        None,
+        _FakeMetricStore())
+    bounds = collector.compute_bounds("metric_key", assertion)
     self.assertSequenceAlmostEqual(
         dataclasses.astuple(bounds),
         # EQUAL is always inclusive

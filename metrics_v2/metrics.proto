@@ -31,6 +31,7 @@ message MetricCollectionConfig {
   string compare_to_benchmark_id = 2;
 
   bool silence_alerts = 3;
+  bool record_failing_test_metrics = 4;
 }
 
 message DebugInfo {
@@ -40,18 +41,6 @@ message DebugInfo {
 
   // e.g. save the JobSpec
   string resource_def = 4;
-  // Is this necessary?
-  //KubernetesInfo cluster_info = 4;
-}
-
-message KubernetesInfo  {
-  string cluster_name = 1;
-  string namespace = 2;
-  string job_name = 3;
-  oneof cluster_location {
-    string zone = 4;
-    string region = 5;
-  }
 }
 
 message MetricSource {
@@ -74,18 +63,16 @@ message TensorBoardSource {
     string tag_pattern = 1;
     repeated AggregationStrategy strategies = 2;
   }
-  message AggregateAssertions {
-    message AggregateAssertion {
-      AggregationStrategy strategy = 1;
-      Assertion assertion = 2;
-    }
-    repeated AggregateAssertion aggregate_assertions = 1;
+  message AggregateAssertion {
+    string tag = 1;
+    AggregationStrategy strategy = 2;
+    Assertion assertion = 3;
   }
   bool merge_runs = 1;
   repeated TagStrategy include_tags = 2;
   repeated string exclude_tags = 3;
 
-  map<string, AggregateAssertions> assertions = 4;
+  repeated AggregateAssertion aggregate_assertions = 4;
 }
 
 message LiteralSource {
@@ -135,32 +122,5 @@ message Assertion {
   // Only relevant for types with historical data
   int32 wait_for_n_data_points = 7;
   google.protobuf.Duration time_window = 8;
-  google.protobuf.Timestamp start_time = 9;
+  google.protobuf.Timestamp min_timestamp = 9;
 }
-
-/*
-
-
-mcc {
-  source {
-    tensorboard {
-      logdir: 'gs://blah'
-      prepend_run: true
-      metric: {
-        tag: 'blah'
-        strategy: final
-        assertion: {
-          std_devs_from_mean: {
-            comparison: LESS
-            std_devs: 2
-          }
-        }
-      }
-      collect_tags: [ '*' ]
-      exclude_tags: [ '*' ]
-    }
-  }
-}
-
-
-*/

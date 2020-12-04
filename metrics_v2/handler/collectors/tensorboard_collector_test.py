@@ -98,22 +98,19 @@ class TensorBoardCollectorTest(parameterized.TestCase):
             ]
           )
         ],
-        assertions={
-          'eval/accuracy': metrics_pb2.TensorBoardSource.AggregateAssertions(
-            aggregate_assertions=[
-              metrics_pb2.TensorBoardSource.AggregateAssertions.AggregateAssertion(
-                strategy=metrics_pb2.TensorBoardSource.MAX,
-                assertion=metrics_pb2.Assertion(
-                  within_bounds=metrics_pb2.Assertion.WithinBounds(
-                    lower_bound=.4,
-                    upper_bound=1.0,
-                  ),
-                  inclusive_bounds=True,
-                )
-              )
-            ]
+        aggregate_assertions=[
+          metrics_pb2.TensorBoardSource.AggregateAssertion(
+            tag='eval/accuracy',
+            strategy=metrics_pb2.TensorBoardSource.MAX,
+            assertion=metrics_pb2.Assertion(
+              within_bounds=metrics_pb2.Assertion.WithinBounds(
+                lower_bound=.4,
+                upper_bound=1.0,
+              ),
+              inclusive_bounds=True,
+            )
           )
-        }
+        ]
       )
     )
     event = metrics_pb2.TestCompletedEvent(
@@ -150,21 +147,18 @@ class TensorBoardCollectorTest(parameterized.TestCase):
           'foo',
           'train/*',
         ],
-        assertions={
-          'foo': metrics_pb2.TensorBoardSource.AggregateAssertions(
-            aggregate_assertions=[
-              metrics_pb2.TensorBoardSource.AggregateAssertions.AggregateAssertion(
-                strategy=metrics_pb2.TensorBoardSource.MIN,
-                assertion=metrics_pb2.Assertion(
-                  within_bounds=metrics_pb2.Assertion.WithinBounds(
-                    lower_bound=0.,
-                    upper_bound=2.,
-                  ),
-                )
+        aggregate_assertions=[
+          metrics_pb2.TensorBoardSource.AggregateAssertion(
+            tag='foo',
+            strategy=metrics_pb2.TensorBoardSource.MIN,
+            assertion=metrics_pb2.Assertion(
+              within_bounds=metrics_pb2.Assertion.WithinBounds(
+                lower_bound=0.,
+                upper_bound=2.,
               )
-            ]
+            )
           )
-        }
+        ]
       )
     )
     event = metrics_pb2.TestCompletedEvent(

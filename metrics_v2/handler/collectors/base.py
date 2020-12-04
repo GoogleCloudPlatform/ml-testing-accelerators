@@ -3,28 +3,28 @@ import collections
 import math
 import typing
 
+from absl import logging
 import numpy as np
+from google.protobuf import duration_pb2
+from google.protobuf import timestamp_pb2
 
 from handler import utils
 import metrics_pb2
 
 
-def _get_historical_data_for_metric(benchmark_id, metric_key, time_window=None, start_time=None):
-  raise NotImplementedError
-
 class BaseCollector:
   """
   Base class for Collector implementations.
   """
-  def __init__(self, event, raw_source):
+  def __init__(self, event, raw_source, metric_store=None):
     self._event = event
     if raw_source:
       self._source = getattr(raw_source, raw_source.WhichOneof('source_type'))
+    self._metric_store =  metric_store
 
   @property
   def benchmark_id(self):
-    return (self._event.metric_collection_config.compare_to_benchmark_id 
-        or self._event.benchmark_id)
+    return 
 
   @property
   def output_path(self):
@@ -37,7 +37,28 @@ class BaseCollector:
   def read_metrics_and_assertions(self):
     raise NotImplementedError
 
-  def compute_bounds(self, name, assertion) -> utils.Bounds:
+  def get_metric_history(
+      self,
+      metric_key: str,
+      time_window: duration_pb2.Duration,
+      min_timestamp: timestamp_pb2.Timestamp
+  ) -> typing.Iterable[utils.MetricPoint]:
+    if not self._metric_store:
+      raise ValueError('Metric history requested for {}, but no metric store '
+                       'was provided to Collector.'.format(metric_key))
+    history_rows = self._metric_store.get_metric_history(
+      benchmark_id=(
+          self._event.metric_collection_config.compare_to_benchmark_id or
+          self._event.benchmark_id),
+      metric_key=metric_key,
+      min_time=max(
+          min_timestamp.ToDatetime(),
+          self._event.start_time.ToDatetime() - time_window.ToTimedelta())
+    )
+    
+    return [row.metric_value for row in history_rows]
+
+  def compute_bounds(self, metric_key, assertion) -> utils.Bounds:
     if assertion is None:
       return utils.NO_BOUNDS
 
@@ -60,14 +81,21 @@ class BaseCollector:
       lower_bound = assertion.within_bounds.lower_bound
       upper_bound = assertion.within_bounds.upper_bound
     elif assertion_type == 'std_devs_from_mean':
-      values = _get_historical_data_for_metric(
-        self.benchmark_id,
-        name,
-        assertion.time_window.ToTimedelta(),
-        assertion.start_time.ToDatetime())
+      values = self.get_metric_history(
+        metric_key,
+        assertion.time_window,
+        assertion.min_timestamp)
+      
+      # Standard deviation not defined for n < 2
+      min_num_points = max(assertion.wait_for_n_data_points, 2)
+      if len(values) < min_num_points:
+        logging.info('Not enough data points to compute bounds for %s. '
+                     'Need %d points, have %d.',
+                     metric_key, len(values), min_num_points)
+        return utils.NO_BOUNDS
+
       mean = np.mean(values)
       stddev = np.std(values)
-
       c = assertion.std_devs_from_mean.comparison
       if c in (metrics_pb2.Assertion.LESS, metrics_pb2.Assertion.WITHIN):
         upper_bound = mean + (stddev * assertion.std_devs_from_mean.std_devs)
@@ -76,11 +104,18 @@ class BaseCollector:
     elif assertion_type == 'percent_difference':
       target_type = assertion.percent_difference.WhichOneof('target_type')
       if target_type == 'use_historical_mean':
-        values = _get_historical_data_for_metric(
-          self.benchmark_id,
-          name,
-          assertion.time_window.ToTimedelta(),
-          assertion.start_time.ToDatetime())
+        values = self.get_metric_history(
+          metric_key,
+          assertion.time_window,
+          assertion.start_time)
+
+        # Mean not defined for n < 1.
+        min_num_points = max(assertion.wait_for_n_data_points, 1)
+        if len(values) < min_num_points:
+          logging.info('Not enough data points to compute bounds for %s. '
+                       'Need %d points, have %d.',
+                       metric_key, len(values), min_num_points)
+          return utils.NO_BOUNDS
         target = np.mean(values)
       elif target_type == 'value':
         target = assertion.percent_difference.target
@@ -94,7 +129,7 @@ class BaseCollector:
     if upper_bound == math.inf and lower_bound == math.inf:
       logging.error(
           '%s: comparison %s is not implemented for assertion type `%s`',
-          name, metrics_pb2.Assertion.Comparison.Name(c), assertion_type)
+          metric_key, metrics_pb2.Assertion.Comparison.Name(c), assertion_type)
       return utils.NO_BOUNDS
 
     return utils.Bounds(lower_bound, upper_bound, inclusive)

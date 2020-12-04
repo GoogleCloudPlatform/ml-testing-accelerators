@@ -23,10 +23,9 @@ class TensorBoardCollector(base.BaseCollector):
 
     return tag
 
-
   def _include_tag(self, tag):
     tag_path = pathlib.PurePath(tag)
-    return tag in self.source.assertions or (
+    return any(tag == a.tag for a in self.source.aggregate_assertions) or (
         any(tag_path.match(x.tag_pattern) for x in self.source.include_tags)
         and not any(tag_path.match(pattern) for pattern in self.source.exclude_tags))
 
@@ -76,7 +75,7 @@ class TensorBoardCollector(base.BaseCollector):
           except ValueError as e:
             logging.warning(
                 'Unable to parse tag: `{}` from tensor_content: {}. '
-                'Error: {}. Consider adding this tag to tags_to_ignore '
+                'Error: {}. Consider adding this tag to exclude_tags '
                 'in config.'.format(tag, t.tensor_proto.tensor_content, e))
     
     return raw_metrics
@@ -120,7 +119,11 @@ class TensorBoardCollector(base.BaseCollector):
         raise NotImplementedError('Unknown aggregation strategy: {}'.format(
             metrics_pb2.TensorBoardSource.AggregationStrategy.Name(strategy)))
 
-    final_metrics = {}
+    tag_to_aggregate_assertions = collections.defaultdict(list)
+    for aggregate_assertion in self.source.aggregate_assertions:
+      tag_to_aggregate_assertions[aggregate_assertion.tag].append(
+          aggregate_assertion)
+
     for tag, scalars in raw_metrics.items():
       tag_path = pathlib.PurePath(tag)
       nested_strategies = (x.strategies for x in self.source.include_tags
@@ -128,10 +131,10 @@ class TensorBoardCollector(base.BaseCollector):
                            any(tag_path.match(pattern) for pattern in self.source.exclude_tags))
       strategies = set(itertools.chain(*nested_strategies))
 
-      if tag in self.source.assertions:
+      if tag in tag_to_aggregate_assertions:
         strategy_to_assertion = {
-            a.strategy: a.assertion
-            for a in self.source.assertions[tag].aggregate_assertions
+          aggregate_assertion.strategy: aggregate_assertion.assertion
+          for aggregate_assertion in tag_to_aggregate_assertions[tag]
         }
         strategies.update(strategy_to_assertion.keys())
       else:
