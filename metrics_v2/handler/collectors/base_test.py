@@ -93,7 +93,7 @@ class BaseCollectorTest(parameterized.TestCase):
   def test_compute_bounds_percent_difference_with_mean_value(
       self, comparison, pct_diff, expected_bounds, inclusive=False):
     # mean = 3
-    value_history = list(range(1, 6))
+    value_history = range(1, 6)
     class _FakeMetricStore:
       def get_metric_history(*args, **kwargs):
         return [
@@ -130,7 +130,7 @@ class BaseCollectorTest(parameterized.TestCase):
   def test_compute_bounds_stddevs_from_mean(
       self, comparison, std_devs, expected_bounds, inclusive=False):
     # mean = 3, stddev = ~1.414
-    value_history = list(range(1, 6))
+    value_history = range(1, 6)
     class _FakeMetricStore:
       def get_metric_history(*args, **kwargs):
         return [
