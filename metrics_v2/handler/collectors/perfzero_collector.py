@@ -8,11 +8,9 @@ import tensorflow as tf
 
 class PerfZeroCollector(base.BaseCollector):
   def read_metrics_and_assertions(self):
-    """Retrieves aggregated metrics from a PerfZero summary file.
+    """Yields aggregated metrics from a PerfZero summary file.
 
-    Returns:
-      aggregated_metrics (dict):  Key is metric name and value is a MetricPoint
-        containing the aggregated value for that metric.
+    Values from process_info are prefixed with `process_info`.
     """
     glob_pattern = os.path.join(self.output_path, '*', 'perfzero_summary.json')
     file_matches = tf.io.gfile.glob(glob_pattern)

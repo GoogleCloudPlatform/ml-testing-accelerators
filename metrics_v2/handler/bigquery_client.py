@@ -11,6 +11,7 @@ BQ_METRIC_TABLE_NAME = 'metric_history'
 
 @dataclasses.dataclass
 class JobHistoryRow:
+  """Represents a database row containing a test job's status."""
   uuid: str
   test_name: str
   test_type: str
@@ -27,6 +28,7 @@ class JobHistoryRow:
 
 @dataclasses.dataclass
 class MetricHistoryRow:
+  """Represents a database row containing a test's metrics."""
   uuid: str
   test_name: str
   timestamp: datetime.datetime
@@ -35,7 +37,8 @@ class MetricHistoryRow:
   metric_lower_bound: typing.Optional[float] = None
   metric_upper_bound: typing.Optional[float] = None
 
-def _to_bigquery_schema(dataclass):
+def _to_bigquery_schema(dataclass: typing.Any) -> typing.List[bigquery.SchemaField]:
+  """Converts a @dataclass to a BigQuery schema."""
   python_type_to_bq_type = {
     str: ("STRING", "REQUIRED"),
     int: ("INT64", "REQUIRED"),
@@ -53,15 +56,11 @@ def _to_bigquery_schema(dataclass):
     for field in dataclasses.fields(dataclass)
   ]
 
-def _is_valid_value(v):
+def _is_valid_value(v: typing.Any) -> bool:
   """Return True if value is valid for writing to BigQuery.
 
   Args:
     v (anything): Value to check.
-
-  Returns:
-    Bool, True if v is valid and False otherwise.
-
   """
   invalid_values = [math.inf, -math.inf, math.nan]
   if v in invalid_values:
@@ -104,6 +103,7 @@ class BigQueryMetricStore:
     return ".".join((self._project, self._dataset, BQ_METRIC_TABLE_NAME))
 
   def create_tables(self):
+    """Create new BigQuery tables from the schema."""
     dataset = bigquery.Dataset(self.bigquery_client.dataset(self._dataset))
     _ = self.bigquery_client.create_dataset(dataset, exists_ok=True)
 
@@ -121,6 +121,7 @@ class BigQueryMetricStore:
       self, 
       job: JobHistoryRow,
       metrics: typing.Iterable[MetricHistoryRow]):
+    """Inserts job status and metric values from a test run into BigQuery."""
 
     # Every job should have 1 job status row and it should exist even if
     # no other metrics exist.
@@ -162,9 +163,19 @@ class BigQueryMetricStore:
       self,
       benchmark_id: str,
       metric_key: str,
-      min_time: typing.Optional[datetime.datetime] = None
+      min_time: datetime.datetime,
   ) -> typing.Iterable[MetricHistoryRow]:
-    """Returns the historic values of each metric for a given model."""
+    """Returns the historic values of each metric for a given model.
+    
+    Args:
+      benchmark_id: Unique ID for a test.
+      metric_key: Unique ID for a metric.
+      min_time: Minimum timestamp for metric values. Metrics recorded before
+        this timestamp will not be returned.
+    
+    Returns:
+      List of MetricHistory containing a metric's history.
+    """
     query = """
         SELECT *
         FROM `metric_history`
@@ -193,32 +204,3 @@ class BigQueryMetricStore:
         query, job_config=job_config)
     
     return [MetricHistoryRow(**row) for row in query_result]
-
-'''
-  def get_existing_row(self):
-    """Returns any existing row in job_history that is for the current test.
-
-    Returns:
-      uuid (string): The `uuid` column for the row. If no row exists,
-        this will be None.
-      publish_time (int): The `publish_time` column for the row. If no row
-        exists, this will be None.
-    """
-    uuid = None
-    publish_time = None
-    if not self.metric_collection_config.get('write_to_bigquery', True):
-      self.logger.info('Skipping check for existing Bigquery rows.')
-      return uuid, publish_time
-    query_result = self.bigquery_client.query(
-        'SELECT * FROM `{}` WHERE stackdriver_logs_link=\"{}\"'.format(
-            self.job_history_table_id,
-            self.debug_info.stackdriver_logs_link)).result()
-    if query_result.total_rows > 1:
-      self.logger.error('Found more than 1 row in job_history for test: '
-                        '{}'.format(self.test_name),
-                        debug_info=self.debug_info)
-    for row in query_result:
-      uuid = row['uuid']
-      publish_time = row['msg_publish_time']
-    return uuid, publish_time
-'''

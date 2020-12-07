@@ -16,25 +16,20 @@ class BaseCollector:
   """
   Base class for Collector implementations.
   """
-  def __init__(self, event, raw_source, metric_store=None):
+  def __init__(self, event, raw_source: metrics_pb2.MetricSource, metric_store=None):
     self._event = event
     if raw_source:
       self._source = getattr(raw_source, raw_source.WhichOneof('source_type'))
     self._metric_store =  metric_store
 
   @property
-  def benchmark_id(self):
-    return 
-
-  @property
   def output_path(self):
+    """Output path from test event."""
     return self._event.output_path
 
-  @property
-  def source(self):
-    return self._source
-
-  def read_metrics_and_assertions(self):
+  def read_metrics_and_assertions(self) -> (
+      typing.Iterable[typing.Tuple[str, float, metrics_pb2.Assertion]]):
+    """Yields unique metric keys, values, and the corresponding assertions."""
     raise NotImplementedError
 
   def get_metric_history(
@@ -42,7 +37,19 @@ class BaseCollector:
       metric_key: str,
       time_window: duration_pb2.Duration,
       min_timestamp: timestamp_pb2.Timestamp
-  ) -> typing.Iterable[utils.MetricPoint]:
+  ) -> typing.List[float]:
+    """Returns the historical values of a given metric.
+    
+    Args:
+      metric_key: Unique string identifying the name of the metric.
+      time_window: Time limit for metric history, relative to the test start
+        time. Data points older than the time window will not be returned.
+      min_timestamp: Absolute time limit for metric history. Data points older
+        than this timestamp will not be returned.
+
+    Returns:
+      A list of the historical values of the given metric as floats.
+    """
     if not self._metric_store:
       raise ValueError('Metric history requested for {}, but no metric store '
                        'was provided to Collector.'.format(metric_key))
@@ -58,7 +65,23 @@ class BaseCollector:
     
     return [row.metric_value for row in history_rows]
 
-  def compute_bounds(self, metric_key, assertion) -> utils.Bounds:
+  def compute_bounds(
+      self,
+      metric_key: str,
+      assertion: metrics_pb2.Assertion
+  ) -> utils.Bounds:
+    """Returns the bounds for a given metric, based on the given assertion.
+
+    This method may result in database calls to gather historical data for some
+    types of assertions.
+
+    Args:
+      metric_key: Unique string identifying the name of the metric.
+      assertion: The assertion that will be used to define the bounds.
+
+    Returns:
+      An instance of utils.Bounds representing the metric bounds.
+    """
     if assertion is None:
       return utils.NO_BOUNDS
 
@@ -135,4 +158,7 @@ class BaseCollector:
     return utils.Bounds(lower_bound, upper_bound, inclusive)
 
   def metric_points(self) -> typing.Iterable[utils.MetricPoint]:
-    return [utils.MetricPoint(key, value, self.compute_bounds(key, assertion)) for key, value, assertion in self.read_metrics_and_assertions()]
+    """Returns a list of metric points collected from the test output."""
+    return [
+        utils.MetricPoint(key, value, self.compute_bounds(key, assertion))
+        for key, value, assertion in self.read_metrics_and_assertions()]

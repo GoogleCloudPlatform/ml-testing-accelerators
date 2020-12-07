@@ -4,7 +4,7 @@ from handler.collectors import base
 
 class LiteralCollector(base.BaseCollector):
   def read_metrics_and_assertions(self):
-    for metric_key, assertion in self.source.assertions.items():
+    for metric_key, assertion in self._source.assertions.items():
       try:
         # TODO: implement lookups in nested fields
         raw_value = getattr(self._event, metric_key)

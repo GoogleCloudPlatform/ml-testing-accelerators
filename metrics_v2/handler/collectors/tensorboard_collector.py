@@ -17,30 +17,24 @@ class TensorBoardCollector(base.BaseCollector):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
-  def _prefixed_tag(self, tag):
-    if self.source.merge_runs and run != '.':
+  def _prefixed_tag(self, tag: str) -> str:
+    if self._source.merge_runs and run != '.':
       return '/'.join((run, tag))
 
     return tag
 
-  def _include_tag(self, tag):
+  def _include_tag(self, tag: str) -> bool:
     tag_path = pathlib.PurePath(tag)
-    return any(tag == a.tag for a in self.source.aggregate_assertions) or (
-        any(tag_path.match(x.tag_pattern) for x in self.source.include_tags)
-        and not any(tag_path.match(pattern) for pattern in self.source.exclude_tags))
+    return any(tag == a.tag for a in self._source.aggregate_assertions) or (
+        any(tag_path.match(x.tag_pattern) for x in self._source.include_tags)
+        and not any(tag_path.match(pattern) for pattern in self._source.exclude_tags))
 
-  def _read_metrics_from_events_dir(self):
+  def _read_metrics_from_events_dir(self) -> dict:
     """Collect the TensorBoard summary values for each metric.
-
-    Args:
-      events_dir (string): Path to location of TensorBoard summaries.
-      tags_to_ignore (set[string]): Set of TensorBoard tag names to skip.
-      use_run_name_prefix (bool): If True, prefix tag names with the name
-        of the run that contains them (e.g. `train/` or `eval/`)
 
     Returns:
       raw_metrics (dict): Keys are TensorBoard tags and value is a list of
-        MetricPoint for every data point for that Tensorboard tag.
+        TensorBoardScalar for every data point for that Tensorboard tag.
     """
     em = event_multiplexer.EventMultiplexer()
     em.AddRunsFromDirectory(self.output_path)
@@ -81,21 +75,11 @@ class TensorBoardCollector(base.BaseCollector):
     return raw_metrics
 
   def read_metrics_and_assertions(self):
-    """Aggregate raw TensorBoard metrics according to collection config.
+    """Yields metric keys, aggregated metric values, and assertions.
 
-    Available aggregation strategies: `final`, `min`, `max`, `average`.
+    Metric keys are formatted as {tb_tag_name}_{aggregation_strategy}
 
-    Args:
-      raw_metrics: dict mapping TensorBoard tags to list of MetricPoint.
-      default_strategies: list of aggregation strategies to use as the default.
-      metric_strategies: dict mapping tags to aggregation strategies.
-
-    Returns:
-      dict mapping metric name to MetricPoint.
-
-    Raises:
-      ValueError: If `default_strategies` is empty or an invalid strategy is
-        provided.
+    See metrics.proto for available aggregation strategies.
     """
     raw_metrics = self._read_metrics_from_events_dir()
     if not raw_metrics:
@@ -120,15 +104,15 @@ class TensorBoardCollector(base.BaseCollector):
             metrics_pb2.TensorBoardSource.AggregationStrategy.Name(strategy)))
 
     tag_to_aggregate_assertions = collections.defaultdict(list)
-    for aggregate_assertion in self.source.aggregate_assertions:
+    for aggregate_assertion in self._source.aggregate_assertions:
       tag_to_aggregate_assertions[aggregate_assertion.tag].append(
           aggregate_assertion)
 
     for tag, scalars in raw_metrics.items():
       tag_path = pathlib.PurePath(tag)
-      nested_strategies = (x.strategies for x in self.source.include_tags
+      nested_strategies = (x.strategies for x in self._source.include_tags
                            if tag_path.match(x.tag_pattern) and not 
-                           any(tag_path.match(pattern) for pattern in self.source.exclude_tags))
+                           any(tag_path.match(pattern) for pattern in self._source.exclude_tags))
       strategies = set(itertools.chain(*nested_strategies))
 
       if tag in tag_to_aggregate_assertions:
