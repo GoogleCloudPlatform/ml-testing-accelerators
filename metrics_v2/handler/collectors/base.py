@@ -124,13 +124,19 @@ class BaseCollector:
         upper_bound = mean + (stddev * assertion.std_devs_from_mean.std_devs)
       if c in (metrics_pb2.Assertion.GREATER, metrics_pb2.Assertion.WITHIN):
         lower_bound = mean - (stddev * assertion.std_devs_from_mean.std_devs)
+
+      if upper_bound == math.inf and lower_bound == -math.inf:
+        logging.error(
+            '%s: comparison %s is not implemented for assertion type `%s`',
+            metric_key, metrics_pb2.Assertion.Comparison.Name(c), assertion_type)
+        return utils.NO_BOUNDS
     elif assertion_type == 'percent_difference':
       target_type = assertion.percent_difference.WhichOneof('target_type')
       if target_type == 'use_historical_mean':
         values = self.get_metric_history(
           metric_key,
           assertion.time_window,
-          assertion.start_time)
+          assertion.min_timestamp)
 
         # Mean not defined for n < 1.
         min_num_points = max(assertion.wait_for_n_data_points, 1)
@@ -141,7 +147,7 @@ class BaseCollector:
           return utils.NO_BOUNDS
         target = np.mean(values)
       elif target_type == 'value':
-        target = assertion.percent_difference.target
+        target = assertion.percent_difference.value
       else:
         logging.error('%s: No `target_type` defined for assertion type `%s`.',
                       metric_key, assertion_type)
@@ -152,12 +158,12 @@ class BaseCollector:
         upper_bound = target + (assertion.percent_difference.percent * target)
       if c in (metrics_pb2.Assertion.GREATER, metrics_pb2.Assertion.WITHIN):
         lower_bound = target - (assertion.percent_difference.percent * target)
-    
-    if upper_bound == math.inf and lower_bound == -math.inf:
-      logging.error(
-          '%s: comparison %s is not implemented for assertion type `%s`',
-          metric_key, metrics_pb2.Assertion.Comparison.Name(c), assertion_type)
-      return utils.NO_BOUNDS
+
+      if upper_bound == math.inf and lower_bound == -math.inf:
+        logging.error(
+            '%s: comparison %s is not implemented for assertion type `%s`',
+            metric_key, metrics_pb2.Assertion.Comparison.Name(c), assertion_type)
+        return utils.NO_BOUNDS
 
     return utils.Bounds(lower_bound, upper_bound, inclusive)
 
