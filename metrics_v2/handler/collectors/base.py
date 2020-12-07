@@ -142,6 +142,10 @@ class BaseCollector:
         target = np.mean(values)
       elif target_type == 'value':
         target = assertion.percent_difference.target
+      else:
+        logging.error('%s: No `target_type` defined for assertion type `%s`.',
+                      metric_key, assertion_type)
+        return utils.NO_BOUNDS
 
       c = assertion.percent_difference.comparison
       if c in (metrics_pb2.Assertion.LESS, metrics_pb2.Assertion.WITHIN):
@@ -149,7 +153,7 @@ class BaseCollector:
       if c in (metrics_pb2.Assertion.GREATER, metrics_pb2.Assertion.WITHIN):
         lower_bound = target - (assertion.percent_difference.percent * target)
     
-    if upper_bound == math.inf and lower_bound == math.inf:
+    if upper_bound == math.inf and lower_bound == -math.inf:
       logging.error(
           '%s: comparison %s is not implemented for assertion type `%s`',
           metric_key, metrics_pb2.Assertion.Comparison.Name(c), assertion_type)
