@@ -69,7 +69,7 @@ class AlertHandlerTest(parameterized.TestCase):
       details_link=WORKLOAD_LINK,
     )
     logging.error('error_message')
-    subject, body = self._handler.generate_email_content()
+    _, body = self._handler.generate_email_content()
     self.assertIn('error_message', body.content)
     self.assertIn(LOGS_LINK, body.content)
     self.assertIn(WORKLOAD_LINK, body.content)
@@ -85,6 +85,13 @@ class AlertHandlerTest(parameterized.TestCase):
     self.assertTrue((after_call - sj_date).total_seconds() < 2.0)
 
     self.assertIn('benchmark-id', subject)
+
+  def test_no_html_injection(self):
+    injection_str = '<marquee>HTML injection is fun!</marquee>'
+    logging.error(injection_str)
+
+    _, body = self._handler.generate_email_content()
+    self.assertNotIn(injection_str, body.content)
 
 if __name__ == '__main__':
   absltest.main()

@@ -25,20 +25,20 @@ from sendgrid.helpers import mail
 # in this directory for email alert setup steps.
 
 template = jinja2.Template("""
-<h1>New errors in {{ benchmark_id }}:</h1>
+<h1>New errors in {{ benchmark_id|e }}:</h1>
 <ul>
   {% for message in messages %}
-  <li>{{ message }}</li>
+  <li>{{ message|e }}</li>
   {% endfor %}
 </ul>
 {% if debug_info %}
 <h2>Debug info:</h2>
 <ul>
   {% if debug_info.logs_link  %}
-  <li><a href={{ debug_info.logs_link }}>Logs link</a></li>
+  <li><a href="{{ debug_info.logs_link }}">Logs link</a></li>
   {% endif %}
   {% if debug_info.details_link  %}
-  <li><a href={{ debug_info.details_link }}>Workload link</a></li>
+  <li><a href="{{ debug_info.details_link }}">Workload link</a></li>
   {% endif %}
 </ul>
 {% endif %}
