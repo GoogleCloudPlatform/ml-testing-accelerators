@@ -114,7 +114,7 @@ class BaseCollector:
       if len(values) < min_num_points:
         logging.info('Not enough data points to compute bounds for %s. '
                      'Need %d points, have %d.',
-                     metric_key, len(values), min_num_points)
+                     metric_key, min_num_points, len(values))
         return utils.NO_BOUNDS
 
       mean = np.mean(values)

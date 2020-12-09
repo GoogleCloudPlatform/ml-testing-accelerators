@@ -6,8 +6,17 @@ import typing
 from absl import logging
 from google.cloud import bigquery
 
+from handler import utils
+import metrics_pb2
+
 BQ_JOB_TABLE_NAME = 'job_history'
 BQ_METRIC_TABLE_NAME = 'metric_history'
+
+PROTO_STATUS_TO_BQ_STATUS = {
+  metrics_pb2.TestCompletedEvent.COMPLETED: 'success',
+  metrics_pb2.TestCompletedEvent.FAILED: 'failure',
+  metrics_pb2.TestCompletedEvent.TIMEOUT: 'timeout',
+}
 
 @dataclasses.dataclass
 class JobHistoryRow:
@@ -26,6 +35,27 @@ class JobHistoryRow:
   logs_download_command: typing.Optional[str] = None
   kubernetes_workload_link: typing.Optional[str] = None
 
+  @staticmethod
+  def from_test_event(
+      unique_key: str,
+      event: metrics_pb2.TestCompletedEvent
+  ):
+    return JobHistoryRow(
+      unique_key,
+      event.benchmark_id,
+      event.labels.get('mode'),
+      event.labels.get('accelerator'),
+      event.labels.get('framework_version'),
+      PROTO_STATUS_TO_BQ_STATUS[event.status],
+      event.num_attempts - 1,
+      event.duration.ToTimedelta().total_seconds(),
+      event.start_time.ToDatetime(),
+      event.debug_info.logs_link,
+      event.start_time.ToDatetime().timestamp() + event.duration.ToTimedelta().total_seconds(),
+      event.debug_info.logs_download_command,
+      event.debug_info.details_link,
+    )
+
 @dataclasses.dataclass
 class MetricHistoryRow:
   """Represents a database row containing a test's metrics."""
@@ -36,6 +66,22 @@ class MetricHistoryRow:
   metric_value: float
   metric_lower_bound: typing.Optional[float] = None
   metric_upper_bound: typing.Optional[float] = None
+
+  @staticmethod
+  def from_metric_point(
+    unique_key: str,
+    point: utils.MetricPoint,
+    event: metrics_pb2.TestCompletedEvent
+  ):
+    return MetricHistoryRow(
+        unique_key,
+        event.benchmark_id,
+        event.start_time.ToDatetime(),
+        point.metric_key,
+        point.metric_value,
+        point.bounds.lower,
+        point.bounds.upper,
+    )
 
 def _to_bigquery_schema(dataclass: typing.Any) -> typing.List[bigquery.SchemaField]:
   """Converts a @dataclass to a BigQuery schema."""
