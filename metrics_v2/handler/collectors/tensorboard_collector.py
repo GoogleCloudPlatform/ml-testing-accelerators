@@ -17,13 +17,20 @@ class TensorBoardCollector(base.BaseCollector):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
-  def _prefixed_tag(self, tag: str) -> str:
-    if self._source.merge_runs and run != '.':
+  def _prefixed_tag(self, tag: str, run: str) -> str:
+    if not self._source.merge_runs and run != '.':
       return '/'.join((run, tag))
 
     return tag
 
   def _include_tag(self, tag: str) -> bool:
+    """Determines if a tag should be included in the results.
+    
+    Includes tags if:
+    1) There is an exactly-matching assertion.
+    2) There is a matching pattern in include_tags, but no matching patterns
+       in exclude tags.
+    """
     tag_path = pathlib.PurePath(tag)
     return any(tag == a.tag for a in self._source.aggregate_assertions) or (
         any(tag_path.match(x.tag_pattern) for x in self._source.include_tags)
@@ -44,7 +51,7 @@ class TensorBoardCollector(base.BaseCollector):
     for run, tags in em.Runs().items():
       # 'Old-style' runs have a simple format and store values directly.
       for tag in tags['scalars']:
-        prefixed_tag = self._prefixed_tag(tag)
+        prefixed_tag = self._prefixed_tag(tag, run)
         if not self._include_tag(prefixed_tag):
           continue
 
@@ -53,7 +60,7 @@ class TensorBoardCollector(base.BaseCollector):
             for x in em.Scalars(run, tag))
       # 'New-style' runs stores values inside of Tensor protos.
       for tag in tags['tensors']:
-        prefixed_tag = self._prefixed_tag(tag)
+        prefixed_tag = self._prefixed_tag(tag, run)
         if not self._include_tag(prefixed_tag):
           continue
 

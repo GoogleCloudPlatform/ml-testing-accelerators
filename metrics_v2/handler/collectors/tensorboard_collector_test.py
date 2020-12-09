@@ -1,6 +1,8 @@
+import contextlib
+import os
+
 from absl.testing import absltest
 from absl.testing import parameterized
-
 import numpy as np
 import tensorflow as tf
 
@@ -12,21 +14,24 @@ import metrics_pb2
 class TensorBoardCollectorTest(parameterized.TestCase):
   def setUp(self):
     self.temp_dir = self.create_tempdir().full_path
-    self.summary_writer = tf.summary.create_file_writer(self.temp_dir)
-
-    with self.summary_writer.as_default():
+    summary_writer = tf.summary.create_file_writer(self.temp_dir)
+    with summary_writer.as_default(), contextlib.closing(summary_writer):
       tf.summary.scalar("foo", 1, 0)
-      tf.summary.scalar("eval/accuracy", .125, 0)
-      tf.summary.scalar("train/bar", 10, 0)
-
       tf.summary.scalar("foo", 2, 100)
-      tf.summary.scalar("eval/accuracy", .5, 100)
-      tf.summary.scalar("train/bar", 100, 100)
 
-      tf.summary.scalar("eval/accuracy", .25, 200)
-      tf.summary.scalar("train/bar", 100, 200)
+    train_summary_writer = tf.summary.create_file_writer(
+        os.path.join(self.temp_dir, 'train'))
+    with train_summary_writer.as_default(), contextlib.closing(train_summary_writer):
+      tf.summary.scalar("bar", 10, 0)
+      tf.summary.scalar("bar", 100, 200)
+      tf.summary.scalar("bar", 100, 100)
 
-    self.summary_writer.flush()
+    eval_summary_writer = tf.summary.create_file_writer(
+            os.path.join(self.temp_dir, 'eval'))
+    with eval_summary_writer.as_default(), contextlib.closing(eval_summary_writer):
+      tf.summary.scalar("accuracy", .125, 0)
+      tf.summary.scalar("accuracy", .5, 100)
+      tf.summary.scalar("accuracy", .25, 200)
 
   def test_aggregate_metrics_include_all_strategies(self):
     metric_source = metrics_pb2.MetricSource(
