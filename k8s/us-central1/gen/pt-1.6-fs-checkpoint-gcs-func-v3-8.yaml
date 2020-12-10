@@ -39,6 +39,7 @@
       "template":
         "metadata":
           "annotations":
+            "reserved.cloud-tpus.google.com": false
             "tf-version.cloud-tpus.google.com": "pytorch-1.6"
         "spec":
           "containers":

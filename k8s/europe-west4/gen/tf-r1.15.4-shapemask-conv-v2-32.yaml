@@ -39,6 +39,7 @@
       "template":
         "metadata":
           "annotations":
+            "reserved.cloud-tpus.google.com": "true"
             "tf-version.cloud-tpus.google.com": "1.15.4"
         "spec":
           "containers":
@@ -164,5 +165,5 @@
           "nodeSelector":
             "tpu-available": "true"
           "restartPolicy": "Never"
-  "schedule": "0 8 * * 0"
+  "schedule": "0 0 * * 0,2,4"
   "successfulJobsHistoryLimit": 1

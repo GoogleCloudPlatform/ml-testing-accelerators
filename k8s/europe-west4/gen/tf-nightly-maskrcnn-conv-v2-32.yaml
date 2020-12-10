@@ -39,6 +39,7 @@
       "template":
         "metadata":
           "annotations":
+            "reserved.cloud-tpus.google.com": "true"
             "tf-version.cloud-tpus.google.com": "nightly"
         "spec":
           "containers":
@@ -183,5 +184,5 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-  "schedule": "0 6 * * 0,5"
+  "schedule": "0 22 * * 0,2,4"
   "successfulJobsHistoryLimit": 1
