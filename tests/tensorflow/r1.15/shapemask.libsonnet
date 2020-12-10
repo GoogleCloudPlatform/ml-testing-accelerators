@@ -128,11 +128,16 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
   },
+  local reserved = {
+    tpuSettings+: {
+      reserved: "true",
+    },
+  },
 
   configs: [
     shapemask + v2_8 + convergence,
     shapemask + v3_8 + convergence,
-    shapemask + v2_32 + convergence,
+    shapemask + v2_32 + convergence + reserved + {schedule: "0 0 * * 0,2,4"},
     shapemask + v3_32 + convergence,
     shapemask + v2_8 + functional,
     shapemask + v3_8 + functional,

@@ -83,6 +83,11 @@ local tpus = import "templates/tpus.libsonnet";
       '--eval_batch_size=256',
     ],
   },
+  local reserved = {
+    tpuSettings+: {
+      reserved: "true",
+    },
+  },
 
   configs: [
     bert + v2_8 + functional,
@@ -91,7 +96,7 @@ local tpus = import "templates/tpus.libsonnet";
     bert + v3_8 + convergence + timeouts.Hours(3),
     bert + v2_32 + functional,
     bert + v3_32 + functional,
-    bert + v2_32 + convergence,
+    bert + v2_32 + convergence + reserved + {schedule: "54 21 * * 1,3,5,6"},
     bert + v3_32 + convergence,
   ],
 }

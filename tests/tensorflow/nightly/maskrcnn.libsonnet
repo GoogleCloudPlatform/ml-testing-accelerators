@@ -174,6 +174,11 @@ local gpus = import "templates/gpus.libsonnet";
       },
     },
   },
+  local reserved = {
+    tpuSettings+: {
+      reserved: "true",
+    },
+  },
 
   configs: [
     maskrcnn + functional + k80x8 + mixins.Suspended,
@@ -187,7 +192,7 @@ local gpus = import "templates/gpus.libsonnet";
     maskrcnn + convergence + v3_8,
     maskrcnn + functional + v2_32,
     maskrcnn + functional + v3_32,
-    maskrcnn + convergence + v2_32,
+    maskrcnn + convergence + v2_32 + reserved + {schedule: "0 22 * * 0,2,4"},
     maskrcnn + convergence + v3_32,
   ],
 }

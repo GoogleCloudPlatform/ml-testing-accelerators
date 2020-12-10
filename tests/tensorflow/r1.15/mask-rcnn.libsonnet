@@ -85,11 +85,16 @@ local tpus = import "templates/tpus.libsonnet";
       total_steps: 1000,
     },
   },
+  local reserved = {
+    tpuSettings+: {
+      reserved: "true",
+    },
+  },
 
   configs: [
     mask_rcnn + v2_8 + convergence,
     mask_rcnn + v3_8 + convergence,
-    mask_rcnn + v2_32 + convergence,
+    mask_rcnn + v2_32 + convergence + reserved + {schedule: "10 4 * * 0,2,4"},
     mask_rcnn + v3_32 + convergence,
     mask_rcnn + v2_8 + functional,
     mask_rcnn + v3_8 + functional,

@@ -67,6 +67,11 @@ local tpus = import "templates/tpus.libsonnet";
     accelerator: tpus.v3_32,
     command+: [ "--batch_size=8192" ],
   },
+  local reserved = {
+    tpuSettings+: {
+      reserved: "true",
+    },
+  },
 
   configs: [
     resnet + v2_8 + functional,
@@ -75,7 +80,7 @@ local tpus = import "templates/tpus.libsonnet";
     resnet + v3_8 + convergence,
     resnet + v2_32 + functional,
     resnet + v3_32 + functional,
-    resnet + v2_32 + convergence,
+    resnet + v2_32 + convergence + reserved + {schedule: "20 8 * * 0,2,4"},
     resnet + v3_32 + convergence,
   ],
 }

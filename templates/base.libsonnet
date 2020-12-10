@@ -49,6 +49,9 @@ local volumes = import 'volumes.libsonnet';
 
       # Whether to use a preemptible TPU.
       preemptible: false,
+
+      # Whether to use a TPU reservation.
+      reserved: false,
     },
 
     # CPU/memory resource requests for the `train` container.

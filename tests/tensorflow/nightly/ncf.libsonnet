@@ -102,6 +102,11 @@ local gpus = import "templates/gpus.libsonnet";
   local v3_32 =  {
     accelerator: tpus.v3_32,
   },
+  local reserved = {
+    tpuSettings+: {
+      reserved: "true",
+    },
+  },
 
   configs: [
     ncf + k80 + functional + ctl,
@@ -114,7 +119,7 @@ local gpus = import "templates/gpus.libsonnet";
     ncf + v100x4 + convergence + ctl,
     ncf + v2_8 + functional + ctl,
     ncf + v3_8 + convergence + ctl,
-    ncf + v2_32 + convergence + ctl,
+    ncf + v2_32 + convergence + ctl + reserved + {schedule: "20 15 * * 1,3,5,6"},
     ncf + v3_32 + functional + ctl,
   ],
 }

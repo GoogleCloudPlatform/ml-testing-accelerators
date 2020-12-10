@@ -144,6 +144,11 @@ local gpus = import "templates/gpus.libsonnet";
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
   },
+  local reserved = {
+    tpuSettings+: {
+      reserved: "true",
+    },
+  },
 
   configs: [
     resnet + k80 + functional + timeouts.Hours(5) + mixins.Suspended,
@@ -160,7 +165,7 @@ local gpus = import "templates/gpus.libsonnet";
     resnet + v3_8 + convergence,
     resnet + v2_32 + functional,
     resnet + v3_32 + functional,
-    resnet + v2_32 + convergence,
+    resnet + v2_32 + convergence + reserved + {schedule: "7 11 * * 0,2,4"},
     resnet + v3_32 + convergence,
   ],
 }

@@ -144,6 +144,11 @@ local gpus = import "templates/gpus.libsonnet";
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
   },
+  local reserved = {
+    tpuSettings+: {
+      reserved: "true",
+    },
+  },
 
   configs: [
     efficientnet + k80x8 + functional + timeouts.Hours(4) + mixins.Suspended,
@@ -158,7 +163,7 @@ local gpus = import "templates/gpus.libsonnet";
     efficientnet + v3_8 + convergence + timeouts.Hours(45),
     efficientnet + v2_32 + functional,
     efficientnet + v3_32 + functional,
-    efficientnet + v2_32 + convergence + timeouts.Hours(30),
+    efficientnet + v2_32 + convergence + timeouts.Hours(10) + reserved + {schedule: "0 7 * * 1,3,5,6"},
     efficientnet + v3_32 + convergence + timeouts.Hours(24),
   ],
 }

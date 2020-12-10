@@ -74,10 +74,15 @@ local tpus = import "templates/tpus.libsonnet";
       train_steps: 100,
     },
   },
+  local reserved = {
+    tpuSettings+: {
+      reserved: "true",
+    },
+  },
 
   configs: [
     unet + v3_8 + convergence,
-    unet + v2_32 + convergence,
+    unet + v2_32 + convergence + reserved + {schedule: "0 1 * * 1,3,5,6"},
     unet + v3_32 + convergence,
     unet + v3_8 + functional,
     unet + v2_32 + functional,

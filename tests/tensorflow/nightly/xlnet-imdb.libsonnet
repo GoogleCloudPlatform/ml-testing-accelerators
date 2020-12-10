@@ -85,12 +85,17 @@ local tpus = import "templates/tpus.libsonnet";
       '--test_batch_size=128',
     ],
   },
+  local reserved = {
+    tpuSettings+: {
+      reserved: "true",
+    },
+  },
 
   configs: [
     xlnet + v3_8 + functional + mixins.Unsuspended,
     xlnet + v2_8 + convergence + timeouts.Hours(2),
     xlnet + v3_8 + convergence + timeouts.Hours(1),
-    xlnet + v2_32 + convergence,
+    xlnet + v2_32 + convergence + reserved + {schedule: "54 20 * * 1,3,5,6"},
     xlnet + v3_32 + convergence,
   ],
 }

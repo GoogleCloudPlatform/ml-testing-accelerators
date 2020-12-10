@@ -28,13 +28,14 @@ local base = import 'base.libsonnet';
       metadata: {
         annotations: {
           "tf-version.cloud-tpus.google.com": tpuSettings.softwareVersion,
+	  "reserved.cloud-tpus.google.com": tpuSettings.reserved,
         },
       },
       spec+: {
         containerMap+: {
           train+: {
             resources+: {
-              local preemptiblePrefix = 
+              local preemptiblePrefix =
                 if tpuSettings.preemptible then
                   "preemptible-"
                 else

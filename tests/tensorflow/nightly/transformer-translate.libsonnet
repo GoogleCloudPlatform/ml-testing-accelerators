@@ -122,6 +122,11 @@ local gpus = import "templates/gpus.libsonnet";
       "--batch_size=24576",
     ],
   },
+  local reserved = {
+    tpuSettings+: {
+      reserved: "true",
+    },
+  },
 
   configs: [
     transformer + k80 + functional_short + timeouts.Hours(6) + mixins.Suspended,
@@ -138,7 +143,7 @@ local gpus = import "templates/gpus.libsonnet";
     transformer + v3_8 + convergence ,
     transformer + v2_32 + functional,
     transformer + v3_32 + functional,
-    transformer + v2_32 + convergence,
+    transformer + v2_32 + convergence + reserved + {schedule: "10 20 * * 0,2,4"},
     transformer + v3_32 + convergence,
   ],
 }
