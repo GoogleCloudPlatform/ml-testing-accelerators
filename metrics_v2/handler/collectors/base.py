@@ -21,7 +21,7 @@ import numpy as np
 from google.protobuf import duration_pb2
 from google.protobuf import timestamp_pb2
 
-from handler import utils
+import utils
 import metrics_pb2
 
 

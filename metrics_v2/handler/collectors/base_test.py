@@ -19,9 +19,9 @@ import math
 from absl.testing import absltest
 from absl.testing import parameterized
 
-from handler import bigquery_client
-from handler import utils
-from handler.collectors import base
+import bigquery_client
+import utils
+from . import base
 import metrics_pb2
 
 class BaseCollectorTest(parameterized.TestCase):

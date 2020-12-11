@@ -20,9 +20,9 @@ from absl.testing import parameterized
 import numpy as np
 import tensorflow as tf
 
-from handler import utils
-from handler.collectors import base
-from handler.collectors import tensorboard_collector
+from . import base
+from . import tensorboard_collector
+import utils
 import metrics_pb2
 
 class TensorBoardCollectorTest(parameterized.TestCase):

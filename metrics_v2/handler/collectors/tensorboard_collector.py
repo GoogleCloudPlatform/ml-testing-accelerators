@@ -21,7 +21,7 @@ import numpy as np
 from tensorboard.backend.event_processing import event_multiplexer
 import tensorflow as tf
 
-from handler.collectors import base
+from . import base
 import metrics_pb2
 
 # Represents a single summary scalar and the time it was recorded.

@@ -17,7 +17,7 @@ import math
 from absl.testing import absltest
 from absl.testing import parameterized
 
-from handler import utils
+import utils
 
 class UtilsTest(parameterized.TestCase):
   @parameterized.named_parameters(

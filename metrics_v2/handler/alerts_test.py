@@ -20,7 +20,7 @@ from absl import logging
 from absl.testing import absltest
 from absl.testing import parameterized
 
-from handler import alerts
+import alerts
 import metrics_pb2
 
 
