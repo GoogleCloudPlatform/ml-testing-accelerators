@@ -158,7 +158,7 @@ local gpus = import "templates/gpus.libsonnet";
     efficientnet + v3_8 + convergence + timeouts.Hours(45),
     efficientnet + v2_32 + functional,
     efficientnet + v3_32 + functional,
-    efficientnet + v2_32 + convergence + timeouts.Hours(30),
+    efficientnet + v2_32 + convergence + timeouts.Hours(10) + tpus.reserved + {schedule: "0 7 * * 1,3,5,6"},
     efficientnet + v3_32 + convergence + timeouts.Hours(24),
   ],
 }

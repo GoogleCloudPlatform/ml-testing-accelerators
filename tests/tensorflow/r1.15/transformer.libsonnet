@@ -87,7 +87,7 @@ local utils = import "templates/utils.libsonnet";
   configs: [
     transformer + v2_8 + convergence + { command+: [ "--train_steps=250000" ] },
     transformer + v3_8 + convergence + { command+: [ "--train_steps=250000" ] },
-    transformer + v2_32 + convergence + { command+: [ "--train_steps=62500" ] },
+    transformer + v2_32 + convergence + { command+: [ "--train_steps=62500" ] } + tpus.reserved + {schedule: "13 18 * * 0,2,4"},
     transformer + v3_32 + convergence + { command+: [ "--train_steps=62500" ] },
     transformer + v2_8 + functional,
     transformer + v3_8 + functional,

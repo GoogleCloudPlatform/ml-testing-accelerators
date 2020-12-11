@@ -77,7 +77,7 @@ local tpus = import "templates/tpus.libsonnet";
 
   configs: [
     unet + v3_8 + convergence,
-    unet + v2_32 + convergence,
+    unet + v2_32 + convergence + tpus.reserved + {schedule: "0 1 * * 1,3,5,6"},
     unet + v3_32 + convergence,
     unet + v3_8 + functional,
     unet + v2_32 + functional,

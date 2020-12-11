@@ -114,7 +114,7 @@ local gpus = import "templates/gpus.libsonnet";
     ncf + v100x4 + convergence + ctl,
     ncf + v2_8 + functional + ctl,
     ncf + v3_8 + convergence + ctl,
-    ncf + v2_32 + convergence + ctl,
+    ncf + v2_32 + convergence + ctl + tpus.reserved + {schedule: "20 15 * * 1,3,5,6"},
     ncf + v3_32 + functional + ctl,
   ],
 }

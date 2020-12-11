@@ -96,7 +96,7 @@ local tpus = import "templates/tpus.libsonnet";
   configs: [
     retinanet + v2_8 + convergence,
     retinanet + v3_8 + convergence,
-    retinanet + v2_32 + convergence,
+    retinanet + v2_32 + convergence + tpus.reserved + {schedule: "37 13 * * 0,2,4"},
     retinanet + v3_32 + convergence,
     retinanet + v2_8 + functional,
     retinanet + v3_8 + functional,

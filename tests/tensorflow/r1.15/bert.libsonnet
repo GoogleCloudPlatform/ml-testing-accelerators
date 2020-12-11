@@ -75,7 +75,7 @@ local tpus = import "templates/tpus.libsonnet";
   configs: [
     bert + v2_8 + convergence,
     bert + v3_8 + convergence,
-    bert + v2_32 + convergence,
+    bert + v2_32 + convergence + tpus.reserved + {schedule: "12 23 * * 0,2,4"},
     bert + v3_32 + convergence,
     bert + v2_8 + functional,
     bert + v3_8 + functional,
