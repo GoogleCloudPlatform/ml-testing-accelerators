@@ -25,10 +25,11 @@ local base = import 'base.libsonnet';
     replicas: tpu.size / 8, # Each TPU replica has 8 cores
 
     PodTemplate(tpuSettings):: {
+      assert !(tpuSettings.preemptible == "true" && tpuSettings.reserved == "true"): ("TPU cannot be both reserved and preemptible"),
       metadata: {
         annotations: {
           "tf-version.cloud-tpus.google.com": tpuSettings.softwareVersion,
-	  "reserved.cloud-tpus.google.com": tpuSettings.reserved,
+          "reserved.cloud-tpus.google.com": tpuSettings.reserved,
         },
       },
       spec+: {
@@ -55,8 +56,15 @@ local base = import 'base.libsonnet';
     },
   },
 
+  reserved: {
+    tpuSettings+: {
+      reserved: "true",
+    },
+  },
+
   v2_8: self.TpuSpec { version: 2, size: 8 },
   v3_8: self.TpuSpec { version: 3, size: 8 },
   v2_32: self.TpuSpec { version: 2, size: 32 },
   v3_32: self.TpuSpec { version: 3, size: 32 },
+
 }

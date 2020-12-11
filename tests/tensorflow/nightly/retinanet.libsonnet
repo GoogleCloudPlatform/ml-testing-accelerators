@@ -154,11 +154,6 @@ local gpus = import "templates/gpus.libsonnet";
       },
     },
   },
-  local reserved = {
-    tpuSettings+: {
-      reserved: "true",
-    },
-  },
 
   configs: [
     retinanet + functional + k80x8 + mixins.Suspended,
@@ -172,7 +167,7 @@ local gpus = import "templates/gpus.libsonnet";
     retinanet + convergence + v3_8,
     retinanet + functional + v2_32,
     retinanet + functional + v3_32,
-    retinanet + convergence + v2_32 + reserved + {schedule: "47 19 * * 1,3,5,6"},
+    retinanet + convergence + v2_32 + tpus.reserved + {schedule: "47 19 * * 1,3,5,6"},
     retinanet + convergence + v3_32,
   ],
 }
