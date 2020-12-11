@@ -39,7 +39,7 @@
       "template":
         "metadata":
           "annotations":
-            "reserved.cloud-tpus.google.com": false
+            "reserved.cloud-tpus.google.com": "false"
             "tf-version.cloud-tpus.google.com": "2.3.1"
         "spec":
           "containers":
