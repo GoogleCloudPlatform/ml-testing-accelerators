@@ -59,7 +59,7 @@ class JobHistoryRow:
       event.benchmark_id,
       event.labels.get('mode'),
       event.labels.get('accelerator'),
-      event.labels.get('framework_version'),
+      event.labels.get('frameworkVersion'),
       PROTO_STATUS_TO_BQ_STATUS[event.status],
       event.num_attempts - 1,
       event.duration.ToTimedelta().total_seconds(),

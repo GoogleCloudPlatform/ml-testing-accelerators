@@ -114,7 +114,9 @@ def process_proto_message(
   if not completed:
     if not event.metric_collection_config.silence_alerts:
       logging.error(
-          'job_status was `{}` for test `{}`'.format(event.benchmark_id))
+          'job_status was `%s` for test `%s`',
+          metrics_pb2.TestCompletedEvent.TestStatus.Name(event.status),
+          event.benchmark_id)
     if not event.metric_collection_config.record_failing_test_metrics:
       return
 
