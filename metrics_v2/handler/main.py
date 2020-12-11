@@ -59,12 +59,9 @@ def _send_email(project_id: str, subject: mail.Subject, body: mail.HtmlContent):
     return lookup_response.payload.data.decode('UTF-8')
 
   try:
-    api_key = _get_secret_value(_SENDGRID_API_SECRET_NAME,
-        secret_client)
-    recipient_email = _get_secret_value(_RECIPIENT_EMAIL_SECRET_NAME,
-        secret_client)
-    sender_email = _get_secret_value(_SENDER_EMAIL_SECRET_NAME,
-        secret_client)
+    api_key = _get_secret_value(_SENDGRID_API_SECRET_NAME)
+    recipient_email = _get_secret_value(_RECIPIENT_EMAIL_SECRET_NAME)
+    sender_email = _get_secret_value(_SENDER_EMAIL_SECRET_NAME)
     sendgrid = sendgrid.SendGridAPIClient(api_key)
   except Exception as e:
     logging.error(
@@ -155,7 +152,7 @@ def receive_test_event(data: dict, context: dict) -> bool:
     context: dict containing event metadata.
 
   Returns:
-    True if message should be ack-ed, else false.
+    True if message should be ack-ed, else False.
   """
   logging.set_verbosity(logging.INFO)
 
@@ -171,12 +168,9 @@ def receive_test_event(data: dict, context: dict) -> bool:
                   'more crashes.', exc_info=e)
     return True
 
-  if SEND_EMAIL_ALERTS:
-    alert_handler = (
-        alerts.AlertHandler(project, event.benchmark_id, event.debug_info, level='ERROR'))
-    logging.get_absl_handler().addHandler(alert_handler)
-  else:
-    alert_handler = None
+  alert_handler = (
+      alerts.AlertHandler(project, event.benchmark_id, event.debug_info, level='ERROR'))
+  logging.get_absl_logger().addHandler(alert_handler)
 
   try:
     logging.info('Processing test event: %s', str(event))
@@ -186,7 +180,13 @@ def receive_test_event(data: dict, context: dict) -> bool:
         'Encountered exception while attempting to process message.',
         exc_info=e)
 
-  if alert_handler and alert_handler.has_errors:
-    _send_email(project, *alert_handler.generate_email_content)
-  
+  if alert_handler.has_errors:
+    logging.info('Alerts: %s', str(alert_handler._records))
+    if SEND_EMAIL_ALERTS:
+      _send_email(project, *alert_handler.generate_email_content)
+    else:
+      logging.info('E-mail alerts disabled.')
+  else:
+    logging.info('No alerts found.')
+      
   return True
