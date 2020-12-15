@@ -44,6 +44,8 @@ SOURCE_TO_COLLECTOR = {
   'tensorboard': collectors.tensorboard.TensorBoardCollector,
 }
 
+# Make sure these match the names of your Cloud Secrets. Refer to the README
+# in this directory for email alert setup steps.
 _SENDGRID_API_SECRET_NAME = 'sendgrid-api-key'
 _RECIPIENT_EMAIL_SECRET_NAME = 'alert-destination-email-address'
 _SENDER_EMAIL_SECRET_NAME = 'alert-sender-email-address'

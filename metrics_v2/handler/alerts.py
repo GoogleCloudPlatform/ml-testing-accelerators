@@ -21,9 +21,6 @@ import typing
 import jinja2
 from sendgrid.helpers import mail
 
-# Make sure these match the names of your Cloud Secrets. Refer to the README
-# in this directory for email alert setup steps.
-
 template = jinja2.Template("""
 <h1>New errors in {{ benchmark_id|e }}:</h1>
 <ul>
