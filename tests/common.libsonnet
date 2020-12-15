@@ -13,6 +13,7 @@
 # limitations under the License.
 
 local base = import "templates/base.libsonnet";
+local metrics = import "templates/metrics.libsonnet";
 
 {
   CloudAcceleratorTest:: base.BaseTest {
@@ -64,7 +65,12 @@ local base = import "templates/base.libsonnet";
 
     cronJob+:: {
       metadata+: {
-        namespace: "automated"
+        namespace: "automated",
+        annotations+: {
+          'ml-testing-accelerators/metric-config': 
+            std.manifestJsonEx(metrics.CompatMetrics(config.metricCollectionConfig, config.regressionTestConfig), "  ") + "\n",
+          'ml-testing-accelerators/gcs-subdir': '%(frameworkPrefix)s/%(modelName)s/%(mode)s/%(acceleratorName)s' % config,
+        },
       },
     },
   },

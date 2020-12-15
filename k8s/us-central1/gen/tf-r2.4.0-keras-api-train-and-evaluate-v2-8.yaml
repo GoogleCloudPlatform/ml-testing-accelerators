@@ -15,6 +15,32 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "annotations":
+    "ml-testing-accelerators/gcs-subdir": "tf-r2.4.0/keras-api/train-and-evaluate/v2-8"
+    "ml-testing-accelerators/metric-config": |
+      {
+        "sources": [
+          {
+            "tensorboard": {
+              "aggregate_assertions": [
+      
+              ],
+              "exclude_tags": [
+      
+              ],
+              "include_tags": [
+                {
+                  "strategies": [
+                    "FINAL"
+                  ],
+                  "tag_pattern": "*"
+                }
+              ],
+              "merge_runs": false
+            }
+          }
+        ]
+      }
   "labels":
     "accelerator": "v2-8"
     "benchmarkId": "tf-r2.4.0-keras-api-train-and-evaluate-v2-8"

@@ -15,6 +15,46 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
+  "annotations":
+    "ml-testing-accelerators/gcs-subdir": "tf-r1.15.4/transformer/conv/v2-32"
+    "ml-testing-accelerators/metric-config": |
+      {
+        "sources": [
+          {
+            "literals": {
+              "assertions": {
+                "duration": {
+                  "inclusive_bounds": false,
+                  "std_devs_from_mean": {
+                    "comparison": "LESS",
+                    "std_devs": 5
+                  },
+                  "wait_for_n_data_points": 10
+                }
+              }
+            }
+          },
+          {
+            "tensorboard": {
+              "aggregate_assertions": [
+      
+              ],
+              "exclude_tags": [
+      
+              ],
+              "include_tags": [
+                {
+                  "strategies": [
+                    "FINAL"
+                  ],
+                  "tag_pattern": "*"
+                }
+              ],
+              "merge_runs": true
+            }
+          }
+        ]
+      }
   "labels":
     "accelerator": "v2-32"
     "benchmarkId": "tf-r1.15.4-transformer-conv-v2-32"
