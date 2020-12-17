@@ -25,7 +25,6 @@ RUN pip3 install cloud-tpu-client pyyaml
 WORKDIR /
 RUN curl -L https://github.com/tensorflow/models/archive/${model_garden_branch}.tar.gz | tar zx
 RUN mv models-${model_garden_branch} garden/
-RUN pip3 install tf-nightly
 RUN pip3 install -r /garden/official/requirements.txt
 ENV PYTHONPATH /garden
 
