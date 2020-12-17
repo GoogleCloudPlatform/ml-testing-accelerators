@@ -20,16 +20,16 @@ import metrics_pb2
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_integer('resource_version', None, 'TODO')
-flags.DEFINE_string('save_dir', None, 'TODO')
+flags.DEFINE_integer('resource_version', None, 'Cluster resourceVersion to start with.')
+flags.DEFINE_string('save_dir', None, 'Directory to save resource_version.txt')
 
-flags.DEFINE_string('pubsub_topic', None, 'TODO')
-flags.DEFINE_string('model_output_bucket', None, 'TODO')
+flags.DEFINE_string('pubsub_topic', None, 'PubSub topic to publish to.')
+flags.DEFINE_string('model_output_bucket', None, 'GCS location of model outputs.')
 
-flags.DEFINE_string('project', None, 'TODO')
-flags.DEFINE_string('cluster_name', None, 'TODO')
-flags.DEFINE_string('cluster_location', None, 'TODO')
-flags.DEFINE_string('namespace', 'default', 'TODO')
+flags.DEFINE_string('project', None, 'GCP Project ID of cluster and PubSub topic.')
+flags.DEFINE_string('cluster_name', None, 'Name of current cluster.')
+flags.DEFINE_string('cluster_location', None, 'Location of current cluster.')
+flags.DEFINE_string('namespace', 'default', 'Namespace to watch for Jobs.')
 
 
 def _resource_version_path():
