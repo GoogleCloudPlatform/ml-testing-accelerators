@@ -99,6 +99,10 @@ def process_proto_message(
     project: GCP project id.
     dataset: BigQuery dataset to read and store metric data.
     message_id: Unique message ID to match jobs to metrics in BQ.
+
+  Returns:
+    Job status and metrics to be inserted into BigQuery. Metrics may be empty
+    if the job failed or no metrics were collected.
   """
 
   unique_key = message_id or str(uuid.uuid4())

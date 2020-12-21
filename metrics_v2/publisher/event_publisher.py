@@ -89,7 +89,10 @@ def create_test_completed_event(
   else:
     condition = next((c for c in job.status.conditions if c.type == 'Failed'), None)
 
-  if condition.reason == 'DeadlineExceeded':
+  if not condition:
+    logging.error('This should never happen. Conditions: %s', str(job.status.conditions))
+    return
+  elif condition.reason == 'DeadlineExceeded':
     job_status = metrics_pb2.TestCompletedEvent.TIMEOUT
   elif condition.reason == 'BackoffLimitExceeded':
     job_status = metrics_pb2.TestCompletedEvent.FAILED
@@ -175,13 +178,14 @@ def main(argv):
           continue
 
         message = create_test_completed_event(job, FLAGS.model_output_bucket, cluster_name, cluster_location, project)
-        logging.info('No message to publish for %s.', job.metadata.name)
         if message:
           publisher.publish(topic, message.SerializeToString())
           current_version = job.metadata.resource_version
           _save_resource_version(current_version)
           resource_version = current_version
           logging.info('Published message for %s:\n%s', job.metadata.name, str(message))
+        else:
+          logging.info('No message to publish for %s.', job.metadata.name)
     except kubernetes.client.ApiException as e:
       if e.status == 410:
         # Try to parse current resourceVersion from error message.
