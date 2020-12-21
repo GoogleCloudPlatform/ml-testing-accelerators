@@ -47,7 +47,6 @@ class EventPublisherTest(parameterized.TestCase):
       },
       'status': {
         'startTime': _START_TIME,
-        'completionTime': _END_TIME,
         'succeeded': succeeded_count,
         'failed': failed_count,
         'conditions': [
@@ -55,6 +54,7 @@ class EventPublisherTest(parameterized.TestCase):
             'status': True,
             'reason': reason,
             'type': cond_type,
+            'lastTransitionTime': _END_TIME,
           }
           for cond_type, reason in conditions
         ]
@@ -127,6 +127,7 @@ class EventPublisherTest(parameterized.TestCase):
           {
             'status': True,
             'type': 'Complete',
+            'lastTransitionTime': _END_TIME,
           }
         ]
       }

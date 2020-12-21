@@ -84,13 +84,13 @@ class IntegrationTest(parameterized.TestCase):
       },
       'status': {
         'startTime': time_1,
-        'completionTime': time_2,
         'succeeded': 1,
         'failed': 1,
         'conditions': [
           {
             'status': True,
             'type': 'Complete',
+            'lastTransitionTime': time_2,
           }
         ]
       }

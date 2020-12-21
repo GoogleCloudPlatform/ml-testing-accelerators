@@ -122,7 +122,7 @@ def create_test_completed_event(
   start_time = timestamp_pb2.Timestamp()
   start_time.FromDatetime(job.status.start_time)
   duration = duration_pb2.Duration()
-  duration.FromTimedelta(job.status.completion_time - job.status.start_time)
+  duration.FromTimedelta(condition.last_transition_time - job.status.start_time)
 
   return metrics_pb2.TestCompletedEvent(
     benchmark_id=job.metadata.labels['benchmarkId'],
