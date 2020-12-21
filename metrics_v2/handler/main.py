@@ -89,10 +89,9 @@ def _send_email(project_id: str, subject: mail.Subject, body: mail.HtmlContent):
 
 def process_proto_message(
       event: metrics_pb2.TestCompletedEvent,
-      project: str,
-      dataset: str,
+      metric_store: bigquery_client.BigQueryMetricStore,
       message_id: typing.Optional[str] = None,
-  ):
+  ) -> typing.Tuple[bigquery_client.JobHistoryRow, typing.Iterable[bigquery_client.MetricHistoryRow]]:
   """Collects test status and metrics and writes to BigQuery.
 
   Args:
@@ -100,12 +99,14 @@ def process_proto_message(
     project: GCP project id.
     dataset: BigQuery dataset to read and store metric data.
     message_id: Unique message ID to match jobs to metrics in BQ.
+
+  Returns:
+    Job status and metrics to be inserted into BigQuery. Metrics may be empty
+    if the job failed or no metrics were collected.
   """
 
-  metric_store = bigquery_client.BigQueryMetricStore(
-    project=project,
-    dataset=dataset,
-  )
+  unique_key = message_id or str(uuid.uuid4())
+  job_row = bigquery_client.JobHistoryRow.from_test_event(unique_key, event)
 
   # Alert for failing jobs unless the user has explicitly added a config
   # that disables alerts for this test.
@@ -117,7 +118,7 @@ def process_proto_message(
           metrics_pb2.TestCompletedEvent.TestStatus.Name(event.status),
           event.benchmark_id)
     if not event.metric_collection_config.record_failing_test_metrics:
-      return
+      return job_row, []
 
   collectors = []
   for source in event.metric_collection_config.sources:
@@ -127,17 +128,10 @@ def process_proto_message(
 
   metrics = set(itertools.chain.from_iterable(c.metric_points() for c in collectors))
 
-  unique_key = message_id or str(uuid.uuid4())
-  job_row = bigquery_client.JobHistoryRow.from_test_event(unique_key, event)
   metric_rows = [
       bigquery_client.MetricHistoryRow.from_metric_point(unique_key, point, event)
       for point in metrics
   ]
-
-  metric_store.insert_status_and_metrics(job_row, metric_rows)
-
-  if event.metric_collection_config.silence_alerts:
-    return
 
   for metric in metrics:
     if not metric.within_bounds():
@@ -145,6 +139,8 @@ def process_proto_message(
           'Metric %s was out of bounds for test %s. Bounds were (%.2f, %.2f) '
           'and value was %.2f', metric.metric_key, event.benchmark_id,
           metric.bounds.lower, metric.bounds.upper, metric.metric_value)
+
+  return job_row, metric_rows
 
 def receive_test_event(data: dict, context: dict) -> bool:
   """Entrypoint for Cloud Function.
@@ -174,9 +170,15 @@ def receive_test_event(data: dict, context: dict) -> bool:
       alerts.AlertHandler(project, event.benchmark_id, event.debug_info, level='ERROR'))
   logging.get_absl_logger().addHandler(alert_handler)
 
+  metric_store = bigquery_client.BigQueryMetricStore(
+    project=project,
+    dataset=dataset,
+  )
   try:
     logging.info('Processing test event: %s', str(event))
-    process_proto_message(event, project, dataset, context.event_id)
+    job_row, metric_rows = process_proto_message(
+        event, metric_store, context.event_id)
+    metric_store.insert_status_and_metrics(job_row, metric_rows)
   except Exception as e:
     logging.fatal(
         'Encountered exception while attempting to process message.',
