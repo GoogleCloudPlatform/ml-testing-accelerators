@@ -1,4 +1,4 @@
-load("@publisher_deps//:requirements.bzl", "requirement")
+load("@handler_deps//:requirements.bzl", "requirement")
 
 genrule(
   name = "metrics_proto_python",
@@ -18,4 +18,18 @@ py_library(
     requirement("protobuf"),
   ],
   visibility = ["//visibility:public"],
+)
+
+py_test(
+  name = "integration_test",
+  srcs = ["integration_test.py"],
+  deps = [
+    ":metrics_pb2",
+    "//handler:main_lib",
+    "//handler:bigquery_client",
+    "//publisher:event_publisher_lib",
+    requirement("absl-py"),
+    requirement("kubernetes"),
+    requirement("tensorflow"),
+  ]
 )

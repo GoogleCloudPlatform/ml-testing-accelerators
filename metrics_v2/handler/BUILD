@@ -1,5 +1,5 @@
 package(
-  default_visibility = [":__subpackages__"],
+  default_visibility = ["//:__subpackages__"],
 )
 load("@handler_deps//:requirements.bzl", "requirement")
 load("@subpar//:subpar.bzl", "par_binary")

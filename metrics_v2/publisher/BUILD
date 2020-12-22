@@ -28,6 +28,7 @@ py_library(
     requirement("kubernetes"),
     requirement("protobuf"),
   ],
+  visibility = ["//:__subpackages__"],
 )
 
 py_test(
