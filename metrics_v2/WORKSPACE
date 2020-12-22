@@ -52,3 +52,21 @@ pip_install(
   name = "publisher_deps",
   requirements = "//publisher:requirements.txt",
 )
+
+http_archive(
+  name = "protoc",
+  url = "https://github.com/protocolbuffers/protobuf/releases/download/v3.14.0/protoc-3.14.0-linux-x86_64.zip",
+  build_file_content = """
+filegroup(
+  name = "bin",
+  srcs = ["bin/protoc"],
+  visibility = ["//visibility:public"],
+)
+
+filegroup(
+  name = "includes",
+  srcs = glob(["**/*.proto"]),
+  visibility = ["//visibility:public"],
+)  
+  """,
+)
