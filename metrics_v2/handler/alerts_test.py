@@ -14,11 +14,11 @@
 
 import collections
 from datetime import datetime
-import pytz
 
 from absl import logging
 from absl.testing import absltest
 from absl.testing import parameterized
+import pytz
 
 import alerts
 import metrics_pb2
@@ -93,7 +93,7 @@ class AlertHandlerTest(parameterized.TestCase):
     date_str = subject[subject.find('202'):] # Grab substring from start of year onward.
     tz = pytz.timezone('US/Pacific')
     sj_date = tz.localize(datetime.strptime(date_str, '%Y/%m/%d %H:%M:%S'))
-    after_call = datetime.now(pytz.timezone('US/Pacific'))
+    after_call = datetime.now(tz)
     # This checks that the datetime string used in the email is 1. using
     # current time and 2. is using US/Pacific tz and not e.g. UTC.
     self.assertTrue((after_call - sj_date).total_seconds() < 2.0)

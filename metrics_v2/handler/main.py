@@ -26,7 +26,7 @@ from sendgrid.helpers import mail
 
 import alerts
 import bigquery_client
-import collectors
+from handler import collectors
 import utils
 import metrics_pb2
 
