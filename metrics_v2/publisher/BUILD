@@ -24,19 +24,14 @@ par_binary(
 container_image(
   name = "image",
   base = "@python_base//image",
-  files = [
-    "event_publisher_bin.par",
-  ],
-  entrypoint = [
-    "/event_publisher_bin.par",
-  ],
-  legacy_run_behavior = False,
+  files = ["event_publisher.par"],
+  entrypoint = ["/event_publisher.par"],
 )
 
 container_push(
   name = "image_push",
   format = "Docker",
-  image = ":event_publisher",
+  image = ":image",
   registry = "gcr.io",
   repository = "$(project)/event-publisher",
   tag = "{BUILD_USER}",

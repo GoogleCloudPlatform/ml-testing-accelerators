@@ -30,6 +30,6 @@ py_test(
     "//publisher:event_publisher_lib",
     requirement("absl-py"),
     requirement("kubernetes"),
-    requirement("tensorflow"),
+    requirement("tensorflow-cpu"),
   ]
 )

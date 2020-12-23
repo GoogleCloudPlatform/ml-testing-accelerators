@@ -9,13 +9,12 @@ load(
     "container_push",
 )
 
-
 par_binary(
-  name = "handler",
-  main = "main.py",
-  srcs = ["main.py"],
+  name = "server",
+  srcs = ["server.py"],
   deps = [
     ":main_lib",
+    requirement("functions-framework"),
   ],
   zip_safe = False,
 )
@@ -23,8 +22,9 @@ par_binary(
 container_image(
   name = "image",
   base = "@python_base//image",
-  files = [":handler.par"],
-  entrypoint = ["/handler.par"],
+  files = ["server.par"],
+  directory = "app",
+  entrypoint = ["/app/server.par"],
 )
 
 container_push(

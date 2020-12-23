@@ -10,8 +10,6 @@ from absl.testing import parameterized
 import kubernetes
 import tensorflow as tf
 
-
-os.environ['BQ_DATASET'] = 'fake-dataset'
 import handler.main
 import handler.bigquery_client
 from publisher import event_publisher

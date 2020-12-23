@@ -18,6 +18,7 @@ import os
 import typing
 import uuid
 
+from absl import flags
 from absl import logging
 import google.auth
 import numpy as np
@@ -30,13 +31,7 @@ from handler import collectors
 from handler import utils
 import metrics_pb2
 
-try:
-  DATASET = os.environ['BQ_DATASET']
-except KeyError:
-  raise KeyError('Must set $BQ_DATASET env var.')
-
-SEND_EMAIL_ALERTS = os.getenv('SEND_EMAIL_ALERTS', None)
-PROJECT = os.getenv('GCP_PROJECT', None)
+FLAGS = flags.FLAGS
 
 SOURCE_TO_COLLECTOR = {
   'literals': collectors.literal.LiteralCollector,
@@ -49,6 +44,17 @@ SOURCE_TO_COLLECTOR = {
 _SENDGRID_API_SECRET_NAME = 'sendgrid-api-key'
 _RECIPIENT_EMAIL_SECRET_NAME = 'alert-destination-email-address'
 _SENDER_EMAIL_SECRET_NAME = 'alert-sender-email-address'
+
+def define_flags():
+  flags.DEFINE_bool('send_email_alerts', False, 'Whether to send e-mail alerts.')
+
+  flags.DEFINE_string('project', None, '(Optional) GCP project ID.')
+  flags.DEFINE_string('bigquery_dataset', None,
+      'BQ dataset to store metrics in.')
+  flags.mark_flag_as_required('bigquery_dataset')
+
+  flags.DEFINE_string('host', os.getenv('HOST', '0.0.0.0'), 'Host to listen on.')
+  flags.DEFINE_integer('port', os.getenv('PORT', 8080), 'Port to listen on.')
 
 def _send_email(project_id: str, subject: mail.Subject, body: mail.HtmlContent):
   secret_client = secretmanager.SecretManagerServiceClient()
@@ -142,23 +148,22 @@ def process_proto_message(
 
   return job_row, metric_rows
 
-def receive_test_event(data: dict, context: dict) -> bool:
-  """Entrypoint for Cloud Function.
+def receive_test_event(cloudevent) -> bool:
+  """Entrypoint for Functions Framework.
 
   Args:
-    data: dict containing base64-encoded proto message.
-    context: dict containing event metadata.
+    cloudevent: An event conforming to the CloudEvent spec.
 
   Returns:
     True if message should be ack-ed, else False.
   """
   logging.set_verbosity(logging.INFO)
 
-  dataset = DATASET
-  project = PROJECT or google.auth.default()[1]
+  dataset = FLAGS.bigquery_dataset
+  project = FLAGS.project or google.auth.default()[1]
 
   try:
-    message_bytes = base64.b64decode(data['data'])
+    message_bytes = base64.b64decode(cloudevent.data)
     event = metrics_pb2.TestCompletedEvent()
     event.ParseFromString(message_bytes)
   except Exception as e:
@@ -177,7 +182,7 @@ def receive_test_event(data: dict, context: dict) -> bool:
   try:
     logging.info('Processing test event: %s', str(event))
     job_row, metric_rows = process_proto_message(
-        event, metric_store, context.event_id)
+        event, metric_store, cloudevent['id'])
     metric_store.insert_status_and_metrics(job_row, metric_rows)
   except Exception as e:
     logging.fatal(
@@ -186,7 +191,7 @@ def receive_test_event(data: dict, context: dict) -> bool:
 
   if alert_handler.has_errors:
     logging.info('Alerts: %s', str(alert_handler._records))
-    if SEND_EMAIL_ALERTS:
+    if FLAGS.send_email_alerts:
       _send_email(project, *alert_handler.generate_email_content)
     else:
       logging.info('E-mail alerts disabled.')
@@ -194,3 +199,5 @@ def receive_test_event(data: dict, context: dict) -> bool:
     logging.info('No alerts found.')
       
   return True
+
+
