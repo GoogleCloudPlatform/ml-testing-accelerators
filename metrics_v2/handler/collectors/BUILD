@@ -61,7 +61,7 @@ py_library(
   deps = [
     ":base",
     requirement("absl-py"),
-    requirement("tensorflow"),
+    requirement("tensorflow-cpu"),
   ]
 )
 
@@ -84,7 +84,7 @@ py_library(
     "//:metrics_pb2",
     requirement("absl-py"),
     requirement("numpy"),
-    requirement("tensorflow"),
+    requirement("tensorflow-cpu"),
     requirement("tensorboard"),
   ]
 )
@@ -97,6 +97,6 @@ py_test(
     ":tensorboard_collector",
     requirement("absl-py"),
     requirement("numpy"),
-    requirement("tensorflow"),
+    requirement("tensorflow-cpu"),
   ]
 )

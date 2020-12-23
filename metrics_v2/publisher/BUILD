@@ -7,13 +7,34 @@ load(
 )
 
 par_binary(
-  name = "event_publisher_bin",
+  name = "event_publisher",
   main = "event_publisher.py",
   srcs = [
     "event_publisher.py"
   ],
   deps = [":event_publisher_lib"],
   zip_safe = False,
+)
+
+container_image(
+  name = "image",
+  base = "@python_base//image",
+  files = [
+    "event_publisher_bin.par",
+  ],
+  entrypoint = [
+    "/event_publisher_bin.par",
+  ],
+  legacy_run_behavior = False,
+)
+
+container_push(
+  name = "image_push",
+  format = "Docker",
+  image = ":event_publisher",
+  registry = "gcr.io",
+  repository = "$(project)/event-publisher",
+  tag = "{BUILD_USER}",
 )
 
 py_library(
@@ -39,25 +60,4 @@ py_test(
   deps = [
     ":event_publisher_lib",
   ],
-)
-
-container_image(
-  name = "event_publisher",
-  base = "@python_base//image",
-  files = [
-    "event_publisher_bin.par",
-  ],
-  entrypoint = [
-    "/event_publisher_bin.par",
-  ],
-  legacy_run_behavior = False,
-)
-
-container_push(
-  name = "event_publisher_push",
-  format = "Docker",
-  image = ":event_publisher",
-  registry = "gcr.io",
-  repository = "$(project)/event-publisher",
-  tag = "{BUILD_USER}",
 )

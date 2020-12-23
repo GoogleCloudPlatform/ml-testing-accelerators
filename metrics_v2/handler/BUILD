@@ -32,7 +32,7 @@ container_push(
   format = "Docker",
   image = ":image",
   registry = "gcr.io",
-  repository = "$(project)/metrics_handler",
+  repository = "$(project)/metrics-handler",
   tag = "{BUILD_USER}",
 )
 

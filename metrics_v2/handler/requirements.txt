@@ -9,4 +9,4 @@ protobuf==3.14.0
 pytz==2020.4
 sendgrid==6.4.8
 tensorboard==2.4.0
-tensorflow==2.3.1
+tensorflow-cpu==2.4.0
