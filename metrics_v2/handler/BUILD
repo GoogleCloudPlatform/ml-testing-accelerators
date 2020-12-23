@@ -3,14 +3,37 @@ package(
 )
 load("@handler_deps//:requirements.bzl", "requirement")
 load("@subpar//:subpar.bzl", "par_binary")
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_image",
+    "container_push",
+)
 
-py_binary(
+
+par_binary(
   name = "handler",
   main = "main.py",
   srcs = ["main.py"],
   deps = [
     ":main_lib",
-  ]
+  ],
+  zip_safe = False,
+)
+
+container_image(
+  name = "image",
+  base = "@python_base//image",
+  files = [":handler.par"],
+  entrypoint = ["/handler.par"],
+)
+
+container_push(
+  name = "image_push",
+  format = "Docker",
+  image = ":image",
+  registry = "gcr.io",
+  repository = "$(project)/metrics_handler",
+  tag = "{BUILD_USER}",
 )
 
 py_library(
