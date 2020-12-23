@@ -161,6 +161,7 @@ def main(argv):
 
   while True:
     try:
+      logging.info("Listening for completed jobs...")
       k8s_client = kubernetes.client.BatchV1Api()
       job_watcher = kubernetes.watch.Watch()
       event_stream = job_watcher.stream(

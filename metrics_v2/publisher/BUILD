@@ -6,6 +6,11 @@ load(
     "container_push",
 )
 
+alias(
+  name = "publisher",
+  actual = "event_publisher",
+)
+
 par_binary(
   name = "event_publisher",
   main = "event_publisher.py",
