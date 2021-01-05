@@ -148,11 +148,11 @@ def process_proto_message(
 
   return job_row, metric_rows
 
-def receive_test_event(cloudevent) -> bool:
-  """Entrypoint for Functions Framework.
-
+def receive_test_event(data: dict, context: dict) -> bool:
+  """Entrypoint for Cloud Function.
   Args:
-    cloudevent: An event conforming to the CloudEvent spec.
+    data: dict containing base64-encoded proto message.
+    context: dict containing event metadata.
 
   Returns:
     True if message should be ack-ed, else False.
@@ -163,7 +163,7 @@ def receive_test_event(cloudevent) -> bool:
   project = FLAGS.project or google.auth.default()[1]
 
   try:
-    message_bytes = base64.b64decode(cloudevent.data)
+    message_bytes = base64.b64decode(data['data'])
     event = metrics_pb2.TestCompletedEvent()
     event.ParseFromString(message_bytes)
   except Exception as e:
@@ -182,7 +182,7 @@ def receive_test_event(cloudevent) -> bool:
   try:
     logging.info('Processing test event: %s', str(event))
     job_row, metric_rows = process_proto_message(
-        event, metric_store, cloudevent['id'])
+        event, metric_store, context.event_id)
     metric_store.insert_status_and_metrics(job_row, metric_rows)
   except Exception as e:
     logging.fatal(
