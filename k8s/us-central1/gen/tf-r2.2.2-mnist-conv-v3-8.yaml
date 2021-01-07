@@ -16,7 +16,7 @@
 "kind": "CronJob"
 "metadata":
   "annotations":
-    "ml-testing-accelerators/gcs-subdir": "tf-r2.2.1/resnet-ctl/conv/v2-8"
+    "ml-testing-accelerators/gcs-subdir": "tf-r2.2.2/mnist/conv/v3-8"
     "ml-testing-accelerators/metric-config": |
       {
         "sources": [
@@ -56,31 +56,31 @@
         ]
       }
   "labels":
-    "accelerator": "v2-8"
-    "benchmarkId": "tf-r2.2.1-resnet-ctl-conv-v2-8"
-    "frameworkVersion": "tf-r2.2.1"
+    "accelerator": "v3-8"
+    "benchmarkId": "tf-r2.2.2-mnist-conv-v3-8"
+    "frameworkVersion": "tf-r2.2.2"
     "mode": "conv"
-    "model": "resnet-ctl"
-  "name": "tf-r2.2.1-resnet-ctl-conv-v2-8"
+    "model": "mnist"
+  "name": "tf-r2.2.2-mnist-conv-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
       "labels":
-        "accelerator": "v2-8"
-        "benchmarkId": "tf-r2.2.1-resnet-ctl-conv-v2-8"
-        "frameworkVersion": "tf-r2.2.1"
+        "accelerator": "v3-8"
+        "benchmarkId": "tf-r2.2.2-mnist-conv-v3-8"
+        "frameworkVersion": "tf-r2.2.2"
         "mode": "conv"
-        "model": "resnet-ctl"
+        "model": "mnist"
     "spec":
-      "activeDeadlineSeconds": 57600
+      "activeDeadlineSeconds": 36000
       "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
             "reserved.cloud-tpus.google.com": "false"
-            "tf-version.cloud-tpus.google.com": "2.2.1"
+            "tf-version.cloud-tpus.google.com": "2.2.2"
         "spec":
           "containers":
           - "env":
@@ -97,22 +97,13 @@
             "name": "monitor"
           - "args":
             - "python3"
-            - "official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--data_dir=$(IMAGENET_DIR)"
-            - "--distribution_strategy=tpu"
-            - "--steps_per_loop=500"
-            - "--use_synthetic_data=false"
-            - "--dtype=fp32"
-            - "--enable_eager=true"
-            - "--enable_tensorboard=true"
-            - "--log_steps=50"
-            - "--single_l2_loss_op=true"
-            - "--use_tf_function=true"
+            - "official/vision/image_classification/mnist_main.py"
+            - "--data_dir=$(MNIST_DIR)"
             - "--model_dir=$(MODEL_DIR)"
-            - "--batch_size=1024"
-            - "--train_epochs=90"
-            - "--epochs_between_evals=90"
+            - "--distribution_strategy=tpu"
+            - "--batch_size=2048"
+            - "--train_epochs=10"
+            - "--epochs_between_evals=10"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -131,16 +122,16 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r2.2.1/resnet-ctl/conv/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.2.2/mnist/conv/v3-8/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/tensorflow:r2.2.1"
+            "image": "gcr.io/xl-ml-test/tensorflow:r2.2.2"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v2": 8
+                "cloud-tpus.google.com/v3": 8
               "requests":
                 "cpu": 2
                 "memory": "20G"
@@ -167,7 +158,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r2.2.1/resnet-ctl/conv/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.2.2/mnist/conv/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -188,7 +179,7 @@
                    }
                   }
                  },
-                 "test_name": "tf-r2.2.1-resnet-ctl-conv-v2-8"
+                 "test_name": "tf-r2.2.2-mnist-conv-v3-8"
                 }
             "envFrom":
             - "configMapRef":
@@ -203,5 +194,5 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-  "schedule": "0 8 * * 6"
+  "schedule": "0 4 * * *"
   "successfulJobsHistoryLimit": 1

@@ -16,7 +16,7 @@
 "kind": "CronJob"
 "metadata":
   "annotations":
-    "ml-testing-accelerators/gcs-subdir": "tf-r2.2.1/resnet-ctl/conv/v2-32"
+    "ml-testing-accelerators/gcs-subdir": "tf-r2.2.2/resnet-ctl/conv/v2-8"
     "ml-testing-accelerators/metric-config": |
       {
         "sources": [
@@ -56,31 +56,31 @@
         ]
       }
   "labels":
-    "accelerator": "v2-32"
-    "benchmarkId": "tf-r2.2.1-resnet-ctl-conv-v2-32"
-    "frameworkVersion": "tf-r2.2.1"
+    "accelerator": "v2-8"
+    "benchmarkId": "tf-r2.2.2-resnet-ctl-conv-v2-8"
+    "frameworkVersion": "tf-r2.2.2"
     "mode": "conv"
     "model": "resnet-ctl"
-  "name": "tf-r2.2.1-resnet-ctl-conv-v2-32"
+  "name": "tf-r2.2.2-resnet-ctl-conv-v2-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
       "labels":
-        "accelerator": "v2-32"
-        "benchmarkId": "tf-r2.2.1-resnet-ctl-conv-v2-32"
-        "frameworkVersion": "tf-r2.2.1"
+        "accelerator": "v2-8"
+        "benchmarkId": "tf-r2.2.2-resnet-ctl-conv-v2-8"
+        "frameworkVersion": "tf-r2.2.2"
         "mode": "conv"
         "model": "resnet-ctl"
     "spec":
-      "activeDeadlineSeconds": 36000
+      "activeDeadlineSeconds": 57600
       "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
             "reserved.cloud-tpus.google.com": "false"
-            "tf-version.cloud-tpus.google.com": "2.2.1"
+            "tf-version.cloud-tpus.google.com": "2.2.2"
         "spec":
           "containers":
           - "env":
@@ -110,7 +110,7 @@
             - "--single_l2_loss_op=true"
             - "--use_tf_function=true"
             - "--model_dir=$(MODEL_DIR)"
-            - "--batch_size=4096"
+            - "--batch_size=1024"
             - "--train_epochs=90"
             - "--epochs_between_evals=90"
             "env":
@@ -131,16 +131,16 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r2.2.1/resnet-ctl/conv/v2-32/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.2.2/resnet-ctl/conv/v2-8/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/tensorflow:r2.2.1"
+            "image": "gcr.io/xl-ml-test/tensorflow:r2.2.2"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/v2": 32
+                "cloud-tpus.google.com/v2": 8
               "requests":
                 "cpu": 2
                 "memory": "20G"
@@ -167,7 +167,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r2.2.1/resnet-ctl/conv/v2-32/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.2.2/resnet-ctl/conv/v2-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -188,7 +188,7 @@
                    }
                   }
                  },
-                 "test_name": "tf-r2.2.1-resnet-ctl-conv-v2-32"
+                 "test_name": "tf-r2.2.2-resnet-ctl-conv-v2-8"
                 }
             "envFrom":
             - "configMapRef":
