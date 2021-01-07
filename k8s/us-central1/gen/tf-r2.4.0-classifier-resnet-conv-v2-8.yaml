@@ -53,7 +53,7 @@
                   "assertion": {
                     "fixed_value": {
                       "comparison": "GREATER",
-                      "value": 0.76
+                      "value": 0.76000000000000001
                     },
                     "inclusive_bounds": false,
                     "wait_for_n_data_points": 0
@@ -225,7 +225,7 @@
                    "validation/epoch_accuracy_final": {
                     "comparison": "greater",
                     "success_threshold": {
-                     "fixed_value": 0.76
+                     "fixed_value": 0.76000000000000001
                     }
                    }
                   }

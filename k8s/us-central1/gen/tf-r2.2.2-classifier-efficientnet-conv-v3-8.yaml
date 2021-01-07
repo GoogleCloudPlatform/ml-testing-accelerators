@@ -16,7 +16,7 @@
 "kind": "CronJob"
 "metadata":
   "annotations":
-    "ml-testing-accelerators/gcs-subdir": "tf-r2.4.0/classifier-resnet/conv/v3-8"
+    "ml-testing-accelerators/gcs-subdir": "tf-r2.2.2/classifier-efficientnet/conv/v3-8"
     "ml-testing-accelerators/metric-config": |
       {
         "sources": [
@@ -39,18 +39,6 @@
               "aggregate_assertions": [
                 {
                   "assertion": {
-                    "inclusive_bounds": true,
-                    "std_devs_from_mean": {
-                      "comparison": "GREATER",
-                      "std_devs": 4
-                    },
-                    "wait_for_n_data_points": 0
-                  },
-                  "strategy": "AVERAGE",
-                  "tag": "examples_per_second"
-                },
-                {
-                  "assertion": {
                     "fixed_value": {
                       "comparison": "GREATER",
                       "value": 0.76000000000000001
@@ -59,7 +47,7 @@
                     "wait_for_n_data_points": 0
                   },
                   "strategy": "FINAL",
-                  "tag": "validation/epoch_accuracy"
+                  "tag": "val_epoch_accuracy"
                 }
               ],
               "exclude_tags": [
@@ -73,18 +61,18 @@
                   "tag_pattern": "*"
                 }
               ],
-              "merge_runs": false
+              "merge_runs": true
             }
           }
         ]
       }
   "labels":
     "accelerator": "v3-8"
-    "benchmarkId": "tf-r2.4.0-classifier-resnet-conv-v3-8"
-    "frameworkVersion": "tf-r2.4.0"
+    "benchmarkId": "tf-r2.2.2-classifier-efficientnet-conv-v3-8"
+    "frameworkVersion": "tf-r2.2.2"
     "mode": "conv"
-    "model": "classifier-resnet"
-  "name": "tf-r2.4.0-classifier-resnet-conv-v3-8"
+    "model": "classifier-efficientnet"
+  "name": "tf-r2.2.2-classifier-efficientnet-conv-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
@@ -92,18 +80,18 @@
     "metadata":
       "labels":
         "accelerator": "v3-8"
-        "benchmarkId": "tf-r2.4.0-classifier-resnet-conv-v3-8"
-        "frameworkVersion": "tf-r2.4.0"
+        "benchmarkId": "tf-r2.2.2-classifier-efficientnet-conv-v3-8"
+        "frameworkVersion": "tf-r2.2.2"
         "mode": "conv"
-        "model": "classifier-resnet"
+        "model": "classifier-efficientnet"
     "spec":
-      "activeDeadlineSeconds": 36000
+      "activeDeadlineSeconds": 111600
       "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
             "reserved.cloud-tpus.google.com": "false"
-            "tf-version.cloud-tpus.google.com": "2.4.0"
+            "tf-version.cloud-tpus.google.com": "2.2.2"
         "spec":
           "containers":
           - "env":
@@ -121,22 +109,14 @@
           - "args":
             - "python3"
             - "official/vision/image_classification/classifier_trainer.py"
+            - "--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-tpu.yaml"
+            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
             - "--data_dir=$(IMAGENET_DIR)"
-            - "--model_type=resnet"
+            - "--model_type=efficientnet"
             - "--dataset=imagenet"
             - "--mode=train_and_eval"
             - "--model_dir=$(MODEL_DIR)"
-            - |
-              --params_override="evaluation":
-                "epochs_between_evals": 1
-              "train":
-                "epochs": 90
-              "train_dataset":
-                "builder": "records"
-              "validation_dataset":
-                "builder": "records"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/tpu.yaml"
+            - "--params_override=\"evaluation\":\n  \"epochs_between_evals\": 500\n\"train\":\n  \"epochs\": 500\n\"train_dataset\":\n  \"builder\": \"records\"\n\"validation_dataset\":\n  \"builder\": \"records\""
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -155,11 +135,11 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r2.4.0/classifier-resnet/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.2.2/classifier-efficientnet/conv/v3-8/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/tensorflow:r2.4.0"
+            "image": "gcr.io/xl-ml-test/tensorflow:r2.2.2"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
@@ -191,7 +171,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-r2.4.0/classifier-resnet/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.2.2/classifier-efficientnet/conv/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -199,22 +179,10 @@
                   "default_aggregation_strategies": [
                    "final"
                   ],
-                  "metric_to_aggregation_strategies": {
-                   "examples_per_second": [
-                    "average"
-                   ]
-                  },
-                  "use_run_name_prefix": true,
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
                   "metric_success_conditions": {
-                   "examples_per_second_average": {
-                    "comparison": "greater_or_equal",
-                    "success_threshold": {
-                     "stddevs_from_mean": 4
-                    }
-                   },
                    "total_wall_time": {
                     "comparison": "less",
                     "success_threshold": {
@@ -222,7 +190,7 @@
                     },
                     "wait_for_n_points_of_history": 10
                    },
-                   "validation/epoch_accuracy_final": {
+                   "val_epoch_accuracy_final": {
                     "comparison": "greater",
                     "success_threshold": {
                      "fixed_value": 0.76000000000000001
@@ -230,7 +198,7 @@
                    }
                   }
                  },
-                 "test_name": "tf-r2.4.0-classifier-resnet-conv-v3-8"
+                 "test_name": "tf-r2.2.2-classifier-efficientnet-conv-v3-8"
                 }
             "envFrom":
             - "configMapRef":
@@ -245,5 +213,5 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-  "schedule": "0 8 * * *"
+  "schedule": "0 4 * * *"
   "successfulJobsHistoryLimit": 1
