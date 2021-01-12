@@ -54,9 +54,9 @@ local utils = import "templates/utils.libsonnet";
       ||| % {common: command_common, common_copy: command_copy_metrics}
     ),
     regressionTestConfig+: {
-      required_metrics: ['eval_loss'],
+      required_metrics: ['eval_loss_final'],
       metric_success_conditions+: {
-        "eval_loss": {
+        "eval_loss_final": {
           success_threshold: {
             fixed_value: 1.5,
           },
@@ -78,9 +78,9 @@ local utils = import "templates/utils.libsonnet";
       ||| % {common: command_common, common_copy: command_copy_metrics}
     ),
     regressionTestConfig+: {
-      required_metrics: ['eval_loss'],
+      required_metrics: ['eval_loss_final'],
       metric_success_conditions+: {
-        "eval_loss": {
+        "eval_loss_final": {
           success_threshold: {
             fixed_value: 6.5,
           },
