@@ -257,7 +257,7 @@
                      "stddevs_from_mean": 0
                     }
                    },
-                   "eval_loss": {
+                   "eval_loss_final": {
                     "comparison": "less",
                     "success_threshold": {
                      "fixed_value": 1.5
@@ -272,7 +272,7 @@
                    }
                   },
                   "required_metrics": [
-                   "eval_loss"
+                   "eval_loss_final"
                   ]
                  },
                  "test_name": "pt-r1.7-hf-mlm-roberta-b-fine-conv-v3-8"
