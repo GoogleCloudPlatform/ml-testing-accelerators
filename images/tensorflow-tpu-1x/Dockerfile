@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM tensorflow/tensorflow:1.15.4
+FROM tensorflow/tensorflow:1.15.5
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   curl \

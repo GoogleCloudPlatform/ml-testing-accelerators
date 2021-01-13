@@ -16,7 +16,7 @@
 "kind": "CronJob"
 "metadata":
   "annotations":
-    "ml-testing-accelerators/gcs-subdir": "pt-r1.7/hf-mlm-roberta-b-fine/conv/v3-8"
+    "ml-testing-accelerators/gcs-subdir": "tf-r1.15.5/transformer/conv/v3-8"
     "ml-testing-accelerators/metric-config": |
       {
         "sources": [
@@ -37,45 +37,10 @@
           {
             "tensorboard": {
               "aggregate_assertions": [
-                {
-                  "assertion": {
-                    "inclusive_bounds": false,
-                    "std_devs_from_mean": {
-                      "comparison": "LESS",
-                      "std_devs": 5
-                    },
-                    "wait_for_n_data_points": 10
-                  },
-                  "strategy": "FINAL",
-                  "tag": "ExecuteTime__Percentile_99_sec"
-                },
-                {
-                  "assertion": {
-                    "inclusive_bounds": true,
-                    "std_devs_from_mean": {
-                      "comparison": "LESS",
-                      "std_devs": 0
-                    },
-                    "wait_for_n_data_points": 0
-                  },
-                  "strategy": "FINAL",
-                  "tag": "aten_ops_sum"
-                },
-                {
-                  "assertion": {
-                    "fixed_value": {
-                      "comparison": "LESS",
-                      "value": 1.5
-                    },
-                    "inclusive_bounds": false,
-                    "wait_for_n_data_points": 0
-                  },
-                  "strategy": "FINAL",
-                  "tag": "eval_loss"
-                }
+      
               ],
               "exclude_tags": [
-                "LearningRate"
+      
               ],
               "include_tags": [
                 {
@@ -92,11 +57,11 @@
       }
   "labels":
     "accelerator": "v3-8"
-    "benchmarkId": "pt-r1.7-hf-mlm-roberta-b-fine-conv-v3-8"
-    "frameworkVersion": "pt-r1.7"
+    "benchmarkId": "tf-r1.15.5-transformer-conv-v3-8"
+    "frameworkVersion": "tf-r1.15.5"
     "mode": "conv"
-    "model": "hf-mlm-roberta-b-fine"
-  "name": "pt-r1.7-hf-mlm-roberta-b-fine-conv-v3-8"
+    "model": "transformer"
+  "name": "tf-r1.15.5-transformer-conv-v3-8"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
@@ -104,18 +69,18 @@
     "metadata":
       "labels":
         "accelerator": "v3-8"
-        "benchmarkId": "pt-r1.7-hf-mlm-roberta-b-fine-conv-v3-8"
-        "frameworkVersion": "pt-r1.7"
+        "benchmarkId": "tf-r1.15.5-transformer-conv-v3-8"
+        "frameworkVersion": "tf-r1.15.5"
         "mode": "conv"
-        "model": "hf-mlm-roberta-b-fine"
+        "model": "transformer"
     "spec":
-      "activeDeadlineSeconds": 10800
+      "activeDeadlineSeconds": 36000
       "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
             "reserved.cloud-tpus.google.com": "false"
-            "tf-version.cloud-tpus.google.com": "pytorch-1.7"
+            "tf-version.cloud-tpus.google.com": "1.15.5"
         "spec":
           "containers":
           - "env":
@@ -138,31 +103,8 @@
               set -e
               set -x
               
-              git clone --recursive -b r1.7 https://github.com/pytorch-tpu/examples.git
-              cd examples/deps/transformers && pip install .
-              git log -1
-              python examples/xla_spawn.py \
-                --num_cores 8 \
-                examples/language-modeling/run_language_modeling.py \
-                --logging_dir ./tensorboard-metrics \
-                --cache_dir ./cache_dir \
-                --train_data_file /datasets/wikitext-103-raw/wiki.train.raw \
-                --do_train \
-                --do_eval \
-                --eval_data_file /datasets/wikitext-103-raw/wiki.valid.raw \
-                --overwrite_output_dir \
-                --output_dir language-modeling \
-                --logging_steps 100 \
-                --save_steps 3000 \
-                --overwrite_cache \
-                --tpu_metrics_debug \
-               --mlm --model_type=roberta \
-              --model_name_or_path roberta-base \
-              --num_train_epochs 3 \
-              --per_device_train_batch_size 8 \
-              --per_device_eval_batch_size 8
-              gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
-              
+              unset KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS
+              t2t-trainer --model=transformer --hparams_set=transformer_packed_tpu --problem=translate_ende_wmt32k_packed --use_tpu=True --schedule=train --data_dir=$(T2T_TRANSFORMER_DIR) --output_dir=$(MODEL_DIR) --iterations_per_loop=100 --tpu_num_shards=8 --train_steps=250000 --cloud_tpu_name="${TPU_NAME##*/}"
               
             "env":
             - "name": "POD_NAME"
@@ -182,28 +124,16 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-r1.7/hf-mlm-roberta-b-fine/conv/v3-8/$(JOB_NAME)"
-            - "name": "XLA_USE_BF16"
-              "value": "0"
+              "value": "$(OUTPUT_BUCKET)/tf-r1.15.5/transformer/conv/v3-8/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.7"
+            "image": "gcr.io/xl-ml-test/tensorflow-tpu-1x:r1.15.5"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
                 "cloud-tpus.google.com/v3": 8
-              "requests":
-                "cpu": "12.0"
-                "memory": "80Gi"
-            "volumeMounts":
-            - "mountPath": "/dev/shm"
-              "name": "dshm"
-              "readOnly": false
-            - "mountPath": "/datasets"
-              "name": "pytorch-datasets-claim"
-              "readOnly": true
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -223,7 +153,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-r1.7/hf-mlm-roberta-b-fine/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r1.15.5/transformer/conv/v3-8/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -231,38 +161,10 @@
                   "default_aggregation_strategies": [
                    "final"
                   ],
-                  "tags_to_ignore": [
-                   "LearningRate"
-                  ],
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
-                  "metric_subset_to_alert": [
-                   "ExecuteTime__Percentile_99_sec_final",
-                   "total_wall_time",
-                   "Accuracy/test_final",
-                   "aten_ops_sum_final"
-                  ],
                   "metric_success_conditions": {
-                   "ExecuteTime__Percentile_99_sec_final": {
-                    "comparison": "less",
-                    "success_threshold": {
-                     "stddevs_from_mean": 5
-                    },
-                    "wait_for_n_points_of_history": 10
-                   },
-                   "aten_ops_sum_final": {
-                    "comparison": "less_or_equal",
-                    "success_threshold": {
-                     "stddevs_from_mean": 0
-                    }
-                   },
-                   "eval_loss_final": {
-                    "comparison": "less",
-                    "success_threshold": {
-                     "fixed_value": 1.5
-                    }
-                   },
                    "total_wall_time": {
                     "comparison": "less",
                     "success_threshold": {
@@ -270,12 +172,9 @@
                     },
                     "wait_for_n_points_of_history": 10
                    }
-                  },
-                  "required_metrics": [
-                   "eval_loss_final"
-                  ]
+                  }
                  },
-                 "test_name": "pt-r1.7-hf-mlm-roberta-b-fine-conv-v3-8"
+                 "test_name": "tf-r1.15.5-transformer-conv-v3-8"
                 }
             "envFrom":
             - "configMapRef":
@@ -286,12 +185,5 @@
           "nodeSelector":
             "tpu-available": "true"
           "restartPolicy": "Never"
-          "volumes":
-          - "emptyDir":
-              "medium": "Memory"
-            "name": "dshm"
-          - "name": "pytorch-datasets-claim"
-            "persistentVolumeClaim":
-              "claimName": "pytorch-datasets-claim"
-  "schedule": "0 0 * * 0,2,4"
+  "schedule": "0 8 * * *"
   "successfulJobsHistoryLimit": 1

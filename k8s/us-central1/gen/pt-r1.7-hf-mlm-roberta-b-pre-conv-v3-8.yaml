@@ -70,8 +70,8 @@
                     "inclusive_bounds": false,
                     "wait_for_n_data_points": 0
                   },
-                  "strategy": "LOSS",
-                  "tag": "eval"
+                  "strategy": "FINAL",
+                  "tag": "eval_loss"
                 }
               ],
               "exclude_tags": [
