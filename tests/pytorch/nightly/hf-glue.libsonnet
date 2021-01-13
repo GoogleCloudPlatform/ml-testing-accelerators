@@ -36,7 +36,7 @@ local utils = import "templates/utils.libsonnet";
       --learning_rate 3e-5 \
       --output_dir MNLI \
       --overwrite_output_dir \
-      --logging_steps 100 \
+      --logging_steps 30 \
       --save_steps 3000 \
       --overwrite_cache \
       --tpu_metrics_debug \
