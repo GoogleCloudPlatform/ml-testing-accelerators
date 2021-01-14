@@ -1,0 +1,214 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "labels":
+    "accelerator": "k80-x8"
+    "benchmarkId": "tf-r2.3.2-bert-squad-conv-k80-x8"
+    "frameworkVersion": "tf-r2.3.2"
+    "mode": "conv"
+    "model": "bert-squad"
+  "name": "tf-r2.3.2-bert-squad-conv-k80-x8"
+  "namespace": "automated"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "metadata":
+      "annotations":
+        "ml-testing-accelerators/gcs-subdir": "tf-r2.3.2/bert-squad/conv/k80-x8"
+        "ml-testing-accelerators/metric-config": |
+          {
+            "sources": [
+              {
+                "literals": {
+                  "assertions": {
+                    "duration": {
+                      "inclusive_bounds": false,
+                      "std_devs_from_mean": {
+                        "comparison": "LESS",
+                        "std_devs": 5
+                      },
+                      "wait_for_n_data_points": 10
+                    }
+                  }
+                }
+              },
+              {
+                "tensorboard": {
+                  "aggregate_assertions": [
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "GREATER",
+                          "std_devs": 2
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "AVERAGE",
+                      "tag": "examples_per_second"
+                    }
+                  ],
+                  "exclude_tags": [
+          
+                  ],
+                  "include_tags": [
+                    {
+                      "strategies": [
+                        "FINAL"
+                      ],
+                      "tag_pattern": "*"
+                    }
+                  ],
+                  "merge_runs": false
+                }
+              }
+            ]
+          }
+      "labels":
+        "accelerator": "k80-x8"
+        "benchmarkId": "tf-r2.3.2-bert-squad-conv-k80-x8"
+        "frameworkVersion": "tf-r2.3.2"
+        "mode": "conv"
+        "model": "bert-squad"
+    "spec":
+      "activeDeadlineSeconds": 14400
+      "backoffLimit": 1
+      "template":
+        "spec":
+          "containers":
+          - "args":
+            - "python3"
+            - "official/nlp/bert/run_squad.py"
+            - "--input_meta_data_path=gs://xl-ml-test-us-central1/data/squad/squad_v1.1_meta_data.json"
+            - "--train_data_path=gs://xl-ml-test-us-central1/data/squad/squad_v1.1_train.tfrecord"
+            - "--predict_file=gs://xl-ml-test-us-central1/data/squad/dev-v1.1.json"
+            - "--learning_rate=8e-5"
+            - "--do_lower_case=true"
+            - "--model_dir=$(MODEL_DIR)"
+            - "--vocab_file=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/vocab.txt"
+            - "--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/bert_config.json"
+            - "--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-12_H-768_A-12/bert_model.ckpt"
+            - "--num_gpus=8"
+            - "--train_batch_size=64"
+            - "--predict_batch_size=64"
+            - "--all_reduce_alg=hierarchical_copy"
+            - "--num_train_epochs=2"
+            "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.2/bert-squad/conv/k80-x8/$(JOB_NAME)"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
+            "image": "gcr.io/xl-ml-test/tensorflow:r2.3.2"
+            "imagePullPolicy": "Always"
+            "name": "train"
+            "resources":
+              "limits":
+                "nvidia.com/gpu": 8
+              "requests":
+                "cpu": 2
+                "memory": "20G"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
+          "initContainers":
+          - "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.3.2/bert-squad/conv/k80-x8/$(JOB_NAME)"
+            - "name": "METRIC_CONFIG"
+              "value": |
+                {
+                 "metric_collection_config": {
+                  "default_aggregation_strategies": [
+                   "final"
+                  ],
+                  "metric_to_aggregation_strategies": {
+                   "examples_per_second": [
+                    "average"
+                   ]
+                  },
+                  "use_run_name_prefix": true,
+                  "write_to_bigquery": true
+                 },
+                 "regression_test_config": {
+                  "metric_success_conditions": {
+                   "examples_per_second_average": {
+                    "comparison": "greater_or_equal",
+                    "success_threshold": {
+                     "stddevs_from_mean": 2
+                    }
+                   },
+                   "total_wall_time": {
+                    "comparison": "less",
+                    "success_threshold": {
+                     "stddevs_from_mean": 5
+                    },
+                    "wait_for_n_points_of_history": 10
+                   }
+                  }
+                 },
+                 "test_name": "tf-r2.3.2-bert-squad-conv-k80-x8"
+                }
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
+            "image": "gcr.io/xl-ml-test/publisher:stable"
+            "imagePullPolicy": "Always"
+            "name": "publisher"
+          "nodeSelector":
+            "cloud.google.com/gke-accelerator": "nvidia-tesla-k80"
+          "priorityClassName": "gpu-k80"
+          "restartPolicy": "Never"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+  "schedule": "0 4 * * *"
+  "successfulJobsHistoryLimit": 1
