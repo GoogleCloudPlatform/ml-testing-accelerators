@@ -34,7 +34,7 @@ local utils = import "templates/utils.libsonnet";
       --do_eval \
       --overwrite_output_dir \
       --output_dir language-modeling \
-      --logging_steps 100 \
+      --logging_steps 30 \
       --save_steps 3000 \
       --overwrite_cache \
       --tpu_metrics_debug \
