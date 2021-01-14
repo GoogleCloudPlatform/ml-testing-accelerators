@@ -15,32 +15,6 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "annotations":
-    "ml-testing-accelerators/gcs-subdir": "pt-r1.7/python-ops/func/v3-8"
-    "ml-testing-accelerators/metric-config": |
-      {
-        "sources": [
-          {
-            "tensorboard": {
-              "aggregate_assertions": [
-      
-              ],
-              "exclude_tags": [
-                "LearningRate"
-              ],
-              "include_tags": [
-                {
-                  "strategies": [
-                    "FINAL"
-                  ],
-                  "tag_pattern": "*"
-                }
-              ],
-              "merge_runs": true
-            }
-          }
-        ]
-      }
   "labels":
     "accelerator": "v3-8"
     "benchmarkId": "pt-r1.7-python-ops-func-v3-8"
@@ -53,6 +27,32 @@
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
+      "annotations":
+        "ml-testing-accelerators/gcs-subdir": "pt-r1.7/python-ops/func/v3-8"
+        "ml-testing-accelerators/metric-config": |
+          {
+            "sources": [
+              {
+                "tensorboard": {
+                  "aggregate_assertions": [
+          
+                  ],
+                  "exclude_tags": [
+                    "LearningRate"
+                  ],
+                  "include_tags": [
+                    {
+                      "strategies": [
+                        "FINAL"
+                      ],
+                      "tag_pattern": "*"
+                    }
+                  ],
+                  "merge_runs": true
+                }
+              }
+            ]
+          }
       "labels":
         "accelerator": "v3-8"
         "benchmarkId": "pt-r1.7-python-ops-func-v3-8"

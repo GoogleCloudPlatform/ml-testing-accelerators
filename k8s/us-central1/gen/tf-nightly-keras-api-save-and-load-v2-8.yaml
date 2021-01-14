@@ -15,32 +15,6 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "annotations":
-    "ml-testing-accelerators/gcs-subdir": "tf-nightly/keras-api/save-and-load/v2-8"
-    "ml-testing-accelerators/metric-config": |
-      {
-        "sources": [
-          {
-            "tensorboard": {
-              "aggregate_assertions": [
-      
-              ],
-              "exclude_tags": [
-      
-              ],
-              "include_tags": [
-                {
-                  "strategies": [
-                    "FINAL"
-                  ],
-                  "tag_pattern": "*"
-                }
-              ],
-              "merge_runs": false
-            }
-          }
-        ]
-      }
   "labels":
     "accelerator": "v2-8"
     "benchmarkId": "tf-nightly-keras-api-save-and-load-v2-8"
@@ -53,6 +27,32 @@
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
+      "annotations":
+        "ml-testing-accelerators/gcs-subdir": "tf-nightly/keras-api/save-and-load/v2-8"
+        "ml-testing-accelerators/metric-config": |
+          {
+            "sources": [
+              {
+                "tensorboard": {
+                  "aggregate_assertions": [
+          
+                  ],
+                  "exclude_tags": [
+          
+                  ],
+                  "include_tags": [
+                    {
+                      "strategies": [
+                        "FINAL"
+                      ],
+                      "tag_pattern": "*"
+                    }
+                  ],
+                  "merge_runs": false
+                }
+              }
+            ]
+          }
       "labels":
         "accelerator": "v2-8"
         "benchmarkId": "tf-nightly-keras-api-save-and-load-v2-8"
