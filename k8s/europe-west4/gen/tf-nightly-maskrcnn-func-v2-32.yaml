@@ -15,57 +15,6 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "annotations":
-    "ml-testing-accelerators/gcs-subdir": "tf-nightly/maskrcnn/func/v2-32"
-    "ml-testing-accelerators/metric-config": |
-      {
-        "sources": [
-          {
-            "literals": {
-              "assertions": {
-                "duration": {
-                  "inclusive_bounds": false,
-                  "std_devs_from_mean": {
-                    "comparison": "LESS",
-                    "std_devs": 5
-                  },
-                  "wait_for_n_data_points": 10
-                }
-              }
-            }
-          },
-          {
-            "tensorboard": {
-              "aggregate_assertions": [
-                {
-                  "assertion": {
-                    "inclusive_bounds": true,
-                    "std_devs_from_mean": {
-                      "comparison": "GREATER",
-                      "std_devs": 4
-                    },
-                    "wait_for_n_data_points": 0
-                  },
-                  "strategy": "AVERAGE",
-                  "tag": "examples_per_second"
-                }
-              ],
-              "exclude_tags": [
-      
-              ],
-              "include_tags": [
-                {
-                  "strategies": [
-                    "FINAL"
-                  ],
-                  "tag_pattern": "*"
-                }
-              ],
-              "merge_runs": false
-            }
-          }
-        ]
-      }
   "labels":
     "accelerator": "v2-32"
     "benchmarkId": "tf-nightly-maskrcnn-func-v2-32"
@@ -78,6 +27,57 @@
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
+      "annotations":
+        "ml-testing-accelerators/gcs-subdir": "tf-nightly/maskrcnn/func/v2-32"
+        "ml-testing-accelerators/metric-config": |
+          {
+            "sources": [
+              {
+                "literals": {
+                  "assertions": {
+                    "duration": {
+                      "inclusive_bounds": false,
+                      "std_devs_from_mean": {
+                        "comparison": "LESS",
+                        "std_devs": 5
+                      },
+                      "wait_for_n_data_points": 10
+                    }
+                  }
+                }
+              },
+              {
+                "tensorboard": {
+                  "aggregate_assertions": [
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "GREATER",
+                          "std_devs": 4
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "AVERAGE",
+                      "tag": "examples_per_second"
+                    }
+                  ],
+                  "exclude_tags": [
+          
+                  ],
+                  "include_tags": [
+                    {
+                      "strategies": [
+                        "FINAL"
+                      ],
+                      "tag_pattern": "*"
+                    }
+                  ],
+                  "merge_runs": false
+                }
+              }
+            ]
+          }
       "labels":
         "accelerator": "v2-32"
         "benchmarkId": "tf-nightly-maskrcnn-func-v2-32"

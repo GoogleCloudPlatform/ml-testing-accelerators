@@ -15,46 +15,6 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "annotations":
-    "ml-testing-accelerators/gcs-subdir": "tf-nightly/bert-squad/perfzero/v100-x8"
-    "ml-testing-accelerators/metric-config": |
-      {
-        "sources": [
-          {
-            "perfzero": {
-              "assertions": {
-                "exp_per_second": {
-                  "inclusive_bounds": true,
-                  "std_devs_from_mean": {
-                    "comparison": "GREATER",
-                    "std_devs": 3
-                  },
-                  "wait_for_n_data_points": 10
-                }
-              }
-            }
-          },
-          {
-            "tensorboard": {
-              "aggregate_assertions": [
-      
-              ],
-              "exclude_tags": [
-      
-              ],
-              "include_tags": [
-                {
-                  "strategies": [
-                    "FINAL"
-                  ],
-                  "tag_pattern": "*"
-                }
-              ],
-              "merge_runs": false
-            }
-          }
-        ]
-      }
   "labels":
     "accelerator": "v100-x8"
     "benchmarkId": "tf-nightly-bert-squad-perfzero-v100-x8"
@@ -67,6 +27,46 @@
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
+      "annotations":
+        "ml-testing-accelerators/gcs-subdir": "tf-nightly/bert-squad/perfzero/v100-x8"
+        "ml-testing-accelerators/metric-config": |
+          {
+            "sources": [
+              {
+                "perfzero": {
+                  "assertions": {
+                    "exp_per_second": {
+                      "inclusive_bounds": true,
+                      "std_devs_from_mean": {
+                        "comparison": "GREATER",
+                        "std_devs": 3
+                      },
+                      "wait_for_n_data_points": 10
+                    }
+                  }
+                }
+              },
+              {
+                "tensorboard": {
+                  "aggregate_assertions": [
+          
+                  ],
+                  "exclude_tags": [
+          
+                  ],
+                  "include_tags": [
+                    {
+                      "strategies": [
+                        "FINAL"
+                      ],
+                      "tag_pattern": "*"
+                    }
+                  ],
+                  "merge_runs": false
+                }
+              }
+            ]
+          }
       "labels":
         "accelerator": "v100-x8"
         "benchmarkId": "tf-nightly-bert-squad-perfzero-v100-x8"
