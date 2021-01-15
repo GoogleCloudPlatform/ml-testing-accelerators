@@ -16,6 +16,7 @@ local common = import 'common.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
+local experimental = import 'tests/experimental.libsonnet';
 
 {
   local mnist = common.ModelGardenTest {
@@ -66,11 +67,23 @@ local tpus = import 'templates/tpus.libsonnet';
     ],
   },
 
+  // Can't use GCS paths.
+  local tpuVmHack = experimental.TensorFlowTpuVmTest {
+    testName+: '-1vm',
+    command+: [
+      '--download',
+      '--data_dir=/tmp/mnist',
+      '--model_dir=$(mktemp -d)',
+      '--tpu=local',
+    ],
+  },
+
   configs: [
     mnist + k80 + functional + mixins.Experimental,
     mnist + v100 + functional,
     mnist + v2_8 + functional,
     mnist + v2_8 + convergence,
+    mnist + v2_8 + convergence + tpuVmHack,
     mnist + v3_8 + functional,
     mnist + v3_8 + convergence,
   ],
