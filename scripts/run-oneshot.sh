@@ -4,6 +4,7 @@ dryrun=
 filename=
 testtype=
 test_name=
+patch=
 
 help()
 {
@@ -18,6 +19,7 @@ help()
   echo "-f | --file          The filepath for the test."
   echo "-h | --help          Print this help."
   echo "-t | --type          Test type, e.g. [func|conv|functional|convergence]."
+  echo "-p | --patch         Patch number, if applicable."
 }
 
 validate()
@@ -77,7 +79,13 @@ set_test_name()
     platform="pt"
   fi
 
-  release="${split[2]}"
+  if [ -z "$patch" ]
+  then
+    release="${split[2]}"
+  else
+    release="${split[2]}.${patch}"
+  fi
+
   name="${split[3]%%.*}"
   test_name="$platform-$release-$name-$testtype-$accelerator"
 }
@@ -130,6 +138,9 @@ while [ "$1" != "" ]; do
                             ;;
     -t | --testtype)        shift
                             testtype="$1"
+                            ;;
+    -p | --patch)           shift
+                            patch="$1"
                             ;;
     * )                     usage
                             exit 1
