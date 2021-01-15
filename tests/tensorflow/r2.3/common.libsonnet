@@ -17,11 +17,11 @@ local mixins = import "templates/mixins.libsonnet";
 
 {
  ModelGardenTest:: common.ModelGardenTest {
-    frameworkPrefix: "tf-r2.3.1",
+    frameworkPrefix: "tf-r2.3.2",
     tpuSettings+: {
-      softwareVersion: "2.3.1",
+      softwareVersion: "2.3.2",
     },
-    imageTag: "r2.3.1",
+    imageTag: "r2.3.2",
 
     metricCollectionConfig+: {
       metric_to_aggregation_strategies+: {
@@ -47,8 +47,8 @@ local mixins = import "templates/mixins.libsonnet";
       preemptible: false,
     },
   },
-  # Running convergence tests at Midnight PST on Saturday.
+  # Running convergence tests at 8 PM PST daily for regression of TF-2.3.2.
   Convergence:: mixins.Convergence {
-    schedule: "0 8 * * 6",
+    schedule: "0 4 * * *",
   },
 }
