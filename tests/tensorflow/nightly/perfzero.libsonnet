@@ -284,7 +284,6 @@ local utils = import "templates/utils.libsonnet";
     maskrcnn + benchmark_8_gpu + coco + timeouts.Hours(2),
     maskrcnn + benchmark_2x2_tpu + coco,
     maskrcnn + benchmark_4x4_tpu + coco,
-    shapemask + benchmark_1_gpu + coco,
     shapemask + benchmark_8_gpu + coco + timeouts.Hours(2),
     shapemask + benchmark_2x2_tpu + coco,
     shapemask + benchmark_4x4_tpu + coco,

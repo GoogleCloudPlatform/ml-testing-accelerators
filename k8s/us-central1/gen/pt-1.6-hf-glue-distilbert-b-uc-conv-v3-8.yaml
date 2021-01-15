@@ -77,7 +77,7 @@
                       "assertion": {
                         "fixed_value": {
                           "comparison": "GREATER",
-                          "value": 0.7
+                          "value": 0.69999999999999996
                         },
                         "inclusive_bounds": false,
                         "wait_for_n_data_points": 0
@@ -89,7 +89,7 @@
                       "assertion": {
                         "fixed_value": {
                           "comparison": "GREATER",
-                          "value": 0.7
+                          "value": 0.69999999999999996
                         },
                         "inclusive_bounds": false,
                         "wait_for_n_data_points": 0
@@ -274,13 +274,13 @@
                    "eval_mnli-mm/acc": {
                     "comparison": "greater",
                     "success_threshold": {
-                     "fixed_value": 0.7
+                     "fixed_value": 0.69999999999999996
                     }
                    },
                    "eval_mnli/acc": {
                     "comparison": "greater",
                     "success_threshold": {
-                     "fixed_value": 0.7
+                     "fixed_value": 0.69999999999999996
                     }
                    },
                    "total_wall_time": {
