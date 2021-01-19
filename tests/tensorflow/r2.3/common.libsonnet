@@ -47,8 +47,8 @@ local mixins = import "templates/mixins.libsonnet";
       preemptible: false,
     },
   },
-  # Running convergence tests at 8 PM PST daily for regression of TF-2.3.2.
+  # Running convergence tests at Midnight PST on Saturday.
   Convergence:: mixins.Convergence {
-    schedule: "0 4 * * *",
+    schedule: "0 8 * * 6",
   },
 }
