@@ -23,9 +23,9 @@ local mixins = import "templates/mixins.libsonnet";
     },
     imageTag: "r2.1.3",
   },
-  # Running tests at 8 PM daily for regression of TF-2.1.3
+  # Don't run tests manually by default since this release is stable.
   Functional:: mixins.Functional {
-    schedule: "0 4 * * *",
+    schedule: null
   },
   # Don't run tests manually by default since this release is stable.
   Convergence:: mixins.Convergence {
