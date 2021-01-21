@@ -1,0 +1,37 @@
+# Build generated files and push them to the gen branch.
+name: Build Generated Files
+
+on:
+  push:
+    branches: [master]
+  
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Branch to gen
+      run: |
+        git branch -f gen
+  
+    - name: Setup Go environment
+      uses: actions/setup-go@v2.1.3
+      
+    - name: Install JSonnet
+      run: |
+        go get github.com/google/go-jsonnet/cmd/jsonnet
+        echo "$HOME/go/bin" >> $GITHUB_PATH
+
+    - name: Build JSonnet templates
+      run: |
+        scripts/gen-tests.sh
+    
+    - name: Git Commit/Push Changes
+      uses: actions-x/commit@v2
+      with:
+        branch: gen
+        files: k8s/
+        force: true
