@@ -59,6 +59,20 @@ local utils = import "templates/utils.libsonnet";
     },
     cpu: "9.0",
     memory: "30Gi",
+    regressionTestConfig: {
+      "metric_subset_to_alert": [
+        "total_wall_time",
+      ],
+      "metric_success_conditions": {
+        "total_wall_time": {
+          "comparison": "less",
+          "success_threshold": {
+            "stddevs_from_mean": 5
+          },
+          "wait_for_n_points_of_history": 10
+        }
+      }
+    },
   },
   local checkpoint_local = common.Functional {
     modelName: "fs-checkpoint-local",
