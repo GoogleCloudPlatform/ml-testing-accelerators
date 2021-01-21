@@ -17,11 +17,11 @@ local mixins = import "templates/mixins.libsonnet";
 
 {
   ModelGardenTest:: common.ModelGardenTest {
-    frameworkPrefix: "tf-r2.4.0",
+    frameworkPrefix: "tf-r2.4.1",
     tpuSettings+: {
-      softwareVersion: "2.4.0",
+      softwareVersion: "2.4.1",
     },
-    imageTag: "r2.4.0",
+    imageTag: "r2.4.1",
 
     metricCollectionConfig+: {
       metric_to_aggregation_strategies+: {
