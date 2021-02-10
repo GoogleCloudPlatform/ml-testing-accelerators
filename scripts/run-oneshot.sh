@@ -136,13 +136,14 @@ while [ "$1" != "" ]; do
     -h | --help )           help
                             exit
                             ;;
-    -t | --testtype)        shift
+    -t | --type)            shift
                             testtype="$1"
                             ;;
     -p | --patch)           shift
                             patch="$1"
                             ;;
-    * )                     usage
+    * )                     echo "Invalid option: $1"
+                            help 
                             exit 1
   esac
   shift
