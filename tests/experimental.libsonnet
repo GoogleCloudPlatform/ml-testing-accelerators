@@ -1,8 +1,22 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
 {
-  TensorFlowTpuVmTest: {
+  TpuVmTest:: {
     local config = self,
     local cleanupHook = {
       preStop: {
@@ -25,19 +39,38 @@ local volumes = import 'templates/volumes.libsonnet';
     podTemplate+:: {
       spec+: {
         containerMap+:: {
+          monitor: null,
           train+: {
+            local train = self,
+
             image: 'google/cloud-sdk',
+            envMap+:: {
+              'LOCAL_OUTPUT_DIR': '/tmp/model_dir',
+            },
+
+            local remoteScript = {
+              dockerImage: config.image,
+              dockerCommand: std.escapeStringBash(
+                std.join(
+                  ' ',
+                  config.command,
+                ),
+              ),
+            },
             command: [
               'bash',
               '-c',
               |||
-                set +e
+                set -x
+                set -u
 
-                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) 'git clone https://github.com/tensorflow/models.git models/ && pip3 install -r models/official/requirements.txt && cd models && PYTHONPATH=. %s'
+                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                  'sudo docker run -i --rm --privileged -v "/lib/libtpu.so:/lib/libtpu.so" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" %(dockerImage)s '%(dockerCommand)s
                 exit_code=$?
+                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) 'gsutil -m cp -r $(LOCAL_OUTPUT_DIR) $(MODEL_DIR)'
                 bash /scripts/cleanup.sh
                 exit $exit_code
-              ||| % std.join(' ', config.command),
+              ||| % remoteScript,
             ],
             lifecycle: cleanupHook,
             resources+: {
@@ -71,7 +104,8 @@ local volumes = import 'templates/volumes.libsonnet';
                   runtime_version:'v2-alpha',
                   network_config: {enable_external_ips: true},
                   metadata: {
-                    'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)'
+                    'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
+                    'startup-script': 'gcloud auth configure-docker && docker pull %(pullImage)s'
                   }
                 }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
 
@@ -92,8 +126,8 @@ local volumes = import 'templates/volumes.libsonnet';
               echo ${tpu_name} > /scripts/tpu_name
               gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(ipAddress)" > /scripts/tpu_ip
 
-              sleep 30
-            ||| % { acceleratorName: config.accelerator.name }),
+              sleep 180
+            ||| % {acceleratorName: config.accelerator.name, pullImage: config.image}),
             env: [
               {
                 name: 'POD_UID',
@@ -114,5 +148,8 @@ local volumes = import 'templates/volumes.libsonnet';
         },
       },
     },
+  },
+  TensorFlowTpuVmTest:: self.TpuVmTest {
+    image: 'gcr.io/xl-ml-test/tensorflow-1vm:wcromar-20200210',
   },
 }

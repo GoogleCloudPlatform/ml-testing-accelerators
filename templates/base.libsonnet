@@ -216,8 +216,8 @@ local volumes = import 'volumes.libsonnet';
         },
         containers: [
           { name: name } + pod.containerMap[name]
-          for name in std.objectFields(pod.containerMap)
-          if pod.containerMap[name] != null
+            for name in std.objectFields(pod.containerMap)
+            if pod.containerMap[name] != null
         ],
       },
     },

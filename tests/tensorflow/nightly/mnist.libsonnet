@@ -22,11 +22,15 @@ local experimental = import 'tests/experimental.libsonnet';
   local mnist = common.ModelGardenTest {
     modelName: 'mnist',
     command: [
-      'python3',
-      'official/vision/image_classification/mnist_main.py',
-      '--data_dir=$(MNIST_DIR)',
-      '--model_dir=$(MODEL_DIR)',
+      "python3",
+      "official/vision/image_classification/mnist_main.py",
+      "--data_dir=%s" % self.flags.dataDir,
+      "--model_dir=%s" % self.flags.modelDir,
     ],
+    flags:: {
+      dataDir: '$(MNIST_DIR)',
+      modelDir: '$(MODEL_DIR)',
+    },
   },
   local functional = common.Functional {
     command+: [
@@ -67,15 +71,16 @@ local experimental = import 'tests/experimental.libsonnet';
     ],
   },
 
-  // Can't use GCS paths.
   local tpuVmHack = experimental.TensorFlowTpuVmTest {
     testName+: '-1vm',
     command+: [
-      '--download',
-      '--data_dir=/tmp/mnist',
-      '--model_dir=$(mktemp -d)',
-      '--tpu=local',
+      "--download",
+      "--tpu=local",
     ],
+    flags+:: {
+      dataDir: '/tmp/mnist',
+      modelDir: '$(LOCAL_OUTPUT_DIR)',
+    },
   },
 
   configs: [

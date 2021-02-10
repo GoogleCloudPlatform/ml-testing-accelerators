@@ -47,20 +47,20 @@ local metrics = import 'templates/metrics.libsonnet';
                   },
                 },
                 {
-                  name: 'POD_NAMESPACE',
+                  name: "POD_NAMESPACE",
                   valueFrom: {
                     fieldRef: {
-                      fieldPath: 'metadata.namespace',
+                      fieldPath: "metadata.namespace",
                     },
                   },
                 },
               ],
             },
           }
-        else {},
-      } + if config.accelerator.type == 'gpu' then {
-        priorityClassName: 'gpu-%(version)s' % config.accelerator,
-      } else {},
+        else { },
+      } + if config.accelerator.type == "gpu" then {
+        priorityClassName: "gpu-%(version)s" % config.accelerator,
+      } else { },
     },
 
     cronJob+:: {
