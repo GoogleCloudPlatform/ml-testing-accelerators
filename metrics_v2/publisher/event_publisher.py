@@ -178,7 +178,11 @@ def main(argv):
           logging.info('Job %s still active or has no conditions: %s', job.metadata.name, str(job.status))
           continue
 
-        message = create_test_completed_event(job, FLAGS.model_output_bucket, cluster_name, cluster_location, project)
+        try:
+          message = create_test_completed_event(job, FLAGS.model_output_bucket, cluster_name, cluster_location, project)
+        except Exception as e:
+          logging.error('Error while processing job {}'.format(job), exc_info=e)
+
         if message:
           publisher.publish(topic, message.SerializeToString())
           current_version = job.metadata.resource_version
