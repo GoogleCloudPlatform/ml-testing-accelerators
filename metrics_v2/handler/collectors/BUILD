@@ -100,3 +100,9 @@ py_test(
     requirement("tensorflow-cpu"),
   ]
 )
+
+# Export files used in Cloud Functions bundle
+filegroup(
+  name = "gcf_srcs",
+  srcs = glob(["*.py"], exclude=["*_test.py"]),
+)

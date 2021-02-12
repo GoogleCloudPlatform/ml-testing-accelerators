@@ -10,6 +10,7 @@ from absl.testing import parameterized
 import kubernetes
 import tensorflow as tf
 
+os.environ['BQ_DATASET'] = 'TEST'
 import handler.main
 import handler.bigquery_client
 from publisher import event_publisher

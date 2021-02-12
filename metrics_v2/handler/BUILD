@@ -8,33 +8,7 @@ load(
     "container_image",
     "container_push",
 )
-
-par_binary(
-  name = "server",
-  srcs = ["server.py"],
-  deps = [
-    ":main_lib",
-    requirement("functions-framework"),
-  ],
-  zip_safe = False,
-)
-
-container_image(
-  name = "image",
-  base = "@python_base//image",
-  files = ["server.par"],
-  directory = "app",
-  entrypoint = ["/app/server.par"],
-)
-
-container_push(
-  name = "image_push",
-  format = "Docker",
-  image = ":image",
-  registry = "gcr.io",
-  repository = "$(project)/metrics-handler",
-  tag = "{BUILD_USER}",
-)
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
 py_library(
   name = "main_lib",
@@ -103,4 +77,40 @@ py_test(
     ":utils",
     requirement("absl-py"),
   ]
+)
+
+# Rules to build and deploy Google Cloud Function bundle.
+filegroup(
+  name = "gcf_srcs",
+  srcs = glob(["*.py"], exclude=["*_test.py", "main.py"]),
+  data = ["//handler/collectors:gcf_srcs"],
+)
+
+pkg_tar(
+  name = "gcf_srcs_layer",
+  srcs = [
+    "//handler:gcf_srcs",
+  ],
+  # Keep the file structure of these sources.
+  strip_prefix = "/",
+  include_runfiles = True,
+)
+
+pkg_tar(
+  name = "gcf_bundle",
+  # These files will be included in the root directory.
+  srcs = [
+    ":main_lib",
+    ":requirements.txt",
+    "//:metrics_pb2",
+  ],
+  deps = [
+    ":gcf_srcs_layer",
+  ]
+)
+
+sh_binary(
+  name = "deploy",
+  srcs = ["deploy.sh"],
+  data = ["gcf_bundle.tar"],
 )

@@ -40,10 +40,8 @@ TODO: Write instructions for deploying to GKE.
 
 TODO: Local testing instructions
 
-To build and push the Handler image, run the following:
+To build and deploy the handler Cloud Function, run the following:
 
 ```bash
-bazel run --define project=$PROJECT handler:image_push
+bazel run handler:deploy
 ```
-
-TODO: Deployment instructions
