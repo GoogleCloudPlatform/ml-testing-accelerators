@@ -182,6 +182,7 @@ def main(argv):
           message = create_test_completed_event(job, FLAGS.model_output_bucket, cluster_name, cluster_location, project)
         except Exception as e:
           logging.error('Error while processing job {}'.format(job), exc_info=e)
+          message = None
 
         if message:
           publisher.publish(topic, message.SerializeToString())
