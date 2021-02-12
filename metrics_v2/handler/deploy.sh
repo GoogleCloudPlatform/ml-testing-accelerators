@@ -16,8 +16,49 @@
 set -e
 set -u
 
+function usage {
+  echo "Usage: deploy.sh --name <FUNCTION_NAME> --project <GCP_PROJECT> --topic <PUBSUB_TOPIC> --dataset <BQ_DATASET>"
+  exit 1
+}
+
+while test $# -gt 0; do
+  case "$1" in
+    --name)
+      name=$2
+      shift 2
+      ;;
+    --project)
+      project=$2
+      shift 2
+      ;;
+    --topic)
+      topic=$2
+      shift 2
+      ;;
+    --dataset)
+      dataset=$2
+      shift 2
+      ;;
+    *)
+      echo "Invalid flag: $1"
+      usage
+      exit 1
+      ;;
+  esac
+done
+
+if [[ -z $name || -z $project || -z $topic || -z $dataset ]]; then
+  echo "Required flag not provided."
+  usage
+fi
+
+echo "Function Name: ${name}"
+echo "GCP Project: ${project}"
+echo "PubSub Topic: ${topic}"
+echo "BQ Dataset: ${dataset}"
+
 staging_dir=$(mktemp -d)
 
 set -x
 tar xf handler/gcf_bundle.tar -C "${staging_dir}"
-gcloud functions deploy wcromar-test-function --entry-point=receive_test_event --source "${staging_dir}" --runtime python38 --trigger-topic wcromar-test-topic --set-env-vars BQ_DATASET=wcromar_test_dataset --project=xl-ml-test --memory=4096MB
+gcloud functions deploy "${name}" --project="${project}" --source "${staging_dir}" --entry-point=receive_test_event --runtime python38 --trigger-topic "${topic}" --set-env-vars "BQ_DATASET=${dataset}" --memory=4096MB 

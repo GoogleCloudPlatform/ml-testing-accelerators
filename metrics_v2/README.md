@@ -43,5 +43,5 @@ TODO: Local testing instructions
 To build and deploy the handler Cloud Function, run the following:
 
 ```bash
-bazel run handler:deploy
+bazel run handler:deploy --name metrics-handler --topic test-completed --dataset metrics --project $(gcloud config get-value project)
 ```
