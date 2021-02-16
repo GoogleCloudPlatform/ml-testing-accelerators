@@ -15,11 +15,11 @@
 import collections
 import datetime
 import logging
-import pytz
 import typing
 
 import jinja2
 from sendgrid.helpers import mail
+import pytz
 
 template = jinja2.Template("""
 <h1>New errors in {{ benchmark_id|e }}:</h1>

@@ -18,9 +18,9 @@ from absl.testing import absltest
 from absl.testing import parameterized
 from google.protobuf import duration_pb2
 
-import utils
-from . import base
-from . import literal_collector
+import base
+import literal_collector
+from handler import utils
 
 import metrics_pb2
 

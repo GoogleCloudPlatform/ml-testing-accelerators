@@ -15,7 +15,7 @@
 import json
 import os
 
-from . import base
+from handler.collectors import base
 
 from absl import logging
 import tensorflow as tf

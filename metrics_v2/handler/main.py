@@ -24,10 +24,10 @@ import numpy as np
 import sendgrid
 from sendgrid.helpers import mail
 
-import alerts
-import bigquery_client
-import collectors
-import utils
+from handler import alerts
+from handler import bigquery_client
+from handler import collectors
+from handler import utils
 import metrics_pb2
 
 try:

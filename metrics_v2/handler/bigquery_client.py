@@ -20,7 +20,7 @@ import typing
 from absl import logging
 from google.cloud import bigquery
 
-import utils
+from handler import utils
 import metrics_pb2
 
 BQ_JOB_TABLE_NAME = 'job_history'

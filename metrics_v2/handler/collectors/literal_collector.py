@@ -14,7 +14,7 @@
 
 from google.protobuf import duration_pb2
 
-from . import base
+from handler.collectors import base
 
 class LiteralCollector(base.BaseCollector):
   def read_metrics_and_assertions(self):

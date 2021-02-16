@@ -18,10 +18,10 @@ import pathlib
 
 from absl.testing import absltest
 
-from . import base
-from . import perfzero_collector
+import base
+from handler import utils
+from handler.collectors import perfzero_collector
 import metrics_pb2
-import utils
 
 class PerfZeroCollectorTest(absltest.TestCase):
   def test_get_metrics_from_perfzero_summary(self):
