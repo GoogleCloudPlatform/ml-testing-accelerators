@@ -40,15 +40,6 @@ local utils = import "templates/utils.libsonnet";
     modelName: "mnist",
   },
 
-  local mnist_pod = common.PyTorchXlaDistPodTest {
-    modelName: "mnist",
-    command: [
-      "python3",
-      "/usr/share/torch-xla-nightly/pytorch/xla/test/test_train_mp_mnist.py",
-      "--logdir=$(MODEL_DIR)",
-    ],
-  },
-
   local convergence = common.Convergence {
     regressionTestConfig+: {
       metric_success_conditions+: {
@@ -70,14 +61,6 @@ local utils = import "templates/utils.libsonnet";
     accelerator: tpus.v3_8,
     schedule: "4 17 * * *",
   },
-  local v2_32 = {
-    accelerator: tpus.v2_32,
-    schedule: "6 17 * * *",
-  },
-  local v3_32 = {
-    accelerator: tpus.v3_32,
-    schedule: "8 17 * * *",
-  },
   local v100 = {
     accelerator: gpus.teslaV100,
     command: utils.scriptCommand(
@@ -96,8 +79,6 @@ local utils = import "templates/utils.libsonnet";
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1),
     mnist + convergence + v3_8 + timeouts.Hours(1),
-    mnist_pod + convergence + v2_32,
-    mnist_pod + convergence + v3_32 ,
     mnist_gpu + convergence + v100 + timeouts.Hours(1),
     mnist_gpu + convergence + v100x4 + timeouts.Hours(1),
   ],
