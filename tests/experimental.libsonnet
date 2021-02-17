@@ -16,7 +16,7 @@ local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
 {
-  TpuVmTest:: {
+  TpuVmBaseTest:: {
     local config = self,
     local cleanupHook = {
       preStop: {
@@ -36,14 +36,117 @@ local volumes = import 'templates/volumes.libsonnet';
         mountPath: '/scripts',
       },
     },
+
+    tpuSettings+: {
+      local tpuSettings = self,
+
+      softwareVersion: 'v2-alpha',
+
+      // Startup script in TPU VM metadata.
+      tpuVmStartupScript: 'echo Running startup script',
+
+      // Amount of time to sleep after TPU is READY.
+      tpuVmCreateSleepSeconds: 180,
+    },
     podTemplate+:: {
       spec+: {
         containerMap+:: {
           monitor: null,
           train+: {
-            local train = self,
-
             image: 'google/cloud-sdk',
+            lifecycle: cleanupHook,
+            resources+: {
+              // HACK: replace standard Cloud TPU resource.
+              limits: {
+                ['tpu.googleapis.com/v%s' % config.accelerator.version]: config.accelerator.size,
+              },
+            },
+          },
+        },
+        initContainerMap+:: {
+          'create-tpu': {
+            image: 'google/cloud-sdk',
+            local tpuCreateSettings = {
+              acceleratorName: std.escapeStringBash(config.accelerator.name),
+              softwareVersion: std.escapeStringBash(config.tpuSettings.softwareVersion),
+              startupScript: std.escapeStringBash(config.tpuSettings.tpuVmStartupScript),
+              sleepTime: config.tpuSettings.tpuVmCreateSleepSeconds,
+            },
+            command: utils.scriptCommand(|||
+              project=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google")
+              zone=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google" | awk -F'/' '{print $4}')
+              tpu_name=tpu-${POD_UID}
+              ssh-keygen -t rsa -f /scripts/id_rsa -q -N ""
+
+              echo "
+              curl -X DELETE \
+                -H \"Authorization: Bearer \$(gcloud auth print-access-token)\" \
+                https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes/${tpu_name}
+              " > /scripts/cleanup.sh
+
+              curl -X POST \
+                -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+                -H "Content-Type: application/json" \
+                -d "{
+                  accelerator_type: %(acceleratorName)s,
+                  runtime_version: %(softwareVersion)s,
+                  network_config: {enable_external_ips: true},
+                  metadata: {
+                    'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
+                    'startup-script': %(startupScript)s
+                  }
+                }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
+
+              echo "Waiting for TPU Pod ${tpu_name} to become ready..."
+              while [[ ${health:-NONE} != "READY" ]];
+                do sleep 10 && \
+                health=$(gcloud \
+                  --project=${project} \
+                  compute \
+                  tpus \
+                  describe \
+                  ${tpu_name} \
+                  --zone=${zone} \
+                  --format="value(state)") && \
+                echo "Waiting for ready TPU (current state ${health:-NONE})...";
+              done
+
+              echo ${tpu_name} > /scripts/tpu_name
+              gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(ipAddress)" > /scripts/tpu_ip
+
+              sleep %(sleepTime)d
+            ||| % tpuCreateSettings),
+            env: [
+              {
+                name: 'POD_UID',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'metadata.uid',
+                  },
+                },
+              },
+            ],
+            volumeMounts: [
+              {
+                mountPath: '/scripts',
+                name: 'scripts',
+              },
+            ],
+          },
+        },
+      },
+    },
+  },
+  TpuVmTrainingTest:: self.TpuVmBaseTest {
+    local config = self,
+    tpuSettings+: {
+      tpuVmStartupScript: 'gcloud auth configure-docker && docker pull %(image)s' % config,
+    },
+    podTemplate+:: {
+      spec+: {
+        containerMap+:: {
+          monitor: null,
+          train+: {
             envMap+:: {
               'LOCAL_OUTPUT_DIR': '/tmp/model_dir',
             },
@@ -72,84 +175,52 @@ local volumes = import 'templates/volumes.libsonnet';
                 exit $exit_code
               ||| % remoteScript,
             ],
-            lifecycle: cleanupHook,
-            resources+: {
-              // HACK: replace standard Cloud TPU resource.
-              limits: {
-                ['tpu.googleapis.com/v%s' % config.accelerator.version]: config.accelerator.size,
-              },
+          }
+        }
+      }
+    }
+  },
+  TensorFlowTpuVmTest:: self.TpuVmTrainingTest {
+    image: 'gcr.io/xl-ml-test/tensorflow-1vm:wcromar-20200210',
+  },
+  TensorflowServingTpuVmTest:: self.TpuVmBaseTest {
+    local config = self,
+    image: 'gcr.io/xl-ml-test/allencwang-tf-serving-tpu:latest',
+
+    tpuSettings+: {
+      tpuVmStartupScript: 'gcloud auth configure-docker && ' +
+        'git clone --depth=1 https://github.com/tensorflow/serving.git /serving/ && ' +
+        'docker run -d --privileged -e MODEL_NAME=half_plus_two -e TPU_MIN_LOG_LEVEL=0 -p 8501:8501 -v "/serving/tensorflow_serving/servables/tensorflow/testdata/saved_model_half_plus_two_cpu:/models/half_plus_two" %(image)s' % config,
+      tpuVmCreateSleepSeconds: 360,
+    },
+
+    podTemplate+: {
+      spec+: {
+        containerMap+:: {
+          train+: {
+            local scriptSettings = {
+              testCommand:
+                std.join(
+                  ' ',
+                  config.command,
+                ),
             },
-          },
-        },
-        initContainerMap+:: {
-          'create-tpu': {
-            image: 'google/cloud-sdk',
-            command: utils.scriptCommand(|||
-              project=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google")
-              zone=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google" | awk -F'/' '{print $4}')
-              tpu_name=tpu-${POD_UID}
-              ssh-keygen -t rsa -f /scripts/id_rsa -q -N ""
+            command: [
+              'bash',
+              '-c',
+              |||
+                set -x
+                set -u
 
-              echo "
-              curl -X DELETE \
-                -H \"Authorization: Bearer \$(gcloud auth print-access-token)\" \
-                https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes/${tpu_name}
-              " > /scripts/cleanup.sh
-
-              curl -X POST \
-                -H "Authorization: Bearer $(gcloud auth print-access-token)" \
-                -H "Content-Type: application/json" \
-                -d "{
-                  accelerator_type: '%(acceleratorName)s',
-                  runtime_version:'v2-alpha',
-                  network_config: {enable_external_ips: true},
-                  metadata: {
-                    'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
-                    'startup-script': 'gcloud auth configure-docker && docker pull %(pullImage)s'
-                  }
-                }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
-
-              echo "Waiting for TPU Pod ${tpu_name} to become ready..."
-              while [[ ${health:-NONE} != "READY" ]];
-                do sleep 10 && \
-                health=$(gcloud \
-                  --project=${project} \
-                  compute \
-                  tpus \
-                  describe \
-                  ${tpu_name} \
-                  --zone=${zone} \
-                  --format="value(state)") && \
-                echo "Waiting for ready TPU (current state ${health:-NONE})...";
-              done
-
-              echo ${tpu_name} > /scripts/tpu_name
-              gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(ipAddress)" > /scripts/tpu_ip
-
-              sleep 180
-            ||| % {acceleratorName: config.accelerator.name, pullImage: config.image}),
-            env: [
-              {
-                name: 'POD_UID',
-                valueFrom: {
-                  fieldRef: {
-                    fieldPath: 'metadata.uid',
-                  },
-                },
-              },
-            ],
-            volumeMounts: [
-              {
-                mountPath: '/scripts',
-                name: 'scripts',
-              },
+                %(testCommand)s
+                exit_code=$?
+                bash /scripts/cleanup.sh
+                exit $exit_code
+              ||| % scriptSettings,
             ],
           },
         },
       },
     },
-  },
-  TensorFlowTpuVmTest:: self.TpuVmTest {
-    image: 'gcr.io/xl-ml-test/tensorflow-1vm:wcromar-20200210',
   },
 }
