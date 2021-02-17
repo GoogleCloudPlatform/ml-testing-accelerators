@@ -66,14 +66,20 @@ class BaseCollector:
     if not self._metric_store:
       raise ValueError('Metric history requested for {}, but no metric store '
                        'was provided to Collector.'.format(metric_key))
+
+    if time_window.ToTimedelta():
+      min_time = max(
+          min_timestamp.ToDatetime(),
+          self._event.start_time.ToDatetime() - time_window.ToTimedelta())
+    else:
+      min_time = min_timestamp.ToDatetime()
+
     history_rows = self._metric_store.get_metric_history(
       benchmark_id=(
           self._event.metric_collection_config.compare_to_benchmark_id or
           self._event.benchmark_id),
       metric_key=metric_key,
-      min_time=max(
-          min_timestamp.ToDatetime(),
-          self._event.start_time.ToDatetime() - time_window.ToTimedelta())
+      min_time=min_time,
     )
     
     return [row.metric_value for row in history_rows]

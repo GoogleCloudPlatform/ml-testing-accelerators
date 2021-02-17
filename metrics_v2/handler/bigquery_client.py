@@ -18,6 +18,7 @@ import math
 import typing
 
 from absl import logging
+import google.auth
 from google.cloud import bigquery
 
 from handler import utils
