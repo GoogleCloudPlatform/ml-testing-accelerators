@@ -1,0 +1,19 @@
+steps:
+- name: google/cloud-sdk
+  entrypoint: gsutil
+  args:
+  - cp
+  - gs://cloud-tpu-v2-images-artifacts/tf_nightly-2.5.0-cp36-cp36m-linux_x86_64.whl
+  - '.'
+- name: docker
+  entrypoint: docker
+  args:
+  - build 
+  - -t
+  - 'gcr.io/$PROJECT_ID/tensorflow-1vm:$_VERSION'
+  - -f
+  - images/tensorflow-1vm/Dockerfile
+  - '.'
+images: ['gcr.io/$PROJECT_ID/tensorflow-1vm:$_VERSION']
+substitutions:
+  _VERSION: 'latest'
