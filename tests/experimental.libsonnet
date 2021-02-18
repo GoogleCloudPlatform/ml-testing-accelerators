@@ -40,7 +40,7 @@ local volumes = import 'templates/volumes.libsonnet';
     tpuSettings+: {
       local tpuSettings = self,
 
-      softwareVersion: 'v2-alpha',
+      softwareVersion: 'v2-nightly',
 
       // Startup script in TPU VM metadata.
       tpuVmStartupScript: 'echo Running startup script',
@@ -166,9 +166,10 @@ local volumes = import 'templates/volumes.libsonnet';
               |||
                 set -x
                 set -u
-
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                  'sudo docker run -i --rm --privileged -v "/lib/libtpu.so:/lib/libtpu.so" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" %(dockerImage)s '%(dockerCommand)s
+                  'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
+                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                  'sudo docker run -i --rm --privileged -v "/lib/libtpu.so:/lib/libtpu.so" -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" %(dockerImage)s '%(dockerCommand)s
                 exit_code=$?
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) 'gsutil -m cp -r $(LOCAL_OUTPUT_DIR) $(MODEL_DIR)'
                 bash /scripts/cleanup.sh
@@ -181,7 +182,7 @@ local volumes = import 'templates/volumes.libsonnet';
     }
   },
   TensorFlowTpuVmTest:: self.TpuVmTrainingTest {
-    image: 'gcr.io/xl-ml-test/tensorflow-1vm:wcromar-20200210',
+    image: 'gcr.io/xl-ml-test/tensorflow-1vm:micban',
   },
   TensorflowServingTpuVmTest:: self.TpuVmBaseTest {
     local config = self,

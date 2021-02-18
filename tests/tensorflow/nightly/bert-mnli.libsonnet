@@ -12,28 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import 'common.libsonnet';
-local mixins = import 'templates/mixins.libsonnet';
-local timeouts = import 'templates/timeouts.libsonnet';
-local tpus = import 'templates/tpus.libsonnet';
+local common = import "common.libsonnet";
+local mixins = import "templates/mixins.libsonnet";
+local timeouts = import "templates/timeouts.libsonnet";
+local tpus = import "templates/tpus.libsonnet";
+local experimental = import "tests/experimental.libsonnet";
 
 {
   local bert = common.ModelGardenTest {
     modelName: 'bert-mnli',
     command: [
-      'python3',
-      'official/nlp/bert/run_classifier.py',
-      '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
-      '--steps_per_loop=1000',
-      '--input_meta_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_meta_data',
-      '--train_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_train.tf_record',
-      '--eval_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_eval.tf_record',
-      '--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_config.json',
-      '--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_model.ckpt',
-      '--learning_rate=3e-5',
-      '--distribution_strategy=tpu',
-      '--model_dir=$(MODEL_DIR)',
+      "python3",
+      "official/nlp/bert/run_classifier.py",
+      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
+      "--steps_per_loop=1000",
+      "--input_meta_data_path=%s/mnli_meta_data" % self.flags.bertClassificationDir,
+      "--train_data_path=%s/mnli_train.tf_record" % self.flags.bertClassificationDir,
+      "--eval_data_path=%s/mnli_eval.tf_record" % self.flags.bertClassificationDir,
+      "--bert_config_file=%s/uncased_L-24_H-1024_A-16/bert_config.json" % self.flags.kerasBertDir,
+      "--init_checkpoint=%s/uncased_L-24_H-1024_A-16/bert_model.ckpt" % self.flags.kerasBertDir,
+      "--learning_rate=3e-5",
+      "--distribution_strategy=tpu",
+      "--model_dir=%s" % self.flags.modelDir,
     ],
+    flags:: {
+      bertClassificationDir: '$(BERT_CLASSIFICATION_DIR)',
+      kerasBertDir: '$(KERAS_BERT_DIR)',
+      modelDir: '$(MODEL_DIR)',
+    },
   },
   local functional = common.Functional {
     command+: [
@@ -83,9 +89,21 @@ local tpus = import 'templates/tpus.libsonnet';
       '--eval_batch_size=256',
     ],
   },
+  local tpuVmHack = experimental.TensorFlowTpuVmTest {
+    testName+: "-1vm",
+    command+: [
+      "--tpu=local",
+    ],
+    flags+:: {
+      bertClassificationDir: '/gcs/cloud-tpu-checkpoints/bert/classification',
+      kerasBertDir: '/gcs/cloud-tpu-checkpoints/bert/keras_bert',
+      modelDir: '$(LOCAL_OUTPUT_DIR)',
+    },
+  },
 
   configs: [
     bert + v2_8 + functional,
+    bert + v2_8 + functional + tpuVmHack,
     bert + v3_8 + functional,
     bert + v2_8 + convergence + timeouts.Hours(4),
     bert + v3_8 + convergence + timeouts.Hours(3),

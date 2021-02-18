@@ -12,29 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import 'common.libsonnet';
-local mixins = import 'templates/mixins.libsonnet';
-local timeouts = import 'templates/timeouts.libsonnet';
-local tpus = import 'templates/tpus.libsonnet';
+local common = import "common.libsonnet";
+local experimental = import "tests/experimental.libsonnet";
+local mixins = import "templates/mixins.libsonnet";
+local timeouts = import "templates/timeouts.libsonnet";
+local tpus = import "templates/tpus.libsonnet";
 
 {
   local resnet = common.ModelGardenTest {
     modelName: 'resnet-ctl',
     command: [
-      'python3',
-      'official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py',
-      '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
-      '--data_dir=$(IMAGENET_DIR)',
-      '--distribution_strategy=tpu',
-      '--use_synthetic_data=false',
-      '--dtype=fp32',
-      '--enable_eager=true',
-      '--enable_tensorboard=true',
-      '--log_steps=50',
-      '--single_l2_loss_op=true',
-      '--use_tf_function=true',
-      '--model_dir=$(MODEL_DIR)',
+      "python3",
+      "official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py",
+      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
+      "--distribution_strategy=tpu",
+      "--use_synthetic_data=false",
+      "--dtype=fp32",
+      "--enable_eager=true",
+      "--enable_tensorboard=true",
+      "--log_steps=50",
+      "--single_l2_loss_op=true",
+      "--use_tf_function=true",
+      "--data_dir=%s" % self.flags.dataDir,
+      "--model_dir=%s" % self.flags.modelDir,
     ],
+    flags:: {
+      dataDir: '$(IMAGENET_DIR)',
+      modelDir: '$(MODEL_DIR)',
+    },
     tpuSettings+: {
       softwareVersion: 'test_nightly_direct_path_non_distrib_cache',
     },
@@ -67,9 +72,20 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: tpus.v3_32,
     command+: ['--batch_size=8192'],
   },
+  local tpuVmHack = experimental.TensorFlowTpuVmTest {
+    testName+: "-1vm",
+    command+: [
+      "--tpu=local",
+    ],
+    flags+:: {
+      dataDir: '/gcs/imagenet-europe-west4/train',
+      modelDir: '$(LOCAL_OUTPUT_DIR)',
+    },
+  },
 
   configs: [
     resnet + v2_8 + functional,
+    resnet + v2_8 + functional + tpuVmHack,
     resnet + v3_8 + functional,
     resnet + v2_8 + convergence + timeouts.Hours(16),
     resnet + v3_8 + convergence,
