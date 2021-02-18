@@ -182,7 +182,7 @@ local volumes = import 'templates/volumes.libsonnet';
     }
   },
   TensorFlowTpuVmTest:: self.TpuVmTrainingTest {
-    image: 'gcr.io/xl-ml-test/tensorflow-1vm:micban',
+    image: 'gcr.io/xl-ml-test/tensorflow-1vm:nightly',
   },
   TensorflowServingTpuVmTest:: self.TpuVmBaseTest {
     local config = self,
