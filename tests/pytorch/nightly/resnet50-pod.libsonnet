@@ -25,6 +25,13 @@ local mixins = import "templates/mixins.libsonnet";
       "/pytorch/xla/test/test_train_mp_imagenet.py",
     ],
   },
+  local resnet50_pod_func = common.PyTorchXlaDistPodTest {
+    modelName: "resnet50-pod",
+    command: [
+      "python3",
+      "/usr/share/torch-xla-nightly/pytorch/xla/test/test_train_mp_imagenet.py",
+    ],
+  },
   local functional = common.Functional {
     command+: [
       "--fake_data",
@@ -66,7 +73,7 @@ local mixins = import "templates/mixins.libsonnet";
     accelerator: tpus.v3_32,
   },
   configs: [
-    resnet50_pod + v3_32 + functional,
+    resnet50_pod_func + v3_32 + functional,
     resnet50_pod + v3_32 + convergence,
   ],
 }
