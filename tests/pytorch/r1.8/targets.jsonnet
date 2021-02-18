@@ -12,15 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local nightly = import "nightly/targets.jsonnet";
-local r1_6 = import "r1.6/targets.jsonnet";
-local r1_7 = import "r1.7/targets.jsonnet";
-local r1_8 = import "r1.8/targets.jsonnet";
+local mnist = import "mnist.libsonnet";
 
-// Add new versions here
+# Add new models here
 std.flattenArrays([
-  nightly,
-  r1_6,
-  r1_7,
-  r1_8,
+  mnist.configs,
 ])
