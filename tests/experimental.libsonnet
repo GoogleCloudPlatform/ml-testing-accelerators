@@ -156,7 +156,7 @@ local volumes = import 'templates/volumes.libsonnet';
       tpuVmDockerArgs: if config.accelerator.replicas == 1 then
         ''
       else
-        '--net host',
+        '--net host -e TPU_LOAD_LIBRARY=false',
     },
     podTemplate+:: {
       spec+: {

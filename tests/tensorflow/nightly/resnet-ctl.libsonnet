@@ -75,7 +75,7 @@ local tpus = import "templates/tpus.libsonnet";
   local tpuVmHack = experimental.TensorFlowTpuVmTest {
     testName+: "-1vm",
     command+: [
-      "--tpu=local",
+      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
     ],
     flags+:: {
       dataDir: '/gcs/imagenet-europe-west4/train',
@@ -89,7 +89,7 @@ local tpus = import "templates/tpus.libsonnet";
     resnet + v3_8 + functional,
     resnet + v2_8 + convergence + timeouts.Hours(16),
     resnet + v3_8 + convergence,
-    resnet + v2_32 + functional,
+    resnet + v2_32 + functional + tpuVmHack,
     resnet + v3_32 + functional,
     resnet + v2_32 + convergence + tpus.reserved + { schedule: '20 8 * * 0,2,4' },
     resnet + v3_32 + convergence,
