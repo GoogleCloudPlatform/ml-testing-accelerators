@@ -16,7 +16,7 @@
 "kind": "CronJob"
 "metadata":
   "annotations":
-    "ml-testing-accelerators/gcs-subdir": "tf-nightly/mnist/conv/v2-8"
+    "ml-testing-accelerators/gcs-subdir": "tf-nightly/mnist/conv/v2-32"
     "ml-testing-accelerators/metric-config": |
       {
         "sources": [
@@ -67,20 +67,20 @@
         ]
       }
   "labels":
-    "accelerator": "v2-8"
-    "benchmarkId": "tf-nightly-mnist-conv-v2-8-1vm"
+    "accelerator": "v2-32"
+    "benchmarkId": "tf-nightly-mnist-conv-v2-32-1vm"
     "frameworkVersion": "tf-nightly"
     "mode": "conv"
     "model": "mnist"
-  "name": "tf-nightly-mnist-conv-v2-8-1vm"
+  "name": "tf-nightly-mnist-conv-v2-32-1vm"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
       "labels":
-        "accelerator": "v2-8"
-        "benchmarkId": "tf-nightly-mnist-conv-v2-8-1vm"
+        "accelerator": "v2-32"
+        "benchmarkId": "tf-nightly-mnist-conv-v2-32-1vm"
         "frameworkVersion": "tf-nightly"
         "mode": "conv"
         "model": "mnist"
@@ -91,7 +91,7 @@
         "metadata":
           "annotations":
             "reserved.cloud-tpus.google.com": "false"
-            "tf-version.cloud-tpus.google.com": "v2-nightly"
+            "tf-version.cloud-tpus.google.com": "v2-nightly-pod"
         "spec":
           "containers":
           - "args":
@@ -99,8 +99,6 @@
             - "official/vision/image_classification/mnist_main.py"
             - "--data_dir=/tmp/mnist"
             - "--model_dir=$(LOCAL_OUTPUT_DIR)"
-            - "--distribution_strategy=tpu"
-            - "--batch_size=1024"
             - "--train_epochs=10"
             - "--epochs_between_evals=10"
             - "--download"
@@ -114,7 +112,7 @@
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'sudo docker run -i --rm --privileged -v "/lib/libtpu.so:/lib/libtpu.so" -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint ""  gcr.io/xl-ml-test/tensorflow-1vm:nightly ''python3 official/vision/image_classification/mnist_main.py --data_dir=/tmp/mnist --model_dir=$(LOCAL_OUTPUT_DIR) --distribution_strategy=tpu --batch_size=1024 --train_epochs=10 --epochs_between_evals=10 --download --tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)'
+                'sudo docker run -i --rm --privileged -v "/lib/libtpu.so:/lib/libtpu.so" -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" --net host gcr.io/xl-ml-test/tensorflow-1vm:nightly ''python3 official/vision/image_classification/mnist_main.py --data_dir=/tmp/mnist --model_dir=$(LOCAL_OUTPUT_DIR) --train_epochs=10 --epochs_between_evals=10 --download --tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)'
               exit_code=$?
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) 'gsutil -m cp -r $(LOCAL_OUTPUT_DIR) $(MODEL_DIR)'
               bash /scripts/cleanup.sh
@@ -137,9 +135,9 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/mnist/conv/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/mnist/conv/v2-32/$(JOB_NAME)"
             - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
-              "value": "local"
+              "value": "tpu-$(POD_UID)"
             - "name": "LOCAL_OUTPUT_DIR"
               "value": "/tmp/model_dir"
             "envFrom":
@@ -156,7 +154,7 @@
             "name": "train"
             "resources":
               "limits":
-                "tpu.googleapis.com/v2": 8
+                "tpu.googleapis.com/v2": 32
               "requests":
                 "cpu": 2
                 "memory": "20G"
@@ -191,8 +189,8 @@
                 -H "Authorization: Bearer $(gcloud auth print-access-token)" \
                 -H "Content-Type: application/json" \
                 -d "{
-                  accelerator_type: 'v2-8',
-                  runtime_version: 'v2-nightly',
+                  accelerator_type: 'v2-32',
+                  runtime_version: 'v2-nightly-pod',
                   network_config: {enable_external_ips: true},
                   metadata: {
                     'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
