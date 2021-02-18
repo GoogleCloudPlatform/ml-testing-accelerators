@@ -40,13 +40,19 @@ local volumes = import 'templates/volumes.libsonnet';
     tpuSettings+: {
       local tpuSettings = self,
 
-      softwareVersion: 'v2-nightly',
+      softwareVersion: if config.accelerator.replicas == 1 then
+        'v2-nightly'
+      else
+        'v2-nightly-pod',
 
       // Startup script in TPU VM metadata.
       tpuVmStartupScript: 'echo Running startup script',
 
       // Amount of time to sleep after TPU is READY.
       tpuVmCreateSleepSeconds: 180,
+
+      // Additional arguments for test Docker container.
+      tpuVmDockerArgs: '',
     },
     podTemplate+:: {
       spec+: {
@@ -55,6 +61,12 @@ local volumes = import 'templates/volumes.libsonnet';
           train+: {
             image: 'google/cloud-sdk',
             lifecycle: cleanupHook,
+            envMap+:: {
+              'KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS': if config.accelerator.replicas == 1 then
+                'local'
+              else
+                'tpu-$(POD_UID)',
+            },
             resources+: {
               // HACK: replace standard Cloud TPU resource.
               limits: {
@@ -141,6 +153,10 @@ local volumes = import 'templates/volumes.libsonnet';
     local config = self,
     tpuSettings+: {
       tpuVmStartupScript: 'gcloud auth configure-docker && docker pull %(image)s' % config,
+      tpuVmDockerArgs: if config.accelerator.replicas == 1 then
+        ''
+      else
+        '--net host',
     },
     podTemplate+:: {
       spec+: {
@@ -153,6 +169,7 @@ local volumes = import 'templates/volumes.libsonnet';
 
             local remoteScript = {
               dockerImage: config.image,
+              dockerArgs: config.tpuSettings.tpuVmDockerArgs,
               dockerCommand: std.escapeStringBash(
                 std.join(
                   ' ',
@@ -169,7 +186,7 @@ local volumes = import 'templates/volumes.libsonnet';
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                   'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                  'sudo docker run -i --rm --privileged -v "/lib/libtpu.so:/lib/libtpu.so" -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" %(dockerImage)s '%(dockerCommand)s
+                  'sudo docker run -i --rm --privileged -v "/lib/libtpu.so:/lib/libtpu.so" -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" %(dockerArgs)s %(dockerImage)s '%(dockerCommand)s
                 exit_code=$?
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) 'gsutil -m cp -r $(LOCAL_OUTPUT_DIR) $(MODEL_DIR)'
                 bash /scripts/cleanup.sh

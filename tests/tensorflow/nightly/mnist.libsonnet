@@ -70,12 +70,19 @@ local experimental = import 'tests/experimental.libsonnet';
       '--batch_size=2048',
     ],
   },
+  local v2_32 = {
+    accelerator: tpus.v2_32,
+    commmand+: [
+      "--distribution_strategy=tpu",
+      "--batch_size=4096",
+    ],
+  },
 
   local tpuVmHack = experimental.TensorFlowTpuVmTest {
     testName+: '-1vm',
     command+: [
       "--download",
-      "--tpu=local",
+      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
     ],
     flags+:: {
       dataDir: '/tmp/mnist',
@@ -91,5 +98,6 @@ local experimental = import 'tests/experimental.libsonnet';
     mnist + v2_8 + convergence + tpuVmHack,
     mnist + v3_8 + functional,
     mnist + v3_8 + convergence,
+    mnist + v2_32 + convergence + tpuVmHack,
   ],
 }

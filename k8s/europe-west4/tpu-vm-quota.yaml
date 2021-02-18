@@ -4,5 +4,5 @@ metadata:
   name: tpu-vm-limit
 spec:
   hard:
-    requests.tpu.googleapis.com/v2: 16
+    requests.tpu.googleapis.com/v2: 64
     requests.tpu.googleapis.com/v3: 16
