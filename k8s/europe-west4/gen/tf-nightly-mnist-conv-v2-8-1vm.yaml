@@ -16,7 +16,7 @@
 "kind": "CronJob"
 "metadata":
   "labels":
-    "accelerator": "v2-8-1vm"
+    "accelerator": "v2-8"
     "benchmarkId": "tf-nightly-mnist-conv-v2-8-1vm"
     "frameworkVersion": "tf-nightly"
     "mode": "conv"
@@ -28,7 +28,7 @@
   "jobTemplate":
     "metadata":
       "annotations":
-        "ml-testing-accelerators/gcs-subdir": "tf-nightly/mnist/conv/v2-8-1vm"
+        "ml-testing-accelerators/gcs-subdir": "tf-nightly/mnist/conv/v2-8"
         "ml-testing-accelerators/metric-config": |
           {
             "sources": [
@@ -79,7 +79,7 @@
             ]
           }
       "labels":
-        "accelerator": "v2-8-1vm"
+        "accelerator": "v2-8"
         "benchmarkId": "tf-nightly-mnist-conv-v2-8-1vm"
         "frameworkVersion": "tf-nightly"
         "mode": "conv"
@@ -137,7 +137,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/mnist/conv/v2-8-1vm/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/mnist/conv/v2-8/$(JOB_NAME)"
             - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
               "value": "local"
             - "name": "LOCAL_OUTPUT_DIR"
@@ -191,7 +191,7 @@
                 -H "Authorization: Bearer $(gcloud auth print-access-token)" \
                 -H "Content-Type: application/json" \
                 -d "{
-                  accelerator_type: 'v2-8-1vm',
+                  accelerator_type: 'v2-8',
                   runtime_version: 'v2-nightly',
                   network_config: {enable_external_ips: true},
                   metadata: {

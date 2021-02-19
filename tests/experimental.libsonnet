@@ -37,9 +37,7 @@ local volumes = import 'templates/volumes.libsonnet';
       },
     },
 
-    accelerator+: {
-      name+: "-1vm"
-    },
+    testName+: "-1vm",
 
     tpuSettings+: {
       local tpuSettings = self,
@@ -160,7 +158,7 @@ local volumes = import 'templates/volumes.libsonnet';
       tpuVmDockerArgs: if config.accelerator.replicas == 1 then
         ''
       else
-        '--net host -e TPU_LOAD_LIBRARY=0',
+        '--net host -e TPU_LOAD_LIBRARY=false',
     },
     podTemplate+:: {
       spec+: {
