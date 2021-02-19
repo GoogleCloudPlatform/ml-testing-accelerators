@@ -12,9 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+local cppOperations = import "cpp-ops.libsonnet";
 local mnist = import "mnist.libsonnet";
+local mnist_3_7 = import "mnist-3-7.libsonnet";
+local pythonOperations = import "python-ops.libsonnet";
 
 # Add new models here
 std.flattenArrays([
+  cppOperations.configs,
   mnist.configs,
+  mnist_3_7.configs,
+  pythonOperations.configs,
 ])
