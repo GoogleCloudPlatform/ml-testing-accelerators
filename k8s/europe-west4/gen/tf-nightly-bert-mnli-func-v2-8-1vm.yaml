@@ -16,19 +16,19 @@
 "kind": "CronJob"
 "metadata":
   "labels":
-    "accelerator": "v2-32-1vm"
-    "benchmarkId": "tf-nightly-mnist-conv-v2-32-1vm"
+    "accelerator": "v2-8-1vm"
+    "benchmarkId": "tf-nightly-bert-mnli-func-v2-8-1vm"
     "frameworkVersion": "tf-nightly"
-    "mode": "conv"
-    "model": "mnist"
-  "name": "tf-nightly-mnist-conv-v2-32-1vm"
+    "mode": "func"
+    "model": "bert-mnli"
+  "name": "tf-nightly-bert-mnli-func-v2-8-1vm"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
       "annotations":
-        "ml-testing-accelerators/gcs-subdir": "tf-nightly/mnist/conv/v2-32-1vm"
+        "ml-testing-accelerators/gcs-subdir": "tf-nightly/bert-mnli/func/v2-8-1vm"
         "ml-testing-accelerators/metric-config": |
           {
             "sources": [
@@ -54,7 +54,7 @@
                         "inclusive_bounds": true,
                         "std_devs_from_mean": {
                           "comparison": "GREATER",
-                          "std_devs": 2
+                          "std_devs": 4
                         },
                         "wait_for_n_data_points": 0
                       },
@@ -79,30 +79,38 @@
             ]
           }
       "labels":
-        "accelerator": "v2-32-1vm"
-        "benchmarkId": "tf-nightly-mnist-conv-v2-32-1vm"
+        "accelerator": "v2-8-1vm"
+        "benchmarkId": "tf-nightly-bert-mnli-func-v2-8-1vm"
         "frameworkVersion": "tf-nightly"
-        "mode": "conv"
-        "model": "mnist"
+        "mode": "func"
+        "model": "bert-mnli"
     "spec":
-      "activeDeadlineSeconds": 36000
+      "activeDeadlineSeconds": 3600
       "backoffLimit": 1
       "template":
         "metadata":
           "annotations":
             "reserved.cloud-tpus.google.com": "false"
-            "tf-version.cloud-tpus.google.com": "v2-nightly-pod"
+            "tf-version.cloud-tpus.google.com": "v2-nightly"
         "spec":
           "containers":
           - "args":
             - "python3"
-            - "official/vision/image_classification/mnist_main.py"
-            - "--data_dir=/tmp/mnist"
-            - "--model_dir=$(LOCAL_OUTPUT_DIR)"
-            - "--train_epochs=10"
-            - "--epochs_between_evals=10"
-            - "--download"
+            - "official/nlp/bert/run_classifier.py"
             - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
+            - "--steps_per_loop=1000"
+            - "--input_meta_data_path=/gcs/cloud-tpu-checkpoints/bert/classification/mnli_meta_data"
+            - "--train_data_path=/gcs/cloud-tpu-checkpoints/bert/classification/mnli_train.tf_record"
+            - "--eval_data_path=/gcs/cloud-tpu-checkpoints/bert/classification/mnli_eval.tf_record"
+            - "--bert_config_file=/gcs/cloud-tpu-checkpoints/bert/keras_bert/uncased_L-24_H-1024_A-16/bert_config.json"
+            - "--init_checkpoint=/gcs/cloud-tpu-checkpoints/bert/keras_bert/uncased_L-24_H-1024_A-16/bert_model.ckpt"
+            - "--learning_rate=3e-5"
+            - "--distribution_strategy=tpu"
+            - "--model_dir=$(LOCAL_OUTPUT_DIR)"
+            - "--train_batch_size=64"
+            - "--eval_batch_size=64"
+            - "--num_train_epochs=1"
+            - "--tpu=local"
             "command":
             - "bash"
             - "-c"
@@ -112,7 +120,7 @@
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'sudo docker run -i --rm --privileged -v "/lib/libtpu.so:/lib/libtpu.so" -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" --net host -e TPU_LOAD_LIBRARY=false gcr.io/xl-ml-test/tensorflow-1vm:nightly ''python3 official/vision/image_classification/mnist_main.py --data_dir=/tmp/mnist --model_dir=$(LOCAL_OUTPUT_DIR) --train_epochs=10 --epochs_between_evals=10 --download --tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)'
+                'sudo docker run -i --rm --privileged -v "/lib/libtpu.so:/lib/libtpu.so" -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint ""  gcr.io/xl-ml-test/tensorflow-1vm:nightly ''python3 official/nlp/bert/run_classifier.py --tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS) --steps_per_loop=1000 --input_meta_data_path=/gcs/cloud-tpu-checkpoints/bert/classification/mnli_meta_data --train_data_path=/gcs/cloud-tpu-checkpoints/bert/classification/mnli_train.tf_record --eval_data_path=/gcs/cloud-tpu-checkpoints/bert/classification/mnli_eval.tf_record --bert_config_file=/gcs/cloud-tpu-checkpoints/bert/keras_bert/uncased_L-24_H-1024_A-16/bert_config.json --init_checkpoint=/gcs/cloud-tpu-checkpoints/bert/keras_bert/uncased_L-24_H-1024_A-16/bert_model.ckpt --learning_rate=3e-5 --distribution_strategy=tpu --model_dir=$(LOCAL_OUTPUT_DIR) --train_batch_size=64 --eval_batch_size=64 --num_train_epochs=1 --tpu=local'
               exit_code=$?
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) 'gsutil -m cp -r $(LOCAL_OUTPUT_DIR) $(MODEL_DIR)'
               bash /scripts/cleanup.sh
@@ -135,9 +143,9 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/mnist/conv/v2-32-1vm/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/bert-mnli/func/v2-8-1vm/$(JOB_NAME)"
             - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
-              "value": "tpu-$(POD_UID)"
+              "value": "local"
             - "name": "LOCAL_OUTPUT_DIR"
               "value": "/tmp/model_dir"
             "envFrom":
@@ -154,7 +162,7 @@
             "name": "train"
             "resources":
               "limits":
-                "tpu.googleapis.com/v2": 32
+                "tpu.googleapis.com/v2": 8
               "requests":
                 "cpu": 2
                 "memory": "20G"
@@ -189,8 +197,8 @@
                 -H "Authorization: Bearer $(gcloud auth print-access-token)" \
                 -H "Content-Type: application/json" \
                 -d "{
-                  accelerator_type: 'v2-32-1vm',
-                  runtime_version: 'v2-nightly-pod',
+                  accelerator_type: 'v2-8-1vm',
+                  runtime_version: 'v2-nightly',
                   network_config: {enable_external_ips: true},
                   metadata: {
                     'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
@@ -237,5 +245,6 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-  "schedule": "0 6 * * 0,5"
+  "schedule": "0 8 * * *"
   "successfulJobsHistoryLimit": 1
+  "suspend": true

@@ -15,75 +15,75 @@
 "apiVersion": "batch/v1beta1"
 "kind": "CronJob"
 "metadata":
-  "annotations":
-    "ml-testing-accelerators/gcs-subdir": "tf-nightly/resnet-ctl/func/v2-8"
-    "ml-testing-accelerators/metric-config": |
-      {
-        "sources": [
-          {
-            "literals": {
-              "assertions": {
-                "duration": {
-                  "inclusive_bounds": false,
-                  "std_devs_from_mean": {
-                    "comparison": "LESS",
-                    "std_devs": 5
-                  },
-                  "wait_for_n_data_points": 10
-                }
-              }
-            }
-          },
-          {
-            "tensorboard": {
-              "aggregate_assertions": [
-                {
-                  "assertion": {
-                    "inclusive_bounds": true,
-                    "std_devs_from_mean": {
-                      "comparison": "GREATER",
-                      "std_devs": 4
-                    },
-                    "wait_for_n_data_points": 0
-                  },
-                  "strategy": "AVERAGE",
-                  "tag": "examples_per_second"
-                }
-              ],
-              "exclude_tags": [
-      
-              ],
-              "include_tags": [
-                {
-                  "strategies": [
-                    "FINAL"
-                  ],
-                  "tag_pattern": "*"
-                }
-              ],
-              "merge_runs": false
-            }
-          }
-        ]
-      }
   "labels":
-    "accelerator": "v2-8"
-    "benchmarkId": "tf-nightly-resnet-ctl-func-v2-8-1vm"
+    "accelerator": "v2-8-1vm"
+    "benchmarkId": "tf-nightly-inference-func-v2-8-1vm"
     "frameworkVersion": "tf-nightly"
     "mode": "func"
-    "model": "resnet-ctl"
-  "name": "tf-nightly-resnet-ctl-func-v2-8-1vm"
+    "model": "inference"
+  "name": "tf-nightly-inference-func-v2-8-1vm"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
+      "annotations":
+        "ml-testing-accelerators/gcs-subdir": "tf-nightly/inference/func/v2-8-1vm"
+        "ml-testing-accelerators/metric-config": |
+          {
+            "sources": [
+              {
+                "literals": {
+                  "assertions": {
+                    "duration": {
+                      "inclusive_bounds": false,
+                      "std_devs_from_mean": {
+                        "comparison": "LESS",
+                        "std_devs": 5
+                      },
+                      "wait_for_n_data_points": 10
+                    }
+                  }
+                }
+              },
+              {
+                "tensorboard": {
+                  "aggregate_assertions": [
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "GREATER",
+                          "std_devs": 4
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "AVERAGE",
+                      "tag": "examples_per_second"
+                    }
+                  ],
+                  "exclude_tags": [
+          
+                  ],
+                  "include_tags": [
+                    {
+                      "strategies": [
+                        "FINAL"
+                      ],
+                      "tag_pattern": "*"
+                    }
+                  ],
+                  "merge_runs": false
+                }
+              }
+            ]
+          }
       "labels":
-        "accelerator": "v2-8"
-        "benchmarkId": "tf-nightly-resnet-ctl-func-v2-8-1vm"
+        "accelerator": "v2-8-1vm"
+        "benchmarkId": "tf-nightly-inference-func-v2-8-1vm"
         "frameworkVersion": "tf-nightly"
         "mode": "func"
-        "model": "resnet-ctl"
+        "model": "inference"
     "spec":
       "activeDeadlineSeconds": 3600
       "backoffLimit": 1
@@ -95,35 +95,20 @@
         "spec":
           "containers":
           - "args":
-            - "python3"
-            - "official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--distribution_strategy=tpu"
-            - "--use_synthetic_data=false"
-            - "--dtype=fp32"
-            - "--enable_eager=true"
-            - "--enable_tensorboard=true"
-            - "--log_steps=50"
-            - "--single_l2_loss_op=true"
-            - "--use_tf_function=true"
-            - "--data_dir=/gcs/imagenet-europe-west4/train"
-            - "--model_dir=$(LOCAL_OUTPUT_DIR)"
-            - "--batch_size=1024"
-            - "--train_epochs=1"
-            - "--epochs_between_evals=1"
-            - "--tpu=local"
+            - "curl"
+            - "-v"
+            - "-d"
+            - "'{\"instances\": [1.0, 2.0, 5.0]}'"
+            - "http://$(cat /scripts/tpu_ip):8501/v1/models/half_plus_two:predict"
             "command":
             - "bash"
             - "-c"
             - |
               set -x
               set -u
-              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
-              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'sudo docker run -i --rm --privileged -v "/lib/libtpu.so:/lib/libtpu.so" -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint ""  gcr.io/xl-ml-test/tensorflow-1vm:nightly ''python3 official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py --tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS) --distribution_strategy=tpu --use_synthetic_data=false --dtype=fp32 --enable_eager=true --enable_tensorboard=true --log_steps=50 --single_l2_loss_op=true --use_tf_function=true --data_dir=/gcs/imagenet-europe-west4/train --model_dir=$(LOCAL_OUTPUT_DIR) --batch_size=1024 --train_epochs=1 --epochs_between_evals=1 --tpu=local'
+              
+              curl -v -d '{"instances": [1.0, 2.0, 5.0]}' http://$(cat /scripts/tpu_ip):8501/v1/models/half_plus_two:predict
               exit_code=$?
-              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) 'gsutil -m cp -r $(LOCAL_OUTPUT_DIR) $(MODEL_DIR)'
               bash /scripts/cleanup.sh
               exit $exit_code
             "env":
@@ -144,11 +129,9 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/resnet-ctl/func/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/inference/func/v2-8-1vm/$(JOB_NAME)"
             - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
               "value": "local"
-            - "name": "LOCAL_OUTPUT_DIR"
-              "value": "/tmp/model_dir"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
@@ -198,12 +181,12 @@
                 -H "Authorization: Bearer $(gcloud auth print-access-token)" \
                 -H "Content-Type: application/json" \
                 -d "{
-                  accelerator_type: 'v2-8',
+                  accelerator_type: 'v2-8-1vm',
                   runtime_version: 'v2-nightly',
                   network_config: {enable_external_ips: true},
                   metadata: {
                     'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
-                    'startup-script': 'gcloud auth configure-docker && docker pull gcr.io/xl-ml-test/tensorflow-1vm:nightly'
+                    'startup-script': 'gcloud auth configure-docker && git clone --depth=1 https://github.com/tensorflow/serving.git /serving/ && docker run -d --privileged -e MODEL_NAME=half_plus_two -e TPU_MIN_LOG_LEVEL=0 -p 8501:8501 -v "/serving/tensorflow_serving/servables/tensorflow/testdata/saved_model_half_plus_two_cpu:/models/half_plus_two" gcr.io/xl-ml-test/allencwang-tf-serving-tpu:latest'
                   }
                 }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
               
@@ -224,7 +207,7 @@
               echo ${tpu_name} > /scripts/tpu_name
               gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(ipAddress)" > /scripts/tpu_ip
               
-              sleep 180
+              sleep 360
               
             "env":
             - "name": "POD_UID"

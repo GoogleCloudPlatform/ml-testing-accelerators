@@ -90,7 +90,6 @@ local experimental = import "tests/experimental.libsonnet";
     ],
   },
   local tpuVmHack = experimental.TensorFlowTpuVmTest {
-    testName+: "-1vm",
     command+: [
       "--tpu=local",
     ],

@@ -37,6 +37,10 @@ local volumes = import 'templates/volumes.libsonnet';
       },
     },
 
+    accelerator+: {
+      name+: "-1vm"
+    },
+
     tpuSettings+: {
       local tpuSettings = self,
 

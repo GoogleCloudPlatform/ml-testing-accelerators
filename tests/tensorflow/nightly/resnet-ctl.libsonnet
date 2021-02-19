@@ -73,7 +73,6 @@ local tpus = import "templates/tpus.libsonnet";
     command+: ['--batch_size=8192'],
   },
   local tpuVmHack = experimental.TensorFlowTpuVmTest {
-    testName+: "-1vm",
     command+: [
       "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
     ],
