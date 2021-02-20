@@ -155,10 +155,6 @@ local volumes = import 'templates/volumes.libsonnet';
     local config = self,
     tpuSettings+: {
       tpuVmStartupScript: 'gcloud auth configure-docker && docker pull %(image)s' % config,
-      tpuVmDockerArgs: if config.accelerator.replicas == 1 then
-        ''
-      else
-        '--net host -e TPU_LOAD_LIBRARY=false',
     },
     podTemplate+:: {
       spec+: {
@@ -188,7 +184,7 @@ local volumes = import 'templates/volumes.libsonnet';
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                   'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                  'sudo docker run -i --rm --privileged -v "/lib/libtpu.so:/lib/libtpu.so" -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" %(dockerArgs)s %(dockerImage)s '%(dockerCommand)s
+                  'sudo docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" %(dockerArgs)s %(dockerImage)s '%(dockerCommand)s
                 exit_code=$?
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) 'gsutil -m cp -r $(LOCAL_OUTPUT_DIR) $(MODEL_DIR)'
                 bash /scripts/cleanup.sh
@@ -201,7 +197,21 @@ local volumes = import 'templates/volumes.libsonnet';
     }
   },
   TensorFlowTpuVmTest:: self.TpuVmTrainingTest {
+    local config = self,
+
     image: 'gcr.io/xl-ml-test/tensorflow-1vm:nightly',
+    tpuSettings+: {
+      tpuVmDockerArgs: if config.accelerator.replicas == 1 then
+        '-v "/lib/libtpu.so:/lib/libtpu.so"'
+      else
+        '-v "/lib/libtpu.so:/lib/libtpu.so" --net host -e TPU_LOAD_LIBRARY=0',
+    },
+  },
+  PyTorchTpuVmTest:: self.TpuVmTrainingTest {
+    image: 'gcr.io/xl-ml-test/wcromar-pytorch-1vm:latest',
+    tpuSettings+: {
+      tpuVmDockerArgs: '-v "/dev/shm:/dev/shm"'
+    },
   },
   TensorflowServingTpuVmTest:: self.TpuVmBaseTest {
     local config = self,
