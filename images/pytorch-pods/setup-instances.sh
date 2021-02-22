@@ -59,7 +59,7 @@ gcloud compute --project="${PROJECT}" \
   "${INSTANCE_GROUP_NAME}" \
   --zone "${ZONE}"
 
-COMMAND='sudo mkdir -p /datasets && sudo mount -o discard,defaults /dev/sdb /datasets'; for instance in $(gcloud --project=${PROJECT} compute instance-groups managed list-instances ${INST_GROUP_NAME} --zone=${ZONE} --format='value(NAME)[terminator=" "]'); do gcloud compute ssh --project=${PROJECT} --zone=${ZONE} "$instance" --command="$COMMAND" --quiet; done
+COMMAND='sudo mkdir -p /datasets && sudo mount -o discard,defaults /dev/sdb /datasets'; for instance in $(gcloud --project=${PROJECT} compute instance-groups managed list-instances ${INSTANCE_GROUP_NAME} --zone=${ZONE} --format='value(NAME)[terminator=" "]'); do gcloud compute ssh --project=${PROJECT} --zone=${ZONE} "$instance" --command="$COMMAND" --quiet; done
 
 # GKE will wait until the TPU is READY, but not necessarily until it is HEALTHY
 echo "Waiting for TPU Pod ${TPU_POD_NAME} to become healthy..."
