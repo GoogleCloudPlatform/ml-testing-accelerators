@@ -112,6 +112,18 @@ local utils = import "templates/utils.libsonnet";
       },
     },
   },
+  local functional_xla_dist = common.Functional {
+    command: utils.scriptCommand(
+      |||
+        %(command_common)s  --no-save \
+          --max-epoch=1 \
+          --log_steps=10 \
+          --train-subset=valid \
+          --valid-subset=test \
+          --input_shapes=128x64
+      ||| % std.strReplace(command_common, '/tpu-examples/deps/fairseq/train.py', '/usr/share/torch-xla-1.8/tpu-examples/deps/fairseq/train.py'),
+    ),
+  },
   local functional = common.Functional {
     command: utils.scriptCommand(
       |||
@@ -169,7 +181,7 @@ local utils = import "templates/utils.libsonnet";
     accelerator: tpus.v3_32,
   },
   configs: [
-    common.PyTorchGkePodTest + transformer + v3_32 + functional + timeouts.Hours(1),
+    common.PyTorchXlaDistPodTest + transformer + v3_32 + functional_xla_dist + timeouts.Hours(1),
     common.PyTorchTest + transformer + v3_8 + functional + timeouts.Hours(1),
     common.PyTorchTest + transformer + v3_8 + convergence + timeouts.Hours(25),
     common.PyTorchTest + transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
