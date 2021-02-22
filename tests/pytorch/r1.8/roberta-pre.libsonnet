@@ -22,6 +22,7 @@ local utils = import "templates/utils.libsonnet";
     modelName: "roberta-pre",
     paramsOverride: {
       maxEpoch: error "Must set `maxEpoch`",
+      wpsTarget: error "Must set `wpsTarget`",
     },
     command: utils.scriptCommand(
       |||
@@ -57,7 +58,7 @@ local utils = import "templates/utils.libsonnet";
           2>&1 | tee training_logs.txt
         wps=$(cat training_logs.txt | grep '| wps ' | tail -1 | grep -o -E ' wps [0-9]+' | sed 's/[^0-9]*//g')
         echo 'final words per second (wps) is' $wps
-        test $wps -gt 17000
+        test $wps -gt %(wpsTarget)d
       ||| % self.paramsOverride,
     ),
     volumeMap+: {
@@ -84,12 +85,14 @@ local utils = import "templates/utils.libsonnet";
   local functional = common.Functional {
     regressionTestConfig: null,
     paramsOverride: {
-      maxEpoch: 1
+      maxEpoch: 1,
+      wpsTarget: 10000,
     },
   },
   local convergence = common.Convergence {
     paramsOverride: {
       maxEpoch: 5,
+      wpsTarget: 17000,
     },
   },
   local v3_8 = {
