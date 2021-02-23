@@ -171,7 +171,7 @@ local volumes = import 'templates/volumes.libsonnet';
               dockerCommand: std.escapeStringBash(
                 std.join(
                   ' ',
-                  config.command,
+                  ['"' + std.strReplace(c, '"', '\"')  + '"' for c in config.command],
                 ),
               ),
             },
