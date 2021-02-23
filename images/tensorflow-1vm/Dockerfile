@@ -12,6 +12,12 @@ RUN curl -sSL https://github.com/tensorflow/models/archive/master.tar.gz | tar x
 RUN mv models-*/ models/
 
 RUN pip install -r /tensorflow/models/official/requirements.txt
+RUN apt-get install -y unzip
+RUN export PROTOC_ZIP=protoc-3.14.0-linux-x86_64.zip && \
+curl -OL https://github.com/protocolbuffers/protobuf/releases/download/v3.14.0/$PROTOC_ZIP && \
+unzip -o $PROTOC_ZIP -d /usr/local bin/protoc && \
+unzip -o $PROTOC_ZIP -d /usr/local 'include/*' && \
+rm -f $PROTOC_ZIP
 
 ENV PYTHONPATH=/tensorflow/models
 WORKDIR /tensorflow/models

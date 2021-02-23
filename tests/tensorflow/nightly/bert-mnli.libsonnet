@@ -17,6 +17,7 @@ local mixins = import "templates/mixins.libsonnet";
 local timeouts = import "templates/timeouts.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
 local experimental = import "tests/experimental.libsonnet";
+local utils = import 'templates/utils.libsonnet';
 
 {
   local bert = common.ModelGardenTest {
@@ -96,10 +97,23 @@ local experimental = import "tests/experimental.libsonnet";
       modelDir: '$(LOCAL_OUTPUT_DIR)',
     },
   },
+  local tpuVmProfilingCheck = experimental.TensorFlowTpuVmTest {
+    command: utils.scriptCommand(|||
+      %s
+
+      grep -a -c device:TPU /tmp/model_dir/summaries/train/plugins/profile/*/*.xplane.pb
+    ||| % std.join(' ', super.command)),
+    flags+:: {
+      bertClassificationDir: '/gcs/cloud-tpu-checkpoints/bert/classification',
+      kerasBertDir: '/gcs/cloud-tpu-checkpoints/bert/keras_bert',
+      modelDir: '$(LOCAL_OUTPUT_DIR)',
+    },
+  },
 
   configs: [
     bert + v2_8 + functional,
     bert + v2_8 + functional + tpuVmHack,
+    bert + v2_8 + functional + tpuVmProfilingCheck,
     bert + v3_8 + functional,
     bert + v2_8 + convergence + timeouts.Hours(4),
     bert + v3_8 + convergence + timeouts.Hours(3),
