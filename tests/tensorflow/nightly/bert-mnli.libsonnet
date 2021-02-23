@@ -90,9 +90,6 @@ local experimental = import "tests/experimental.libsonnet";
     ],
   },
   local tpuVmHack = experimental.TensorFlowTpuVmTest {
-    command+: [
-      "--tpu=local",
-    ],
     flags+:: {
       bertClassificationDir: '/gcs/cloud-tpu-checkpoints/bert/classification',
       kerasBertDir: '/gcs/cloud-tpu-checkpoints/bert/keras_bert',
@@ -106,7 +103,7 @@ local experimental = import "tests/experimental.libsonnet";
     bert + v3_8 + functional,
     bert + v2_8 + convergence + timeouts.Hours(4),
     bert + v3_8 + convergence + timeouts.Hours(3),
-    bert + v2_32 + functional,
+    bert + v2_32 + functional + tpuVmHack,
     bert + v3_32 + functional,
     bert + v2_32 + convergence + tpus.reserved + { schedule: '54 21 * * 1,3,5,6' },
     bert + v3_32 + convergence,
