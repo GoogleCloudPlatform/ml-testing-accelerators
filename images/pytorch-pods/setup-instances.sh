@@ -36,7 +36,8 @@ gcloud compute --project="${PROJECT}" \
   --boot-disk-type=pd-standard \
   --boot-disk-device-name="${INSTANCE_TEMPLATE_NAME}" \
   --reservation-affinity=any \
-  --metadata=enable-oslogin=TRUE
+  --metadata=enable-oslogin=TRUE \
+  --disk=auto-delete=no,name=pytorch-xla-test-disk,mode=ro
 
 echo "Creating GCE Instance Group: ${INSTANCE_GROUP_NAME}"
 gcloud compute --project="${PROJECT}" \
@@ -57,6 +58,9 @@ gcloud compute --project="${PROJECT}" \
   --stable \
   "${INSTANCE_GROUP_NAME}" \
   --zone "${ZONE}"
+
+echo "Mounting pytorch datasets disk..."
+COMMAND='sudo mkdir -p /datasets && sudo mount -o discard,defaults /dev/sdb /datasets'; for instance in $(gcloud --project=${PROJECT} compute instance-groups managed list-instances ${INSTANCE_GROUP_NAME} --zone=${ZONE} --format='value(NAME)[terminator=" "]'); do gcloud compute ssh --internal-ip --project=${PROJECT} --zone=${ZONE} "$instance" --command="$COMMAND" --quiet; done
 
 # GKE will wait until the TPU is READY, but not necessarily until it is HEALTHY
 echo "Waiting for TPU Pod ${TPU_POD_NAME} to become healthy..."
