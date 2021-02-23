@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import 'common.libsonnet';
-local gpus = import 'templates/gpus.libsonnet';
-local mixins = import 'templates/mixins.libsonnet';
-local timeouts = import 'templates/timeouts.libsonnet';
-local tpus = import 'templates/tpus.libsonnet';
+local common = import "common.libsonnet";
+local mixins = import "templates/mixins.libsonnet";
+local timeouts = import "templates/timeouts.libsonnet";
+local tpus = import "templates/tpus.libsonnet";
+local gpus = import "templates/gpus.libsonnet";
+local experimental = import "tests/experimental.libsonnet";
 
 {
   local efficientnet = common.ModelGardenTest {
@@ -41,15 +42,19 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
     command: [
-      'python3',
-      'official/vision/image_classification/classifier_trainer.py',
-      '--data_dir=$(IMAGENET_DIR)',
-      '--model_type=efficientnet',
-      '--dataset=imagenet',
-      '--mode=train_and_eval',
-      '--model_dir=$(MODEL_DIR)',
-      '--params_override=%s' % std.manifestYamlDoc(self.paramsOverride) + '\n',
+      "python3",
+      "official/vision/image_classification/classifier_trainer.py",
+      "--data_dir=%s" % self.flags.imageNetDir,
+      "--model_type=efficientnet",
+      "--dataset=imagenet",
+      "--mode=train_and_eval",
+      "--model_dir=%s" % self.flags.modelDir,
+      "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride) + "\n",
     ],
+    flags:: {
+      imageNetDir: '$(IMAGENET_DIR)',
+      modelDir: '$(MODEL_DIR)',
+    },
   },
   local hbm = common.Functional {
     // Tests EfficientNet-b7 to check for HBM OOM.
@@ -125,7 +130,6 @@ local tpus = import 'templates/tpus.libsonnet';
   local v100x4 = gpu_common {
     accelerator: gpus.teslaV100 { count: 4 },
   },
-
   local tpu_common = {
     command+: [
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
@@ -144,7 +148,12 @@ local tpus = import 'templates/tpus.libsonnet';
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
   },
-
+  local tpuVmExperimental = experimental.TensorFlowTpuVmTest {
+    flags+:: {
+      imageNetDir: '/gcs/imagenet-europe-west4/train',
+      modelDir: '$(LOCAL_OUTPUT_DIR)',
+    },
+  },
   configs: [
     efficientnet + k80x8 + functional + timeouts.Hours(4) + mixins.Suspended,
     efficientnet + k80x8 + convergence + mixins.Experimental,
@@ -152,11 +161,13 @@ local tpus = import 'templates/tpus.libsonnet';
     efficientnet + v100x4 + functional + timeouts.Hours(2) + mixins.Suspended,
     efficientnet + v100x4 + convergence + mixins.Experimental,
     efficientnet + v2_8 + functional,
+    efficientnet + v2_8 + functional + tpuVmExperimental,
     efficientnet + v3_8 + functional,
     efficientnet + v3_8 + hbm + mixins.Unsuspended,
     efficientnet + v2_8 + convergence + timeouts.Hours(45),
     efficientnet + v3_8 + convergence + timeouts.Hours(45),
     efficientnet + v2_32 + functional,
+    efficientnet + v2_32 + functional + tpuVmExperimental,
     efficientnet + v3_32 + functional,
     efficientnet + v2_32 + convergence + timeouts.Hours(10) + tpus.reserved + { schedule: '0 7 * * 1,3,5,6' },
     efficientnet + v3_32 + convergence + timeouts.Hours(24),
