@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import 'common.libsonnet';
-local gpus = import 'templates/gpus.libsonnet';
-local mixins = import 'templates/mixins.libsonnet';
-local timeouts = import 'templates/timeouts.libsonnet';
-local tpus = import 'templates/tpus.libsonnet';
+local common = import "common.libsonnet";
+local mixins = import "templates/mixins.libsonnet";
+local timeouts = import "templates/timeouts.libsonnet";
+local tpus = import "templates/tpus.libsonnet";
+local gpus = import "templates/gpus.libsonnet";
+local experimental = import "tests/experimental.libsonnet";
 
 {
   local resnet = common.ModelGardenTest {
@@ -36,15 +37,19 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
     command: [
-      'python3',
-      'official/vision/image_classification/classifier_trainer.py',
-      '--data_dir=$(IMAGENET_DIR)',
-      '--model_type=resnet',
-      '--dataset=imagenet',
-      '--mode=train_and_eval',
-      '--model_dir=$(MODEL_DIR)',
-      '--params_override=%s' % std.manifestYamlDoc(self.paramsOverride) + '\n',
+      "python3",
+      "official/vision/image_classification/classifier_trainer.py",
+      "--data_dir=%s" % self.flags.imageNetDir,
+      "--model_type=resnet",
+      "--dataset=imagenet",
+      "--mode=train_and_eval",
+      "--model_dir=%s" % self.flags.modelDir,
+      "--params_override=%s\n" % std.manifestYamlDoc(self.paramsOverride),
     ],
+    flags:: {
+      imageNetDir: '$(IMAGENET_DIR)',
+      modelDir: '$(MODEL_DIR)',
+    },
   },
   local functional = common.Functional {
     paramsOverride+: {
@@ -144,7 +149,12 @@ local tpus = import 'templates/tpus.libsonnet';
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
   },
-
+  local tpuVmExperimental = experimental.TensorFlowTpuVmTest {
+    flags+::  {
+      imageNetDir: '/gcs/imagenet-europe-west4/train',
+      modelDir: '$(LOCAL_OUTPUT_DIR)',
+    },
+  },
   configs: [
     resnet + k80 + functional + timeouts.Hours(5) + mixins.Suspended,
     resnet + k80x8 + functional + timeouts.Hours(4) + mixins.Suspended,
@@ -155,10 +165,12 @@ local tpus = import 'templates/tpus.libsonnet';
     resnet + v100x8 + functional + mixins.Unsuspended,
     resnet + v100x8 + convergence + timeouts.Hours(14),
     resnet + v2_8 + functional,
+    resnet + v2_8 + functional + tpuVmExperimental,
     resnet + v3_8 + functional,
     resnet + v2_8 + convergence,
     resnet + v3_8 + convergence,
     resnet + v2_32 + functional,
+    resnet + v2_32 + functional + tpuVmExperimental,
     resnet + v3_32 + functional,
     resnet + v2_32 + convergence + tpus.reserved + { schedule: '7 11 * * 0,2,4' },
     resnet + v3_32 + convergence,
