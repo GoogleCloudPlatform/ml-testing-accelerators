@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import 'common.libsonnet';
-local gpus = import 'templates/gpus.libsonnet';
-local mixins = import 'templates/mixins.libsonnet';
-local timeouts = import 'templates/timeouts.libsonnet';
-local tpus = import 'templates/tpus.libsonnet';
-local utils = import 'templates/utils.libsonnet';
+local common = import "common.libsonnet";
+local experimental = import "tests/experimental.libsonnet";
+local gpus = import "templates/gpus.libsonnet";
+local mixins = import "templates/mixins.libsonnet";
+local timeouts = import "templates/timeouts.libsonnet";
+local tpus = import "templates/tpus.libsonnet";
+local utils = import "templates/utils.libsonnet";
 
 {
   local mnist = common.PyTorchTest {
@@ -26,11 +27,13 @@ local utils = import 'templates/utils.libsonnet';
       datasets: common.datasetsVolume,
     },
     command: [
-      'python3',
-      'pytorch/xla/test/test_train_mp_mnist.py',
-      '--logdir=$(MODEL_DIR)',
-      '--datadir=/datasets/mnist-data',
+      "python3",
+      "pytorch/xla/test/test_train_mp_mnist.py",
+      "--logdir=%s" % self.flags.modelDir,
     ],
+    flags:: {
+      modelDir: "$(MODEL_DIR)"
+    },
   },
 
   local gpu_command_base = |||
@@ -84,8 +87,16 @@ local utils = import 'templates/utils.libsonnet';
     schedule: '2 19 * * *',
   },
 
+  local tpuVm = experimental.PyTorchTpuVmTest {
+    flags+:: {
+      # HACK: this test crashes when given a real logdir
+      modelDir: "",
+    },
+  },
+
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1),
+    mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
     mnist + convergence + v3_8 + timeouts.Hours(1),
     mnist_gpu + convergence + v100 + timeouts.Hours(1),
     mnist_gpu + convergence + v100x4 + timeouts.Hours(1),

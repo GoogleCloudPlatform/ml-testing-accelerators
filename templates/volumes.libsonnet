@@ -46,8 +46,8 @@
   // Combines a map of VolumeSpec into a single pod spec mixin.
   combinedMixin(volumeMap): std.foldl(
     function(next, rest) rest + next,
-    [volumeMap[v].PodSpecMixin for v in std.objectFields(volumeMap)],
-    {}
+    [volumeMap[v].PodSpecMixin for v in std.objectFields(volumeMap) if volumeMap[v] != null],
+    { }
   ),
 
   MemoryVolumeSpec:: self.VolumeSpec {
