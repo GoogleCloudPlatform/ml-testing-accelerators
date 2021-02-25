@@ -62,8 +62,8 @@ local utils = import "templates/utils.libsonnet";
           train+: {
             resources+: {
               requests: {
-                cpu: '90.0',
-                memory: '400Gi',
+                cpu: "90.0",
+                memory: "400Gi",
               },
             },
           },
@@ -124,7 +124,22 @@ local utils = import "templates/utils.libsonnet";
     schedule: '2 20 * * *',
   },
 
-  local tpuVm = experimental.PyTorchTpuVmTest,
+  local tpuVm = experimental.PyTorchTpuVmTest {
+    podTemplate+:: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            resources+: {
+              requests: {
+                cpu: "1",
+                memory: "2Gi",
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 
   configs: [
     resnet50_MP + v3_8 + convergence + timeouts.Hours(26) + mixins.PreemptibleTpu,

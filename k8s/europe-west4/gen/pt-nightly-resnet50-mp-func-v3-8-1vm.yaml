@@ -173,8 +173,8 @@
               "limits":
                 "tpu.googleapis.com/v3": 8
               "requests":
-                "cpu": "90.0"
-                "memory": "400Gi"
+                "cpu": "1"
+                "memory": "2Gi"
             "volumeMounts":
             - "mountPath": "/scripts"
               "name": "scripts"
