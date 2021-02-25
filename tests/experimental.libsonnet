@@ -154,7 +154,7 @@ local volumes = import 'templates/volumes.libsonnet';
   TpuVmTrainingTest:: self.TpuVmBaseTest {
     local config = self,
     tpuSettings+: {
-      tpuVmStartupScript: 'gcloud auth configure-docker && docker pull %(image)s' % config,
+      tpuVmCreateSleepSeconds: 60,
     },
     podTemplate+:: {
       spec+: {
@@ -181,6 +181,8 @@ local volumes = import 'templates/volumes.libsonnet';
               |||
                 set -x
                 set -u
+                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                  'gcloud auth configure-docker'
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                   'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \

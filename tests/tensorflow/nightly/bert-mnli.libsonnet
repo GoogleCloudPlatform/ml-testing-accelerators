@@ -98,6 +98,7 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local tpuVmProfilingCheck = experimental.TensorFlowTpuVmTest {
+    mode: "profile",
     command: utils.scriptCommand(|||
       %s
 

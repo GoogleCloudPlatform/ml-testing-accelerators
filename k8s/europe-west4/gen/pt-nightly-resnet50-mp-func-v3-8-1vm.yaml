@@ -123,6 +123,8 @@
               set -x
               set -u
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                'gcloud auth configure-docker'
+              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'sudo docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/dev/shm:/dev/shm" gcr.io/xl-ml-test/wcromar-pytorch-1vm:latest ''"python3" "pytorch/xla/test/test_train_mp_imagenet.py" "--logdir=$(MODEL_DIR)" "--model=resnet50" "--num_workers=8" "--batch_size=128" "--log_steps=200" "--num_epochs=2" "--fake_data"'
@@ -209,7 +211,7 @@
                   network_config: {enable_external_ips: true},
                   metadata: {
                     'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
-                    'startup-script': 'gcloud auth configure-docker && docker pull gcr.io/xl-ml-test/wcromar-pytorch-1vm:latest'
+                    'startup-script': 'echo Running startup script'
                   }
                 }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
               
@@ -230,7 +232,7 @@
               echo ${tpu_name} > /scripts/tpu_name
               gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(ipAddress)" > /scripts/tpu_ip
               
-              sleep 180
+              sleep 60
               
             "env":
             - "name": "POD_UID"
@@ -252,5 +254,5 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "dshm"
-  "schedule": "0 18 * * *"
+  "schedule": "30 1 * * *"
   "successfulJobsHistoryLimit": 1
