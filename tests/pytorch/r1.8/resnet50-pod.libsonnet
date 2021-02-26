@@ -27,6 +27,7 @@ local mixins = import "templates/mixins.libsonnet";
   },
   local resnet50_pod_func = common.PyTorchXlaDistPodTest {
     modelName: "resnet50-pod",
+    condaEnv: "torch-xla-1.8",
     command: [
       "python3",
       "/usr/share/torch-xla-1.8/pytorch/xla/test/test_train_mp_imagenet.py",
@@ -73,8 +74,7 @@ local mixins = import "templates/mixins.libsonnet";
     accelerator: tpus.v3_32,
   },
   configs: [
-    # TODO: Enable once new GCE conda env exists.
-    # resnet50_pod_func + v3_32 + functional,
+    resnet50_pod_func + v3_32 + functional,
     resnet50_pod + v3_32 + convergence,
   ],
 }
