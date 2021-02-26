@@ -96,6 +96,7 @@ local volumes = import 'templates/volumes.libsonnet';
               curl -X DELETE \
                 -H \"Authorization: Bearer \$(gcloud auth print-access-token)\" \
                 https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes/${tpu_name}
+              sleep 60
               " > /scripts/cleanup.sh
 
               curl -X POST \
