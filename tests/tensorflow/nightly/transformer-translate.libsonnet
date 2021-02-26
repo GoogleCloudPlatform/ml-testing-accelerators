@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import 'common.libsonnet';
-local gpus = import 'templates/gpus.libsonnet';
-local mixins = import 'templates/mixins.libsonnet';
-local timeouts = import 'templates/timeouts.libsonnet';
-local tpus = import 'templates/tpus.libsonnet';
+local common = import "common.libsonnet";
+local mixins = import "templates/mixins.libsonnet";
+local timeouts = import "templates/timeouts.libsonnet";
+local tpus = import "templates/tpus.libsonnet";
+local gpus = import "templates/gpus.libsonnet";
+local experimental = import "tests/experimental.libsonnet";
 
 {
   local transformer = common.ModelGardenTest {
@@ -122,6 +123,7 @@ local tpus = import 'templates/tpus.libsonnet';
       '--batch_size=24576',
     ],
   },
+  local tpuVm = experimental.TensorFlowTpuVmTest,
 
   configs: [
     transformer + k80 + functional_short + timeouts.Hours(6) + mixins.Suspended,
@@ -133,10 +135,12 @@ local tpus = import 'templates/tpus.libsonnet';
     transformer + k80 + convergence + mixins.Experimental,
     transformer + v100 + convergence + mixins.Experimental,
     transformer + v2_8 + functional,
+    transformer + v2_8 + functional + tpuVm,
     transformer + v3_8 + functional,
     transformer + v2_8 + convergence,
     transformer + v3_8 + convergence,
     transformer + v2_32 + functional,
+    transformer + v2_32 + functional + tpuVm,
     transformer + v3_32 + functional,
     transformer + v2_32 + convergence + tpus.reserved + { schedule: '10 20 * * 0,2,4' },
     transformer + v3_32 + convergence,
