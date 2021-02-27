@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import 'common.libsonnet';
-local gpus = import 'templates/gpus.libsonnet';
-local mixins = import 'templates/mixins.libsonnet';
-local timeouts = import 'templates/timeouts.libsonnet';
-local tpus = import 'templates/tpus.libsonnet';
+local common = import "common.libsonnet";
+local mixins = import "templates/mixins.libsonnet";
+local timeouts = import "templates/timeouts.libsonnet";
+local tpus = import "templates/tpus.libsonnet";
+local gpus = import "templates/gpus.libsonnet";
+local experimental = import "tests/experimental.libsonnet";
 
 {
   local maskrcnn = common.ModelGardenTest {
@@ -175,6 +176,7 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
+  local tpuVm = experimental.TensorFlowTpuVmTest,
 
   configs: [
     maskrcnn + functional + k80x8 + mixins.Suspended,
@@ -190,5 +192,7 @@ local tpus = import 'templates/tpus.libsonnet';
     maskrcnn + functional + v3_32,
     maskrcnn + convergence + v2_32 + tpus.reserved + { schedule: '0 22 * * 0,2,4' },
     maskrcnn + convergence + v3_32,
+    maskrcnn + functional + v3_8 + tpuVm,
+    maskrcnn + functional + v3_32 + tpuVm,
   ],
 }
