@@ -122,11 +122,13 @@
               set -x
               set -u
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                'sudo usermod -aG docker $USER'
+              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'gcloud auth configure-docker'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'sudo docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/lib/libtpu.so:/lib/libtpu.so" gcr.io/xl-ml-test/tensorflow-1vm:nightly ''"python3" "official/nlp/transformer/transformer_main.py" "--param_set=big" "--max_length=64" "--data_dir=$(TRANSFORMER_DIR)" "--vocab_file=$(TRANSFORMER_DIR)/vocab.ende.32768" "--bleu_source=$(TRANSFORMER_DIR)/newstest2014.en" "--bleu_ref=$(TRANSFORMER_DIR)/newstest2014.de" "--enable_tensorboard" "--model_dir=$(MODEL_DIR)" "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)" "--distribution_strategy=tpu" "--steps_between_evals=10000" "--static_batch=true" "--use_ctl=true" "--padded_decode=true" "--decode_batch_size=32" "--decode_max_length=97" "--batch_size=6144" "--train_steps=20000"'
+                'docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/lib/libtpu.so:/lib/libtpu.so" gcr.io/xl-ml-test/tensorflow-1vm:nightly ''"python3" "official/nlp/transformer/transformer_main.py" "--param_set=big" "--max_length=64" "--data_dir=$(TRANSFORMER_DIR)" "--vocab_file=$(TRANSFORMER_DIR)/vocab.ende.32768" "--bleu_source=$(TRANSFORMER_DIR)/newstest2014.en" "--bleu_ref=$(TRANSFORMER_DIR)/newstest2014.de" "--enable_tensorboard" "--model_dir=$(MODEL_DIR)" "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)" "--distribution_strategy=tpu" "--steps_between_evals=10000" "--static_batch=true" "--use_ctl=true" "--padded_decode=true" "--decode_batch_size=32" "--decode_max_length=97" "--batch_size=6144" "--train_steps=20000"'
               exit_code=$?
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) 'gsutil -m cp -r $(LOCAL_OUTPUT_DIR) $(MODEL_DIR)'
               bash /scripts/cleanup.sh

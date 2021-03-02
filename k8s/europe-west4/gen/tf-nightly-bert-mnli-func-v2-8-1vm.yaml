@@ -117,11 +117,13 @@
               set -x
               set -u
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                'sudo usermod -aG docker $USER'
+              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'gcloud auth configure-docker'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'sudo docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/lib/libtpu.so:/lib/libtpu.so" gcr.io/xl-ml-test/tensorflow-1vm:nightly ''"python3" "official/nlp/bert/run_classifier.py" "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)" "--steps_per_loop=1000" "--input_meta_data_path=/gcs/cloud-tpu-checkpoints/bert/classification/mnli_meta_data" "--train_data_path=/gcs/cloud-tpu-checkpoints/bert/classification/mnli_train.tf_record" "--eval_data_path=/gcs/cloud-tpu-checkpoints/bert/classification/mnli_eval.tf_record" "--bert_config_file=/gcs/cloud-tpu-checkpoints/bert/keras_bert/uncased_L-24_H-1024_A-16/bert_config.json" "--init_checkpoint=/gcs/cloud-tpu-checkpoints/bert/keras_bert/uncased_L-24_H-1024_A-16/bert_model.ckpt" "--learning_rate=3e-5" "--distribution_strategy=tpu" "--model_dir=$(LOCAL_OUTPUT_DIR)" "--train_batch_size=64" "--eval_batch_size=64" "--num_train_epochs=1"'
+                'docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/lib/libtpu.so:/lib/libtpu.so" gcr.io/xl-ml-test/tensorflow-1vm:nightly ''"python3" "official/nlp/bert/run_classifier.py" "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)" "--steps_per_loop=1000" "--input_meta_data_path=/gcs/cloud-tpu-checkpoints/bert/classification/mnli_meta_data" "--train_data_path=/gcs/cloud-tpu-checkpoints/bert/classification/mnli_train.tf_record" "--eval_data_path=/gcs/cloud-tpu-checkpoints/bert/classification/mnli_eval.tf_record" "--bert_config_file=/gcs/cloud-tpu-checkpoints/bert/keras_bert/uncased_L-24_H-1024_A-16/bert_config.json" "--init_checkpoint=/gcs/cloud-tpu-checkpoints/bert/keras_bert/uncased_L-24_H-1024_A-16/bert_model.ckpt" "--learning_rate=3e-5" "--distribution_strategy=tpu" "--model_dir=$(LOCAL_OUTPUT_DIR)" "--train_batch_size=64" "--eval_batch_size=64" "--num_train_epochs=1"'
               exit_code=$?
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) 'gsutil -m cp -r $(LOCAL_OUTPUT_DIR) $(MODEL_DIR)'
               bash /scripts/cleanup.sh

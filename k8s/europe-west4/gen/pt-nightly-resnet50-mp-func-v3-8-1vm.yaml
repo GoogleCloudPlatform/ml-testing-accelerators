@@ -123,11 +123,13 @@
               set -x
               set -u
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                'sudo usermod -aG docker $USER'
+              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'gcloud auth configure-docker'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'sudo docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/dev/shm:/dev/shm" gcr.io/xl-ml-test/wcromar-pytorch-1vm:latest ''"python3" "pytorch/xla/test/test_train_mp_imagenet.py" "--logdir=$(MODEL_DIR)" "--model=resnet50" "--num_workers=8" "--batch_size=128" "--log_steps=200" "--num_epochs=2" "--fake_data"'
+                'docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/dev/shm:/dev/shm" gcr.io/xl-ml-test/wcromar-pytorch-1vm:latest ''"python3" "pytorch/xla/test/test_train_mp_imagenet.py" "--logdir=$(MODEL_DIR)" "--model=resnet50" "--num_workers=8" "--batch_size=128" "--log_steps=200" "--num_epochs=2" "--fake_data"'
               exit_code=$?
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) 'gsutil -m cp -r $(LOCAL_OUTPUT_DIR) $(MODEL_DIR)'
               bash /scripts/cleanup.sh

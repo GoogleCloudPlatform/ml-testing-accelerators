@@ -123,11 +123,13 @@
               set -x
               set -u
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                'sudo usermod -aG docker $USER'
+              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'gcloud auth configure-docker'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'sudo docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/lib/libtpu.so:/lib/libtpu.so" --net host -e TPU_LOAD_LIBRARY=0 gcr.io/xl-ml-test/tensorflow-1vm:nightly ''"python3" "official/vision/image_classification/classifier_trainer.py" "--data_dir=/gcs/imagenet-europe-west4/train" "--model_type=efficientnet" "--dataset=imagenet" "--mode=train_and_eval" "--model_dir=$(LOCAL_OUTPUT_DIR)" "--params_override=\"evaluation\":
+                'docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/lib/libtpu.so:/lib/libtpu.so" --net host -e TPU_LOAD_LIBRARY=0 gcr.io/xl-ml-test/tensorflow-1vm:nightly ''"python3" "official/vision/image_classification/classifier_trainer.py" "--data_dir=/gcs/imagenet-europe-west4/train" "--model_type=efficientnet" "--dataset=imagenet" "--mode=train_and_eval" "--model_dir=$(LOCAL_OUTPUT_DIR)" "--params_override=\"evaluation\":
                 \"epochs_between_evals\": 1
               \"model\":
                 \"model_params\":

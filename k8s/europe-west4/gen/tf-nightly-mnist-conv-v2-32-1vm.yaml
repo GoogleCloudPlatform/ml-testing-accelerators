@@ -110,11 +110,13 @@
               set -x
               set -u
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                'sudo usermod -aG docker $USER'
+              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'gcloud auth configure-docker'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'sudo docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/lib/libtpu.so:/lib/libtpu.so" --net host -e TPU_LOAD_LIBRARY=0 gcr.io/xl-ml-test/tensorflow-1vm:nightly ''"python3" "official/vision/image_classification/mnist_main.py" "--data_dir=/tmp/mnist" "--model_dir=$(LOCAL_OUTPUT_DIR)" "--train_epochs=10" "--epochs_between_evals=10" "--download" "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"'
+                'docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/lib/libtpu.so:/lib/libtpu.so" --net host -e TPU_LOAD_LIBRARY=0 gcr.io/xl-ml-test/tensorflow-1vm:nightly ''"python3" "official/vision/image_classification/mnist_main.py" "--data_dir=/tmp/mnist" "--model_dir=$(LOCAL_OUTPUT_DIR)" "--train_epochs=10" "--epochs_between_evals=10" "--download" "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"'
               exit_code=$?
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) 'gsutil -m cp -r $(LOCAL_OUTPUT_DIR) $(MODEL_DIR)'
               bash /scripts/cleanup.sh
