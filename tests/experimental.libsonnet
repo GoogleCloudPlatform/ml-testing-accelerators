@@ -56,6 +56,10 @@ local volumes = import 'templates/volumes.libsonnet';
       // Additional arguments for test Docker container.
       tpuVmDockerArgs: '',
     },
+    jobSpec+:: {
+      // Disable retries
+      backoffLimit: 0,
+    },
     podTemplate+:: {
       spec+: {
         containerMap+:: {
@@ -113,18 +117,20 @@ local volumes = import 'templates/volumes.libsonnet';
                 }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
 
               echo "Waiting for TPU Pod ${tpu_name} to become ready..."
-              while [[ ${health:-NONE} != "READY" ]];
-                do sleep 10 && \
-                health=$(gcloud \
+              timeout 10m bash -c -- "
+              while [[ \${health:-NONE} != READY ]];
+                do sleep 60 && \
+                health=\$(gcloud \
                   --project=${project} \
                   compute \
                   tpus \
                   describe \
                   ${tpu_name} \
                   --zone=${zone} \
-                  --format="value(state)") && \
-                echo "Waiting for ready TPU (current state ${health:-NONE})...";
+                  --format='value(state)') && \
+                echo 'Waiting for ready TPU (current state \${health:-NONE})...';
               done
+              "
 
               echo ${tpu_name} > /scripts/tpu_name
               gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(ipAddress)" > /scripts/tpu_ip
