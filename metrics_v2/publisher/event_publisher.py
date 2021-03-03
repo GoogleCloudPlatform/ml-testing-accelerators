@@ -113,7 +113,7 @@ def create_test_completed_event(
   stackdriver_query = textwrap.dedent(f"""\
     resource.type=k8s_container
     resource.labels.project_id={project}
-    resource.labels.cluster_name=${cluster_name}
+    resource.labels.cluster_name={cluster_name}
     resource.labels.namespace_name={job.metadata.namespace}
     resource.labels.pod_name:{job.metadata.name}
     resource.labels.location:{cluster_location}
