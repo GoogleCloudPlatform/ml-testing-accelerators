@@ -55,15 +55,15 @@ local utils = import "templates/utils.libsonnet";
       ||| % {common: command_common, common_copy: command_copy_metrics}
     ),
     regressionTestConfig+: {
-      required_metrics: ['eval_mnli/acc', 'eval_mnli-mm/acc'],
+      required_metrics: ['eval_mnli/acc_final', 'eval_mnli-mm/acc_final'],
       metric_success_conditions+: {
-        "eval_mnli/acc": {
+        "eval_mnli/acc_final": {
           success_threshold: {
             fixed_value: 0.80,
           },
           comparison: "greater",
         },
-        "eval_mnli-mm/acc": {
+        "eval_mnli-mm/acc_final": {
           success_threshold: {
             fixed_value: 0.80,
           },
