@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-local cifarInline = import "cifar-inline.libsonnet";
-local cifarTorchvision = import "cifar-tv.libsonnet";
 local cppOperations = import "cpp-ops.libsonnet";
 local dlrm = import "dlrm.libsonnet";
 local fairseqRobertaPretrain = import "roberta-pre.libsonnet";
@@ -28,8 +26,6 @@ local huggingfaceLanguageModeling = import "hf-lm.libsonnet";
 
 # Add new models here
 std.flattenArrays([
-  cifarInline.configs,
-  cifarTorchvision.configs,
   cppOperations.configs,
   dlrm.configs,
   fairseqRobertaPretrain.configs,
