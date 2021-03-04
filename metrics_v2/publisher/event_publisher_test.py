@@ -82,7 +82,7 @@ class EventPublisherTest(parameterized.TestCase):
       duration=duration,
       labels={'benchmarkId': 'test-job'},
       debug_info=metrics_pb2.DebugInfo(
-        logs_link='https://console.cloud.google.com/logs?project=project-id&advancedFilter=resource.type%3Dk8s_container%0Aresource.labels.project_id%3Dproject-id%0Aresource.labels.cluster_name%3D%24cluster-name%0Aresource.labels.namespace_name%3Dnamespace%0Aresource.labels.pod_name%3Ajob-name%0Aresource.labels.location%3Acluster-location%0A',
+        logs_link='https://console.cloud.google.com/logs?project=project-id&advancedFilter=resource.type%3Dk8s_container%0Aresource.labels.project_id%3Dproject-id%0Aresource.labels.cluster_name%3Dcluster-name%0Aresource.labels.namespace_name%3Dnamespace%0Aresource.labels.pod_name%3Ajob-name%0Aresource.labels.location%3Acluster-location%0A',
         details_link=f'https://console.cloud.google.com/kubernetes/job/cluster-location/cluster-name/namespace/job-name?project=project-id'
       ),
       metric_collection_config=metrics_pb2.MetricCollectionConfig(),
