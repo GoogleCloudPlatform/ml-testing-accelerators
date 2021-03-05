@@ -72,15 +72,7 @@ local tpus = import "templates/tpus.libsonnet";
     accelerator: tpus.v3_32,
     command+: ['--batch_size=8192'],
   },
-  local tpuVmHack = experimental.TensorFlowTpuVmTest {
-    command+: [
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-    ],
-    flags+:: {
-      dataDir: '/gcs/imagenet-europe-west4/train',
-      modelDir: '$(LOCAL_OUTPUT_DIR)',
-    },
-  },
+  local tpuVmHack = experimental.TensorFlowTpuVmTest,
 
   configs: [
     resnet + v2_8 + functional,

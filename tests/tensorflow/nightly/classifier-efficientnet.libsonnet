@@ -148,12 +148,8 @@ local experimental = import "tests/experimental.libsonnet";
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
   },
-  local tpuVmExperimental = experimental.TensorFlowTpuVmTest {
-    flags+:: {
-      imageNetDir: '/gcs/imagenet-europe-west4/train',
-      modelDir: '$(LOCAL_OUTPUT_DIR)',
-    },
-  },
+  local tpuVmExperimental = experimental.TensorFlowTpuVmTest,
+
   configs: [
     efficientnet + k80x8 + functional + timeouts.Hours(4) + mixins.Suspended,
     efficientnet + k80x8 + convergence + mixins.Experimental,

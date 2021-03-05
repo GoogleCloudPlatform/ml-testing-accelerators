@@ -90,13 +90,7 @@ local utils = import 'templates/utils.libsonnet';
       '--eval_batch_size=256',
     ],
   },
-  local tpuVmHack = experimental.TensorFlowTpuVmTest {
-    flags+:: {
-      bertClassificationDir: '/gcs/cloud-tpu-checkpoints/bert/classification',
-      kerasBertDir: '/gcs/cloud-tpu-checkpoints/bert/keras_bert',
-      modelDir: '$(LOCAL_OUTPUT_DIR)',
-    },
-  },
+  local tpuVmHack = experimental.TensorFlowTpuVmTest,
   local tpuVmProfilingCheck = experimental.TensorFlowTpuVmTest {
     mode: "profile",
     command: utils.scriptCommand(|||

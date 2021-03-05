@@ -106,12 +106,11 @@
             - "--log_steps=50"
             - "--single_l2_loss_op=true"
             - "--use_tf_function=true"
-            - "--data_dir=/gcs/imagenet-europe-west4/train"
-            - "--model_dir=$(LOCAL_OUTPUT_DIR)"
+            - "--data_dir=$(IMAGENET_DIR)"
+            - "--model_dir=$(MODEL_DIR)"
             - "--batch_size=4096"
             - "--train_epochs=1"
             - "--epochs_between_evals=1"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
             "command":
             - "bash"
             - "-c"
@@ -125,7 +124,7 @@
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/lib/libtpu.so:/lib/libtpu.so" --net host -e TPU_LOAD_LIBRARY=0 gcr.io/xl-ml-test/tensorflow-1vm:nightly ''"python3" "official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py" "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)" "--distribution_strategy=tpu" "--use_synthetic_data=false" "--dtype=fp32" "--enable_eager=true" "--enable_tensorboard=true" "--log_steps=50" "--single_l2_loss_op=true" "--use_tf_function=true" "--data_dir=/gcs/imagenet-europe-west4/train" "--model_dir=$(LOCAL_OUTPUT_DIR)" "--batch_size=4096" "--train_epochs=1" "--epochs_between_evals=1" "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"'
+                'docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/lib/libtpu.so:/lib/libtpu.so" --net host -e TPU_LOAD_LIBRARY=0 gcr.io/xl-ml-test/tensorflow-1vm:nightly ''"python3" "official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py" "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)" "--distribution_strategy=tpu" "--use_synthetic_data=false" "--dtype=fp32" "--enable_eager=true" "--enable_tensorboard=true" "--log_steps=50" "--single_l2_loss_op=true" "--use_tf_function=true" "--data_dir=$(IMAGENET_DIR)" "--model_dir=$(MODEL_DIR)" "--batch_size=4096" "--train_epochs=1" "--epochs_between_evals=1"'
               exit_code=$?
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) 'gsutil -m cp -r $(LOCAL_OUTPUT_DIR) $(MODEL_DIR)'
               bash /scripts/cleanup.sh
