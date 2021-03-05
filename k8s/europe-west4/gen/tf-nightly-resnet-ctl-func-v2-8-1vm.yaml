@@ -245,6 +245,7 @@
               "name": "scripts"
           "nodeSelector":
             "tpu-available": "true"
+          "priorityClassName": "tpu-device"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":

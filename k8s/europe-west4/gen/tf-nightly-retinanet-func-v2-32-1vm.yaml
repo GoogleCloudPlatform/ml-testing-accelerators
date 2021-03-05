@@ -265,6 +265,7 @@
               "name": "scripts"
           "nodeSelector":
             "tpu-available": "true"
+          "priorityClassName": "tpu-pod"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":

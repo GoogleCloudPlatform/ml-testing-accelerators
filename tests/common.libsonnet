@@ -60,6 +60,9 @@ local metrics = import 'templates/metrics.libsonnet';
         else { },
       } + if config.accelerator.type == "gpu" then {
         priorityClassName: "gpu-%(version)s" % config.accelerator,
+      } else if config.accelerator.type == "tpu" then {
+        priorityClassName: if config.accelerator.replicas == 1 then
+          "tpu-device" else "tpu-pod"
       } else { },
     },
 
