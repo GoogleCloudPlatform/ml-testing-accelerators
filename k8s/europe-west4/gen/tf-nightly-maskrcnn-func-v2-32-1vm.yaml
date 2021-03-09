@@ -16,19 +16,19 @@
 "kind": "CronJob"
 "metadata":
   "labels":
-    "accelerator": "v3-32"
-    "benchmarkId": "tf-nightly-maskrcnn-func-v3-32-1vm"
+    "accelerator": "v2-32"
+    "benchmarkId": "tf-nightly-maskrcnn-func-v2-32-1vm"
     "frameworkVersion": "tf-nightly"
     "mode": "func"
     "model": "maskrcnn"
-  "name": "tf-nightly-maskrcnn-func-v3-32-1vm"
+  "name": "tf-nightly-maskrcnn-func-v2-32-1vm"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
       "annotations":
-        "ml-testing-accelerators/gcs-subdir": "tf-nightly/maskrcnn/func/v3-32"
+        "ml-testing-accelerators/gcs-subdir": "tf-nightly/maskrcnn/func/v2-32"
         "ml-testing-accelerators/metric-config": |
           {
             "sources": [
@@ -79,8 +79,8 @@
             ]
           }
       "labels":
-        "accelerator": "v3-32"
-        "benchmarkId": "tf-nightly-maskrcnn-func-v3-32-1vm"
+        "accelerator": "v2-32"
+        "benchmarkId": "tf-nightly-maskrcnn-func-v2-32-1vm"
         "frameworkVersion": "tf-nightly"
         "mode": "func"
         "model": "maskrcnn"
@@ -110,7 +110,7 @@
               "predict":
                 "batch_size": 40
               "train":
-                "batch_size": 256
+                "batch_size": 64
                 "checkpoint":
                   "path": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
                   "prefix": "resnet50/"
@@ -145,7 +145,7 @@
               \"predict\":
                 \"batch_size\": 40
               \"train\":
-                \"batch_size\": 256
+                \"batch_size\": 64
                 \"checkpoint\":
                   \"path\": \"$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07\"
                   \"prefix\": \"resnet50/\"
@@ -175,7 +175,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/maskrcnn/func/v3-32/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/maskrcnn/func/v2-32/$(JOB_NAME)"
             - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
               "value": "tpu-$(POD_UID)"
             - "name": "LOCAL_OUTPUT_DIR"
@@ -194,7 +194,7 @@
             "name": "train"
             "resources":
               "limits":
-                "tpu.googleapis.com/v3": 32
+                "tpu.googleapis.com/v2": 32
               "requests":
                 "cpu": 2
                 "memory": "20G"
@@ -230,7 +230,7 @@
                 -H "Authorization: Bearer $(gcloud auth print-access-token)" \
                 -H "Content-Type: application/json" \
                 -d "{
-                  accelerator_type: 'v3-32',
+                  accelerator_type: 'v2-32',
                   runtime_version: 'v2-nightly-pod',
                   network_config: {enable_external_ips: true},
                   metadata: {
