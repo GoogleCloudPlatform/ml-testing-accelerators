@@ -21,10 +21,14 @@ local tpus = import "templates/tpus.libsonnet";
   local mnist = common.PyTorchTest {
     imageTag: "nightly_3.7",
     modelName: "mnist-3-7",
+    volumeMap+: {
+      datasets: common.datasetsVolume,
+    },
     command: [
       "python3",
       "pytorch/xla/test/test_train_mp_mnist.py",
       "--logdir=$(MODEL_DIR)",
+      "--datadir=/datasets/mnist-data",
     ],
   },
 

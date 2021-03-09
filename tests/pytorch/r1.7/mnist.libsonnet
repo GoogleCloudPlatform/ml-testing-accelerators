@@ -21,10 +21,14 @@ local utils = import "templates/utils.libsonnet";
 {
   local mnist = common.PyTorchTest {
     modelName: "mnist",
+    volumeMap+: {
+      datasets: common.datasetsVolume,
+    },
     command: [
       "python3",
       "pytorch/xla/test/test_train_mp_mnist.py",
       "--logdir=$(MODEL_DIR)",
+      "--datadir=/datasets/mnist-data",
     ],
   },
 
@@ -35,6 +39,7 @@ local utils = import "templates/utils.libsonnet";
       "python3",
       "/usr/share/torch-xla-1.7/pytorch/xla/test/test_train_mp_mnist.py",
       "--logdir=$(MODEL_DIR)",
+      "--fake_data",
     ],
   },
 
