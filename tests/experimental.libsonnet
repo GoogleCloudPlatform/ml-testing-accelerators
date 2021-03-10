@@ -182,6 +182,7 @@ local volumes = import 'templates/volumes.libsonnet';
                 ),
               ),
             },
+            args: null,
             command: [
               'bash',
               '-c',

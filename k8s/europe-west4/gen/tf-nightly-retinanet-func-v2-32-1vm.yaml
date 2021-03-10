@@ -94,29 +94,7 @@
             "tf-version.cloud-tpus.google.com": "v2-nightly-pod"
         "spec":
           "containers":
-          - "args":
-            - "python3"
-            - "official/vision/detection/main.py"
-            - |
-              --params_override="architecture":
-                "use_bfloat16": true
-              "eval":
-                "batch_size": 256
-                "eval_file_pattern": "$(COCO_DIR)/val*"
-                "val_json_file": "$(COCO_DIR)/instances_val2017.json"
-              "predict":
-                "batch_size": 256
-              "train":
-                "batch_size": 256
-                "checkpoint":
-                  "path": "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07"
-                  "prefix": "resnet50/"
-                "total_steps": 1000
-                "train_file_pattern": "$(COCO_DIR)/train*"
-            - "--model_dir=$(MODEL_DIR)"
-            - "--mode=train"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--strategy_type=tpu"
+          - "args": null
             "command":
             - "bash"
             - "-c"

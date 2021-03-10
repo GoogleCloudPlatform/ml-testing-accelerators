@@ -106,16 +106,7 @@
             "tf-version.cloud-tpus.google.com": "v2-nightly"
         "spec":
           "containers":
-          - "args":
-            - "python3"
-            - "pytorch/xla/test/test_train_mp_imagenet.py"
-            - "--logdir=$(MODEL_DIR)"
-            - "--model=resnet50"
-            - "--num_workers=8"
-            - "--batch_size=128"
-            - "--log_steps=200"
-            - "--num_epochs=2"
-            - "--fake_data"
+          - "args": null
             "command":
             - "bash"
             - "-c"

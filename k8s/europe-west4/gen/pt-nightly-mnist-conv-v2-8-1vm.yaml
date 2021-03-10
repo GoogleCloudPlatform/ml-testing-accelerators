@@ -118,10 +118,7 @@
             "tf-version.cloud-tpus.google.com": "v2-nightly"
         "spec":
           "containers":
-          - "args":
-            - "python3"
-            - "pytorch/xla/test/test_train_mp_mnist.py"
-            - "--logdir="
+          - "args": null
             "command":
             - "bash"
             - "-c"

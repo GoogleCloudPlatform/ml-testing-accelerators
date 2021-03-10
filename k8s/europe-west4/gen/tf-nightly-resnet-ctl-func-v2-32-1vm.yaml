@@ -94,23 +94,7 @@
             "tf-version.cloud-tpus.google.com": "v2-nightly-pod"
         "spec":
           "containers":
-          - "args":
-            - "python3"
-            - "official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--distribution_strategy=tpu"
-            - "--use_synthetic_data=false"
-            - "--dtype=fp32"
-            - "--enable_eager=true"
-            - "--enable_tensorboard=true"
-            - "--log_steps=50"
-            - "--single_l2_loss_op=true"
-            - "--use_tf_function=true"
-            - "--data_dir=$(IMAGENET_DIR)"
-            - "--model_dir=$(MODEL_DIR)"
-            - "--batch_size=4096"
-            - "--train_epochs=1"
-            - "--epochs_between_evals=1"
+          - "args": null
             "command":
             - "bash"
             - "-c"

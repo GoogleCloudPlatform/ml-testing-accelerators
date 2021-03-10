@@ -94,22 +94,7 @@
             "tf-version.cloud-tpus.google.com": "v2-nightly-pod"
         "spec":
           "containers":
-          - "args":
-            - "python3"
-            - "official/nlp/bert/run_classifier.py"
-            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
-            - "--steps_per_loop=1000"
-            - "--input_meta_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_meta_data"
-            - "--train_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_train.tf_record"
-            - "--eval_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_eval.tf_record"
-            - "--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_config.json"
-            - "--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_model.ckpt"
-            - "--learning_rate=3e-5"
-            - "--distribution_strategy=tpu"
-            - "--model_dir=$(MODEL_DIR)"
-            - "--train_batch_size=256"
-            - "--eval_batch_size=256"
-            - "--num_train_epochs=1"
+          - "args": null
             "command":
             - "bash"
             - "-c"
