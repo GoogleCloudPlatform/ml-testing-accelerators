@@ -13,7 +13,9 @@
 # limitations under the License.
 
 local unitTests = import 'unit-tests.libsonnet';
+local podTest = import 'pod-test.libsonnet';
 
 std.flattenArrays([
   unitTests.configs,
+  podTest.configs,
 ])

@@ -17,18 +17,18 @@
 "metadata":
   "labels":
     "accelerator": "v2-32"
-    "benchmarkId": "tf-nightly-ncf-func-v2-32-1vm"
-    "frameworkVersion": "tf-nightly"
+    "benchmarkId": "jax-pod-latest-libtpu-nightly-func-v2-32-1vm"
+    "frameworkVersion": "jax"
     "mode": "func"
-    "model": "ncf"
-  "name": "tf-nightly-ncf-func-v2-32-1vm"
+    "model": "pod-latest-libtpu-nightly"
+  "name": "jax-pod-latest-libtpu-nightly-func-v2-32-1vm"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
       "annotations":
-        "ml-testing-accelerators/gcs-subdir": "tf-nightly/ncf/func/v2-32"
+        "ml-testing-accelerators/gcs-subdir": "jax/pod-latest-libtpu-nightly/func/v2-32"
         "ml-testing-accelerators/metric-config": |
           {
             "sources": [
@@ -49,18 +49,7 @@
               {
                 "tensorboard": {
                   "aggregate_assertions": [
-                    {
-                      "assertion": {
-                        "inclusive_bounds": true,
-                        "std_devs_from_mean": {
-                          "comparison": "GREATER",
-                          "std_devs": 4
-                        },
-                        "wait_for_n_data_points": 0
-                      },
-                      "strategy": "AVERAGE",
-                      "tag": "examples_per_second"
-                    }
+          
                   ],
                   "exclude_tags": [
           
@@ -73,17 +62,17 @@
                       "tag_pattern": "*"
                     }
                   ],
-                  "merge_runs": false
+                  "merge_runs": true
                 }
               }
             ]
           }
       "labels":
         "accelerator": "v2-32"
-        "benchmarkId": "tf-nightly-ncf-func-v2-32-1vm"
-        "frameworkVersion": "tf-nightly"
+        "benchmarkId": "jax-pod-latest-libtpu-nightly-func-v2-32-1vm"
+        "frameworkVersion": "jax"
         "mode": "func"
-        "model": "ncf"
+        "model": "pod-latest-libtpu-nightly"
     "spec":
       "activeDeadlineSeconds": 3600
       "backoffLimit": 0
@@ -91,26 +80,77 @@
         "metadata":
           "annotations":
             "reserved.cloud-tpus.google.com": "false"
-            "tf-version.cloud-tpus.google.com": "v2-nightly-pod"
+            "tf-version.cloud-tpus.google.com": "v2-nightly"
         "spec":
           "containers":
-          - "args": null
-            "command":
+          - "args":
             - "bash"
             - "-c"
             - |
-              set -x
               set -u
-              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'sudo usermod -aG docker $USER'
-              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'gcloud auth configure-docker'
-              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
-              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/lib/libtpu.so:/lib/libtpu.so" --net host -e TPU_LOAD_LIBRARY=0 gcr.io/xl-ml-test/tensorflow-1vm:nightly ''"python3" "official/recommendation/ncf_keras_main.py" "--train_dataset_path=$(NCF_DIR)/tpu_data_dir/training_cycle_*/*" "--eval_dataset_path=$(NCF_DIR)/tpu_data_dir/eval_data/*" "--input_meta_data_path=$(NCF_DIR)/tpu_data_dir/metadata" "--data_dir=$(NCF_DIR)/movielens_data" "--batch_size=99000" "--learning_rate=3e-5" "--dataset=ml-20m" "--eval_batch_size=160000" "--learning_rate=0.00382059" "--beta1=0.783529" "--beta2=0.909003" "--epsilon=1.45439e-07" "--num_factors=64" "--hr_threshold=0.635" "--layers=256,256,128,64" "--use_synthetic_data=false" "--model_dir=$(MODEL_DIR)" "--train_epochs=1" "--ml_perf=true" "--keras_use_ctl=true"'
-              exit_code=$?
-              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) 'gsutil -m cp -r $(LOCAL_OUTPUT_DIR) $(MODEL_DIR)'
+              # Asynchronously run testScript on each host via ssh, log each host's
+              # output, and collect process IDs.
+              pids=()
+              for tpu_ip in $(cat /scripts/all_tpu_ips)
+              do
+                echo "Starting test script on TPU host $tpu_ip..."
+                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$tpu_ip \
+                    > /tmp/$tpu_ip.log 2>&1 <<'TEST_SCRIPT_EOF' &
+                  set -x
+              set -u
+              set -e
+              
+              echo "Checking out and installing JAX..."
+              git clone https://github.com/google/jax.git
+              cd jax
+              echo "jax git hash: $(git rev-parse HEAD)"
+              pip install -e .
+              
+              pip install --upgrade jaxlib
+              python3 -c 'import jaxlib; print("jaxlib version:", jaxlib.__version__)'
+              
+              
+              # Very basic smoke test
+              python3 -c "import jax; assert jax.device_count() == 32, jax.device_count()"
+              
+              # Slightly-less-basic smoke test
+              python3 <<'EOF'
+              import jax
+              import jax.numpy as jnp
+              x = jnp.ones(jax.local_device_count())
+              y = jax.pmap(lambda x: jax.lax.psum(x, 'i'), axis_name='i')(x)
+              print(y)
+              assert jnp.array_equal(y, x * jax.device_count())
+              EOF
+              
+              TEST_SCRIPT_EOF
+                pids+=( $! )
+                echo "pid: ${pids[-1]}"
+              done
+              
+              # Wait for each host's ssh process to complete and collect exit codes.
+              # We'll return an error if any process failed.
+              exit_code=0
+              for pid in ${pids[@]}
+              do
+                echo "Waiting for pid $pid to complete..."
+                wait $pid
+                pid_exit_code=$?
+                echo "exit code: $pid_exit_code"
+                if [ "$pid_exit_code" -ne "0" ]
+                then
+                  exit_code=$pid_exit_code
+                fi
+              done
+              
+              # Output each host's log so it shows up in the GKE logs.
+              for tpu_ip in $(cat /scripts/all_tpu_ips)
+              do
+                echo "========== output for TPU host $tpu_ip =========="
+                cat /tmp/$tpu_ip.log
+                echo "========== end of output for TPU host $tpu_ip =========="
+              done
+              
               bash /scripts/cleanup.sh
               exit $exit_code
             "env":
@@ -131,11 +171,9 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/ncf/func/v2-32/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/jax/pod-latest-libtpu-nightly/func/v2-32/$(JOB_NAME)"
             - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
               "value": "tpu-$(POD_UID)"
-            - "name": "LOCAL_OUTPUT_DIR"
-              "value": "/tmp/model_dir"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
@@ -151,15 +189,9 @@
             "resources":
               "limits":
                 "tpu.googleapis.com/v2": 32
-              "requests":
-                "cpu": 2
-                "memory": "20G"
             "volumeMounts":
             - "mountPath": "/scripts"
               "name": "scripts"
-              "readOnly": false
-            - "mountPath": "/dev/shm"
-              "name": "dshm"
               "readOnly": false
           "initContainers":
           - "command":
@@ -187,7 +219,7 @@
                 -H "Content-Type: application/json" \
                 -d "{
                   accelerator_type: 'v2-32',
-                  runtime_version: 'v2-nightly-pod',
+                  runtime_version: 'v2-nightly',
                   network_config: {enable_external_ips: true},
                   metadata: {
                     'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
@@ -235,8 +267,5 @@
           - "emptyDir":
               "medium": "Memory"
             "name": "scripts"
-          - "emptyDir":
-              "medium": "Memory"
-            "name": "dshm"
   "schedule": "30 13 * * *"
   "successfulJobsHistoryLimit": 1

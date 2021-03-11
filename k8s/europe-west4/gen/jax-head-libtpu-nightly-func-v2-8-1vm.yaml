@@ -89,12 +89,18 @@
             - |
               set -x
               set -u
-              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) << 'EOF'
+              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no \
+                  xl-ml-test@$(cat /scripts/tpu_ip) << 'TEST_SCRIPT_EOF'
                 set -x
               set -u
               set -e
+              
+              # .bash_logout sometimes causes a spurious bad exit code, remove it.
+              rm .bash_logout
+              
               pip install --upgrade pip
-              pip install --upgrade numpy==1.18.5 scipy wheel future six cython pytest absl-py opt-einsum msgpack
+              pip install --upgrade numpy==1.18.5 scipy wheel future six cython pytest \
+                  absl-py opt-einsum msgpack
               
               echo "Checking out and installing JAX..."
               git clone https://github.com/google/jax.git
@@ -127,7 +133,7 @@
               python3 -u -m pytest --tb=short tests examples | sed 's/Captured stdout call/output/'
               exit ${PIPESTATUS[0]}
               
-              EOF
+              TEST_SCRIPT_EOF
               exit_code=$?
               bash /scripts/cleanup.sh
               exit $exit_code
@@ -223,6 +229,7 @@
               
               echo ${tpu_name} > /scripts/tpu_name
               gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(ipAddress)" > /scripts/tpu_ip
+              gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --flatten="networkEndpoints[]" --format="csv[no-heading](networkEndpoints.ipAddress)" > /scripts/all_tpu_ips
               
               sleep 60
               
