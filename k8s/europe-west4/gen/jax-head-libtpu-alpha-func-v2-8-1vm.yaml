@@ -117,7 +117,7 @@
               
               echo "Building JAX..."
               cd ~/jax
-              python3 build/build.py --bazel_options="--override_repository=org_tensorflow=$HOME/tensorflow"
+              python3 build/build.py --enable_tpu --bazel_options="--override_repository=org_tensorflow=$HOME/tensorflow"
               pip install dist/*.whl
               
               
