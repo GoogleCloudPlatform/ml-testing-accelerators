@@ -30,9 +30,11 @@ local utils = import "templates/utils.libsonnet";
       "python3",
       "pytorch/xla/test/test_train_mp_mnist.py",
       "--logdir=%s" % self.flags.modelDir,
+      "%s" % self.flags.dataset,
     ],
     flags:: {
-      modelDir: "$(MODEL_DIR)"
+      modelDir: "$(MODEL_DIR)",
+      dataset: "--datadir=/datasets/mnist-data"
     },
   },
 
@@ -88,15 +90,18 @@ local utils = import "templates/utils.libsonnet";
   },
 
   local tpuVm = experimental.PyTorchTpuVmTest {
-    flags+:: {
-      # HACK: this test crashes when given a real logdir
-      modelDir: "",
-    },
+    command: utils.scriptCommand(
+      |||
+        git clone https://github.com/pytorch/xla.git
+        python3 xla/test/test_train_mp_mnist.py --logdir='' --datadir=/datasets/mnist-data
+      |||
+    ),
   },
 
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1),
     mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
+    mnist + convergence + v3_8 + timeouts.Hours(1) + tpuVm,
     mnist + convergence + v3_8 + timeouts.Hours(1),
     mnist_gpu + convergence + v100 + timeouts.Hours(1),
     mnist_gpu + convergence + v100x4 + timeouts.Hours(1),

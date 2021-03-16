@@ -103,6 +103,12 @@ local utils = import "templates/utils.libsonnet";
       },
     },
   },
+  local functional = common.Functional {
+    command+: [
+      "--num_epochs=2",
+      "--datadir=/datasets/imagenet-mini",
+    ],
+  },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
@@ -123,8 +129,26 @@ local utils = import "templates/utils.libsonnet";
     ),
     schedule: '2 20 * * *',
   },
-
-  local tpuVm = experimental.PyTorchTpuVmTest {
+  local resnet50_tpu_vm = experimental.PyTorchTpuVmTest {
+    modelName: "resnet50-mp",
+    paramsOverride: {
+      num_epochs: error "Must set `num_epochs`",
+      datadir: error "Must set `datadir`",
+    },
+    command: utils.scriptCommand(
+      |||
+        git clone https://github.com/pytorch/xla.git
+        pip3 install tensorboardX google-cloud-storage
+        python3 xla/test/test_train_mp_imagenet.py \
+          --logdir=$(MODEL_DIR) \
+          --datadir=%(datadir)s \
+          --model=resnet50 \
+          --num_workers=8 \
+          --batch_size=128 \
+          --log_steps=200 \
+          --num_epochs=%(num_epochs)d \
+      ||| % self.paramsOverride,
+    ),
     podTemplate+:: {
       spec+: {
         containerMap+: {
@@ -140,11 +164,34 @@ local utils = import "templates/utils.libsonnet";
       },
     },
   },
-
+  local functional_tpu_vm = common.Functional {
+    paramsOverride: {
+      num_epochs: 2,
+      datadir: "/datasets/imagenet-mini",
+    },
+  },
+  local convergence_tpu_vm = common.Convergence {
+    paramsOverride: {
+      num_epochs: 5,
+      datadir: "/datasets/imagenet",
+    },
+    regressionTestConfig+: {
+      metric_success_conditions+: {
+        "Accuracy/test_final": {
+          success_threshold: {
+            fixed_value: 75.0,
+          },
+          comparison: "greater",
+        },
+      },
+    },
+  },
   configs: [
     resnet50_MP + v3_8 + convergence + timeouts.Hours(26) + mixins.PreemptibleTpu,
     resnet50_MP + v3_8 + functional + timeouts.Hours(2),
-    resnet50_MP + v3_8 + functional_fake_data + timeouts.Hours(2) + tpuVm,
+    common.PyTorchTest + resnet50_tpu_vm + v3_8 + functional_tpu_vm + timeouts.Hours(2),
+    # Need to figure out imagenet slowness: b/182915380
+    #common.PyTorchTest + resnet50_tpu_vm + v3_8 + convergence_tpu_vm + timeouts.Hours(4),
     resnet50_gpu + common.Functional + v100 + timeouts.Hours(2),
     resnet50_gpu + common.Functional + v100x4 + timeouts.Hours(1),
   ],

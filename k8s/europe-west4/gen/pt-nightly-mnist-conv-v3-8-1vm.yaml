@@ -17,18 +17,18 @@
 "metadata":
   "labels":
     "accelerator": "v3-8"
-    "benchmarkId": "pt-nightly-resnet50-mp-func-v3-8-1vm"
+    "benchmarkId": "pt-nightly-mnist-conv-v3-8-1vm"
     "frameworkVersion": "pt-nightly"
-    "mode": "func"
-    "model": "resnet50-mp"
-  "name": "pt-nightly-resnet50-mp-func-v3-8-1vm"
+    "mode": "conv"
+    "model": "mnist"
+  "name": "pt-nightly-mnist-conv-v3-8-1vm"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
       "annotations":
-        "ml-testing-accelerators/gcs-subdir": "pt-nightly/resnet50-mp/func/v3-8"
+        "ml-testing-accelerators/gcs-subdir": "pt-nightly/mnist/conv/v3-8"
         "ml-testing-accelerators/metric-config": |
           {
             "sources": [
@@ -49,6 +49,18 @@
               {
                 "tensorboard": {
                   "aggregate_assertions": [
+                    {
+                      "assertion": {
+                        "fixed_value": {
+                          "comparison": "GREATER",
+                          "value": 98
+                        },
+                        "inclusive_bounds": false,
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "FINAL",
+                      "tag": "Accuracy/test"
+                    },
                     {
                       "assertion": {
                         "inclusive_bounds": false,
@@ -92,12 +104,12 @@
           }
       "labels":
         "accelerator": "v3-8"
-        "benchmarkId": "pt-nightly-resnet50-mp-func-v3-8-1vm"
+        "benchmarkId": "pt-nightly-mnist-conv-v3-8-1vm"
         "frameworkVersion": "pt-nightly"
-        "mode": "func"
-        "model": "resnet50-mp"
+        "mode": "conv"
+        "model": "mnist"
     "spec":
-      "activeDeadlineSeconds": 7200
+      "activeDeadlineSeconds": 3600
       "backoffLimit": 0
       "template":
         "metadata":
@@ -124,15 +136,7 @@
               set -x
               
               git clone https://github.com/pytorch/xla.git
-              pip3 install tensorboardX google-cloud-storage
-              python3 xla/test/test_train_mp_imagenet.py \
-                --logdir=$(MODEL_DIR) \
-                --datadir=/datasets/imagenet-mini \
-                --model=resnet50 \
-                --num_workers=8 \
-                --batch_size=128 \
-                --log_steps=200 \
-                --num_epochs=2 \
+              python3 xla/test/test_train_mp_mnist.py --logdir='' --datadir=/datasets/mnist-data
               
               
               TEST_SCRIPT_EOF
@@ -157,7 +161,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/resnet50-mp/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-nightly/mnist/conv/v3-8/$(JOB_NAME)"
             - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
               "value": "local"
             - "name": "LOCAL_OUTPUT_DIR"
@@ -180,8 +184,8 @@
               "limits":
                 "tpu.googleapis.com/v3": 8
               "requests":
-                "cpu": "1"
-                "memory": "2Gi"
+                "cpu": "4.5"
+                "memory": "8Gi"
             "volumeMounts":
             - "mountPath": "/scripts"
               "name": "scripts"

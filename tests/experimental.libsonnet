@@ -220,12 +220,55 @@ local volumes = import 'templates/volumes.libsonnet';
         '-v "/lib/libtpu.so:/lib/libtpu.so" --net host -e TPU_LOAD_LIBRARY=0',
     },
   },
-  PyTorchTpuVmTest:: self.TpuVmTrainingTest {
+  PyTorchTpuVmTest:: self.TpuVmBaseTest {
     image: 'gcr.io/xl-ml-test/wcromar-pytorch-1vm:latest',
+    local config = self,
     tpuSettings+: {
-      tpuVmDockerArgs: '-v "/dev/shm:/dev/shm"'
+      tpuVmCreateSleepSeconds: 60,
     },
+    podTemplate+:: {
+      spec+: {
+        containerMap+:: {
+          monitor: null,
+          train+: {
+            local scriptSettings = {
+              testCommand:
+                std.join(
+                  ' ',
+                  config.command,
+                ),
+            },
+            envMap+:: {
+              'LOCAL_OUTPUT_DIR': '/tmp/model_dir',
+            },
+            args: null,
+            // PyTorch tests are structured as bash scripts that run directly
+            // on the Cloud TPU VM instead of using docker images.
+            command: [
+              'bash',
+              '-c',
+              |||
+                set -x
+                set -u
+                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                  'sudo apt-get -y update && sudo apt-get -y install nfs-common git'
+                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                  'sudo mkdir /datasets && sudo mount 10.166.46.250:/pytorch_datasets /datasets'
+                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) << 'TEST_SCRIPT_EOF'
+                  export XRT_TPU_CONFIG='localservice;0;localhost:51011'
+                  %(testCommand)s
+                TEST_SCRIPT_EOF
+                exit_code=$?
+                bash /scripts/cleanup.sh
+                exit $exit_code
+              ||| % scriptSettings,
+            ],
+          }
+        }
+      }
+    }
   },
+
   TensorflowServingTpuVmTest:: self.TpuVmBaseTest {
     local config = self,
     image: 'gcr.io/xl-ml-test/allencwang-tf-serving-tpu:latest',

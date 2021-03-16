@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import 'common.libsonnet';
-local timeouts = import 'templates/timeouts.libsonnet';
-local tpus = import 'templates/tpus.libsonnet';
-local utils = import 'templates/utils.libsonnet';
+local common = import "common.libsonnet";
+local experimental = import "tests/experimental.libsonnet";
+local timeouts = import "templates/timeouts.libsonnet";
+local tpus = import "templates/tpus.libsonnet";
+local utils = import "templates/utils.libsonnet";
 
 {
-  local command_common = |||
-    python3 \
-      /tpu-examples/deps/fairseq/train.py \
+  local common_flags = |||
       /datasets/wmt18_en_de_bpej32k \
       --metrics_debug \
       --arch=transformer_vaswani_wmt_en_de_big \
@@ -46,12 +45,13 @@ local utils = import 'templates/utils.libsonnet';
       --num_cores=8 \
   |||,
   local chpt_command_common = |||
-    %(command_common)s  --log_steps=10 \
-      --train-subset=test \
-      --valid-subset=valid \
-      --save-interval=1 \
-      --input_shapes=128x64 \
-  ||| % command_common,
+    python3 tpu-examples/deps/fairseq/train.py \
+      %(common_flags)s  --log_steps=10 \
+        --train-subset=test \
+        --valid-subset=valid \
+        --save-interval=1 \
+        --input_shapes=128x64 \
+  ||| % common_flags,
   local transformer = {
     modelName: 'fs-transformer',
     volumeMap+: {
@@ -148,38 +148,44 @@ local utils = import 'templates/utils.libsonnet';
   local functional = common.Functional {
     command: utils.scriptCommand(
       |||
-        %(command_common)s  --no-save \
+        python3 tpu-examples/deps/fairseq/train.py \
+          %(common_flags)s  --no-save \
           --max-epoch=1 \
           --log_steps=10 \
           --train-subset=valid \
           --valid-subset=test \
           --input_shapes=128x64
-      ||| % command_common,
+      ||| % common_flags
     ),
   },
+  local conv_command_common = |||
+    %(common_flags)s  --save-interval=5 \
+      --save-dir=/tmp/checkpoints \
+      --max-epoch=25 \
+      --log_steps=200 \
+      --train-subset=train \
+      --valid-subset=valid \
+      --input_shapes 256x64 512x32 \
+      2>&1 | tee training_logs.txt
+    bleu=`fairseq-generate \
+      /datasets/wmt18_en_de_bpej32k \
+      --remove-bpe --quiet --lenpen 0.6 --beam 4 \
+      --path /tmp/checkpoints/checkpoint25.pt \
+      --skip-invalid-size-inputs-valid-test | grep BLEU \
+      | grep -v loadi | tail -1 | cut -d '=' -f 3| cut -d'.' -f 1`
+    echo 'BLEU score is' $bleu
+    wps=$(cat training_logs.txt | grep '| wps ' | tail -1 | grep -o -E ' wps [0-9]+' | sed 's/[^0-9]*//g')
+    echo 'final words per second (wps) is' $wps
+    test $bleu -gt 27 -a $wps -gt 10000
+  ||| % common_flags,
+
   local convergence = common.Convergence {
     command: utils.scriptCommand(
       |||
         pip install --editable /tpu-examples/deps/fairseq
-        %(command_common)s  --save-interval=5 \
-          --save-dir=/tmp/checkpoints \
-          --max-epoch=25 \
-          --log_steps=200 \
-          --train-subset=train \
-          --valid-subset=valid \
-          --input_shapes 256x64 512x32 \
-          2>&1 | tee training_logs.txt
-        bleu=`fairseq-generate \
-           /datasets/wmt18_en_de_bpej32k \
-           --remove-bpe --quiet --lenpen 0.6 --beam 4 \
-           --path /tmp/checkpoints/checkpoint25.pt \
-           --skip-invalid-size-inputs-valid-test | grep BLEU \
-           | grep -v loadi | tail -1 | cut -d '=' -f 3| cut -d'.' -f 1`
-        echo 'BLEU score is' $bleu
-        wps=$(cat training_logs.txt | grep '| wps ' | tail -1 | grep -o -E ' wps [0-9]+' | sed 's/[^0-9]*//g')
-        echo 'final words per second (wps) is' $wps
-        test $bleu -gt 27 -a $wps -gt 10000
-      ||| % command_common
+        python3 tpu-examples/deps/fairseq/train.py \
+          %(conv_command_common)s
+      ||| % conv_command_common
     ),
     podTemplate+:: {
       spec+: {
@@ -193,6 +199,33 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  local convergence_tpu_vm = common.Convergence {
+    modelName: "fs-transformer",
+    regressionTestConfig: {
+      "metric_subset_to_alert": [
+        "total_wall_time",
+      ],
+      "metric_success_conditions": {
+        "total_wall_time": {
+          "comparison": "less",
+          "success_threshold": {
+            "stddevs_from_mean": 5
+          },
+          "wait_for_n_points_of_history": 10
+        }
+      }
+    },
+    command: utils.scriptCommand(
+      |||
+        git clone --recursive https://github.com/pytorch-tpu/examples.git
+        pip install --editable examples/deps/fairseq
+        export PATH=~/.local/bin:$PATH
+        export XLA_USE_BF16=1
+        python3 examples/deps/fairseq/train.py \
+          %(conv_command_common)s
+      ||| % conv_command_common
+    ),
+  },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
@@ -203,6 +236,7 @@ local utils = import 'templates/utils.libsonnet';
     common.PyTorchXlaDistPodTest + transformer + v3_32 + functional_xla_dist + timeouts.Hours(1),
     common.PyTorchTest + transformer + v3_8 + functional + timeouts.Hours(1),
     common.PyTorchTest + transformer + v3_8 + convergence + timeouts.Hours(25),
+    common.PyTorchTest + v3_8 + convergence_tpu_vm + timeouts.Hours(25) + experimental.PyTorchTpuVmTest,
     common.PyTorchTest + transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
     common.PyTorchTest + transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
   ],

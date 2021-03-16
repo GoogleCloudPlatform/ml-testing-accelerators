@@ -17,18 +17,18 @@
 "metadata":
   "labels":
     "accelerator": "v3-8"
-    "benchmarkId": "pt-nightly-resnet50-mp-func-v3-8-1vm"
+    "benchmarkId": "pt-nightly-dlrm-convergence-conv-v3-8-1vm"
     "frameworkVersion": "pt-nightly"
-    "mode": "func"
-    "model": "resnet50-mp"
-  "name": "pt-nightly-resnet50-mp-func-v3-8-1vm"
+    "mode": "conv"
+    "model": "dlrm-convergence"
+  "name": "pt-nightly-dlrm-convergence-conv-v3-8-1vm"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
       "annotations":
-        "ml-testing-accelerators/gcs-subdir": "pt-nightly/resnet50-mp/func/v3-8"
+        "ml-testing-accelerators/gcs-subdir": "pt-nightly/dlrm-convergence/conv/v3-8"
         "ml-testing-accelerators/metric-config": |
           {
             "sources": [
@@ -92,12 +92,12 @@
           }
       "labels":
         "accelerator": "v3-8"
-        "benchmarkId": "pt-nightly-resnet50-mp-func-v3-8-1vm"
+        "benchmarkId": "pt-nightly-dlrm-convergence-conv-v3-8-1vm"
         "frameworkVersion": "pt-nightly"
-        "mode": "func"
-        "model": "resnet50-mp"
+        "mode": "conv"
+        "model": "dlrm-convergence"
     "spec":
-      "activeDeadlineSeconds": 7200
+      "activeDeadlineSeconds": 21600
       "backoffLimit": 0
       "template":
         "metadata":
@@ -123,16 +123,34 @@
               set -e
               set -x
               
-              git clone https://github.com/pytorch/xla.git
-              pip3 install tensorboardX google-cloud-storage
-              python3 xla/test/test_train_mp_imagenet.py \
-                --logdir=$(MODEL_DIR) \
-                --datadir=/datasets/imagenet-mini \
-                --model=resnet50 \
-                --num_workers=8 \
-                --batch_size=128 \
-                --log_steps=200 \
-                --num_epochs=2 \
+              pip3 install onnx tqdm sklearn
+              git clone --recursive https://github.com/pytorch-tpu/examples.git
+              python3 examples/deps/dlrm/dlrm_tpu_runner.py \
+                --raw-data-file=/datasets/criteo-kaggle/train.txt \
+              --processed-data-file=/datasets/criteo-kaggle/kaggleAdDisplayChallenge_processed.npz \
+              --arch-sparse-feature-size=16 \
+              --arch-mlp-bot="13-512-256-64-16" \
+              --arch-mlp-top="512-256-1" \
+              --data-generation=dataset \
+              --data-set=kaggle \
+              --loss-function=bce \
+              --round-targets=True \
+              --learning-rate=0.1 \
+              --mini-batch-size=128 \
+              --print-freq=1024 \
+              --print-time \
+              --test-mini-batch-size=16384 \
+              --test-freq=101376 \
+              --use-tpu \
+              --num-indices-per-lookup=1 \
+              --num-indices-per-lookup-fixed \
+              --tpu-model-parallel-group-len 8 \
+              --tpu-metrics-debug \
+              --tpu-cores=8 |& tee dlrm_logs.txt
+              acc=`grep Testing dlrm_logs.txt | tail -1 | grep -oP 'best \K[+-]?([0-9]*[.])?[0-9]+'`
+              echo 'Accuracy is' $acc
+              test $(echo $acc'>'78.75 | bc -l) -eq 1  # assert cls acc higher than 78.75
+              
               
               
               TEST_SCRIPT_EOF
@@ -157,7 +175,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/resnet50-mp/func/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-nightly/dlrm-convergence/conv/v3-8/$(JOB_NAME)"
             - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
               "value": "local"
             - "name": "LOCAL_OUTPUT_DIR"
@@ -180,8 +198,8 @@
               "limits":
                 "tpu.googleapis.com/v3": 8
               "requests":
-                "cpu": "1"
-                "memory": "2Gi"
+                "cpu": "4.5"
+                "memory": "8Gi"
             "volumeMounts":
             - "mountPath": "/scripts"
               "name": "scripts"
