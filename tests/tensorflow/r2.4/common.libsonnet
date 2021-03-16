@@ -47,9 +47,9 @@ local mixins = import "templates/mixins.libsonnet";
       preemptible: false,
     },
   },
-  # Running convergence tests at Midnight PST daily.
+  # Running convergence tests at Midnight PST on Tue,Thu,Sat.
   Convergence:: mixins.Convergence {
-    schedule: "0 8 * * *",
+    schedule: "0 8 * * 2,4,6",
     regressionTestConfig+: {
       metric_success_conditions+: {
         "examples_per_second_average": {
