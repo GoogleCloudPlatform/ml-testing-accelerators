@@ -134,6 +134,7 @@ local utils = import "templates/utils.libsonnet";
         pip install onnx
         git clone --recursive https://github.com/pytorch-tpu/examples.git
         python examples/deps/dlrm/dlrm_tpu_runner.py \
+            --num-workers=7 \
             --arch-sparse-feature-size=16 \
             --arch-mlp-bot="13-512-256-64-16" \
             --arch-mlp-top="512-256-1" \
