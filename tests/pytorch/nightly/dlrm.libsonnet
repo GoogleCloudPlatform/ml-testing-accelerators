@@ -134,14 +134,14 @@ local utils = import "templates/utils.libsonnet";
         pip install onnx
         git clone --recursive https://github.com/pytorch-tpu/examples.git
         python examples/deps/dlrm/dlrm_tpu_runner.py \
-            --num-workers=7 \
+            --memory-map \
             --arch-sparse-feature-size=16 \
             --arch-mlp-bot="13-512-256-64-16" \
             --arch-mlp-top="512-256-1" \
             --data-generation=dataset \
             --data-set=kaggle \
-            --raw-data-file=/datasets/criteo-kaggle/train.txt \
-            --processed-data-file=/datasets/criteo-kaggle/kaggleAdDisplayChallenge_processed.npz \
+            --raw-data-file=/datasets/criteo-kaggle-mm/train.txt \
+            --processed-data-file=/datasets/criteo-kaggle-mm/kaggleAdDisplayChallenge_processed.npz \
             --loss-function=bce \
             --round-targets=True \
             --learning-rate=0.1 \
