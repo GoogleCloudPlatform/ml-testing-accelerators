@@ -116,7 +116,7 @@
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'sudo apt-get -y update && sudo apt-get -y install nfs-common git'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'sudo mkdir /datasets && sudo mount 10.166.46.250:/pytorch_datasets /datasets'
+                'sudo mkdir /datasets && sudo mount 10.182.107.26:/pytorch_datasets /datasets'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) << 'TEST_SCRIPT_EOF'
                 export XRT_TPU_CONFIG='localservice;0;localhost:51011'
                 /bin/bash -c set -u
@@ -126,8 +126,9 @@
               pip3 install onnx tqdm sklearn
               git clone --recursive https://github.com/pytorch-tpu/examples.git
               python3 examples/deps/dlrm/dlrm_tpu_runner.py \
-                --raw-data-file=/datasets/criteo-kaggle/train.txt \
-              --processed-data-file=/datasets/criteo-kaggle/kaggleAdDisplayChallenge_processed.npz \
+                --raw-data-file=/datasets/criteo-kaggle-mm/train.txt \
+              --processed-data-file=/datasets/criteo-kaggle-mm/kaggleAdDisplayChallenge_processed.npz \
+              --memory-map \
               --arch-sparse-feature-size=16 \
               --arch-mlp-bot="13-512-256-64-16" \
               --arch-mlp-top="512-256-1" \

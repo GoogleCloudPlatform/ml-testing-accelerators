@@ -125,8 +125,9 @@ local utils = import "templates/utils.libsonnet";
     ),
   },
   local convergence_common = |||
-    --raw-data-file=/datasets/criteo-kaggle/train.txt \
-    --processed-data-file=/datasets/criteo-kaggle/kaggleAdDisplayChallenge_processed.npz \
+    --raw-data-file=/datasets/criteo-kaggle-mm/train.txt \
+    --processed-data-file=/datasets/criteo-kaggle-mm/kaggleAdDisplayChallenge_processed.npz \
+    --memory-map \
     --arch-sparse-feature-size=16 \
     --arch-mlp-bot="13-512-256-64-16" \
     --arch-mlp-top="512-256-1" \

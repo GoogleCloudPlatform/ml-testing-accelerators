@@ -253,7 +253,7 @@ local volumes = import 'templates/volumes.libsonnet';
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                   'sudo apt-get -y update && sudo apt-get -y install nfs-common git'
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                  'sudo mkdir /datasets && sudo mount 10.166.46.250:/pytorch_datasets /datasets'
+                  'sudo mkdir /datasets && sudo mount 10.182.107.26:/pytorch_datasets /datasets'
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) << 'TEST_SCRIPT_EOF'
                   export XRT_TPU_CONFIG='localservice;0;localhost:51011'
                   %(testCommand)s
