@@ -1,0 +1,250 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "labels":
+    "accelerator": "v3-32"
+    "benchmarkId": "tf-nightly-classifier-resnet-func-v3-32-1vm"
+    "frameworkVersion": "tf-nightly"
+    "mode": "func"
+    "model": "classifier-resnet"
+  "name": "tf-nightly-classifier-resnet-func-v3-32-1vm"
+  "namespace": "automated"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "metadata":
+      "annotations":
+        "ml-testing-accelerators/gcs-subdir": "tf-nightly/classifier-resnet/func/v3-32"
+        "ml-testing-accelerators/metric-config": |
+          {
+            "sources": [
+              {
+                "literals": {
+                  "assertions": {
+                    "duration": {
+                      "inclusive_bounds": false,
+                      "std_devs_from_mean": {
+                        "comparison": "LESS",
+                        "std_devs": 5
+                      },
+                      "wait_for_n_data_points": 10
+                    }
+                  }
+                }
+              },
+              {
+                "tensorboard": {
+                  "aggregate_assertions": [
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "GREATER",
+                          "std_devs": 4
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "AVERAGE",
+                      "tag": "examples_per_second"
+                    }
+                  ],
+                  "exclude_tags": [
+          
+                  ],
+                  "include_tags": [
+                    {
+                      "strategies": [
+                        "FINAL"
+                      ],
+                      "tag_pattern": "*"
+                    }
+                  ],
+                  "merge_runs": false
+                }
+              }
+            ]
+          }
+      "labels":
+        "accelerator": "v3-32"
+        "benchmarkId": "tf-nightly-classifier-resnet-func-v3-32-1vm"
+        "frameworkVersion": "tf-nightly"
+        "mode": "func"
+        "model": "classifier-resnet"
+    "spec":
+      "activeDeadlineSeconds": 3600
+      "backoffLimit": 0
+      "template":
+        "metadata":
+          "annotations":
+            "reserved.cloud-tpus.google.com": "false"
+            "tf-version.cloud-tpus.google.com": "v2-nightly-pod"
+        "spec":
+          "containers":
+          - "args": null
+            "command":
+            - "bash"
+            - "-c"
+            - |
+              set -x
+              set -u
+              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                'sudo usermod -aG docker $USER'
+              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                'gcloud auth configure-docker'
+              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
+              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                'docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/lib/libtpu.so:/lib/libtpu.so" --net host -e TPU_LOAD_LIBRARY=0 gcr.io/xl-ml-test/tensorflow-1vm:nightly ''"python3" "official/vision/image_classification/classifier_trainer.py" "--data_dir=$(IMAGENET_DIR)" "--model_type=resnet" "--dataset=imagenet" "--mode=train_and_eval" "--model_dir=$(MODEL_DIR)" "--params_override=\"evaluation\":
+                \"epochs_between_evals\": 1
+              \"train\":
+                \"epochs\": 1
+              \"train_dataset\":
+                \"builder\": \"records\"
+              \"validation_dataset\":
+                \"builder\": \"records\"
+              " "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)" "--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/tpu.yaml"'
+              exit_code=$?
+              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) 'gsutil -m cp -r $(LOCAL_OUTPUT_DIR) $(MODEL_DIR)'
+              bash /scripts/cleanup.sh
+              exit $exit_code
+            "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/classifier-resnet/func/v3-32/$(JOB_NAME)"
+            - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
+              "value": "tpu-$(POD_UID)"
+            - "name": "LOCAL_OUTPUT_DIR"
+              "value": "/tmp/model_dir"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
+            "image": "google/cloud-sdk"
+            "imagePullPolicy": "Always"
+            "lifecycle":
+              "preStop":
+                "exec":
+                  "command":
+                  - "bash"
+                  - "/scripts/cleanup.sh"
+            "name": "train"
+            "resources":
+              "limits":
+                "tpu.googleapis.com/v3": 32
+              "requests":
+                "cpu": 2
+                "memory": "20G"
+            "volumeMounts":
+            - "mountPath": "/scripts"
+              "name": "scripts"
+              "readOnly": false
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
+          "initContainers":
+          - "command":
+            - "/bin/bash"
+            - "-c"
+            - |
+              set -u
+              set -e
+              set -x
+              
+              project=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google")
+              zone=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google" | awk -F'/' '{print $4}')
+              tpu_name=tpu-${POD_UID}
+              ssh-keygen -t rsa -f /scripts/id_rsa -q -N ""
+              
+              echo "
+              curl -X DELETE \
+                -H \"Authorization: Bearer \$(gcloud auth print-access-token)\" \
+                https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes/${tpu_name}
+              sleep 60
+              " > /scripts/cleanup.sh
+              
+              curl -X POST \
+                -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+                -H "Content-Type: application/json" \
+                -d "{
+                  accelerator_type: 'v3-32',
+                  runtime_version: 'v2-nightly-pod',
+                  network_config: {enable_external_ips: true},
+                  metadata: {
+                    'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
+                    'startup-script': 'echo Running startup script'
+                  }
+                }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
+              
+              echo "Waiting for TPU Pod ${tpu_name} to become ready..."
+              timeout 10m bash -c -- "
+              while [[ \${health:-NONE} != READY ]];
+                do sleep 60 && \
+                health=\$(gcloud \
+                  --project=${project} \
+                  compute \
+                  tpus \
+                  describe \
+                  ${tpu_name} \
+                  --zone=${zone} \
+                  --format='value(state)') && \
+                echo 'Waiting for ready TPU (current state \${health:-NONE})...';
+              done
+              "
+              
+              echo ${tpu_name} > /scripts/tpu_name
+              gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(ipAddress)" > /scripts/tpu_ip
+              gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --flatten="networkEndpoints[]" --format="csv[no-heading](networkEndpoints.ipAddress)" > /scripts/all_tpu_ips
+              
+              sleep 60
+              
+            "env":
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            "image": "google/cloud-sdk"
+            "name": "create-tpu"
+            "volumeMounts":
+            - "mountPath": "/scripts"
+              "name": "scripts"
+          "nodeSelector":
+            "tpu-available": "true"
+          "priorityClassName": "tpu-pod"
+          "restartPolicy": "Never"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "scripts"
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+  "schedule": "30 13 * * *"
+  "successfulJobsHistoryLimit": 1
