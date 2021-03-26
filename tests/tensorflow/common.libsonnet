@@ -28,6 +28,19 @@ local volumes = import "templates/volumes.libsonnet";
         mountPath: "/dev/shm",
       },
     },
+    jobSpec+:: {
+      template+: {
+        spec+: {
+          containerMap+: {
+            train+: {
+              envMap+: {
+                TF_ENABLE_LEGACY_FILESYSTEM: "1",
+              },
+            },
+          },
+        },
+      },
+    },
   },
   LegacyTpuTest:: common.CloudAcceleratorTest {
     local config = self,
