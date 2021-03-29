@@ -17,18 +17,18 @@
 "metadata":
   "labels":
     "accelerator": "v3-8"
-    "benchmarkId": "tf-nightly-classifier-resnet-conv-v3-8-1vm"
+    "benchmarkId": "tf-nightly-classifier-resnet-func-v3-8-1vm"
     "frameworkVersion": "tf-nightly"
-    "mode": "conv"
+    "mode": "func"
     "model": "classifier-resnet"
-  "name": "tf-nightly-classifier-resnet-conv-v3-8-1vm"
+  "name": "tf-nightly-classifier-resnet-func-v3-8-1vm"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
       "annotations":
-        "ml-testing-accelerators/gcs-subdir": "tf-nightly/classifier-resnet/conv/v3-8"
+        "ml-testing-accelerators/gcs-subdir": "tf-nightly/classifier-resnet/func/v3-8"
         "ml-testing-accelerators/metric-config": |
           {
             "sources": [
@@ -60,18 +60,6 @@
                       },
                       "strategy": "AVERAGE",
                       "tag": "examples_per_second"
-                    },
-                    {
-                      "assertion": {
-                        "fixed_value": {
-                          "comparison": "GREATER",
-                          "value": 0.76
-                        },
-                        "inclusive_bounds": false,
-                        "wait_for_n_data_points": 0
-                      },
-                      "strategy": "FINAL",
-                      "tag": "validation/epoch_accuracy"
                     }
                   ],
                   "exclude_tags": [
@@ -92,12 +80,12 @@
           }
       "labels":
         "accelerator": "v3-8"
-        "benchmarkId": "tf-nightly-classifier-resnet-conv-v3-8-1vm"
+        "benchmarkId": "tf-nightly-classifier-resnet-func-v3-8-1vm"
         "frameworkVersion": "tf-nightly"
-        "mode": "conv"
+        "mode": "func"
         "model": "classifier-resnet"
     "spec":
-      "activeDeadlineSeconds": 36000
+      "activeDeadlineSeconds": 3600
       "backoffLimit": 0
       "template":
         "metadata":
@@ -123,7 +111,7 @@
                 'docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/lib/libtpu.so:/lib/libtpu.so" gcr.io/xl-ml-test/tensorflow-1vm:nightly ''"python3" "official/vision/image_classification/classifier_trainer.py" "--data_dir=$(IMAGENET_DIR)" "--model_type=resnet" "--dataset=imagenet" "--mode=train_and_eval" "--model_dir=$(MODEL_DIR)" "--params_override=\"evaluation\":
                 \"epochs_between_evals\": 1
               \"train\":
-                \"epochs\": 90
+                \"epochs\": 1
               \"train_dataset\":
                 \"builder\": \"records\"
               \"validation_dataset\":
@@ -151,7 +139,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/classifier-resnet/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/classifier-resnet/func/v3-8/$(JOB_NAME)"
             - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
               "value": "local"
             - "name": "LOCAL_OUTPUT_DIR"
