@@ -99,7 +99,14 @@ local utils = import "templates/utils.libsonnet";
   local conv = common.Convergence {
     command: utils.scriptCommand(
       |||
-        %(command_common)s  --max-update 50000
+        %(command_common)s  --max-update 50000 \
+          2>&1 | tee training_logs.txt
+        loss=$(
+          cat training_logs.txt | grep '| loss ' | \
+          tail -1 | sed 's/.*loss //' | cut -d '|' -f1
+        )
+        echo 'final loss is' $loss
+        test $( echo $loss | cut -d '.' -f1 ) -lt 3
       ||| % command_common
     ),
   },
