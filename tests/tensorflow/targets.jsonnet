@@ -13,6 +13,7 @@
 # limitations under the License.
 
 local nightly = import "nightly/targets.jsonnet";
+local r2_5 = import "r2.5/targets.jsonnet";
 local r2_4 = import "r2.4/targets.jsonnet";
 local r2_3 = import "r2.3/targets.jsonnet";
 local r2_2 = import "r2.2/targets.jsonnet";
@@ -27,4 +28,5 @@ std.flattenArrays([
   r2_2,
   r2_3,
   r2_4,
+  r2_5,
 ])
