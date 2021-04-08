@@ -14,8 +14,10 @@
 
 local unitTests = import 'unit-tests.libsonnet';
 local podTest = import 'pod-test.libsonnet';
+local flaxExampleTests = import 'flax-examples.libsonnet';
 
 std.flattenArrays([
   unitTests.configs,
   podTest.configs,
+  flaxExampleTests.configs,
 ])
