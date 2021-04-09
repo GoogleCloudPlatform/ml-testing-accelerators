@@ -153,7 +153,7 @@ local gpus = import "templates/gpus.libsonnet";
     resnet + v100x4 + functional + mixins.Experimental,
     resnet + v100x4 + convergence + mixins.Experimental,
     resnet + v100x8 + functional + mixins.Unsuspended,
-    resnet + v100x8 + convergence + timeouts.Hours(14),
+    resnet + v100x8 + convergence + timeouts.Hours(36) + {schedule: "0 8 * * 0,3,5"},	# 90 epochs with ~24 min/epoch, equals 36 hours.
     resnet + v2_8 + functional,
     resnet + v3_8 + functional,
     resnet + v2_8 + convergence,
