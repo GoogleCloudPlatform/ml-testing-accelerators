@@ -3,12 +3,12 @@ steps:
   entrypoint: gsutil
   args:
   - cp
-  - gs://cloud-tpu-v2-images-artifacts/tf_nightly-2.5.0-cp36-cp36m-linux_x86_64.whl
+  - gs://cloud-tpu-v2-images-artifacts/tf_nightly-2.6.0-cp36-cp36m-linux_x86_64.whl
   - '.'
 - name: docker
   entrypoint: docker
   args:
-  - build 
+  - build
   - -t
   - 'gcr.io/$PROJECT_ID/tensorflow-1vm:$_VERSION'
   - -f

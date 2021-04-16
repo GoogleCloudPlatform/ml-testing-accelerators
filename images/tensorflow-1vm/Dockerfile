@@ -19,6 +19,9 @@ unzip -o $PROTOC_ZIP -d /usr/local bin/protoc && \
 unzip -o $PROTOC_ZIP -d /usr/local 'include/*' && \
 rm -f $PROTOC_ZIP
 
+RUN apt-get install -y google-perftools
+ENV LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libtcmalloc.so.4"
+
 ENV PYTHONPATH=/tensorflow/models
 WORKDIR /tensorflow/models
 ENTRYPOINT ["bash"]
