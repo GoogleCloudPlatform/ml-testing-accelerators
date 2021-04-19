@@ -32,6 +32,7 @@ local gpus = import "templates/gpus.libsonnet";
           path: "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07",
           prefix: "resnet50/",
         },
+        frozen_variable_prefix: "(conv2d(|_([1-9]|10))|batch_normalization(|_([1-9]|10)))\\/",
         total_steps: error "Must set `train.total_steps`",
         batch_size: error "Must set `train.batch_size`",
         train_file_pattern: "$(COCO_DIR)/train*",
