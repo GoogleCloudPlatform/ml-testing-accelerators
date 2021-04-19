@@ -113,10 +113,10 @@ local utils = import "templates/utils.libsonnet";
     },
   },
   local functional_xla_dist = common.Functional {
-    condaEnv: "torch-xla-1.8",
+    condaEnv: "torch-xla-1.8.1",
     command: [
       "python",
-      "/usr/share/torch-xla-1.8/tpu-examples/deps/fairseq/train.py",
+      "/usr/share/torch-xla-1.8.1/tpu-examples/deps/fairseq/train.py",
       "/datasets/wmt18_en_de_bpej32k",
       "--metrics_debug",
       "--arch=transformer_vaswani_wmt_en_de_big",
