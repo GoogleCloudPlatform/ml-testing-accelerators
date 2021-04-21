@@ -52,4 +52,17 @@ local volumes = import 'templates/volumes.libsonnet';
     name: 'pytorch-datasets-claim',
     mountPath: '/datasets',
   },
+  tpu_vm_nightly_install: |||
+    sudo pip3 uninstall --yes torch torch_xla torchvision
+    sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-nightly-cp36-cp36m-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-nightly-cp36-cp36m-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-nightly-cp36-cp36m-linux_x86_64.whl
+    sudo pip3 install mkl mkl-include
+    sudo ln -s /usr/local/lib/libmkl_intel_lp64.so.1 /usr/local/lib/libmkl_intel_lp64.so
+    sudo ln -s /usr/local/lib/libmkl_intel_thread.so.1 /usr/local/lib/libmkl_intel_thread.so
+    sudo ln -s /usr/local/lib/libmkl_core.so.1 /usr/local/lib/libmkl_core.so
+    sudo apt-get update
+    sudo apt-get install libomp5
+    git clone https://github.com/pytorch/pytorch.git
+    cd pytorch
+    git clone https://github.com/pytorch/xla.git
+  |||,
 }

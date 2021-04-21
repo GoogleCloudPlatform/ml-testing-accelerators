@@ -130,6 +130,9 @@ local utils = import "templates/utils.libsonnet";
     schedule: '2 20 * * *',
   },
   local resnet50_tpu_vm = experimental.PyTorchTpuVmTest {
+    # This test uses the default pytorch XLA version built into the TPUVM, which
+    # is 1.8.1 as of Apr 19.
+    frameworkPrefix: "pt-r1.8.1",
     modelName: "resnet50-mp",
     paramsOverride: {
       num_epochs: error "Must set `num_epochs`",
@@ -137,7 +140,7 @@ local utils = import "templates/utils.libsonnet";
     },
     command: utils.scriptCommand(
       |||
-        git clone https://github.com/pytorch/xla.git
+        git clone https://github.com/pytorch/xla.git -b r1.8.1
         pip3 install tensorboardX google-cloud-storage
         python3 xla/test/test_train_mp_imagenet.py \
           --logdir=$(MODEL_DIR) \
@@ -179,7 +182,7 @@ local utils = import "templates/utils.libsonnet";
       metric_success_conditions+: {
         "Accuracy/test_final": {
           success_threshold: {
-            fixed_value: 75.0,
+            fixed_value: 30.0,
           },
           comparison: "greater",
         },
@@ -190,8 +193,7 @@ local utils = import "templates/utils.libsonnet";
     resnet50_MP + v3_8 + convergence + timeouts.Hours(26) + mixins.PreemptibleTpu,
     resnet50_MP + v3_8 + functional + timeouts.Hours(2),
     common.PyTorchTest + resnet50_tpu_vm + v3_8 + functional_tpu_vm + timeouts.Hours(2),
-    # Need to figure out imagenet slowness: b/182915380
-    #common.PyTorchTest + resnet50_tpu_vm + v3_8 + convergence_tpu_vm + timeouts.Hours(4),
+    common.PyTorchTest + resnet50_tpu_vm + v3_8 + convergence_tpu_vm + timeouts.Hours(4),
     resnet50_gpu + common.Functional + v100 + timeouts.Hours(2),
     resnet50_gpu + common.Functional + v100x4 + timeouts.Hours(1),
   ],

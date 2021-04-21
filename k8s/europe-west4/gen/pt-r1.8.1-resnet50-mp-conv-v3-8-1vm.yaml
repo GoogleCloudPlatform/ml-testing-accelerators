@@ -16,19 +16,19 @@
 "kind": "CronJob"
 "metadata":
   "labels":
-    "accelerator": "v2-8"
-    "benchmarkId": "pt-nightly-mnist-conv-v2-8-1vm"
-    "frameworkVersion": "pt-nightly"
+    "accelerator": "v3-8"
+    "benchmarkId": "pt-r1.8.1-resnet50-mp-conv-v3-8-1vm"
+    "frameworkVersion": "pt-r1.8.1"
     "mode": "conv"
-    "model": "mnist"
-  "name": "pt-nightly-mnist-conv-v2-8-1vm"
+    "model": "resnet50-mp"
+  "name": "pt-r1.8.1-resnet50-mp-conv-v3-8-1vm"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
       "annotations":
-        "ml-testing-accelerators/gcs-subdir": "pt-nightly/mnist/conv/v2-8"
+        "ml-testing-accelerators/gcs-subdir": "pt-r1.8.1/resnet50-mp/conv/v3-8"
         "ml-testing-accelerators/metric-config": |
           {
             "sources": [
@@ -53,7 +53,7 @@
                       "assertion": {
                         "fixed_value": {
                           "comparison": "GREATER",
-                          "value": 98
+                          "value": 30
                         },
                         "inclusive_bounds": false,
                         "wait_for_n_data_points": 0
@@ -103,13 +103,13 @@
             ]
           }
       "labels":
-        "accelerator": "v2-8"
-        "benchmarkId": "pt-nightly-mnist-conv-v2-8-1vm"
-        "frameworkVersion": "pt-nightly"
+        "accelerator": "v3-8"
+        "benchmarkId": "pt-r1.8.1-resnet50-mp-conv-v3-8-1vm"
+        "frameworkVersion": "pt-r1.8.1"
         "mode": "conv"
-        "model": "mnist"
+        "model": "resnet50-mp"
     "spec":
-      "activeDeadlineSeconds": 3600
+      "activeDeadlineSeconds": 14400
       "backoffLimit": 0
       "template":
         "metadata":
@@ -136,8 +136,16 @@
               set -e
               set -x
               
-              git clone https://github.com/pytorch/xla.git
-              python3 xla/test/test_train_mp_mnist.py --logdir='' --datadir=/datasets/mnist-data
+              git clone https://github.com/pytorch/xla.git -b r1.8.1
+              pip3 install tensorboardX google-cloud-storage
+              python3 xla/test/test_train_mp_imagenet.py \
+                --logdir=$(MODEL_DIR) \
+                --datadir=/datasets/imagenet \
+                --model=resnet50 \
+                --num_workers=8 \
+                --batch_size=128 \
+                --log_steps=200 \
+                --num_epochs=5 \
               
               
               TEST_SCRIPT_EOF
@@ -162,7 +170,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/mnist/conv/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-r1.8.1/resnet50-mp/conv/v3-8/$(JOB_NAME)"
             - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
               "value": "local"
             - "name": "LOCAL_OUTPUT_DIR"
@@ -183,10 +191,10 @@
             "name": "train"
             "resources":
               "limits":
-                "tpu.googleapis.com/v2": 8
+                "tpu.googleapis.com/v3": 8
               "requests":
-                "cpu": "4.5"
-                "memory": "8Gi"
+                "cpu": "1"
+                "memory": "2Gi"
             "volumeMounts":
             - "mountPath": "/scripts"
               "name": "scripts"
@@ -219,7 +227,7 @@
                 -H "Authorization: Bearer $(gcloud auth print-access-token)" \
                 -H "Content-Type: application/json" \
                 -d "{
-                  accelerator_type: 'v2-8',
+                  accelerator_type: 'v3-8',
                   runtime_version: 'v2-nightly',
                   network_config: {enable_external_ips: true},
                   metadata: {

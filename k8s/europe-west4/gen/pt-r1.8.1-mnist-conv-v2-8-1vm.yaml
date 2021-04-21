@@ -16,19 +16,19 @@
 "kind": "CronJob"
 "metadata":
   "labels":
-    "accelerator": "v3-8"
-    "benchmarkId": "pt-nightly-roberta-convergence-conv-v3-8-1vm"
-    "frameworkVersion": "pt-nightly"
+    "accelerator": "v2-8"
+    "benchmarkId": "pt-r1.8.1-mnist-conv-v2-8-1vm"
+    "frameworkVersion": "pt-r1.8.1"
     "mode": "conv"
-    "model": "roberta-convergence"
-  "name": "pt-nightly-roberta-convergence-conv-v3-8-1vm"
+    "model": "mnist"
+  "name": "pt-r1.8.1-mnist-conv-v2-8-1vm"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
       "annotations":
-        "ml-testing-accelerators/gcs-subdir": "pt-nightly/roberta-convergence/conv/v3-8"
+        "ml-testing-accelerators/gcs-subdir": "pt-r1.8.1/mnist/conv/v2-8"
         "ml-testing-accelerators/metric-config": |
           {
             "sources": [
@@ -49,6 +49,18 @@
               {
                 "tensorboard": {
                   "aggregate_assertions": [
+                    {
+                      "assertion": {
+                        "fixed_value": {
+                          "comparison": "GREATER",
+                          "value": 98
+                        },
+                        "inclusive_bounds": false,
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "FINAL",
+                      "tag": "Accuracy/test"
+                    },
                     {
                       "assertion": {
                         "inclusive_bounds": false,
@@ -91,13 +103,13 @@
             ]
           }
       "labels":
-        "accelerator": "v3-8"
-        "benchmarkId": "pt-nightly-roberta-convergence-conv-v3-8-1vm"
-        "frameworkVersion": "pt-nightly"
+        "accelerator": "v2-8"
+        "benchmarkId": "pt-r1.8.1-mnist-conv-v2-8-1vm"
+        "frameworkVersion": "pt-r1.8.1"
         "mode": "conv"
-        "model": "roberta-convergence"
+        "model": "mnist"
     "spec":
-      "activeDeadlineSeconds": 21600
+      "activeDeadlineSeconds": 3600
       "backoffLimit": 0
       "template":
         "metadata":
@@ -124,40 +136,8 @@
               set -e
               set -x
               
-              git clone --recursive https://github.com/pytorch-tpu/examples.git
-              pip3 install --editable examples/deps/fairseq
-              python3 \
-                examples/deps/fairseq/train.py \
-                /datasets/wikitext-103 \
-                --task=masked_lm --criterion=masked_lm \
-                --arch=roberta_base --sample-break-mode=complete \
-                --tokens-per-sample=512 \
-                --optimizer=adam \
-                --adam-betas='(0.9,0.98)' \
-                --adam-eps=1e-6 \
-                --clip-norm=0.0 \
-                --lr-scheduler=polynomial_decay \
-                --lr=0.0005 \
-                --warmup-updates=10000 \
-                --dropout=0.1 \
-                --attention-dropout=0.1 \
-                --weight-decay=0.01 \
-                --update-freq=16 \
-                --log-format=simple \
-                --train-subset=train \
-                --valid-subset=valid \
-                --num_cores=8 \
-                --metrics_debug \
-                --save-dir=checkpoints \
-                --log_steps=30 \
-                --skip-invalid-size-inputs-valid-test \
-                --suppress_loss_report \
-                --input_shapes 16x512 18x480 21x384 \
-                --max-epoch=5 \
-                2>&1 | tee training_logs.txt
-              wps=$(cat training_logs.txt | grep '| wps ' | tail -1 | grep -o -E ' wps [0-9]+' | sed 's/[^0-9]*//g')
-              echo 'final words per second (wps) is' $wps
-              test $wps -gt 19000
+              git clone https://github.com/pytorch/xla.git -b r1.8.1
+              python3 xla/test/test_train_mp_mnist.py --logdir='' --datadir=/datasets/mnist-data
               
               
               TEST_SCRIPT_EOF
@@ -182,7 +162,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/pt-nightly/roberta-convergence/conv/v3-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/pt-r1.8.1/mnist/conv/v2-8/$(JOB_NAME)"
             - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
               "value": "local"
             - "name": "LOCAL_OUTPUT_DIR"
@@ -203,7 +183,7 @@
             "name": "train"
             "resources":
               "limits":
-                "tpu.googleapis.com/v3": 8
+                "tpu.googleapis.com/v2": 8
               "requests":
                 "cpu": "4.5"
                 "memory": "8Gi"
@@ -239,7 +219,7 @@
                 -H "Authorization: Bearer $(gcloud auth print-access-token)" \
                 -H "Content-Type: application/json" \
                 -d "{
-                  accelerator_type: 'v3-8',
+                  accelerator_type: 'v2-8',
                   runtime_version: 'v2-nightly',
                   network_config: {enable_external_ips: true},
                   metadata: {
