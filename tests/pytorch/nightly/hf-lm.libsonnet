@@ -23,9 +23,9 @@ local utils = import "templates/utils.libsonnet";
     cd transformers && pip install .
     git log -1
     pip install datasets
-    python examples/xla_spawn.py \
+    python examples/pytorch/xla_spawn.py \
       --num_cores 8 \
-      examples/language-modeling/run_mlm.py \
+      examples/pytorch/language-modeling/run_mlm.py \
       --logging_dir ./tensorboard-metrics \
       --cache_dir ./cache_dir \
       --dataset_name wikitext \
