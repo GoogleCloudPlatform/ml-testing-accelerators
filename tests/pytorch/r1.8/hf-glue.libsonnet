@@ -23,9 +23,9 @@ local utils = import "templates/utils.libsonnet";
     cd transformers && pip install .
     git log -1
     pip install datasets
-    python examples/xla_spawn.py \
+    python examples/pytorch/xla_spawn.py \
       --num_cores 8 \
-      examples/text-classification/run_glue.py \
+      examples/pytorch/text-classification/run_glue.py \
       --logging_dir=./tensorboard-metrics \
       --task_name MNLI \
       --cache_dir ./cache_dir \
