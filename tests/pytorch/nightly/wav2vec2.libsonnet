@@ -25,7 +25,7 @@ local utils = import "templates/utils.libsonnet";
     pip install --editable fairseq
     export OMP_NUM_THREADS=1
     python fairseq/train.py \
-       /datasets/w2v2-librispeech-100hrs/manifest/ \
+       /datasets/w2v2-librispeech-100hrs/w2v/manifest/ \
        --num-batch-buckets 3 \
        --tpu \
        --max-sentences 4 \
