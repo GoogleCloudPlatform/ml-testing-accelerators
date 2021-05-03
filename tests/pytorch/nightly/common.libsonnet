@@ -59,8 +59,8 @@ local volumes = import 'templates/volumes.libsonnet';
     sudo ln -s /usr/local/lib/libmkl_intel_lp64.so.1 /usr/local/lib/libmkl_intel_lp64.so
     sudo ln -s /usr/local/lib/libmkl_intel_thread.so.1 /usr/local/lib/libmkl_intel_thread.so
     sudo ln -s /usr/local/lib/libmkl_core.so.1 /usr/local/lib/libmkl_core.so
-    sudo apt-get update
-    sudo apt-get install libomp5
+    sudo apt-get -y update
+    sudo apt-get install -y libomp5
     git clone https://github.com/pytorch/pytorch.git
     cd pytorch
     git clone https://github.com/pytorch/xla.git

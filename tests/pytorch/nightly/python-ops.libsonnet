@@ -39,6 +39,7 @@ local utils = import "templates/utils.libsonnet";
     command: utils.scriptCommand(
       |||
         %(command_common)s
+        sudo pip3 install hypothesis
         cd xla/test
         export TPUVM_MODE=1
         ./run_tests.sh
