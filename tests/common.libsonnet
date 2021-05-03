@@ -26,41 +26,38 @@ local metrics = import 'templates/metrics.libsonnet';
     },
 
     // Add experimental TPU health monitor to Job.
-    // TODO: move this to base template if it's working well.
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          containerMap+: if config.accelerator.type == 'tpu' then
-            {
-              monitor: {
-                name: 'monitor',
-                image: 'gcr.io/xl-ml-test/health-monitor:stable',
-                imagePullPolicy: 'Always',
-                env: [
-                  {
-                    name: 'POD_NAME',
-                    valueFrom: {
-                      fieldRef: {
-                        fieldPath: 'metadata.name',
-                      },
+    podTemplate+:: {
+      spec+: {
+        containerMap+: if config.accelerator.type == 'tpu' then
+          {
+            monitor: {
+              name: 'monitor',
+              image: 'gcr.io/xl-ml-test/health-monitor:stable',
+              imagePullPolicy: 'Always',
+              env: [
+                {
+                  name: 'POD_NAME',
+                  valueFrom: {
+                    fieldRef: {
+                      fieldPath: 'metadata.name',
                     },
                   },
-                  {
-                    name: 'POD_NAMESPACE',
-                    valueFrom: {
-                      fieldRef: {
-                        fieldPath: 'metadata.namespace',
-                      },
+                },
+                {
+                  name: 'POD_NAMESPACE',
+                  valueFrom: {
+                    fieldRef: {
+                      fieldPath: 'metadata.namespace',
                     },
                   },
-                ],
-              },
-            }
-          else {},
-        } + if config.accelerator.type == 'gpu' then {
-          priorityClassName: 'gpu-%(version)s' % config.accelerator,
-        } else {},
-      },
+                },
+              ],
+            },
+          }
+        else {},
+      } + if config.accelerator.type == 'gpu' then {
+        priorityClassName: 'gpu-%(version)s' % config.accelerator,
+      } else {},
     },
 
     cronJob+:: {

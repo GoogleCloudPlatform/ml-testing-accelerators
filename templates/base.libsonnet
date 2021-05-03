@@ -99,123 +99,149 @@ local volumes = import 'volumes.libsonnet';
       accelerator: config.accelerator.name,
     },
 
+    podTemplate:: config.accelerator.PodTemplate(config.tpuSettings) {
+      spec+: volumes.combinedMixin(config.volumeMap) + {
+        local pod = self,
+        local commonEnv = [
+          {
+            name: 'POD_NAME',
+            valueFrom: {
+              fieldRef: {
+                fieldPath: 'metadata.name',
+              },
+            },
+          },
+          {
+            name: 'POD_UID',
+            valueFrom: {
+              fieldRef: {
+                fieldPath: 'metadata.uid',
+              },
+            },
+          },
+          {
+            name: 'POD_NAMESPACE',
+            valueFrom: {
+              fieldRef: {
+                fieldPath: 'metadata.namespace',
+              },
+            },
+          },
+          {
+            name: 'JOB_NAME',
+            valueFrom: {
+              fieldRef: {
+                fieldPath: "metadata.labels['job-name']",
+              },
+            },
+          },
+          {
+            name: 'MODEL_DIR',
+            value:
+              '$(OUTPUT_BUCKET)/%(frameworkPrefix)s/%(modelName)s/%(mode)s/%(acceleratorName)s/$(JOB_NAME)' % config,
+          },
+        ],
+
+        restartPolicy: 'Never',
+        initContainerMap:: if config.publisherImage != null then {
+          publisher: {
+            image: config.publisherImage,
+            imagePullPolicy: 'Always',
+            envFrom: [
+              {
+                configMapRef: {
+                  name: bucketName,
+                },
+              }
+              for bucketName in config.configMaps
+            ],
+            env: commonEnv + [
+              {
+                name: 'METRIC_CONFIG',
+                value: std.manifestJsonEx({
+                  test_name: config.testName,
+                  metric_collection_config: config.metricCollectionConfig,
+                  regression_test_config: config.regressionTestConfig,
+                }, ' ') + '\n',  // Add newline to make JSonnet generate a multi-line YAML string.
+              },
+            ],
+          },
+        } else {},
+        initContainers: [
+          { name: name } + pod.initContainerMap[name]
+          for name in std.objectFields(pod.initContainerMap)
+        ],
+
+        containerMap+:: {
+          train+: {
+            local main = self,
+
+            image: '%(image)s:%(imageTag)s' % config,
+            imagePullPolicy: 'Always',
+            // Use Docker image's entrypoint wrapper
+            args: config.command,
+
+            envFrom: [
+              {
+                configMapRef: {
+                  name: bucketName,
+                },
+              }
+              for bucketName in config.configMaps
+            ],
+
+            // Override this object to add environment variables to the container
+            envMap:: {},
+            env: commonEnv + [
+              {
+                name: key,
+                value: main.envMap[key],
+              }
+              for key in std.objectFields(main.envMap)
+            ],
+
+            resources+: std.prune({
+              requests+: {
+                cpu: config.cpu,
+                memory: config.memory,
+              },
+            }),
+          },
+        },
+        containers: [
+          { name: name } + pod.containerMap[name]
+          for name in std.objectFields(pod.containerMap)
+          if pod.containerMap[name] != null
+        ],
+      },
+    },
+
     jobSpec:: {
       // Try 2 times before giving up.
       backoffLimit: 1,
       activeDeadlineSeconds: config.timeout,
-      template: config.accelerator.PodTemplate(config.tpuSettings) + {
-        spec+: volumes.combinedMixin(config.volumeMap) + {
-          local pod = self,
-          local commonEnv = [
-            {
-              name: 'POD_NAME',
-              valueFrom: {
-                fieldRef: {
-                  fieldPath: 'metadata.name',
-                },
-              },
-            },
-            {
-              name: 'POD_UID',
-              valueFrom: {
-                fieldRef: {
-                  fieldPath: 'metadata.uid',
-                },
-              },
-            },
-            {
-              name: 'POD_NAMESPACE',
-              valueFrom: {
-                fieldRef: {
-                  fieldPath: 'metadata.namespace',
-                },
-              },
-            },
-            {
-              name: 'JOB_NAME',
-              valueFrom: {
-                fieldRef: {
-                  fieldPath: "metadata.labels['job-name']",
-                },
-              },
-            },
-            {
-              name: 'MODEL_DIR',
-              value:
-                '$(OUTPUT_BUCKET)/%(frameworkPrefix)s/%(modelName)s/%(mode)s/%(acceleratorName)s/$(JOB_NAME)' % config,
-            },
-          ],
+      template: config.podTemplate,
+    },
 
-          restartPolicy: 'Never',
-          initContainerMap:: if config.publisherImage != null then {
-            publisher: {
-              image: config.publisherImage,
-              imagePullPolicy: 'Always',
-              envFrom: [
-                {
-                  configMapRef: {
-                    name: bucketName,
-                  },
-                }
-                for bucketName in config.configMaps
-              ],
-              env: commonEnv + [
-                {
-                  name: 'METRIC_CONFIG',
-                  value: std.manifestJsonEx({
-                    test_name: config.testName,
-                    metric_collection_config: config.metricCollectionConfig,
-                    regression_test_config: config.regressionTestConfig,
-                  }, ' ') + '\n',  // Add newline to make JSonnet generate a multi-line YAML string.
-                },
-              ],
-            },
-          } else {},
-          initContainers: [
-            { name: name } + pod.initContainerMap[name]
-            for name in std.objectFields(pod.initContainerMap)
-          ],
+    runnablePod:: config.podTemplate {
+      apiVersion: 'v1',
+      kind: 'Pod',
+      metadata+: {
+        generateName: '%s-' % config.testName,
+      },
 
-          containerMap+:: {
-            train+: {
-              local main = self,
-
-              image: '%(image)s:%(imageTag)s' % config,
-              imagePullPolicy: 'Always',
-              // Use Docker image's entrypoint wrapper
-              args: config.command,
-
-              envFrom: [
-                {
-                  configMapRef: {
-                    name: bucketName,
-                  },
-                }
-                for bucketName in config.configMaps
-              ],
-
-              // Override this object to add environment variables to the container
-              envMap:: {},
-              env: commonEnv + [
-                {
-                  name: key,
-                  value: main.envMap[key],
-                }
-                for key in std.objectFields(main.envMap)
-              ],
-
-              resources+: std.prune({
-                requests+: {
-                  cpu: config.cpu,
-                  memory: config.memory,
-                },
-              }),
-            },
+      // HACK: Use pod name as $JOB_NAME, since this pod is not in a Job.
+      spec+: {
+        containerMap+: {
+          train+: {
+            env: [
+              if e.name == 'JOB_NAME' then
+                e { valueFrom: { fieldRef: { fieldPath: 'metadata.name' } } }
+              else
+                e
+              for e in super.env
+            ],
           },
-          containers: [
-            { name: name } + pod.containerMap[name]
-            for name in std.objectFields(pod.containerMap)
-          ],
         },
       },
     },
