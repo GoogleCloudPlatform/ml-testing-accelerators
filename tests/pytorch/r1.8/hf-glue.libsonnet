@@ -134,16 +134,14 @@ local utils = import 'templates/utils.libsonnet';
   },
   local hf_glue = common.PyTorchTest {
     modelName: 'hf-glue',
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          containerMap+: {
-            train+: {
-              resources+: {
-                requests: {
-                  cpu: '12.0',
-                  memory: '80Gi',
-                },
+    podTemplate+:: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            resources+: {
+              requests: {
+                cpu: '12.0',
+                memory: '80Gi',
               },
             },
           },

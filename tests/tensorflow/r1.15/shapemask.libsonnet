@@ -55,18 +55,16 @@ local tpus = import 'templates/tpus.libsonnet';
       '--model_dir=$(MODEL_DIR)',
     ],
 
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          containerMap+: {
-            train+: {
-              env+: [
-                {
-                  name: 'PYTHONPATH',
-                  value: '/shapemask/models/',
-                },
-              ],
-            },
+    podTemplate+:: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            env+: [
+              {
+                name: 'PYTHONPATH',
+                value: '/shapemask/models/',
+              },
+            ],
           },
         },
       },

@@ -98,14 +98,12 @@ local utils = import 'templates/utils.libsonnet';
         gsutil rm -r %(savedir)s
       ||| % { common: chpt_command_common, savedir: '$MODEL_DIR/checkpoints' }
     ),
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          containerMap+: {
-            train+: {
-              envMap+: {
-                XLA_USE_BF16: '1',
-              },
+    podTemplate+:: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            envMap+: {
+              XLA_USE_BF16: '1',
             },
           },
         },
@@ -183,14 +181,12 @@ local utils = import 'templates/utils.libsonnet';
         test $bleu -gt 27 -a $wps -gt 10000
       ||| % command_common
     ),
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          containerMap+: {
-            train+: {
-              envMap+: {
-                XLA_USE_BF16: '1',
-              },
+    podTemplate+:: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            envMap+: {
+              XLA_USE_BF16: '1',
             },
           },
         },

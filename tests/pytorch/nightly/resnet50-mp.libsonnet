@@ -55,16 +55,14 @@ local utils = import 'templates/utils.libsonnet';
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          containerMap+: {
-            train+: {
-              resources+: {
-                requests: {
-                  cpu: '90.0',
-                  memory: '400Gi',
-                },
+    podTemplate+:: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            resources+: {
+              requests: {
+                cpu: '90.0',
+                memory: '400Gi',
               },
             },
           },
