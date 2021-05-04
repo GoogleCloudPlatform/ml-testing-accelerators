@@ -5,7 +5,7 @@ on:
   pull_request:
     branches: [master]
     types: [opened, synchronize, edited]
-  
+
   workflow_dispatch: {}
 
 jobs:
@@ -20,7 +20,14 @@ jobs:
     - name: Install JSonnet
       run: |
         go get github.com/google/go-jsonnet/cmd/jsonnet
+        go get github.com/google/go-jsonnet/cmd/jsonnetfmt
         echo "$HOME/go/bin" >> $GITHUB_PATH
+
+    - name: Format files (diff should be empty)
+      run: |
+        scripts/format-jsonnet.sh
+        git add -N
+        git diff --exit-code --compact-summary
 
     - name: Build repository
       run: |
