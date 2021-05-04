@@ -249,9 +249,9 @@ local volumes = import 'volumes.libsonnet';
       metadata: {
         annotations+: if config.metricConfig != null then {
           'ml-testing-accelerators/metric-config':
-              std.manifestJsonEx(config.metricConfig, '  ') + '\n',
+            std.manifestJsonEx(config.metricConfig, '  ') + '\n',
           'ml-testing-accelerators/gcs-subdir': gcsSubdir,
-        } else { },
+        } else {},
         labels: config.labels,
       },
       spec: {
