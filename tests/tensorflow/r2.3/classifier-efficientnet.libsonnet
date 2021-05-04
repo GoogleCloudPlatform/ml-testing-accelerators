@@ -1,49 +1,49 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-local common = import "common.libsonnet";
-local mixins = import "templates/mixins.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local gpus = import "templates/gpus.libsonnet";
+local common = import 'common.libsonnet';
+local gpus = import 'templates/gpus.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
 
 {
   local efficientnet = common.ModelGardenTest {
-    modelName: "classifier-efficientnet",
+    modelName: 'classifier-efficientnet',
     paramsOverride:: {
       train: {
-        epochs: error "Must set `train.epochs`",
+        epochs: error 'Must set `train.epochs`',
       },
       evaluation: {
-        epochs_between_evals: error "Must set `evaluation.epochs_between_evals`",
+        epochs_between_evals: error 'Must set `evaluation.epochs_between_evals`',
       },
       train_dataset: {
-        builder: "records",
+        builder: 'records',
       },
       validation_dataset: {
-        builder: "records",
+        builder: 'records',
       },
     },
     command: [
-      "python3",
-      "official/vision/image_classification/classifier_trainer.py",
-      "--data_dir=$(IMAGENET_DIR)",
-      "--model_type=efficientnet",
-      "--dataset=imagenet",
-      "--mode=train_and_eval",
-      "--model_dir=$(MODEL_DIR)",
-      "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride) + "\n",
+      'python3',
+      'official/vision/image_classification/classifier_trainer.py',
+      '--data_dir=$(IMAGENET_DIR)',
+      '--model_type=efficientnet',
+      '--dataset=imagenet',
+      '--mode=train_and_eval',
+      '--model_dir=$(MODEL_DIR)',
+      '--params_override=%s' % std.manifestYamlDoc(self.paramsOverride) + '\n',
     ],
   },
   local functional = common.Functional {
@@ -67,11 +67,11 @@ local gpus = import "templates/gpus.libsonnet";
     },
     regressionTestConfig+: {
       metric_success_conditions+: {
-        "validation/epoch_accuracy_final": {
+        'validation/epoch_accuracy_final': {
           success_threshold: {
             fixed_value: 0.76,
           },
-          comparison: "greater",
+          comparison: 'greater',
         },
       },
     },
@@ -79,35 +79,35 @@ local gpus = import "templates/gpus.libsonnet";
   local gpu_common = {
     local config = self,
 
-    modelName: "efficientnet",
+    modelName: 'efficientnet',
     paramsOverride+:: {
       runtime: {
         num_gpus: config.accelerator.count,
       },
     },
     command+: [
-      "--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-gpu.yaml",
+      '--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-gpu.yaml',
     ],
   },
   local k80x8 = gpu_common {
     paramsOverride+:: {
       runtime+: {
-        all_reduce_alg: "hierarchical_copy",
+        all_reduce_alg: 'hierarchical_copy',
       },
     },
-    accelerator: gpus.teslaK80 + { count: 8 },
+    accelerator: gpus.teslaK80 { count: 8 },
   },
   local v100 = gpu_common {
     accelerator: gpus.teslaV100,
   },
   local v100x4 = gpu_common {
-    accelerator: gpus.teslaV100 + { count: 4 },
+    accelerator: gpus.teslaV100 { count: 4 },
   },
 
   local tpu_common = {
     command+: [
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-      "--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-tpu.yaml",
+      '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
+      '--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-tpu.yaml',
     ],
   },
   local v2_8 = tpu_common {

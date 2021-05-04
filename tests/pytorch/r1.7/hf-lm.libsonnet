@@ -1,21 +1,21 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-local common = import "common.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local utils = import "templates/utils.libsonnet";
+local common = import 'common.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
 
 {
   local command_common = |||
@@ -42,7 +42,7 @@ local utils = import "templates/utils.libsonnet";
     gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
   |||,
   local roberta_base_fine = common.Convergence {
-    modelName: "hf-mlm-roberta-b-fine",
+    modelName: 'hf-mlm-roberta-b-fine',
     command: utils.scriptCommand(
       |||
         %(common)s --mlm --model_type=roberta \
@@ -51,22 +51,22 @@ local utils = import "templates/utils.libsonnet";
         --per_device_train_batch_size 8 \
         --per_device_eval_batch_size 8
         %(common_copy)s
-      ||| % {common: command_common, common_copy: command_copy_metrics}
+      ||| % { common: command_common, common_copy: command_copy_metrics }
     ),
     regressionTestConfig+: {
       required_metrics: ['eval_loss_final'],
       metric_success_conditions+: {
-        "eval_loss_final": {
+        eval_loss_final: {
           success_threshold: {
             fixed_value: 1.5,
           },
-          comparison: "less",
+          comparison: 'less',
         },
       },
     },
   },
   local roberta_base_pre = common.Convergence {
-    modelName: "hf-mlm-roberta-b-pre",
+    modelName: 'hf-mlm-roberta-b-pre',
     command: utils.scriptCommand(
       |||
         %(common)s --mlm --model_type=roberta \
@@ -75,27 +75,27 @@ local utils = import "templates/utils.libsonnet";
         --per_device_train_batch_size 8 \
         --per_device_eval_batch_size 8
         %(common_copy)s
-      ||| % {common: command_common, common_copy: command_copy_metrics}
+      ||| % { common: command_common, common_copy: command_copy_metrics }
     ),
     regressionTestConfig+: {
       required_metrics: ['eval_loss_final'],
       metric_success_conditions+: {
-        "eval_loss_final": {
+        eval_loss_final: {
           success_threshold: {
             fixed_value: 6.5,
           },
-          comparison: "less",
+          comparison: 'less',
         },
       },
     },
   },
   local hf_lm = common.PyTorchTest {
-    modelName: "hf-lm",
+    modelName: 'hf-lm',
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    cpu: "12.0",
-    memory: "80Gi",
+    cpu: '12.0',
+    memory: '80Gi',
   },
   local v2_8 = {
     accelerator: tpus.v2_8,

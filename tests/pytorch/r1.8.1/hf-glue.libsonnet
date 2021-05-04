@@ -1,21 +1,21 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-local common = import "common.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local utils = import "templates/utils.libsonnet";
+local common = import 'common.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
 
 {
   local command_common = |||
@@ -45,95 +45,95 @@ local utils = import "templates/utils.libsonnet";
     gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
   |||,
   local bert_base_cased = common.Convergence {
-    modelName: "hf-glue-bert-b-c",
+    modelName: 'hf-glue-bert-b-c',
     command: utils.scriptCommand(
       |||
         %(common)s --model_name_or_path bert-base-cased \
         --per_device_train_batch_size 64 \
         --per_device_eval_batch_size 64
         %(common_copy)s
-      ||| % {common: command_common, common_copy: command_copy_metrics}
+      ||| % { common: command_common, common_copy: command_copy_metrics }
     ),
     regressionTestConfig+: {
       required_metrics: ['eval/accuracy_final'],
       metric_success_conditions+: {
-        "eval/accuracy_final": {
+        'eval/accuracy_final': {
           success_threshold: {
             fixed_value: 0.80,
           },
-          comparison: "greater",
+          comparison: 'greater',
         },
       },
     },
   },
   local xlnet_large_cased = common.Convergence {
-    modelName: "hf-glue-xlnet-l-c",
+    modelName: 'hf-glue-xlnet-l-c',
     command: utils.scriptCommand(
       |||
         %(common)s --model_name_or_path xlnet-large-cased \
         --per_device_train_batch_size 32 \
         --per_device_eval_batch_size 16
         %(common_copy)s
-      ||| % {common: command_common, common_copy: command_copy_metrics}
+      ||| % { common: command_common, common_copy: command_copy_metrics }
     ),
     regressionTestConfig+: {
       required_metrics: ['eval/accuracy_final'],
       metric_success_conditions+: {
-        "eval/accuracy_final": {
+        'eval/accuracy_final': {
           success_threshold: {
             fixed_value: 0.85,
           },
-          comparison: "greater",
+          comparison: 'greater',
         },
       },
     },
   },
   local roberta_large = common.Convergence {
-    modelName: "hf-glue-roberta-l",
+    modelName: 'hf-glue-roberta-l',
     command: utils.scriptCommand(
       |||
         %(common)s --model_name_or_path roberta-large \
         --per_device_train_batch_size 16 \
         --per_device_eval_batch_size 16
         %(common_copy)s
-      ||| % {common: command_common, common_copy: command_copy_metrics}
+      ||| % { common: command_common, common_copy: command_copy_metrics }
     ),
     regressionTestConfig+: {
       required_metrics: ['eval/accuracy_final'],
       metric_success_conditions+: {
-        "eval/accuracy_final": {
+        'eval/accuracy_final': {
           success_threshold: {
             fixed_value: 0.85,
           },
-          comparison: "greater",
+          comparison: 'greater',
         },
       },
     },
   },
   local distilbert_base_uncased = common.Convergence {
-    modelName: "hf-glue-distilbert-b-uc",
+    modelName: 'hf-glue-distilbert-b-uc',
     command: utils.scriptCommand(
       |||
         %(common)s --model_name_or_path distilbert-base-uncased \
         --per_device_train_batch_size 512 \
         --per_device_eval_batch_size 512
         %(common_copy)s
-      ||| % {common: command_common, common_copy: command_copy_metrics}
+      ||| % { common: command_common, common_copy: command_copy_metrics }
     ),
     regressionTestConfig+: {
       required_metrics: ['eval/accuracy_final'],
       metric_success_conditions+: {
-        "eval/accuracy_final": {
+        'eval/accuracy_final': {
           success_threshold: {
             fixed_value: 0.70,
           },
-          comparison: "greater",
+          comparison: 'greater',
         },
       },
     },
   },
   local hf_glue = common.PyTorchTest {
-    modelName: "hf-glue",
+    modelName: 'hf-glue',
     jobSpec+:: {
       template+: {
         spec+: {
@@ -141,8 +141,8 @@ local utils = import "templates/utils.libsonnet";
             train+: {
               resources+: {
                 requests: {
-                  cpu: "12.0",
-                  memory: "80Gi",
+                  cpu: '12.0',
+                  memory: '80Gi',
                 },
               },
             },
