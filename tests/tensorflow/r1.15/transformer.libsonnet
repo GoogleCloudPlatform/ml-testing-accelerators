@@ -32,19 +32,17 @@ local utils = import 'templates/utils.libsonnet';
       '--output_dir=$(MODEL_DIR)',
     ],
 
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          containerMap+:: {
-            train+: {
-              args: utils.scriptCommand(
-                // HACK: Trim TPU name from `zone/name` to `name`.
-                |||
-                  unset KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS
-                  %s --cloud_tpu_name="${TPU_NAME##*/}"
-                ||| % std.join(' ', config.command)
-              ),
-            },
+    podTemplate+:: {
+      spec+: {
+        containerMap+:: {
+          train+: {
+            args: utils.scriptCommand(
+              // HACK: Trim TPU name from `zone/name` to `name`.
+              |||
+                unset KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS
+                %s --cloud_tpu_name="${TPU_NAME##*/}"
+              ||| % std.join(' ', config.command)
+            ),
           },
         },
       },

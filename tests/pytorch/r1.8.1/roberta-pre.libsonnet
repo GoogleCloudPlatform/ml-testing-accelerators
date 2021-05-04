@@ -64,17 +64,15 @@ local utils = import 'templates/utils.libsonnet';
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          containerMap+: {
-            train+: {
-              resources+: {
-                requests: {
-                  cpu: '9.0',
-                  memory: '30Gi',
-                  'ephemeral-storage': '10Gi',
-                },
+    podTemplate+:: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            resources+: {
+              requests: {
+                cpu: '9.0',
+                memory: '30Gi',
+                'ephemeral-storage': '10Gi',
               },
             },
           },

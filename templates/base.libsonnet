@@ -216,13 +216,6 @@ local volumes = import 'volumes.libsonnet';
       },
     },
 
-    jobSpec:: {
-      // Try 2 times before giving up.
-      backoffLimit: 1,
-      activeDeadlineSeconds: config.timeout,
-      template: config.podTemplate,
-    },
-
     runnablePod:: config.podTemplate {
       apiVersion: 'v1',
       kind: 'Pod',
@@ -246,23 +239,37 @@ local volumes = import 'volumes.libsonnet';
       },
     },
 
+    jobTemplate+:: {
+      metadata: {
+        labels: config.labels,
+      },
+      spec: {
+        // Try 2 times before giving up.
+        backoffLimit: 1,
+        activeDeadlineSeconds: config.timeout,
+        template: config.podTemplate,
+      },
+    },
+
     oneshotJob:: {
       local oneshotConfig = config {
         // Don't publish PubSub message for oneshot jobs.
         publisherImage: null,
 
-        jobSpec+: {
-          // Don't retry oneshot jobs.
-          backoffLimit: 0,
+        jobTemplate+:: {
+          spec+: {
+            // Don't retry oneshot jobs.
+            backoffLimit: 0,
+          },
         },
       },
 
       apiVersion: 'batch/v1',
       kind: 'Job',
-      metadata: {
+      metadata: oneshotConfig.jobTemplate.metadata {
         generateName: '%s-' % oneshotConfig.testName,
       },
-      spec: oneshotConfig.jobSpec,
+      spec: oneshotConfig.jobTemplate.spec,
     },
 
     cronJob:: {
@@ -276,12 +283,7 @@ local volumes = import 'volumes.libsonnet';
         schedule: config.schedule,
         concurrencyPolicy: 'Forbid',
         successfulJobsHistoryLimit: 1,
-        jobTemplate: {
-          metadata: {
-            labels: config.labels,
-          },
-          spec: config.jobSpec,
-        },
+        jobTemplate: config.jobTemplate,
       },
     },
   },

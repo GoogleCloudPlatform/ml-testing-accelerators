@@ -33,32 +33,34 @@ local utils = import 'templates/utils.libsonnet';
       '--output_gcs_url=$(MODEL_DIR)',
     ],
 
-    jobSpec+:: {
-      activeDeadlineSeconds: config.timeout * (self.backoffLimit + 2),
-      template+: {
-        spec+: {
-          activeDeadlineSeconds: config.timeout,
-          containerMap+:: {
-            train+: {
-              envMap+:: {
-                BENCHMARK_OUTPUT_DIR: '$(MODEL_DIR)',
+    jobTemplate+:: {
+      spec+: {
+        activeDeadlineSeconds: config.timeout * (self.backoffLimit + 2),
+        template+: {
+          spec+: {
+            activeDeadlineSeconds: config.timeout,
+            containerMap+:: {
+              train+: {
+                envMap+:: {
+                  BENCHMARK_OUTPUT_DIR: '$(MODEL_DIR)',
+                },
+                args: utils.scriptCommand(
+                  // HACK: Replace some hard-coded data paths
+                  |||
+                    sed -i 's_gs://tf-perfzero-data/bert_$(PERFZERO_DATA_DIR)_g' /garden/official/benchmark/bert_squad_benchmark.py
+                    sed -i 's_gs://tf-perfzero-data_$(PERFZERO_DATA_DIR)_g' /garden/official/benchmark/retinanet_benchmark.py
+                    sed -i 's_gs://mlcompass-data/transformer_$(PERFZERO_DATA_DIR)_g' /garden/official/benchmark/transformer_benchmark.py
+                    sed -i 's_gs://mlcompass-data/imagenet/imagenet-2012-tfrecord_$(PERFZERO_DATA_DIR)/imagenet_g' /garden/official/benchmark/resnet_ctl_imagenet_benchmark.py
+                    sed -i 's/wmt32k-en2de-official/transformer/g' /garden/official/benchmark/transformer_benchmark.py
+
+                    if [ -v TPU_NAME ]; then
+                      export BENCHMARK_TPU=${TPU_NAME#*/}
+                    fi
+
+                    %s
+                  ||| % std.join(' ', config.command)
+                ),
               },
-              args: utils.scriptCommand(
-                // HACK: Replace some hard-coded data paths
-                |||
-                  sed -i 's_gs://tf-perfzero-data/bert_$(PERFZERO_DATA_DIR)_g' /garden/official/benchmark/bert_squad_benchmark.py
-                  sed -i 's_gs://tf-perfzero-data_$(PERFZERO_DATA_DIR)_g' /garden/official/benchmark/retinanet_benchmark.py
-                  sed -i 's_gs://mlcompass-data/transformer_$(PERFZERO_DATA_DIR)_g' /garden/official/benchmark/transformer_benchmark.py
-                  sed -i 's_gs://mlcompass-data/imagenet/imagenet-2012-tfrecord_$(PERFZERO_DATA_DIR)/imagenet_g' /garden/official/benchmark/resnet_ctl_imagenet_benchmark.py
-                  sed -i 's/wmt32k-en2de-official/transformer/g' /garden/official/benchmark/transformer_benchmark.py
-
-                  if [ -v TPU_NAME ]; then
-                    export BENCHMARK_TPU=${TPU_NAME#*/}
-                  fi
-
-                  %s
-                ||| % std.join(' ', config.command)
-              ),
             },
           },
         },

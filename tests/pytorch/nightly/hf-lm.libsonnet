@@ -140,16 +140,14 @@ local utils = import 'templates/utils.libsonnet';
   },
   local hf_lm = common.PyTorchTest {
     modelName: 'hf-lm',
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          containerMap+: {
-            train+: {
-              resources+: {
-                requests: {
-                  cpu: '12.0',
-                  memory: '80Gi',
-                },
+    podTemplate+:: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            resources+: {
+              requests: {
+                cpu: '12.0',
+                memory: '80Gi',
               },
             },
           },

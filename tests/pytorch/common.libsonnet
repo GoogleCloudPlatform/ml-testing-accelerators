@@ -59,14 +59,12 @@ local volumes = import 'templates/volumes.libsonnet';
     cpu: '4.5',
     memory: '8Gi',
 
-    jobSpec+:: {
-      template+: {
-        spec+: {
-          containerMap+: {
-            train+: {
-              envMap+: {
-                XLA_USE_BF16: '0',
-              },
+    podTemplate+:: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            envMap+: {
+              XLA_USE_BF16: '0',
             },
           },
         },
@@ -85,35 +83,37 @@ local volumes = import 'templates/volumes.libsonnet';
     // on just the workers, directly override config.workerVolumes.
     workerVolumes: config.volumeMap,
 
-    jobSpec+:: {
-      backoffLimit: 0,
-      template+: {
-        spec+: {
-          serviceAccountName: 'pytorch-xla-pods',
-          containerMap+: {
-            train+: {
-              // Use `image` and `imageTag` for workers instead.
-              image: 'gcr.io/xl-ml-test/pytorch-pods:nightly',
-              // Override the Docker ENTRYPOINT.
-              command: [
-                'python3',
-                'launch_k8s_workers.py',
-                '--name=$(JOB_NAME)',
-                '--image=%s:%s' % [config.image, config.imageTag],
-                '--owner_name=$(POD_NAME)',
-                '--owner_uid=$(POD_UID)',
-                '--namespace=$(POD_NAMESPACE)',
-                '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
-                '--cpu=%s' % config.workerCpu,
-                '--memory=%s' % config.workerMemory,
-                '--volumes=%s' % std.join(',',
-                                          [
-                                            '%(name)s:%(mountPath)s' % config.workerVolumes[k]
-                                            for k in std.objectFields(config.workerVolumes)
-                                          ]),
-                '--',
-                // config.args is distributed to the workers.
-              ],
+    jobTemplate+:: {
+      spec+: {
+        backoffLimit: 0,
+        template+: {
+          spec+: {
+            serviceAccountName: 'pytorch-xla-pods',
+            containerMap+: {
+              train+: {
+                // Use `image` and `imageTag` for workers instead.
+                image: 'gcr.io/xl-ml-test/pytorch-pods:nightly',
+                // Override the Docker ENTRYPOINT.
+                command: [
+                  'python3',
+                  'launch_k8s_workers.py',
+                  '--name=$(JOB_NAME)',
+                  '--image=%s:%s' % [config.image, config.imageTag],
+                  '--owner_name=$(POD_NAME)',
+                  '--owner_uid=$(POD_UID)',
+                  '--namespace=$(POD_NAMESPACE)',
+                  '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
+                  '--cpu=%s' % config.workerCpu,
+                  '--memory=%s' % config.workerMemory,
+                  '--volumes=%s' % std.join(',',
+                                            [
+                                              '%(name)s:%(mountPath)s' % config.workerVolumes[k]
+                                              for k in std.objectFields(config.workerVolumes)
+                                            ]),
+                  '--',
+                  // config.args is distributed to the workers.
+                ],
+              },
             },
           },
         },
@@ -130,17 +130,19 @@ local volumes = import 'templates/volumes.libsonnet';
     condaEnv: 'torch-xla-nightly',
     xlaDistFlags: '',
 
-    jobSpec+:: {
-      backoffLimit: 0,
-      template+: {
-        spec+: {
-          containerMap+: {
-            train+: {
-              envMap+: {
-                MACHINE_TYPE: config.instanceType,
-                ACCELERATOR_TYPE: config.acceleratorName,
-                CONDA_ENV: config.condaEnv,
-                XLA_DIST_FLAGS: config.xlaDistFlags,
+    jobTemplate+:: {
+      spec+: {
+        backoffLimit: 0,
+        template+: {
+          spec+: {
+            containerMap+: {
+              train+: {
+                envMap+: {
+                  MACHINE_TYPE: config.instanceType,
+                  ACCELERATOR_TYPE: config.acceleratorName,
+                  CONDA_ENV: config.condaEnv,
+                  XLA_DIST_FLAGS: config.xlaDistFlags,
+                },
               },
             },
           },
