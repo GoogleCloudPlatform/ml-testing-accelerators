@@ -17,6 +17,7 @@ local volumes = import 'volumes.libsonnet';
 {
   BaseTest:: {
     local config = self,
+    local gcsSubdir = '%(frameworkPrefix)s/%(modelName)s/%(mode)s/%(acceleratorName)s' % config,
 
     frameworkPrefix: error 'Must specify `frameworkPrefix`',
     modelName: error 'Must specify `modelName`',
@@ -63,6 +64,7 @@ local volumes = import 'volumes.libsonnet';
     // List of ConfigMaps to pull environment variables from.
     configMaps: ['gcs-buckets'],
 
+    // DEPRECATED: Use metricConfig for new code.
     // Default regression test settings. Alert when time for test increases significantly.
     metricCollectionConfig: {
       write_to_bigquery: true,
@@ -79,6 +81,11 @@ local volumes = import 'volumes.libsonnet';
         },
       },
     },
+
+    // Settings for metric collection and assertions. Should evaluate to
+    // MetricCollectionConfig from metrics/metrics.proto. See
+    // metrics.MetricCollectionConfigHelper
+    metricConfig: null,
 
     // Kubernetes Pods have a character limit. Ensure that jobs generated from
     // CronJobs are short enough.
@@ -137,8 +144,7 @@ local volumes = import 'volumes.libsonnet';
           },
           {
             name: 'MODEL_DIR',
-            value:
-              '$(OUTPUT_BUCKET)/%(frameworkPrefix)s/%(modelName)s/%(mode)s/%(acceleratorName)s/$(JOB_NAME)' % config,
+            value: '$(OUTPUT_BUCKET)/%s/$(JOB_NAME)' % gcsSubdir,
           },
         ],
 
@@ -241,6 +247,11 @@ local volumes = import 'volumes.libsonnet';
 
     jobTemplate+:: {
       metadata: {
+        annotations+: if config.metricConfig != null then {
+          'ml-testing-accelerators/metric-config':
+              std.manifestJsonEx(config.metricConfig, '  ') + '\n',
+          'ml-testing-accelerators/gcs-subdir': gcsSubdir,
+        } else { },
         labels: config.labels,
       },
       spec: {

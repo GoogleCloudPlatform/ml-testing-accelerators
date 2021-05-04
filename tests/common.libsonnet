@@ -25,6 +25,9 @@ local metrics = import 'templates/metrics.libsonnet';
       requireTpuAvailableLabel: true,
     },
 
+    metricConfig:
+      metrics.CompatMetrics(config.metricCollectionConfig, config.regressionTestConfig),
+
     // Add experimental TPU health monitor to Job.
     podTemplate+:: {
       spec+: {
@@ -63,17 +66,6 @@ local metrics = import 'templates/metrics.libsonnet';
     cronJob+:: {
       metadata+: {
         namespace: 'automated',
-      },
-      spec+: {
-        jobTemplate+: {
-          metadata+: {
-            annotations+: {
-              'ml-testing-accelerators/metric-config':
-                std.manifestJsonEx(metrics.CompatMetrics(config.metricCollectionConfig, config.regressionTestConfig), '  ') + '\n',
-              'ml-testing-accelerators/gcs-subdir': '%(frameworkPrefix)s/%(modelName)s/%(mode)s/%(acceleratorName)s' % config,
-            },
-          },
-        },
       },
     },
   },
