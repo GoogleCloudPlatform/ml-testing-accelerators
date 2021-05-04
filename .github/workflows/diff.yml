@@ -23,10 +23,10 @@ jobs:
         go get github.com/google/go-jsonnet/cmd/jsonnetfmt
         echo "$HOME/go/bin" >> $GITHUB_PATH
 
-    - name: Format files (diff should be empty)
+    - name: Format JSonnet files (diff should be empty)
       run: |
         scripts/format-jsonnet.sh
-        git add -N
+        git add -N tests/ templates/
         git diff --exit-code
 
     - name: Build repository
