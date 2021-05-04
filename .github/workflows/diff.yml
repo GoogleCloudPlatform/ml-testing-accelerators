@@ -27,7 +27,7 @@ jobs:
       run: |
         scripts/format-jsonnet.sh
         git add -N
-        git diff --exit-code --compact-summary
+        git diff --exit-code
 
     - name: Build repository
       run: |
