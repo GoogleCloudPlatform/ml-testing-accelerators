@@ -1,21 +1,21 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-local common = import "common.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local utils = import "templates/utils.libsonnet";
+local common = import 'common.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
 
 {
   local command_common = |||
@@ -46,47 +46,47 @@ local utils = import "templates/utils.libsonnet";
       --num_cores=8 \
   |||,
   local chpt_command_common = |||
-      %(command_common)s  --log_steps=10 \
-        --train-subset=test \
-        --valid-subset=valid \
-        --save-interval=1 \
-        --input_shapes=128x64 \
+    %(command_common)s  --log_steps=10 \
+      --train-subset=test \
+      --valid-subset=valid \
+      --save-interval=1 \
+      --input_shapes=128x64 \
   ||| % command_common,
   local transformer = {
-    modelName: "fs-transformer",
+    modelName: 'fs-transformer',
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    cpu: "9.0",
-    memory: "30Gi",
+    cpu: '9.0',
+    memory: '30Gi',
     regressionTestConfig: {
-      "metric_subset_to_alert": [
-        "total_wall_time",
+      metric_subset_to_alert: [
+        'total_wall_time',
       ],
-      "metric_success_conditions": {
-        "total_wall_time": {
-          "comparison": "less",
-          "success_threshold": {
-            "stddevs_from_mean": 5
+      metric_success_conditions: {
+        total_wall_time: {
+          comparison: 'less',
+          success_threshold: {
+            stddevs_from_mean: 5,
           },
-          "wait_for_n_points_of_history": 10
-        }
-      }
+          wait_for_n_points_of_history: 10,
+        },
+      },
     },
   },
   local checkpoint_local = common.Functional {
-    modelName: "fs-checkpoint-local",
+    modelName: 'fs-checkpoint-local',
     command: utils.scriptCommand(
       |||
         %(common)s  --max-epoch=1 \
           --save-dir=/tmp/checkpoints
         %(common)s  --max-epoch=2 \
           --save-dir=/tmp/checkpoints
-      ||| % {common: chpt_command_common}
+      ||| % { common: chpt_command_common }
     ),
   },
   local checkpoint_gcs = common.Functional {
-    modelName: "fs-checkpoint-gcs",
+    modelName: 'fs-checkpoint-gcs',
     command: utils.scriptCommand(
       |||
         %(common)s  --max-epoch=1 \
@@ -96,7 +96,7 @@ local utils = import "templates/utils.libsonnet";
           --save-dir=%(savedir)s
         gsutil ls -l %(savedir)s
         gsutil rm -r %(savedir)s
-      ||| % {common: chpt_command_common, savedir: "$MODEL_DIR/checkpoints"}
+      ||| % { common: chpt_command_common, savedir: '$MODEL_DIR/checkpoints' }
     ),
     jobSpec+:: {
       template+: {
@@ -104,7 +104,7 @@ local utils = import "templates/utils.libsonnet";
           containerMap+: {
             train+: {
               envMap+: {
-                XLA_USE_BF16: "1",
+                XLA_USE_BF16: '1',
               },
             },
           },
@@ -114,37 +114,37 @@ local utils = import "templates/utils.libsonnet";
   },
   local functional_xla_dist = common.Functional {
     command: [
-      "python",
-      "/usr/share/torch-xla-nightly/tpu-examples/deps/fairseq/train.py",
-      "/datasets/wmt18_en_de_bpej32k",
-      "--metrics_debug",
-      "--arch=transformer_vaswani_wmt_en_de_big",
-      "--max-target-positions=64",
-      "--attention-dropout=0.1",
-      "--no-progress-bar",
-      "--criterion=label_smoothed_cross_entropy",
-      "--source-lang=en",
-      "--lr-scheduler=inverse_sqrt",
-      "--min-lr=1e-09",
-      "--skip-invalid-size-inputs-valid-test",
-      "--target-lang=de",
-      "--label-smoothing=0.1",
-      "--update-freq=1",
-      "--optimizer=adam",
+      'python',
+      '/usr/share/torch-xla-nightly/tpu-examples/deps/fairseq/train.py',
+      '/datasets/wmt18_en_de_bpej32k',
+      '--metrics_debug',
+      '--arch=transformer_vaswani_wmt_en_de_big',
+      '--max-target-positions=64',
+      '--attention-dropout=0.1',
+      '--no-progress-bar',
+      '--criterion=label_smoothed_cross_entropy',
+      '--source-lang=en',
+      '--lr-scheduler=inverse_sqrt',
+      '--min-lr=1e-09',
+      '--skip-invalid-size-inputs-valid-test',
+      '--target-lang=de',
+      '--label-smoothing=0.1',
+      '--update-freq=1',
+      '--optimizer=adam',
       "--adam-betas='(0.9,0.98)'",
-      "--warmup-init-lr=1e-07",
-      "--lr=0.0005",
-      "--warmup-updates=4000",
-      "--share-all-embeddings",
-      "--dropout=0.3",
-      "--weight-decay=0.0",
-      "--num_cores=8",
-      "--no-save",
-      "--max-epoch=1",
-      "--log_steps=10",
-      "--train-subset=valid",
-      "--valid-subset=test",
-      "--input_shapes=128x64",
+      '--warmup-init-lr=1e-07',
+      '--lr=0.0005',
+      '--warmup-updates=4000',
+      '--share-all-embeddings',
+      '--dropout=0.3',
+      '--weight-decay=0.0',
+      '--num_cores=8',
+      '--no-save',
+      '--max-epoch=1',
+      '--log_steps=10',
+      '--train-subset=valid',
+      '--valid-subset=test',
+      '--input_shapes=128x64',
     ],
   },
   local functional = common.Functional {
@@ -189,7 +189,7 @@ local utils = import "templates/utils.libsonnet";
           containerMap+: {
             train+: {
               envMap+: {
-                XLA_USE_BF16: "1",
+                XLA_USE_BF16: '1',
               },
             },
           },

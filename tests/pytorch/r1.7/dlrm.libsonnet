@@ -1,21 +1,21 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-local common = import "common.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local utils = import "templates/utils.libsonnet";
+local common = import 'common.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
 
 {
   local command_common = |||
@@ -38,25 +38,25 @@ local utils = import "templates/utils.libsonnet";
       --num-indices-per-lookup-fixed \
   |||,
   local dlrm = common.PyTorchTest {
-    modelName: "dlrm",
-    schedule: "2 22 * * *",
+    modelName: 'dlrm',
+    schedule: '2 22 * * *',
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    cpu: "9.0",
-    memory: "30Gi",
+    cpu: '9.0',
+    memory: '30Gi',
   },
   local dlrm_convergence = common.PyTorchTest {
-    modelName: "dlrm-convergence",
-    schedule: "4 22 * * *",
+    modelName: 'dlrm-convergence',
+    schedule: '4 22 * * *',
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    cpu: "40.0",
-    memory: "500Gi",
+    cpu: '40.0',
+    memory: '500Gi',
   },
   local mp_dp_fwd = common.Functional {
-    modelName: "dlrm-mpdp-fwd",
+    modelName: 'dlrm-mpdp-fwd',
     command: utils.scriptCommand(
       |||
         %(command_common)s  --mini-batch-size=2048 \
@@ -107,5 +107,5 @@ local utils = import "templates/utils.libsonnet";
   configs: [
     dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
     dlrm_convergence + v3_8 + criteo_kaggle + timeouts.Hours(6),
-  ]
+  ],
 }

@@ -1,23 +1,23 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-local common = import "common.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
+local common = import 'common.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
 
 {
   local shapemask = common.LegacyTpuTest {
-    modelName: "shapemask",
+    modelName: 'shapemask',
     paramsOverride: {
       eval: {
         eval_file_pattern: '$(COCO_DIR)/val*',
@@ -29,8 +29,8 @@ local tpus = import "templates/tpus.libsonnet";
         predict_batch_size: 8,
       },
       train: {
-        iterations_per_loop: error "Must set `iterations_per_loop`",
-        train_batch_size: error "Must set `train_batch_size`",
+        iterations_per_loop: error 'Must set `iterations_per_loop`',
+        train_batch_size: error 'Must set `train_batch_size`',
         checkpoint: {
           path: '$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07',
           prefix: 'resnet50/',
@@ -44,15 +44,15 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
     command: [
-      "python3",
-      "/shapemask/models/official/detection/main.py",
-      "--model=shapemask",
-      "--use_tpu=True",
-      "--eval_after_training=False",
-      "--mode=train",
-      "--params_override=%s" % (std.manifestYamlDoc(self.paramsOverride) + "\n"),
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-      "--model_dir=$(MODEL_DIR)",
+      'python3',
+      '/shapemask/models/official/detection/main.py',
+      '--model=shapemask',
+      '--use_tpu=True',
+      '--eval_after_training=False',
+      '--mode=train',
+      '--params_override=%s' % (std.manifestYamlDoc(self.paramsOverride) + '\n'),
+      '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
+      '--model_dir=$(MODEL_DIR)',
     ],
 
     jobSpec+:: {
@@ -62,8 +62,8 @@ local tpus = import "templates/tpus.libsonnet";
             train+: {
               env+: [
                 {
-                  name: "PYTHONPATH",
-                  value: "/shapemask/models/",
+                  name: 'PYTHONPATH',
+                  value: '/shapemask/models/',
                 },
               ],
             },
@@ -81,7 +81,7 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
     command+: [
-      "--num_cores=8",
+      '--num_cores=8',
     ],
   },
   local v3_8 = {
@@ -93,7 +93,7 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
     command+: [
-      "--num_cores=8",
+      '--num_cores=8',
     ],
   },
   local v2_32 = {
@@ -105,7 +105,7 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
     command+: [
-      "--num_cores=32",
+      '--num_cores=32',
     ],
   },
   local v3_32 = {
@@ -117,7 +117,7 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
     command+: [
-      "--num_cores=32",
+      '--num_cores=32',
     ],
   },
   local convergence = common.Convergence,
@@ -132,7 +132,7 @@ local tpus = import "templates/tpus.libsonnet";
   configs: [
     shapemask + v2_8 + convergence,
     shapemask + v3_8 + convergence,
-    shapemask + v2_32 + convergence + tpus.reserved + {schedule: "0 0 * * 0,2,4"},
+    shapemask + v2_32 + convergence + tpus.reserved + { schedule: '0 0 * * 0,2,4' },
     shapemask + v3_32 + convergence,
     shapemask + v2_8 + functional,
     shapemask + v3_8 + functional,

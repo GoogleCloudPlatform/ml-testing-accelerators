@@ -1,35 +1,35 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-local common = import "common.libsonnet";
-local gpus = import "templates/gpus.libsonnet";
-local mixins = import "templates/mixins.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local utils = import "templates/utils.libsonnet";
+local common = import 'common.libsonnet';
+local gpus = import 'templates/gpus.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
 
 {
   local mnist = common.PyTorchTest {
-    modelName: "mnist",
+    modelName: 'mnist',
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
     command: [
-      "python3",
-      "pytorch/xla/test/test_train_mp_mnist.py",
-      "--logdir=$(MODEL_DIR)",
-      "--datadir=/datasets/mnist-data",
+      'python3',
+      'pytorch/xla/test/test_train_mp_mnist.py',
+      '--logdir=$(MODEL_DIR)',
+      '--datadir=/datasets/mnist-data',
     ],
   },
 
@@ -41,8 +41,8 @@ local utils = import "templates/utils.libsonnet";
   |||,
 
   local mnist_gpu = common.PyTorchTest {
-    imageTag: "nightly_3.6_cuda",
-    modelName: "mnist",
+    imageTag: 'nightly_3.6_cuda',
+    modelName: 'mnist',
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
@@ -51,11 +51,11 @@ local utils = import "templates/utils.libsonnet";
   local convergence = common.Convergence {
     regressionTestConfig+: {
       metric_success_conditions+: {
-        "Accuracy/test_final": {
+        'Accuracy/test_final': {
           success_threshold: {
             fixed_value: 98.0,
           },
-          comparison: "greater",
+          comparison: 'greater',
         },
       },
     },
@@ -63,25 +63,25 @@ local utils = import "templates/utils.libsonnet";
 
   local v2_8 = {
     accelerator: tpus.v2_8,
-    schedule: "10 17 * * *",
+    schedule: '10 17 * * *',
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
-    schedule: "4 17 * * *",
+    schedule: '4 17 * * *',
   },
   local v100 = {
     accelerator: gpus.teslaV100,
     command: utils.scriptCommand(
       gpu_command_base % 1
     ),
-    schedule: "0 19 * * *",
+    schedule: '0 19 * * *',
   },
   local v100x4 = v100 {
-    accelerator: gpus.teslaV100 + { count: 4 },
+    accelerator: gpus.teslaV100 { count: 4 },
     command: utils.scriptCommand(
       gpu_command_base % 4
     ),
-    schedule: "2 19 * * *",
+    schedule: '2 19 * * *',
   },
 
   configs: [

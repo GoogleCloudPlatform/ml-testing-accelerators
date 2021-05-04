@@ -1,57 +1,57 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-local common = import "common.libsonnet";
-local mixins = import "templates/mixins.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local gpus = import "templates/gpus.libsonnet";
+local common = import 'common.libsonnet';
+local gpus = import 'templates/gpus.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
 
 {
   local maskrcnn = common.ModelGardenTest {
-    modelName: "maskrcnn",
+    modelName: 'maskrcnn',
     paramsOverride:: {
       eval: {
-        eval_file_pattern: "$(COCO_DIR)/val*",
-        val_json_file: "$(COCO_DIR)/instances_val2017.json",
+        eval_file_pattern: '$(COCO_DIR)/val*',
+        val_json_file: '$(COCO_DIR)/instances_val2017.json',
       },
       train: {
         iterations_per_loop: 5000,
         checkpoint: {
-          path: "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07",
-          prefix: "resnet50/",
+          path: '$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07',
+          prefix: 'resnet50/',
         },
-        frozen_variable_prefix: "(conv2d(|_([1-9]|10))|batch_normalization(|_([1-9]|10)))\\/",
-        total_steps: error "Must set `train.total_steps`",
-        batch_size: error "Must set `train.batch_size`",
-        train_file_pattern: "$(COCO_DIR)/train*",
+        frozen_variable_prefix: '(conv2d(|_([1-9]|10))|batch_normalization(|_([1-9]|10)))\\/',
+        total_steps: error 'Must set `train.total_steps`',
+        batch_size: error 'Must set `train.batch_size`',
+        train_file_pattern: '$(COCO_DIR)/train*',
       },
       postprocess: {
         pre_nms_num_boxes: 1000,
       },
     },
     command: [
-      "python3",
-      "official/vision/detection/main.py",
-      "--model=mask_rcnn",
-      "--params_override=%s" % (std.manifestYamlDoc(self.paramsOverride) + "\n"),
-      "--model_dir=$(MODEL_DIR)",
+      'python3',
+      'official/vision/detection/main.py',
+      '--model=mask_rcnn',
+      '--params_override=%s' % (std.manifestYamlDoc(self.paramsOverride) + '\n'),
+      '--model_dir=$(MODEL_DIR)',
     ],
   },
   local functional = common.Functional {
     command+: [
-      "--mode=train",
+      '--mode=train',
     ],
     paramsOverride+: {
       train+: {
@@ -63,7 +63,7 @@ local gpus = import "templates/gpus.libsonnet";
     local config = self,
 
     command+: [
-      "--mode=train",
+      '--mode=train',
     ],
     paramsOverride+: {
       train+: {
@@ -81,7 +81,7 @@ local gpus = import "templates/gpus.libsonnet";
       },
     },
     command+: [
-      "--num_gpus=%d" % config.accelerator.count,
+      '--num_gpus=%d' % config.accelerator.count,
     ],
   },
   local k80 = gpu_common {
@@ -101,9 +101,9 @@ local gpus = import "templates/gpus.libsonnet";
     accelerator: gpus.teslaK80,
   },
   local k80x8 = k80 {
-    accelerator: gpus.teslaK80 + { count: 8 },
+    accelerator: gpus.teslaK80 { count: 8 },
     command+: [
-      "--all_reduce_alg=hierarchical_copy",
+      '--all_reduce_alg=hierarchical_copy',
     ],
   },
   local v100 = gpu_common {
@@ -123,7 +123,7 @@ local gpus = import "templates/gpus.libsonnet";
     accelerator: gpus.teslaV100,
   },
   local v100x4 = v100 {
-    accelerator: gpus.teslaV100 + { count: 4 },
+    accelerator: gpus.teslaV100 { count: 4 },
   },
 
   local tpu_common = {
@@ -139,8 +139,8 @@ local gpus = import "templates/gpus.libsonnet";
       },
     },
     command+: [
-      "--strategy_type=tpu",
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
+      '--strategy_type=tpu',
+      '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
     ],
   },
   local v2_8 = tpu_common {
@@ -188,8 +188,7 @@ local gpus = import "templates/gpus.libsonnet";
     maskrcnn + convergence + v3_8,
     maskrcnn + functional + v2_32,
     maskrcnn + functional + v3_32,
-    maskrcnn + convergence + v2_32 + tpus.reserved + {schedule: "0 22 * * 0,2,4"},
+    maskrcnn + convergence + v2_32 + tpus.reserved + { schedule: '0 22 * * 0,2,4' },
     maskrcnn + convergence + v3_32,
   ],
 }
-
