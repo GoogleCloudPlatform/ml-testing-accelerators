@@ -33,7 +33,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
-    operations + v2_8 + common.Functional + timeouts.Hours(4),
-    operations + v3_8 + common.Functional + timeouts.Hours(4),
+    operations + v2_8 + common.Functional + timeouts.Hours(8),
+    operations + v3_8 + common.Functional + timeouts.Hours(8),
   ],
 }
