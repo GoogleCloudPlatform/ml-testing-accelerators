@@ -51,7 +51,7 @@ local volumes = import 'templates/volumes.libsonnet';
       tpuVmStartupScript: 'echo Running startup script',
 
       // Amount of time to sleep after TPU is READY.
-      tpuVmCreateSleepSeconds: 180,
+      tpuVmCreateSleepSeconds: 60,
 
       // Additional arguments for test Docker container.
       tpuVmDockerArgs: '',
@@ -68,6 +68,7 @@ local volumes = import 'templates/volumes.libsonnet';
             image: 'google/cloud-sdk',
             lifecycle: cleanupHook,
             envMap+:: {
+              'LOCAL_OUTPUT_DIR': '/tmp/model_dir',
               'KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS': if config.accelerator.replicas == 1 then
                 'local'
               else
@@ -159,20 +160,59 @@ local volumes = import 'templates/volumes.libsonnet';
       },
     },
   },
-  TpuVmTrainingTest:: self.TpuVmBaseTest {
+  TensorFlowTpuVmTest:: self.TpuVmBaseTest {
+    local config = self,
+
+    podTemplate+:: {
+      spec+: {
+        containerMap+:: {
+          train+: {
+            args: null,
+            command: [
+              'bash',
+              '-c',
+              |||
+                set -x
+                set -u
+                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                  'curl -L https://github.com/tensorflow/models/archive/master.tar.gz | tar zx'
+                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                  'mv models-master models'
+                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                  'pip install -r models/official/requirements.txt'
+                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                  'cd models; PYTHONPATH=${PWD} '%(testCommand)s
+                exit_code=$?
+                bash /scripts/cleanup.sh
+                exit $exit_code
+              ||| % {testCommand: std.escapeStringBash(
+                std.join(
+                  ' ',
+                  ['"' + std.strReplace(c, '"', '\\"')  + '"' for c in config.command],
+                ),
+              )},
+            ],
+          },
+        },
+      },
+    },
+  },
+  TensorFlowTpuVmDockerTest:: self.TpuVmBaseTest {
     local config = self,
     tpuSettings+: {
-      tpuVmCreateSleepSeconds: 60,
+      tpuVmDockerArgs: if config.accelerator.replicas == 1 then
+        '-v "/lib/libtpu.so:/lib/libtpu.so"'
+      else
+        '-v "/lib/libtpu.so:/lib/libtpu.so" --net host -e TPU_LOAD_LIBRARY=0',
     },
+
+    image: 'gcr.io/xl-ml-test/tensorflow-1vm:nightly',
+
     podTemplate+:: {
       spec+: {
         containerMap+:: {
           monitor: null,
           train+: {
-            envMap+:: {
-              'LOCAL_OUTPUT_DIR': '/tmp/model_dir',
-            },
-
             local remoteScript = {
               dockerImage: config.image,
               dockerArgs: config.tpuSettings.tpuVmDockerArgs,
@@ -209,23 +249,9 @@ local volumes = import 'templates/volumes.libsonnet';
       }
     }
   },
-  TensorFlowTpuVmTest:: self.TpuVmTrainingTest {
-    local config = self,
-
-    image: 'gcr.io/xl-ml-test/tensorflow-1vm:nightly',
-    tpuSettings+: {
-      tpuVmDockerArgs: if config.accelerator.replicas == 1 then
-        '-v "/lib/libtpu.so:/lib/libtpu.so"'
-      else
-        '-v "/lib/libtpu.so:/lib/libtpu.so" --net host -e TPU_LOAD_LIBRARY=0',
-    },
-  },
   PyTorchTpuVmTest:: self.TpuVmBaseTest {
-    image: 'gcr.io/xl-ml-test/wcromar-pytorch-1vm:latest',
     local config = self,
-    tpuSettings+: {
-      tpuVmCreateSleepSeconds: 60,
-    },
+    image: 'gcr.io/xl-ml-test/wcromar-pytorch-1vm:latest',
     podTemplate+:: {
       spec+: {
         containerMap+:: {
@@ -237,9 +263,6 @@ local volumes = import 'templates/volumes.libsonnet';
                   ' ',
                   config.command,
                 ),
-            },
-            envMap+:: {
-              'LOCAL_OUTPUT_DIR': '/tmp/model_dir',
             },
             args: null,
             // PyTorch tests are structured as bash scripts that run directly

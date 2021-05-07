@@ -132,6 +132,8 @@
               "value": "$(OUTPUT_BUCKET)/tf-nightly/inference/func/v2-8/$(JOB_NAME)"
             - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
               "value": "local"
+            - "name": "LOCAL_OUTPUT_DIR"
+              "value": "/tmp/model_dir"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"

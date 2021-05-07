@@ -183,6 +183,8 @@
               "value": "$(OUTPUT_BUCKET)/jax/pod-head-libtpu-nightly/func/v2-32/$(JOB_NAME)"
             - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
               "value": "tpu-$(POD_UID)"
+            - "name": "LOCAL_OUTPUT_DIR"
+              "value": "/tmp/model_dir"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"

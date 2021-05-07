@@ -102,13 +102,13 @@
               set -x
               set -u
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'sudo usermod -aG docker $USER'
+                'curl -L https://github.com/tensorflow/models/archive/master.tar.gz | tar zx'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'gcloud auth configure-docker'
+                'mv models-master models'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'sudo gcsfuse --implicit-dirs -o allow_other /gcs'
+                'pip install -r models/official/requirements.txt'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'docker run -i --rm --privileged -v "/gcs:/gcs" -v "$(LOCAL_OUTPUT_DIR):$(LOCAL_OUTPUT_DIR)" --entrypoint "" -v "/lib/libtpu.so:/lib/libtpu.so" gcr.io/xl-ml-test/tensorflow-1vm:nightly ''"python3" "official/vision/detection/main.py" "--model=mask_rcnn" "--params_override=\"architecture\":
+                'cd models; PYTHONPATH=${PWD} ''"python3" "official/vision/detection/main.py" "--model=mask_rcnn" "--params_override=\"architecture\":
                 \"use_bfloat16\": true
               \"eval\":
                 \"batch_size\": 40
@@ -128,7 +128,6 @@
                 \"train_file_pattern\": \"$(COCO_DIR)/train*\"
               " "--model_dir=$(MODEL_DIR)" "--mode=train" "--strategy_type=tpu" "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"'
               exit_code=$?
-              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) 'gsutil -m cp -r $(LOCAL_OUTPUT_DIR) $(MODEL_DIR)'
               bash /scripts/cleanup.sh
               exit $exit_code
             "env":
