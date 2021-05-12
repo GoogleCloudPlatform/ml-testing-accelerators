@@ -26,33 +26,34 @@ local tpus = import 'templates/tpus.libsonnet';
         train_steps: error 'Must set `trainer.train_steps`',
       },
       task: {
-        builder: 'records',
-      },
-      validation_dataset: {
-        builder: 'records',
+        train_data: {
+          input_path: $(IMAGENET_DIR)/train*,
+        },
+        validation_data: {
+          input_path: $(IMAGENET_DIR)/valid*,
+        },
       },
     },
     command: [
       'python3',
       'official/vision/beta/train.py',
-      '--experiment=resnet_rs_imagenet', \
-      '--mode=train_and_eval', \
-      '--model_dir=$(MODEL_DIR)', \
-      '--config_file=official/vision/beta/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml', \
-      '--params_override="task.train_data.input_path=$IMAGENET_DIR/train*, task.validation_data.input_path=$IMAGENET_DIR/valid*, trainer.train_steps=100"
+      '--experiment=resnet_rs_imagenet',
+      '--mode=train_and_eval',
+      '--model_dir=$(MODEL_DIR)',
+      '--config_file=official/vision/beta/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml',
       '--params_override=%s' % std.manifestYamlDoc(self.paramsOverride) + '\n',
     ],
   },
   local functional = common.Functional {
     paramsOverride+: {
-      train+: {
+      trainer+: {
         train_steps: 320,
       },
     },
   },
   local convergence = common.Convergence {
     paramsOverride+: {
-      train+: {
+      trainer+: {
         train_steps: 109200,
       },
     },
