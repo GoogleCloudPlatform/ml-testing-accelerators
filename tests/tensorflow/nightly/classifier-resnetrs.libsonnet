@@ -27,10 +27,10 @@ local tpus = import 'templates/tpus.libsonnet';
       },
       task: {
         train_data: {
-          input_path: $(IMAGENET_DIR)/train*,
+          input_path: '$(IMAGENET_DIR)/train*',
         },
         validation_data: {
-          input_path: $(IMAGENET_DIR)/valid*,
+          input_path: '$(IMAGENET_DIR)/valid*',
         },
       },
     },
@@ -59,17 +59,11 @@ local tpus = import 'templates/tpus.libsonnet';
     },
     regressionTestConfig+: {
       metric_success_conditions+: {
-        'accuracy': {
+        'validation/accuracy_final': {
           success_threshold: {
-            fixed_value: 0.76,
+            fixed_value: 0.79,
           },
           comparison: 'greater',
-        },
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 4.0,
-          },
         },
       },
     },
@@ -80,22 +74,24 @@ local tpus = import 'templates/tpus.libsonnet';
 
     paramsOverride+:: {
       runtime+: {
+        distribution_strategy: 'mirrored',
+        mixed_precision_dtype: 'float16',
+        loss_scale: 'dynamic',
         num_gpus: config.accelerator.count,
       },
     },
-    command+: [
-      '--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/gpu.yaml',
-    ],
   },
   local k80 = gpu_common {
     local config = self,
 
     paramsOverride+:: {
-      train_dataset+: {
-        batch_size: 128,
-      },
-      validation_dataset+: {
-        batch_size: 128,
+      task+: {
+        train_data+: {
+          global_batch_size: 128,
+         },
+        validation_data+: {
+          global_batch_size: 128,
+        },
       },
     },
     accelerator: gpus.teslaK80,
@@ -121,7 +117,6 @@ local tpus = import 'templates/tpus.libsonnet';
   local tpu_common = {
     command+: [
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
-      '--config_file=official/vision/beta/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml',
     ],
   },
   local v2_8 = tpu_common {
