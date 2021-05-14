@@ -27,31 +27,56 @@
       ||| % script,
     ],
 
-  // Takes an object of the form {"test_name": test}, a default region, and an object of
-  // the form {"region": accelerator}. Returns an object of the form
-  // {"region/gen/test_name.yaml": cron_job_yaml} where region is either the region
-  // preferred for the accelerator used in the test (from regionAccelerators) or the
-  // default region. Skips tests with schedule == null.
-  // Use with jsonnet -S -m output_dir/ ...
-  cronJobOutput(tests, defaultRegion, regionAccelerators={}):
-    local acceleratorRegions = std.foldl(
-      function(result, region) result + {
-        [accelerator.name]: region
-        for accelerator in regionAccelerators[region]
+  // Return an object of the form {cluster: tests} where cluster is either the
+  // cluster preferred for the accelerator used in the test or the default
+  // cluster.
+  // Args:
+  //   tests: array of tests
+  //   defaultCluster: default cluster to use if accelerator is not in
+  //     clusterAccelerators
+  //   clusterAccelerators: object of the form {cluster: acceleratorName}
+  splitByCluster(tests, defaultCluster, clusterAccelerators={}):
+    local acceleratorCluster = std.foldl(
+      function(result, cluster) result + {
+        [accelerator.name]: cluster
+        for accelerator in clusterAccelerators[cluster]
       },
-      std.objectFields(regionAccelerators),
+      std.objectFields(clusterAccelerators),
       {},
     );
-    local getDirectory(test) = (
-      if std.objectHas(acceleratorRegions, test.accelerator.name) then
-        acceleratorRegions[test.accelerator.name]
+    local getCluster(test) = (
+      if std.objectHas(acceleratorCluster, test.accelerator.name) then
+        acceleratorCluster[test.accelerator.name]
       else
-        defaultRegion
-    ) + '/gen/';
-    {
-      [getDirectory(tests[name]) + name + '.yaml']:
-        std.manifestYamlDoc(tests[name].cronJob)
-      for name in std.objectFields(tests)
-      if tests[name].schedule != null
-    },
+        defaultCluster
+    );
+    std.foldl(
+      function(result, test) result {
+        [getCluster(test)]+: [test],
+      },
+      tests,
+      {}
+    ),
+
+  // Returns an object of the form {"cluster/gen/test_name.yaml": cronJobYaml}.
+  // Skips tests with schedule == null.
+  // Args:
+  //   tests: object of the form {"test_name": test}
+  //   defaultCluster: default cluster to use if accelerator is not in
+  //     clusterAccelerators
+  //   clusterAccelerators: object of the form {"cluster": acceleratorName}
+  //
+  // Use with jsonnet -S -m output_dir/ ...
+  cronJobOutput(tests, defaultCluster, clusterAccelerators={}):
+    local clusterTests = self.splitByCluster(
+      std.filter(function(test) test.schedule != null, std.objectValues(tests)), defaultCluster, clusterAccelerators
+    );
+    std.foldl(
+      function(result, clusterName) result + {
+        ['%s/gen/%s.yaml' % [clusterName, test.testName]]: std.manifestYamlDoc(test.cronJob)
+        for test in clusterTests[clusterName]
+      },
+      std.objectFields(clusterTests),
+      {},
+    ),
 }
