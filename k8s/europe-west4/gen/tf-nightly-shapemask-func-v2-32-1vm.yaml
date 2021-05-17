@@ -108,7 +108,7 @@
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'pip install -r models/official/requirements.txt'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'cd models; PYTHONPATH=${PWD} ''"/bin/bash" "-c" "set -u
+                'cd models; PYTHONPATH=${PWD} TPU_LOAD_LIBRARY=0 ''"/bin/bash" "-c" "set -u
               set -e
               set -x
               

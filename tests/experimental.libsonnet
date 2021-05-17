@@ -162,6 +162,13 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   TensorFlowTpuVmTest:: self.TpuVmBaseTest {
     local config = self,
+    tpuSettings+: {
+      tpuVmEnvVars+: {
+        PYTHONPATH: '${PWD}',
+      } + if config.accelerator.replicas > 1 then {
+        TPU_LOAD_LIBRARY: '0'
+      } else {},
+    },
 
     podTemplate+:: {
       spec+: {
@@ -181,16 +188,24 @@ local volumes = import 'templates/volumes.libsonnet';
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                   'pip install -r models/official/requirements.txt'
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                  'cd models; PYTHONPATH=${PWD} '%(testCommand)s
+                  'cd models; %(env)s '%(testCommand)s
                 exit_code=$?
                 bash /scripts/cleanup.sh
                 exit $exit_code
-              ||| % {testCommand: std.escapeStringBash(
-                std.join(
-                  ' ',
-                  ['"' + std.strReplace(c, '"', '\\"')  + '"' for c in config.command],
+              ||| % {
+                testCommand: std.escapeStringBash(
+                  std.join(
+                    ' ',
+                    ['"' + std.strReplace(c, '"', '\\"')  + '"' for c in config.command],
+                  ),
                 ),
-              )},
+                env: std.join(
+                  ' ',
+                  [
+                    '%s=%s' % [key, config.tpuSettings.tpuVmEnvVars[key]] for key in std.objectFields(config.tpuSettings.tpuVmEnvVars)
+                  ],
+                )
+              },
             ],
           },
         },

@@ -108,7 +108,7 @@
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'pip install -r models/official/requirements.txt'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'cd models; PYTHONPATH=${PWD} ''"python3" "official/nlp/transformer/transformer_main.py" "--param_set=big" "--max_length=64" "--data_dir=$(TRANSFORMER_DIR)" "--vocab_file=$(TRANSFORMER_DIR)/vocab.ende.32768" "--bleu_source=$(TRANSFORMER_DIR)/newstest2014.en" "--bleu_ref=$(TRANSFORMER_DIR)/newstest2014.de" "--enable_tensorboard" "--model_dir=$(MODEL_DIR)" "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)" "--distribution_strategy=tpu" "--steps_between_evals=10000" "--static_batch=true" "--use_ctl=true" "--padded_decode=true" "--decode_batch_size=32" "--decode_max_length=97" "--batch_size=24576" "--train_steps=20000"'
+                'cd models; PYTHONPATH=${PWD} TPU_LOAD_LIBRARY=0 ''"python3" "official/nlp/transformer/transformer_main.py" "--param_set=big" "--max_length=64" "--data_dir=$(TRANSFORMER_DIR)" "--vocab_file=$(TRANSFORMER_DIR)/vocab.ende.32768" "--bleu_source=$(TRANSFORMER_DIR)/newstest2014.en" "--bleu_ref=$(TRANSFORMER_DIR)/newstest2014.de" "--enable_tensorboard" "--model_dir=$(MODEL_DIR)" "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)" "--distribution_strategy=tpu" "--steps_between_evals=10000" "--static_batch=true" "--use_ctl=true" "--padded_decode=true" "--decode_batch_size=32" "--decode_max_length=97" "--batch_size=24576" "--train_steps=20000"'
               exit_code=$?
               bash /scripts/cleanup.sh
               exit $exit_code

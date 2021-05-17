@@ -108,7 +108,7 @@
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'pip install -r models/official/requirements.txt'
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'cd models; PYTHONPATH=${PWD} ''"python3" "official/vision/image_classification/mnist_main.py" "--data_dir=/tmp/mnist" "--model_dir=$(LOCAL_OUTPUT_DIR)" "--train_epochs=10" "--epochs_between_evals=10" "--download" "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"'
+                'cd models; PYTHONPATH=${PWD} TPU_LOAD_LIBRARY=0 ''"python3" "official/vision/image_classification/mnist_main.py" "--data_dir=/tmp/mnist" "--model_dir=$(LOCAL_OUTPUT_DIR)" "--train_epochs=10" "--epochs_between_evals=10" "--download" "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"'
               exit_code=$?
               bash /scripts/cleanup.sh
               exit $exit_code
