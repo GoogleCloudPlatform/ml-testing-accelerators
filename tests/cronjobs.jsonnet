@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local tpus = import 'templates/tpus.libsonnet';
+local clusters = import 'clusters.jsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 local all_tests = import 'all_tests.jsonnet';
@@ -34,16 +34,11 @@ local copyrightHeader = |||
 
 |||;
 
-local defaultRegion = 'us-central1';
-local regionAccelerators = {
-  'us-central1': [],
-  'europe-west4': [
-    tpus.v2_32,
-    tpus.v3_32,
-  ],
-};
-
-local cronJobs = utils.cronJobOutput(all_tests, defaultRegion, regionAccelerators);
+local cronJobs = utils.cronJobOutput(
+  all_tests,
+  clusters.defaultCluster,
+  clusters.clusterAccelerators,
+);
 
 // Outputs {filename: yaml_string} for each target
 {
