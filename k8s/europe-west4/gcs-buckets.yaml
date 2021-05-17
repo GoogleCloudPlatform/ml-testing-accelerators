@@ -18,6 +18,7 @@ metadata:
   name: gcs-buckets
 data:
   OUTPUT_BUCKET: gs://xl-ml-test-europe-west4/output
+  TFDS_DIR: gs://xl-ml-test-europe-west4/tfds-data
   MNIST_DIR: gs://xl-ml-test-europe-west4/data/mnist
   BERT_CLASSIFICATION_DIR: gs://cloud-tpu-checkpoints/bert/classification
   BERT_SQUAD_DIR: gs://xl-ml-test-europe-west4/data/squad
