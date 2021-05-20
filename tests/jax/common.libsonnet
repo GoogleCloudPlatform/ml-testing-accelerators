@@ -15,9 +15,33 @@
 local common = import "../common.libsonnet";
 local experimental = import "../experimental.libsonnet";
 local tpus = import "templates/tpus.libsonnet";
+local mixins = import 'templates/mixins.libsonnet';
 
 {
   JaxTest:: common.CloudAcceleratorTest + experimental.TpuVmBaseTest {
+    regressionTestConfig+: {
+      metric_subset_to_alert: [
+        'ExecuteTime__Percentile_99_sec_final',
+        'total_wall_time',
+        'Accuracy/test_final',
+        'aten_ops_sum_final',
+      ],
+      metric_success_conditions+: {
+        ExecuteTime__Percentile_99_sec_final: {
+          success_threshold: {
+            stddevs_from_mean: 5.0,
+          },
+          comparison: 'less',
+          wait_for_n_points_of_history: 20,
+        },
+        aten_ops_sum_final: {
+          success_threshold: {
+            stddevs_from_mean: 0.0,
+          },
+          comparison: 'less_or_equal',
+        },
+      },
+    },
     local config = self,
 
     frameworkPrefix: 'jax',
@@ -149,6 +173,30 @@ local tpus = import "templates/tpus.libsonnet";
     libtpuVersion: "alpha",
     tpuSettings+: {
       softwareVersion: "v2-alpha",
+    },
+  },
+  Functional:: mixins.Functional + mixins.Suspended {
+    regressionTestConfig+: {
+      metric_success_conditions+: {
+        examples_per_second_average: {
+          comparison: 'greater_or_equal',
+          success_threshold: {
+            stddevs_from_mean: 4.0,
+          },
+        },
+      },
+    },
+  },
+  Convergence:: mixins.Convergence {
+    regressionTestConfig+: {
+      metric_success_conditions+: {
+        examples_per_second_average: {
+          comparison: 'greater_or_equal',
+          success_threshold: {
+            stddevs_from_mean: 4.0,
+          },
+        },
+      },
     },
   },
 }

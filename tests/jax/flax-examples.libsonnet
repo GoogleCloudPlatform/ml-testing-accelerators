@@ -14,10 +14,10 @@
 
 local common = import "common.libsonnet";
 local mixins = import "templates/mixins.libsonnet";
-
+local tpus = import "templates/tpus.libsonnet";
 {
   local runFlaxExample =
-  common.JaxTest + mixins.Functional + common.jaxlibHead + common.libtpuNightly {
+  common.JaxTest + common.Convergence + common.jaxlibHead + common.libtpuNightly + tpus.v2_8 {
     local config = self,
 
     frameworkPrefix: 'flax',
@@ -54,30 +54,47 @@ local mixins = import "templates/mixins.libsonnet";
       pip install -e .
       cd examples/%(modelName)s
 
-      export GCS_BUCKET=$(OUTPUT_BUCKET)
+      export GCS_BUCKET=$(MODEL_DIR)
       export TFDS_DATA_DIR=gs://xl-ml-test-europe-west4/tfds-data/
 
-      python3 main.py --workdir=./workdir --config=configs/default.py %(extraFlags)s
+      python3 main.py --workdir=$(MODEL_DIR)  --config=configs/default.py %(extraFlags)s
     ||| % (self.scriptConfig + {
       modelName: config.modelName,
       extraDeps: config.extraDeps,
       extraFlags: config.extraFlags,
     }),
   },
-
+  local functional = common.Functional {
+    extraFlags:: '--config.num_epochs=1',
+  },
+  local convergence = common.Convergence {
+    extraFlags:: '--config.num_epochs=10',
+  },
+  local v3_8 = {
+    accelerator: tpus.v3_8,
+  },
+  local v2_8 = {
+    accelerator: tpus.v2_8,
+  },
   local imagenet = runFlaxExample {
     modelName:: 'imagenet',
-    extraFlags:: '--config.num_epochs=2',
+    #extraFlags:: '--config.num_epochs=2',
   },
 
   local wmt = runFlaxExample {
     modelName:: 'wmt',
     extraDeps:: 'tensorflow_text sentencepiece',
-    extraFlags:: '--config.num_train_steps=100 --config.per_device_batch_size=16',
+    extraFlags:: '--config.num_train_steps=10 --config.per_device_batch_size=16',
+  },
+  local mnist = runFlaxExample {
+    modelName:: 'mnist',
   },
 
   configs: [
-    imagenet,
-    wmt,
+    imagenet + functional + v2_8,
+    wmt + v2_8,
+    mnist + v3_8 + convergence,
+    mnist + v2_8 + functional,
+    mnist + v2_8 + convergence,
   ]
 }
