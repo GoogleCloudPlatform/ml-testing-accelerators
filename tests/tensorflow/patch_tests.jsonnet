@@ -66,7 +66,7 @@ function(
   );
   std.foldl(
     function(result, clusterName) result + {
-      ['%s/%s.yaml' % [clusterName, test.testName]]: std.manifestYamlDoc(test.cronJob)
+      ['%s/%s.yaml' % [clusterName, test.testName]]: std.manifestYamlDoc(test.oneshotJob)
       for test in clusterTests[clusterName]
     },
     std.objectFields(clusterTests),
