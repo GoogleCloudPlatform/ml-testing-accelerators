@@ -87,7 +87,7 @@ local tpus = import 'templates/tpus.libsonnet';
       task+: {
         train_data+: {
           global_batch_size: 128,
-         },
+        },
         validation_data+: {
           global_batch_size: 128,
         },
