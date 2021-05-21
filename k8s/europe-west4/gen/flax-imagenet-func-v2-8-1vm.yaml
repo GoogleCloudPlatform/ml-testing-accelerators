@@ -49,7 +49,42 @@
               {
                 "tensorboard": {
                   "aggregate_assertions": [
-          
+                    {
+                      "assertion": {
+                        "inclusive_bounds": false,
+                        "std_devs_from_mean": {
+                          "comparison": "LESS",
+                          "std_devs": 5
+                        },
+                        "wait_for_n_data_points": 20
+                      },
+                      "strategy": "FINAL",
+                      "tag": "ExecuteTime__Percentile_99_sec"
+                    },
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "LESS",
+                          "std_devs": 0
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "FINAL",
+                      "tag": "aten_ops_sum"
+                    },
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "GREATER",
+                          "std_devs": 4
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "AVERAGE",
+                      "tag": "examples_per_second"
+                    }
                   ],
                   "exclude_tags": [
           
@@ -131,10 +166,10 @@
               pip install -e .
               cd examples/imagenet
               
-              export GCS_BUCKET=$(OUTPUT_BUCKET)
+              export GCS_BUCKET=$(MODEL_DIR)
               export TFDS_DATA_DIR=gs://xl-ml-test-europe-west4/tfds-data/
               
-              python3 main.py --workdir=./workdir --config=configs/default.py --config.num_epochs=2
+              python3 main.py --workdir=$(MODEL_DIR)  --config=configs/default.py --config.num_epochs=1
               
               TEST_SCRIPT_EOF
               exit_code=$?
@@ -258,3 +293,4 @@
             "name": "scripts"
   "schedule": "30 13 * * *"
   "successfulJobsHistoryLimit": 1
+  "suspend": true

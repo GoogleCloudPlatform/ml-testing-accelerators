@@ -17,18 +17,18 @@
 "metadata":
   "labels":
     "accelerator": "v2-8"
-    "benchmarkId": "jax-latest-libtpu-nightly-func-v2-8-1vm"
-    "frameworkVersion": "jax"
-    "mode": "func"
-    "model": "latest-libtpu-nightly"
-  "name": "jax-latest-libtpu-nightly-func-v2-8-1vm"
+    "benchmarkId": "flax-wmt-conv-v2-8-1vm"
+    "frameworkVersion": "flax"
+    "mode": "conv"
+    "model": "wmt"
+  "name": "flax-wmt-conv-v2-8-1vm"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
       "annotations":
-        "ml-testing-accelerators/gcs-subdir": "jax/latest-libtpu-nightly/func/v2-8"
+        "ml-testing-accelerators/gcs-subdir": "flax/wmt/conv/v2-8"
         "ml-testing-accelerators/metric-config": |
           {
             "sources": [
@@ -72,6 +72,18 @@
                       },
                       "strategy": "FINAL",
                       "tag": "aten_ops_sum"
+                    },
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "GREATER",
+                          "std_devs": 4
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "AVERAGE",
+                      "tag": "examples_per_second"
                     }
                   ],
                   "exclude_tags": [
@@ -92,12 +104,12 @@
           }
       "labels":
         "accelerator": "v2-8"
-        "benchmarkId": "jax-latest-libtpu-nightly-func-v2-8-1vm"
-        "frameworkVersion": "jax"
-        "mode": "func"
-        "model": "latest-libtpu-nightly"
+        "benchmarkId": "flax-wmt-conv-v2-8-1vm"
+        "frameworkVersion": "flax"
+        "mode": "conv"
+        "model": "wmt"
     "spec":
-      "activeDeadlineSeconds": 3600
+      "activeDeadlineSeconds": 36000
       "backoffLimit": 0
       "template":
         "metadata":
@@ -122,18 +134,26 @@
               rm .bash_logout
               
               pip install --upgrade pip
-              pip install --upgrade numpy==1.18.5 scipy wheel future six cython pytest \
-                  absl-py opt-einsum msgpack
               
               echo "Checking out and installing JAX..."
               git clone https://github.com/google/jax.git
               cd jax
               echo "jax git hash: $(git rev-parse HEAD)"
               pip install -e .
+              echo "Building jaxlib from source at TF head"
+              echo "Checking out TF..."
+              cd ~/
+              git clone https://github.com/tensorflow/tensorflow.git
+              cd tensorflow
+              echo "TensorFlow git hash: $(git rev-parse HEAD)"
               
-              pip install --upgrade jaxlib
-              python3 -c 'import jaxlib; print("jaxlib version:", jaxlib.__version__)'
+              echo "Building JAX..."
+              cd ~/jax
+              python3 build/build.py --enable_tpu --bazel_options="--override_repository=org_tensorflow=$HOME/tensorflow"
+              pip install dist/*.whl
               
+              
+              pip install --upgrade clu tensorflow_text sentencepiece
               
               num_devices=`python3 -c "import jax; print(jax.device_count())"`
               if [ "$num_devices" = "1" ]; then
@@ -141,11 +161,15 @@
                 exit 1
               fi
               
-              export JAX_NUM_GENERATED_CASES=5
-              export COLUMNS=160
-              # Remove 'Captured stdout call' due to b/181896778
-              python3 -u -m pytest --tb=short tests examples | sed 's/Captured stdout call/output/'
-              exit ${PIPESTATUS[0]}
+              git clone https://github.com/google/flax
+              cd flax
+              pip install -e .
+              cd examples/wmt
+              
+              export GCS_BUCKET=$(MODEL_DIR)
+              export TFDS_DATA_DIR=gs://xl-ml-test-europe-west4/tfds-data/
+              
+              python3 main.py --workdir=$(MODEL_DIR)  --config=configs/default.py --config.num_train_steps=10 --config.per_device_batch_size=16
               
               TEST_SCRIPT_EOF
               exit_code=$?
@@ -169,7 +193,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/jax/latest-libtpu-nightly/func/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/flax/wmt/conv/v2-8/$(JOB_NAME)"
             - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
               "value": "local"
             - "name": "LOCAL_OUTPUT_DIR"

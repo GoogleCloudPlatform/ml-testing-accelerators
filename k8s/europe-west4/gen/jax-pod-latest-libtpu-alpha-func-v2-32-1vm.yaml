@@ -49,7 +49,30 @@
               {
                 "tensorboard": {
                   "aggregate_assertions": [
-          
+                    {
+                      "assertion": {
+                        "inclusive_bounds": false,
+                        "std_devs_from_mean": {
+                          "comparison": "LESS",
+                          "std_devs": 5
+                        },
+                        "wait_for_n_data_points": 20
+                      },
+                      "strategy": "FINAL",
+                      "tag": "ExecuteTime__Percentile_99_sec"
+                    },
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "LESS",
+                          "std_devs": 0
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "FINAL",
+                      "tag": "aten_ops_sum"
+                    }
                   ],
                   "exclude_tags": [
           

@@ -17,18 +17,18 @@
 "metadata":
   "labels":
     "accelerator": "v2-8"
-    "benchmarkId": "flax-wmt-func-v2-8-1vm"
+    "benchmarkId": "flax-mnist-func-v2-8-1vm"
     "frameworkVersion": "flax"
     "mode": "func"
-    "model": "wmt"
-  "name": "flax-wmt-func-v2-8-1vm"
+    "model": "mnist"
+  "name": "flax-mnist-func-v2-8-1vm"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
       "annotations":
-        "ml-testing-accelerators/gcs-subdir": "flax/wmt/func/v2-8"
+        "ml-testing-accelerators/gcs-subdir": "flax/mnist/func/v2-8"
         "ml-testing-accelerators/metric-config": |
           {
             "sources": [
@@ -49,7 +49,42 @@
               {
                 "tensorboard": {
                   "aggregate_assertions": [
-          
+                    {
+                      "assertion": {
+                        "inclusive_bounds": false,
+                        "std_devs_from_mean": {
+                          "comparison": "LESS",
+                          "std_devs": 5
+                        },
+                        "wait_for_n_data_points": 20
+                      },
+                      "strategy": "FINAL",
+                      "tag": "ExecuteTime__Percentile_99_sec"
+                    },
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "LESS",
+                          "std_devs": 0
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "FINAL",
+                      "tag": "aten_ops_sum"
+                    },
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "GREATER",
+                          "std_devs": 4
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "AVERAGE",
+                      "tag": "examples_per_second"
+                    }
                   ],
                   "exclude_tags": [
           
@@ -69,10 +104,10 @@
           }
       "labels":
         "accelerator": "v2-8"
-        "benchmarkId": "flax-wmt-func-v2-8-1vm"
+        "benchmarkId": "flax-mnist-func-v2-8-1vm"
         "frameworkVersion": "flax"
         "mode": "func"
-        "model": "wmt"
+        "model": "mnist"
     "spec":
       "activeDeadlineSeconds": 3600
       "backoffLimit": 0
@@ -118,7 +153,7 @@
               pip install dist/*.whl
               
               
-              pip install --upgrade clu tensorflow_text sentencepiece
+              pip install --upgrade clu 
               
               num_devices=`python3 -c "import jax; print(jax.device_count())"`
               if [ "$num_devices" = "1" ]; then
@@ -129,12 +164,12 @@
               git clone https://github.com/google/flax
               cd flax
               pip install -e .
-              cd examples/wmt
+              cd examples/mnist
               
-              export GCS_BUCKET=$(OUTPUT_BUCKET)
+              export GCS_BUCKET=$(MODEL_DIR)
               export TFDS_DATA_DIR=gs://xl-ml-test-europe-west4/tfds-data/
               
-              python3 main.py --workdir=./workdir --config=configs/default.py --config.num_train_steps=100 --config.per_device_batch_size=16
+              python3 main.py --workdir=$(MODEL_DIR)  --config=configs/default.py --config.num_epochs=1
               
               TEST_SCRIPT_EOF
               exit_code=$?
@@ -158,7 +193,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/flax/wmt/func/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/flax/mnist/func/v2-8/$(JOB_NAME)"
             - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
               "value": "local"
             - "name": "LOCAL_OUTPUT_DIR"
@@ -258,3 +293,4 @@
             "name": "scripts"
   "schedule": "30 13 * * *"
   "successfulJobsHistoryLimit": 1
+  "suspend": true
