@@ -56,9 +56,11 @@ local volumes = import 'templates/volumes.libsonnet';
       // Additional arguments for test Docker container.
       tpuVmDockerArgs: '',
     },
-    jobSpec+:: {
-      // Disable retries
-      backoffLimit: 0,
+    // Disable retries
+    jobTemplate+:: {
+      spec+: {
+        backoffLimit: 0,
+      },
     },
     podTemplate+:: {
       spec+: {

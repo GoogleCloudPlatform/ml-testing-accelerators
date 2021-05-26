@@ -16,6 +16,7 @@ local bert_mnli = import 'bert-mnli.libsonnet';
 local bert_squad = import 'bert-squad.libsonnet';
 local classifier_efficientnet = import 'classifier-efficientnet.libsonnet';
 local classifier_resnet = import 'classifier-resnet.libsonnet';
+local classifier_resnetrs = import 'classifier-resnetrs.libsonnet';
 local inference = import 'inference.libsonnet';
 local keras_api = import 'keras-api.libsonnet';
 local maskrcnn = import 'maskrcnn.libsonnet';

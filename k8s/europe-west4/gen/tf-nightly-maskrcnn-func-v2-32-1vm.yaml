@@ -123,6 +123,7 @@
                 \"checkpoint\":
                   \"path\": \"$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07\"
                   \"prefix\": \"resnet50/\"
+                \"frozen_variable_prefix\": \"(conv2d(|_([1-9]|10))|batch_normalization(|_([1-9]|10)))\\/\"
                 \"iterations_per_loop\": 5000
                 \"total_steps\": 1000
                 \"train_file_pattern\": \"$(COCO_DIR)/train*\"
@@ -153,6 +154,8 @@
               "value": "tpu-$(POD_UID)"
             - "name": "LOCAL_OUTPUT_DIR"
               "value": "/tmp/model_dir"
+            - "name": "TF_ENABLE_LEGACY_FILESYSTEM"
+              "value": "1"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"

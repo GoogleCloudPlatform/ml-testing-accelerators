@@ -134,6 +134,8 @@
               "value": "local"
             - "name": "LOCAL_OUTPUT_DIR"
               "value": "/tmp/model_dir"
+            - "name": "TF_ENABLE_LEGACY_FILESYSTEM"
+              "value": "1"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"

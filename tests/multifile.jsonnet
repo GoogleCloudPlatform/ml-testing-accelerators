@@ -34,13 +34,10 @@ local copyrightHeader = |||
 
 |||;
 
-local defaultRegion = 'us-central1';
+local defaultRegion = 'europe-west4';
 local regionAccelerators = {
   'us-central1': [],
-  'europe-west4': [
-    tpus.v2_32,
-    tpus.v3_32,
-  ],
+  'europe-west4': [],
 };
 
 local all_1vm_tests = {
