@@ -33,13 +33,9 @@ local experimental = import 'tests/experimental.libsonnet';
       '--log_steps=50',
       '--single_l2_loss_op=true',
       '--use_tf_function=true',
-      '--data_dir=%s' % self.flags.dataDir,
-      '--model_dir=%s' % self.flags.modelDir,
+      '--data_dir=$(IMAGENET_DIR)',
+      '--model_dir=$(MODEL_DIR)',
     ],
-    flags:: {
-      dataDir: '$(IMAGENET_DIR)',
-      modelDir: '$(MODEL_DIR)',
-    },
     tpuSettings+: {
       softwareVersion: 'test_nightly_direct_path_non_distrib_cache',
     },

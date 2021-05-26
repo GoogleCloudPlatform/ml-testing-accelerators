@@ -44,17 +44,13 @@ local experimental = import 'tests/experimental.libsonnet';
     command: [
       'python3',
       'official/vision/image_classification/classifier_trainer.py',
-      '--data_dir=%s' % self.flags.imageNetDir,
+      '--data_dir=$(IMAGENET_DIR)',
       '--model_type=efficientnet',
       '--dataset=imagenet',
       '--mode=train_and_eval',
-      '--model_dir=%s' % self.flags.modelDir,
+      '--model_dir=$(MODEL_DIR)',
       '--params_override=%s' % std.manifestYamlDoc(self.paramsOverride) + '\n',
     ],
-    flags:: {
-      imageNetDir: '$(IMAGENET_DIR)',
-      modelDir: '$(MODEL_DIR)',
-    },
   },
   local hbm = common.Functional {
     // Tests EfficientNet-b7 to check for HBM OOM.

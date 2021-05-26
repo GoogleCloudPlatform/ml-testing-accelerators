@@ -55,7 +55,7 @@ local tpus = import 'templates/tpus.libsonnet';
         cd examples/%(modelName)s
 
         export GCS_BUCKET=$(MODEL_DIR)
-        export TFDS_DATA_DIR=gs://xl-ml-test-europe-west4/tfds-data/
+        export TFDS_DATA_DIR=$(TFDS_DIR)
 
         python3 main.py --workdir=$(MODEL_DIR)  --config=configs/default.py %(extraFlags)s
       ||| % (self.scriptConfig {

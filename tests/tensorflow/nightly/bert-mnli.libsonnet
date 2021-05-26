@@ -27,18 +27,16 @@ local experimental = import 'tests/experimental.libsonnet';
       'official/nlp/bert/run_classifier.py',
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
       '--steps_per_loop=1000',
-      '--input_meta_data_path=%s/mnli_meta_data' % self.flags.bertClassificationDir,
-      '--train_data_path=%s/mnli_train.tf_record' % self.flags.bertClassificationDir,
-      '--eval_data_path=%s/mnli_eval.tf_record' % self.flags.bertClassificationDir,
-      '--bert_config_file=%s/uncased_L-24_H-1024_A-16/bert_config.json' % self.flags.kerasBertDir,
-      '--init_checkpoint=%s/uncased_L-24_H-1024_A-16/bert_model.ckpt' % self.flags.kerasBertDir,
+      '--input_meta_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_meta_data',
+      '--train_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_train.tf_record',
+      '--eval_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_eval.tf_record',
+      '--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_config.json',
+      '--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_model.ckpt',
       '--learning_rate=3e-5',
       '--distribution_strategy=tpu',
       '--model_dir=%s' % self.flags.modelDir,
     ],
     flags:: {
-      bertClassificationDir: '$(BERT_CLASSIFICATION_DIR)',
-      kerasBertDir: '$(KERAS_BERT_DIR)',
       modelDir: '$(MODEL_DIR)',
     },
   },
@@ -96,11 +94,9 @@ local experimental = import 'tests/experimental.libsonnet';
     command: utils.scriptCommand(|||
       %s
 
-      grep -a -c device:TPU /tmp/model_dir/summaries/train/plugins/profile/*/*.xplane.pb
+      grep -a -c device:TPU $(LOCAL_OUTPUT_DIR)/summaries/train/plugins/profile/*/*.xplane.pb
     ||| % std.join(' ', super.command)),
     flags+:: {
-      bertClassificationDir: '/gcs/cloud-tpu-checkpoints/bert/classification',
-      kerasBertDir: '/gcs/cloud-tpu-checkpoints/bert/keras_bert',
       modelDir: '$(LOCAL_OUTPUT_DIR)',
     },
   },
