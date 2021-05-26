@@ -78,7 +78,7 @@ local experimental = import 'tests/experimental.libsonnet';
     ],
   },
 
-  local tpuVmHack = experimental.TensorFlowTpuVmTest {
+  local tpuVm = experimental.TensorFlowTpuVmTest {
     command+: [
       '--download',
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
@@ -94,9 +94,9 @@ local experimental = import 'tests/experimental.libsonnet';
     mnist + v100 + functional,
     mnist + v2_8 + functional,
     mnist + v2_8 + convergence,
-    mnist + v2_8 + convergence + tpuVmHack,
+    mnist + v2_8 + convergence + tpuVm,
     mnist + v3_8 + functional,
     mnist + v3_8 + convergence,
-    mnist + v2_32 + convergence + tpuVmHack,
+    mnist + v2_32 + convergence + tpuVm,
   ],
 }

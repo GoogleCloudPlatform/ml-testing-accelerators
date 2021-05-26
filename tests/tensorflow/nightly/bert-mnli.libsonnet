@@ -90,7 +90,7 @@ local experimental = import 'tests/experimental.libsonnet';
       '--eval_batch_size=256',
     ],
   },
-  local tpuVmHack = experimental.TensorFlowTpuVmTest,
+  local tpuVm = experimental.TensorFlowTpuVmTest,
   local tpuVmProfilingCheck = experimental.TensorFlowTpuVmTest {
     mode: 'profile',
     command: utils.scriptCommand(|||
@@ -107,15 +107,15 @@ local experimental = import 'tests/experimental.libsonnet';
 
   configs: [
     bert + v2_8 + functional,
-    bert + v2_8 + functional + tpuVmHack,
+    bert + v2_8 + functional + tpuVm,
     bert + v2_8 + functional + tpuVmProfilingCheck,
     bert + v3_8 + functional,
-    bert + v3_8 + functional + tpuVmHack,
+    bert + v3_8 + functional + tpuVm,
     bert + v2_8 + convergence + timeouts.Hours(4),
     bert + v3_8 + convergence + timeouts.Hours(3),
-    bert + v2_32 + functional + tpuVmHack,
+    bert + v2_32 + functional + tpuVm,
     bert + v3_32 + functional,
-    bert + v3_32 + functional + tpuVmHack,
+    bert + v3_32 + functional + tpuVm,
     bert + v2_32 + convergence + tpus.reserved + { schedule: '54 21 * * 1,3,5,6' },
     bert + v3_32 + convergence,
   ],

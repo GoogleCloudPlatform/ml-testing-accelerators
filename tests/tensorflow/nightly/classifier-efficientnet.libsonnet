@@ -148,7 +148,7 @@ local experimental = import 'tests/experimental.libsonnet';
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
   },
-  local tpuVmExperimental = experimental.TensorFlowTpuVmTest,
+  local tpuVm = experimental.TensorFlowTpuVmTest,
 
   configs: [
     efficientnet + k80x8 + functional + timeouts.Hours(4) + mixins.Suspended,
@@ -157,13 +157,13 @@ local experimental = import 'tests/experimental.libsonnet';
     efficientnet + v100x4 + functional + timeouts.Hours(2) + mixins.Suspended,
     efficientnet + v100x4 + convergence + mixins.Experimental,
     efficientnet + v2_8 + functional,
-    efficientnet + v2_8 + functional + tpuVmExperimental,
+    efficientnet + v2_8 + functional + tpuVm,
     efficientnet + v3_8 + functional,
     efficientnet + v3_8 + hbm + mixins.Unsuspended,
     efficientnet + v2_8 + convergence + timeouts.Hours(45),
     efficientnet + v3_8 + convergence + timeouts.Hours(45),
     efficientnet + v2_32 + functional,
-    efficientnet + v2_32 + functional + tpuVmExperimental,
+    efficientnet + v2_32 + functional + tpuVm,
     efficientnet + v3_32 + functional,
     efficientnet + v2_32 + convergence + timeouts.Hours(10) + tpus.reserved + { schedule: '0 7 * * 1,3,5,6' },
     efficientnet + v3_32 + convergence + timeouts.Hours(24),

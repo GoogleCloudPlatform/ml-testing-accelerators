@@ -72,15 +72,15 @@ local experimental = import 'tests/experimental.libsonnet';
     accelerator: tpus.v3_32,
     command+: ['--batch_size=8192'],
   },
-  local tpuVmHack = experimental.TensorFlowTpuVmTest,
+  local tpuVm = experimental.TensorFlowTpuVmTest,
 
   configs: [
     resnet + v2_8 + functional,
-    resnet + v2_8 + functional + tpuVmHack,
+    resnet + v2_8 + functional + tpuVm,
     resnet + v3_8 + functional,
     resnet + v2_8 + convergence + timeouts.Hours(16),
     resnet + v3_8 + convergence,
-    resnet + v2_32 + functional + tpuVmHack,
+    resnet + v2_32 + functional + tpuVm,
     resnet + v3_32 + functional,
     resnet + v2_32 + convergence + tpus.reserved + { schedule: '20 8 * * 0,2,4' },
     resnet + v3_32 + convergence,
