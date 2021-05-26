@@ -42,7 +42,7 @@ local mixins = import 'templates/mixins.libsonnet';
       },
     },
   },
-  Functional:: mixins.Functional {
+  Functional:: mixins.Functional + mixins.Suspended {
     regressionTestConfig+: {
       metric_success_conditions+: {
         examples_per_second_average: {
