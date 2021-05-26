@@ -174,11 +174,25 @@ local experimental = import 'tests/experimental.libsonnet';
       },
     },
   },
+  local resnet50_tpu_vm_pod = experimental.PyTorchTpuVmPodTest {
+    # This test uses the default pytorch XLA version built into the TPUVM, which
+    # is 1.8.1 as of Apr 19.
+    frameworkPrefix: "pt-r1.8.1",
+    modelName: "resnet50-mp",
+    command: utils.scriptCommand(
+      |||
+        sudo ls -l /datasets
+        sudo ls -l /datasets/imagenet-mini
+        python3 -m torch_xla.distributed.xla_dist --tpu=$(cat ~/tpu_name) -- python3 /usr/share/xla/test/test_train_mp_imagenet.py --num_epochs=2 --logdir='' --datadir=/datasets/imagenet-mini --model=resnet50 --num_workers=4 --batch_size=128 --log_steps=200
+      |||
+    ),
+  },
   configs: [
     resnet50_MP + v3_8 + convergence + timeouts.Hours(26) + mixins.PreemptibleTpu,
     resnet50_MP + v3_8 + functional + timeouts.Hours(2),
     common.PyTorchTest + resnet50_tpu_vm + v3_8 + functional_tpu_vm + timeouts.Hours(2),
     common.PyTorchTest + resnet50_tpu_vm + v3_8 + convergence_tpu_vm + timeouts.Hours(4),
+    common.PyTorchTest + resnet50_tpu_vm_pod + v3_32 + common.Functional + timeouts.Hours(4),
     resnet50_gpu + common.Functional + v100 + timeouts.Hours(2),
     resnet50_gpu + common.Functional + v100x4 + timeouts.Hours(1),
   ],
