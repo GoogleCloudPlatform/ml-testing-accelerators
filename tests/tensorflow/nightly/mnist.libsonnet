@@ -22,10 +22,10 @@ local experimental = import 'tests/experimental.libsonnet';
   local mnist = common.ModelGardenTest {
     modelName: 'mnist',
     command: [
-      "python3",
-      "official/vision/image_classification/mnist_main.py",
-      "--data_dir=%s" % self.flags.dataDir,
-      "--model_dir=%s" % self.flags.modelDir,
+      'python3',
+      'official/vision/image_classification/mnist_main.py',
+      '--data_dir=%s' % self.flags.dataDir,
+      '--model_dir=%s' % self.flags.modelDir,
     ],
     flags:: {
       dataDir: '$(MNIST_DIR)',
@@ -73,15 +73,15 @@ local experimental = import 'tests/experimental.libsonnet';
   local v2_32 = {
     accelerator: tpus.v2_32,
     commmand+: [
-      "--distribution_strategy=tpu",
-      "--batch_size=4096",
+      '--distribution_strategy=tpu',
+      '--batch_size=4096',
     ],
   },
 
   local tpuVmHack = experimental.TensorFlowTpuVmTest {
     command+: [
-      "--download",
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
+      '--download',
+      '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
     ],
     flags+:: {
       dataDir: '/tmp/mnist',

@@ -1,16 +1,16 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
@@ -37,7 +37,7 @@ local volumes = import 'templates/volumes.libsonnet';
       },
     },
 
-    testName+: "-1vm",
+    testName+: '-1vm',
 
     tpuSettings+: {
       local tpuSettings = self,
@@ -68,8 +68,8 @@ local volumes = import 'templates/volumes.libsonnet';
             image: 'google/cloud-sdk',
             lifecycle: cleanupHook,
             envMap+:: {
-              'LOCAL_OUTPUT_DIR': '/tmp/model_dir',
-              'KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS': if config.accelerator.replicas == 1 then
+              LOCAL_OUTPUT_DIR: '/tmp/model_dir',
+              KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS: if config.accelerator.replicas == 1 then
                 'local'
               else
                 'tpu-$(POD_UID)',
@@ -166,7 +166,7 @@ local volumes = import 'templates/volumes.libsonnet';
       tpuVmEnvVars+: {
         PYTHONPATH: '${PWD}',
       } + if config.accelerator.replicas > 1 then {
-        TPU_LOAD_LIBRARY: '0'
+        TPU_LOAD_LIBRARY: '0',
       } else {},
     },
 
@@ -196,15 +196,16 @@ local volumes = import 'templates/volumes.libsonnet';
                 testCommand: std.escapeStringBash(
                   std.join(
                     ' ',
-                    ['"' + std.strReplace(c, '"', '\\"')  + '"' for c in config.command],
+                    ['"' + std.strReplace(c, '"', '\\"') + '"' for c in config.command],
                   ),
                 ),
                 env: std.join(
                   ' ',
                   [
-                    '%s=%s' % [key, config.tpuSettings.tpuVmEnvVars[key]] for key in std.objectFields(config.tpuSettings.tpuVmEnvVars)
+                    '%s=%s' % [key, config.tpuSettings.tpuVmEnvVars[key]]
+                    for key in std.objectFields(config.tpuSettings.tpuVmEnvVars)
                   ],
-                )
+                ),
               },
             ],
           },
@@ -234,7 +235,7 @@ local volumes = import 'templates/volumes.libsonnet';
               dockerCommand: std.escapeStringBash(
                 std.join(
                   ' ',
-                  ['"' + std.strReplace(c, '"', '\\"')  + '"' for c in config.command],
+                  ['"' + std.strReplace(c, '"', '\\"') + '"' for c in config.command],
                 ),
               ),
             },
@@ -259,10 +260,10 @@ local volumes = import 'templates/volumes.libsonnet';
                 exit $exit_code
               ||| % remoteScript,
             ],
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   },
   PyTorchTpuVmTest:: self.TpuVmBaseTest {
     local config = self,
@@ -302,10 +303,10 @@ local volumes = import 'templates/volumes.libsonnet';
                 exit $exit_code
               ||| % scriptSettings,
             ],
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   },
 
   TensorflowServingTpuVmTest:: self.TpuVmBaseTest {
@@ -314,8 +315,8 @@ local volumes = import 'templates/volumes.libsonnet';
 
     tpuSettings+: {
       tpuVmStartupScript: 'gcloud auth configure-docker && ' +
-        'git clone --depth=1 https://github.com/tensorflow/serving.git /serving/ && ' +
-        'docker run -d --privileged -e MODEL_NAME=half_plus_two -e TPU_MIN_LOG_LEVEL=0 -p 8501:8501 -v "/serving/tensorflow_serving/servables/tensorflow/testdata/saved_model_half_plus_two_cpu:/models/half_plus_two" %(image)s' % config,
+                          'git clone --depth=1 https://github.com/tensorflow/serving.git /serving/ && ' +
+                          'docker run -d --privileged -e MODEL_NAME=half_plus_two -e TPU_MIN_LOG_LEVEL=0 -p 8501:8501 -v "/serving/tensorflow_serving/servables/tensorflow/testdata/saved_model_half_plus_two_cpu:/models/half_plus_two" %(image)s' % config,
       tpuVmCreateSleepSeconds: 360,
     },
 

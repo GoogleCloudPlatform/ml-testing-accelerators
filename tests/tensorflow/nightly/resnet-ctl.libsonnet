@@ -12,29 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import "common.libsonnet";
-local experimental = import "tests/experimental.libsonnet";
-local mixins = import "templates/mixins.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
+local common = import 'common.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local experimental = import 'tests/experimental.libsonnet';
 
 {
   local resnet = common.ModelGardenTest {
     modelName: 'resnet-ctl',
     command: [
-      "python3",
-      "official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py",
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-      "--distribution_strategy=tpu",
-      "--use_synthetic_data=false",
-      "--dtype=fp32",
-      "--enable_eager=true",
-      "--enable_tensorboard=true",
-      "--log_steps=50",
-      "--single_l2_loss_op=true",
-      "--use_tf_function=true",
-      "--data_dir=%s" % self.flags.dataDir,
-      "--model_dir=%s" % self.flags.modelDir,
+      'python3',
+      'official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py',
+      '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
+      '--distribution_strategy=tpu',
+      '--use_synthetic_data=false',
+      '--dtype=fp32',
+      '--enable_eager=true',
+      '--enable_tensorboard=true',
+      '--log_steps=50',
+      '--single_l2_loss_op=true',
+      '--use_tf_function=true',
+      '--data_dir=%s' % self.flags.dataDir,
+      '--model_dir=%s' % self.flags.modelDir,
     ],
     flags:: {
       dataDir: '$(IMAGENET_DIR)',

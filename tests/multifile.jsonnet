@@ -44,9 +44,9 @@ local regionAccelerators = {
 };
 
 local all_1vm_tests = {
-  [testName]: all_tests[testName] + {schedule: "30 13 * * *"}
+  [testName]: all_tests[testName] { schedule: '30 13 * * *' }
   for testName in std.objectFields(all_tests)
-  if std.endsWith(testName, "-1vm")
+  if std.endsWith(testName, '-1vm')
 };
 
 local cronJobs = utils.cronJobOutput(all_1vm_tests, defaultRegion, regionAccelerators);

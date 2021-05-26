@@ -1,21 +1,21 @@
-# Copyright 2021 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+// Copyright 2021 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-local common = import "../common.libsonnet";
-local experimental = import "../experimental.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
+local common = import '../common.libsonnet';
+local experimental = import '../experimental.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
 
 {
   JaxTest:: common.CloudAcceleratorTest + experimental.TpuVmBaseTest {
@@ -48,23 +48,23 @@ local mixins = import 'templates/mixins.libsonnet';
     image: 'google/cloud-sdk',
     accelerator: tpus.v2_8,
 
-    jaxlibVersion:: error "Add jaxlib version mixin",
-    libtpuVersion:: error "Include libtpu version mixin",
+    jaxlibVersion:: error 'Add jaxlib version mixin',
+    libtpuVersion:: error 'Include libtpu version mixin',
     scriptConfig:: {
-      installJaxlib: error "Must define `installJaxlib`",
+      installJaxlib: error 'Must define `installJaxlib`',
     },
 
     tpuSettings+: {
-      softwareVersion: error "Must define `tpuSettings.softwareVersion`",
+      softwareVersion: error 'Must define `tpuSettings.softwareVersion`',
       tpuVmCreateSleepSeconds: 60,
     },
 
     // JAX tests are structured as bash scripts that run directly on the Cloud
     // TPU VM instead of using docker images
-    testScript:: error "Must define `testScript`",
+    testScript:: error 'Must define `testScript`',
     command: [
-      "bash",
-      "-c",
+      'bash',
+      '-c',
       |||
         set -x
         set -u
@@ -79,15 +79,15 @@ local mixins = import 'templates/mixins.libsonnet';
     ],
   },
 
-  JaxPodTest:: self.JaxTest + {
+  JaxPodTest:: self.JaxTest {
     local config = self,
 
     accelerator: tpus.v2_32,
 
     // Execute testScript on every host in the pod slice.
     command: [
-      "bash",
-      "-c",
+      'bash',
+      '-c',
       |||
         set -u
         # Asynchronously run testScript on each host via ssh, log each host's
@@ -134,7 +134,7 @@ local mixins = import 'templates/mixins.libsonnet';
   },
 
   jaxlibHead:: {
-    jaxlibVersion:: "head",
+    jaxlibVersion:: 'head',
     scriptConfig:: {
       installJaxlib: |||
         echo "Building jaxlib from source at TF head"
@@ -153,7 +153,7 @@ local mixins = import 'templates/mixins.libsonnet';
   },
 
   jaxlibLatest:: {
-    jaxlibVersion:: "latest",
+    jaxlibVersion:: 'latest',
     scriptConfig:: {
       installJaxlib: |||
         pip install --upgrade jaxlib
@@ -163,16 +163,16 @@ local mixins = import 'templates/mixins.libsonnet';
   },
 
   libtpuNightly:: {
-    libtpuVersion: "nightly",
+    libtpuVersion: 'nightly',
     tpuSettings+: {
-      softwareVersion: "v2-nightly",
+      softwareVersion: 'v2-nightly',
     },
   },
 
   libtpuAlpha:: {
-    libtpuVersion: "alpha",
+    libtpuVersion: 'alpha',
     tpuSettings+: {
-      softwareVersion: "v2-alpha",
+      softwareVersion: 'v2-alpha',
     },
   },
   Functional:: mixins.Functional + mixins.Suspended {

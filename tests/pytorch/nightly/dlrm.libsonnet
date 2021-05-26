@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import "common.libsonnet";
-local experimental = import "tests/experimental.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local utils = import "templates/utils.libsonnet";
+local common = import 'common.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
+local experimental = import 'tests/experimental.libsonnet';
 
 {
   local command_common = |||
@@ -164,11 +164,11 @@ local utils = import "templates/utils.libsonnet";
     ),
   },
   local criteo_kaggle_tpu_vm = common.PyTorchTest {
-    # This test uses the default pytorch XLA version built into the TPUVM, which
-    # is 1.8.1 as of Apr 19.
-    frameworkPrefix: "pt-r1.8.1",
-    modelName: "dlrm-convergence",
-    schedule: "0 21 * * *",
+    // This test uses the default pytorch XLA version built into the TPUVM, which
+    // is 1.8.1 as of Apr 19.
+    frameworkPrefix: 'pt-r1.8.1',
+    modelName: 'dlrm-convergence',
+    schedule: '0 21 * * *',
     command: utils.scriptCommand(
       |||
         pip3 install onnx tqdm sklearn
@@ -188,5 +188,5 @@ local utils = import "templates/utils.libsonnet";
     dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
     dlrm_convergence + v3_8 + criteo_kaggle + timeouts.Hours(6),
     criteo_kaggle_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(6) + experimental.PyTorchTpuVmTest,
-  ]
+  ],
 }

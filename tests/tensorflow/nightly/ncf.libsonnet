@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import "common.libsonnet";
-local experimental = import "tests/experimental.libsonnet";
-local mixins = import "templates/mixins.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local gpus = import "templates/gpus.libsonnet";
+local common = import 'common.libsonnet';
+local gpus = import 'templates/gpus.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local experimental = import 'tests/experimental.libsonnet';
 
 {
   local ncf = common.ModelGardenTest {

@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import "common.libsonnet";
-local experimental = import "tests/experimental.libsonnet";
-local gpus = import "templates/gpus.libsonnet";
-local mixins = import "templates/mixins.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local utils = import "templates/utils.libsonnet";
+local common = import 'common.libsonnet';
+local gpus = import 'templates/gpus.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
+local experimental = import 'tests/experimental.libsonnet';
 
 {
   local mnist = common.PyTorchTest {
@@ -27,14 +27,14 @@ local utils = import "templates/utils.libsonnet";
       datasets: common.datasetsVolume,
     },
     command: [
-      "python3",
-      "pytorch/xla/test/test_train_mp_mnist.py",
-      "--logdir=%s" % self.flags.modelDir,
-      "%s" % self.flags.dataset,
+      'python3',
+      'pytorch/xla/test/test_train_mp_mnist.py',
+      '--logdir=%s' % self.flags.modelDir,
+      '%s' % self.flags.dataset,
     ],
     flags:: {
-      modelDir: "$(MODEL_DIR)",
-      dataset: "--datadir=/datasets/mnist-data"
+      modelDir: '$(MODEL_DIR)',
+      dataset: '--datadir=/datasets/mnist-data',
     },
   },
 
@@ -90,9 +90,9 @@ local utils = import "templates/utils.libsonnet";
   },
 
   local tpuVm = experimental.PyTorchTpuVmTest {
-    # This test uses the default pytorch XLA version built into the TPUVM, which
-    # is 1.8.1 as of Apr 19.
-    frameworkPrefix: "pt-r1.8.1",
+    // This test uses the default pytorch XLA version built into the TPUVM, which
+    // is 1.8.1 as of Apr 19.
+    frameworkPrefix: 'pt-r1.8.1',
     command: utils.scriptCommand(
       |||
         git clone https://github.com/pytorch/xla.git -b r1.8.1

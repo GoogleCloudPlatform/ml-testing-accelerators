@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local tensorflow_targets = import "tensorflow/targets.jsonnet";
-local pytorch_targets = import "pytorch/targets.jsonnet";
-local jax_targets = import "jax/targets.jsonnet";
+local jax_targets = import 'jax/targets.jsonnet';
+local pytorch_targets = import 'pytorch/targets.jsonnet';
+local tensorflow_targets = import 'tensorflow/targets.jsonnet';
 
 local all_targets = tensorflow_targets + pytorch_targets + jax_targets;
 

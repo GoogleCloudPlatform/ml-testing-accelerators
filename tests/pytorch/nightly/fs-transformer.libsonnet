@@ -12,37 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import "common.libsonnet";
-local experimental = import "tests/experimental.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local utils = import "templates/utils.libsonnet";
+local common = import 'common.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
+local experimental = import 'tests/experimental.libsonnet';
 
 {
   local common_flags = |||
-      /datasets/wmt18_en_de_bpej32k \
-      --metrics_debug \
-      --arch=transformer_vaswani_wmt_en_de_big \
-      --max-target-positions=64 \
-      --attention-dropout=0.1 \
-      --no-progress-bar \
-      --criterion=label_smoothed_cross_entropy \
-      --source-lang=en \
-      --lr-scheduler=inverse_sqrt  \
-      --min-lr=1e-09 \
-      --skip-invalid-size-inputs-valid-test \
-      --target-lang=de \
-      --label-smoothing=0.1 \
-      --update-freq=1 \
-      --optimizer=adam \
-      --adam-betas='(0.9,0.98)' \
-      --warmup-init-lr=1e-07 \
-      --lr=0.0005 \
-      --warmup-updates=4000 \
-      --share-all-embeddings \
-      --dropout=0.3 \
-      --weight-decay=0.0 \
-      --num_cores=8 \
+    /datasets/wmt18_en_de_bpej32k \
+    --metrics_debug \
+    --arch=transformer_vaswani_wmt_en_de_big \
+    --max-target-positions=64 \
+    --attention-dropout=0.1 \
+    --no-progress-bar \
+    --criterion=label_smoothed_cross_entropy \
+    --source-lang=en \
+    --lr-scheduler=inverse_sqrt  \
+    --min-lr=1e-09 \
+    --skip-invalid-size-inputs-valid-test \
+    --target-lang=de \
+    --label-smoothing=0.1 \
+    --update-freq=1 \
+    --optimizer=adam \
+    --adam-betas='(0.9,0.98)' \
+    --warmup-init-lr=1e-07 \
+    --lr=0.0005 \
+    --warmup-updates=4000 \
+    --share-all-embeddings \
+    --dropout=0.3 \
+    --weight-decay=0.0 \
+    --num_cores=8 \
   |||,
   local chpt_command_common = |||
     python3 tpu-examples/deps/fairseq/train.py \
@@ -200,23 +200,23 @@ local utils = import "templates/utils.libsonnet";
     },
   },
   local convergence_tpu_vm = common.Convergence {
-    # This test uses the default pytorch XLA version built into the TPUVM, which
-    # is 1.8.1 as of Apr 19.
-    frameworkPrefix: "pt-r1.8.1",
-    modelName: "fs-transformer",
+    // This test uses the default pytorch XLA version built into the TPUVM, which
+    // is 1.8.1 as of Apr 19.
+    frameworkPrefix: 'pt-r1.8.1',
+    modelName: 'fs-transformer',
     regressionTestConfig: {
-      "metric_subset_to_alert": [
-        "total_wall_time",
+      metric_subset_to_alert: [
+        'total_wall_time',
       ],
-      "metric_success_conditions": {
-        "total_wall_time": {
-          "comparison": "less",
-          "success_threshold": {
-            "stddevs_from_mean": 5
+      metric_success_conditions: {
+        total_wall_time: {
+          comparison: 'less',
+          success_threshold: {
+            stddevs_from_mean: 5,
           },
-          "wait_for_n_points_of_history": 10
-        }
-      }
+          wait_for_n_points_of_history: 10,
+        },
+      },
     },
     command: utils.scriptCommand(
       |||

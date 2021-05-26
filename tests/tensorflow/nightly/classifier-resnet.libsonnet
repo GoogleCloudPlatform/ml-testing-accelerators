@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import "common.libsonnet";
-local mixins = import "templates/mixins.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local gpus = import "templates/gpus.libsonnet";
-local experimental = import "tests/experimental.libsonnet";
+local common = import 'common.libsonnet';
+local gpus = import 'templates/gpus.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local experimental = import 'tests/experimental.libsonnet';
 
 {
   local resnet = common.ModelGardenTest {
@@ -37,14 +37,14 @@ local experimental = import "tests/experimental.libsonnet";
       },
     },
     command: [
-      "python3",
-      "official/vision/image_classification/classifier_trainer.py",
-      "--data_dir=%s" % self.flags.imageNetDir,
-      "--model_type=resnet",
-      "--dataset=imagenet",
-      "--mode=train_and_eval",
-      "--model_dir=%s" % self.flags.modelDir,
-      "--params_override=%s\n" % std.manifestYamlDoc(self.paramsOverride),
+      'python3',
+      'official/vision/image_classification/classifier_trainer.py',
+      '--data_dir=%s' % self.flags.imageNetDir,
+      '--model_type=resnet',
+      '--dataset=imagenet',
+      '--mode=train_and_eval',
+      '--model_dir=%s' % self.flags.modelDir,
+      '--params_override=%s\n' % std.manifestYamlDoc(self.paramsOverride),
     ],
     flags:: {
       imageNetDir: '$(IMAGENET_DIR)',
@@ -170,7 +170,7 @@ local experimental = import "tests/experimental.libsonnet";
     resnet + v2_32 + functional + tpuVmExperimental,
     resnet + v3_32 + functional,
     resnet + v3_32 + functional + tpuVmExperimental,
-    resnet + v2_32 + convergence + tpus.reserved + {schedule: "7 11 * * 0,2,4"},
+    resnet + v2_32 + convergence + tpus.reserved + { schedule: '7 11 * * 0,2,4' },
     resnet + v3_32 + convergence,
   ],
 }

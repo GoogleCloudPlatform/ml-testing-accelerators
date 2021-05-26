@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import "common.libsonnet";
-local experimental = import "tests/experimental.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local utils = import "templates/utils.libsonnet";
+local common = import 'common.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
+local experimental = import 'tests/experimental.libsonnet';
 
 {
   local roberta = {
@@ -82,11 +82,11 @@ local utils = import "templates/utils.libsonnet";
     },
   },
   local roberta_tpu_vm = common.PyTorchTest {
-    # This test uses the default pytorch XLA version built into the TPUVM, which
-    # is 1.8.1 as of Apr 19.
-    frameworkPrefix: "pt-r1.8.1",
-    modelName: "roberta-convergence",
-    schedule: "0 19 * * *",
+    // This test uses the default pytorch XLA version built into the TPUVM, which
+    // is 1.8.1 as of Apr 19.
+    frameworkPrefix: 'pt-r1.8.1',
+    modelName: 'roberta-convergence',
+    schedule: '0 19 * * *',
     command: utils.scriptCommand(
       |||
         git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.8.1
@@ -149,6 +149,6 @@ local utils = import "templates/utils.libsonnet";
     common.PyTorchGkePodTest + roberta + v3_32 + functional + timeouts.Hours(1),
     common.PyTorchTest + roberta + v3_8 + functional + timeouts.Hours(1),
     common.PyTorchTest + roberta + v3_8 + convergence + timeouts.Hours(2),
-    roberta_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(6) + experimental.PyTorchTpuVmTest
+    roberta_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(6) + experimental.PyTorchTpuVmTest,
   ],
 }

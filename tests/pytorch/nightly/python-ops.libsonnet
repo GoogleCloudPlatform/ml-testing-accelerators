@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import "common.libsonnet";
-local experimental = import "tests/experimental.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local utils = import "templates/utils.libsonnet";
+local common = import 'common.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
+local experimental = import 'tests/experimental.libsonnet';
 
 {
   local operations = common.PyTorchTest {
@@ -34,8 +34,8 @@ local utils = import "templates/utils.libsonnet";
     accelerator: tpus.v3_8,
   },
   local py_ops_tpu_vm = common.PyTorchTest {
-    modelName: "python-ops",
-    schedule: "0 1 * * *",
+    modelName: 'python-ops',
+    schedule: '0 1 * * *',
     command: utils.scriptCommand(
       |||
         %(command_common)s

@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import "common.libsonnet";
-local mixins = import "templates/mixins.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local gpus = import "templates/gpus.libsonnet";
-local experimental = import "tests/experimental.libsonnet";
+local common = import 'common.libsonnet';
+local gpus = import 'templates/gpus.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local experimental = import 'tests/experimental.libsonnet';
 
 {
   local efficientnet = common.ModelGardenTest {
@@ -42,14 +42,14 @@ local experimental = import "tests/experimental.libsonnet";
       },
     },
     command: [
-      "python3",
-      "official/vision/image_classification/classifier_trainer.py",
-      "--data_dir=%s" % self.flags.imageNetDir,
-      "--model_type=efficientnet",
-      "--dataset=imagenet",
-      "--mode=train_and_eval",
-      "--model_dir=%s" % self.flags.modelDir,
-      "--params_override=%s" % std.manifestYamlDoc(self.paramsOverride) + "\n",
+      'python3',
+      'official/vision/image_classification/classifier_trainer.py',
+      '--data_dir=%s' % self.flags.imageNetDir,
+      '--model_type=efficientnet',
+      '--dataset=imagenet',
+      '--mode=train_and_eval',
+      '--model_dir=%s' % self.flags.modelDir,
+      '--params_override=%s' % std.manifestYamlDoc(self.paramsOverride) + '\n',
     ],
     flags:: {
       imageNetDir: '$(IMAGENET_DIR)',

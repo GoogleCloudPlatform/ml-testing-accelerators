@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import "common.libsonnet";
-local experimental = import "tests/experimental.libsonnet";
-local gpus = import "templates/gpus.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local mixins = import "templates/mixins.libsonnet";
-local utils = import "templates/utils.libsonnet";
+local common = import 'common.libsonnet';
+local gpus = import 'templates/gpus.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
+local experimental = import 'tests/experimental.libsonnet';
 
 {
   local gpu_command_base = |||
@@ -62,8 +62,8 @@ local utils = import "templates/utils.libsonnet";
           train+: {
             resources+: {
               requests: {
-                cpu: "90.0",
-                memory: "400Gi",
+                cpu: '90.0',
+                memory: '400Gi',
               },
             },
           },
@@ -77,15 +77,6 @@ local utils = import "templates/utils.libsonnet";
       '--num_epochs=2',
       '--datadir=/datasets/imagenet-mini',
     ],
-  },
-  local functional_fake_data = common.Functional {
-    command+: [
-      "--num_epochs=2",
-      "--fake_data",
-    ],
-    volumeMap+: {
-      datasets: null,
-    },
   },
   local convergence = common.Convergence {
     command+: [
@@ -102,12 +93,6 @@ local utils = import "templates/utils.libsonnet";
         },
       },
     },
-  },
-  local functional = common.Functional {
-    command+: [
-      "--num_epochs=2",
-      "--datadir=/datasets/imagenet-mini",
-    ],
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
@@ -130,13 +115,13 @@ local utils = import "templates/utils.libsonnet";
     schedule: '2 20 * * *',
   },
   local resnet50_tpu_vm = experimental.PyTorchTpuVmTest {
-    # This test uses the default pytorch XLA version built into the TPUVM, which
-    # is 1.8.1 as of Apr 19.
-    frameworkPrefix: "pt-r1.8.1",
-    modelName: "resnet50-mp",
+    // This test uses the default pytorch XLA version built into the TPUVM, which
+    // is 1.8.1 as of Apr 19.
+    frameworkPrefix: 'pt-r1.8.1',
+    modelName: 'resnet50-mp',
     paramsOverride: {
-      num_epochs: error "Must set `num_epochs`",
-      datadir: error "Must set `datadir`",
+      num_epochs: error 'Must set `num_epochs`',
+      datadir: error 'Must set `datadir`',
     },
     command: utils.scriptCommand(
       |||
@@ -158,8 +143,8 @@ local utils = import "templates/utils.libsonnet";
           train+: {
             resources+: {
               requests: {
-                cpu: "1",
-                memory: "2Gi",
+                cpu: '1',
+                memory: '2Gi',
               },
             },
           },
@@ -170,21 +155,21 @@ local utils = import "templates/utils.libsonnet";
   local functional_tpu_vm = common.Functional {
     paramsOverride: {
       num_epochs: 2,
-      datadir: "/datasets/imagenet-mini",
+      datadir: '/datasets/imagenet-mini',
     },
   },
   local convergence_tpu_vm = common.Convergence {
     paramsOverride: {
       num_epochs: 5,
-      datadir: "/datasets/imagenet",
+      datadir: '/datasets/imagenet',
     },
     regressionTestConfig+: {
       metric_success_conditions+: {
-        "Accuracy/test_final": {
+        'Accuracy/test_final': {
           success_threshold: {
             fixed_value: 30.0,
           },
-          comparison: "greater",
+          comparison: 'greater',
         },
       },
     },
