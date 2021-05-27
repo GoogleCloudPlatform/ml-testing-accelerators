@@ -269,7 +269,6 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   PyTorchTpuVmTest:: self.TpuVmBaseTest {
     local config = self,
-    image: 'gcr.io/xl-ml-test/wcromar-pytorch-1vm:latest',
     podTemplate+:: {
       spec+: {
         containerMap+:: {
@@ -313,7 +312,6 @@ local volumes = import 'templates/volumes.libsonnet';
 
   PyTorchTpuVmPodTest:: self.TpuVmBaseTest {
     local config = self,
-    image: 'gcr.io/xl-ml-test/wcromar-pytorch-1vm:latest',
     tpuSettings+: {
       softwareVersion: 'v2-nightly',
       tpuVmStartupScript: |||
@@ -370,11 +368,9 @@ local volumes = import 'templates/volumes.libsonnet';
     }
   },
 
-
-
   TensorflowServingTpuVmTest:: self.TpuVmBaseTest {
     local config = self,
-    image: 'gcr.io/xl-ml-test/allencwang-tf-serving-tpu:latest',
+    image: 'TODO',
 
     tpuSettings+: {
       tpuVmStartupScript: 'gcloud auth configure-docker && ' +

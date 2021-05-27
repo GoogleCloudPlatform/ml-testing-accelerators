@@ -34,6 +34,6 @@ local experimental = import 'tests/experimental.libsonnet';
     accelerator: tpus.v2_8,
   },
   configs: [
-    inference + functional + v2_8 + experimental.TensorflowServingTpuVmTest,
+    inference + functional + v2_8 + experimental.TensorflowServingTpuVmTest + mixins.Experimental,
   ],
 }
