@@ -128,7 +128,7 @@ local experimental = import 'tests/experimental.libsonnet';
     },
   },
 
-  local tpuVm = experimental.TensorFlowTpuVmTest,
+  local tpuVm = experimental.TensorFlowTpuVmMixin,
   configs: [
     shapemask + functional + v2_8,
     shapemask + functional + v2_8 + tpuVm,

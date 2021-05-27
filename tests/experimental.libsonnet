@@ -16,7 +16,7 @@ local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
 {
-  TpuVmBaseTest:: {
+  BaseTpuVmMixin:: {
     local config = self,
     local cleanupHook = {
       preStop: {
@@ -162,7 +162,7 @@ local volumes = import 'templates/volumes.libsonnet';
       },
     },
   },
-  TensorFlowTpuVmTest:: self.TpuVmBaseTest {
+  TensorFlowTpuVmMixin:: self.BaseTpuVmMixin {
     local config = self,
     tpuSettings+: {
       tpuVmEnvVars+: {
@@ -215,7 +215,7 @@ local volumes = import 'templates/volumes.libsonnet';
       },
     },
   },
-  TensorFlowTpuVmDockerTest:: self.TpuVmBaseTest {
+  TensorFlowTpuVmDockerTest:: self.BaseTpuVmMixin {
     local config = self,
     tpuSettings+: {
       tpuVmDockerArgs: if config.accelerator.replicas == 1 then
@@ -267,7 +267,7 @@ local volumes = import 'templates/volumes.libsonnet';
       },
     },
   },
-  PyTorchTpuVmTest:: self.TpuVmBaseTest {
+  PyTorchTpuVmMixin:: self.BaseTpuVmMixin {
     local config = self,
     podTemplate+:: {
       spec+: {
@@ -310,7 +310,7 @@ local volumes = import 'templates/volumes.libsonnet';
     },
   },
 
-  PyTorchTpuVmPodTest:: self.TpuVmBaseTest {
+  PyTorchTpuVmPodTest:: self.BaseTpuVmMixin {
     local config = self,
     tpuSettings+: {
       softwareVersion: 'v2-nightly',
@@ -368,7 +368,7 @@ local volumes = import 'templates/volumes.libsonnet';
     }
   },
 
-  TensorflowServingTpuVmTest:: self.TpuVmBaseTest {
+  TensorflowServingTpuVmMixin:: self.BaseTpuVmMixin {
     local config = self,
     image: 'TODO',
 

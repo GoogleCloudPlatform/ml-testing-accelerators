@@ -155,7 +155,7 @@ local experimental = import 'tests/experimental.libsonnet';
       },
     },
   },
-  local tpuVm = experimental.TensorFlowTpuVmTest,
+  local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
     retinanet + functional + k80x8 + mixins.Suspended,

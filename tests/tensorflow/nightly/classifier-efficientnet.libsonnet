@@ -144,7 +144,7 @@ local experimental = import 'tests/experimental.libsonnet';
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
   },
-  local tpuVm = experimental.TensorFlowTpuVmTest,
+  local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
     efficientnet + k80x8 + functional + timeouts.Hours(4) + mixins.Suspended,

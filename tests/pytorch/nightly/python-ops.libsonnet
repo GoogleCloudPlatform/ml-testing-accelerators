@@ -51,7 +51,7 @@ local experimental = import 'tests/experimental.libsonnet';
   configs: [
     operations + v2_8 + common.Functional + timeouts.Hours(4),
     operations + v3_8 + common.Functional + timeouts.Hours(4),
-    py_ops_tpu_vm + v3_8 + common.Functional + timeouts.Hours(4) + experimental.PyTorchTpuVmTest,
-    py_ops_tpu_vm + v2_8 + common.Functional + timeouts.Hours(4) + experimental.PyTorchTpuVmTest,
+    py_ops_tpu_vm + v3_8 + common.Functional + timeouts.Hours(4) + experimental.PyTorchTpuVmMixin,
+    py_ops_tpu_vm + v2_8 + common.Functional + timeouts.Hours(4) + experimental.PyTorchTpuVmMixin,
   ],
 }

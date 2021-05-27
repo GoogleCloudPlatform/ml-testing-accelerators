@@ -78,7 +78,7 @@ local experimental = import 'tests/experimental.libsonnet';
     ],
   },
 
-  local tpuVm = experimental.TensorFlowTpuVmTest {
+  local tpuVm = experimental.TensorFlowTpuVmMixin {
     command+: [
       '--download',
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',

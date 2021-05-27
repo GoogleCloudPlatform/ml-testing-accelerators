@@ -103,7 +103,7 @@ local experimental = import 'tests/experimental.libsonnet';
   local v3_32 = {
     accelerator: tpus.v3_32,
   },
-  local tpuVm = experimental.TensorFlowTpuVmTest,
+  local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
     ncf + k80 + functional + ctl,

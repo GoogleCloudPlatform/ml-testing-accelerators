@@ -88,8 +88,8 @@ local experimental = import 'tests/experimental.libsonnet';
       '--eval_batch_size=256',
     ],
   },
-  local tpuVm = experimental.TensorFlowTpuVmTest,
-  local tpuVmProfilingCheck = experimental.TensorFlowTpuVmTest {
+  local tpuVm = experimental.TensorFlowTpuVmMixin,
+  local tpuVmProfilingCheck = experimental.TensorFlowTpuVmMixin {
     mode: 'profile',
     command: utils.scriptCommand(|||
       %s

@@ -123,7 +123,7 @@ local experimental = import 'tests/experimental.libsonnet';
       '--batch_size=24576',
     ],
   },
-  local tpuVm = experimental.TensorFlowTpuVmTest,
+  local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
     transformer + k80 + functional_short + timeouts.Hours(6) + mixins.Suspended,

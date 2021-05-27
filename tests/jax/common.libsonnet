@@ -18,7 +18,7 @@ local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  JaxTest:: common.CloudAcceleratorTest + experimental.TpuVmBaseTest {
+  JaxTest:: common.CloudAcceleratorTest + experimental.BaseTpuVmMixin {
     regressionTestConfig+: {
       metric_subset_to_alert: [
         'ExecuteTime__Percentile_99_sec_final',

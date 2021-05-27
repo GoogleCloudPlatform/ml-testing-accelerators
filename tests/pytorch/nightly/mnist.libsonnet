@@ -93,7 +93,7 @@ local experimental = import 'tests/experimental.libsonnet';
     schedule: '2 19 * * *',
   },
 
-  local tpuVm = experimental.PyTorchTpuVmTest {
+  local tpuVm = experimental.PyTorchTpuVmMixin {
     // This test uses the default pytorch XLA version built into the TPUVM, which
     // is 1.8.1 as of Apr 19.
     frameworkPrefix: 'pt-r1.8.1',
