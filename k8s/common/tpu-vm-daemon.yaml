@@ -27,6 +27,9 @@ subjects:
 - kind: ServiceAccount
   name: tpu-vm-resources-daemon
   namespace: default
+- kind: ServiceAccount
+  name: tpu-vm-resources-daemon
+  namespace: automated
 ---
 apiVersion: apps/v1
 kind: DaemonSet
