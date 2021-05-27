@@ -61,7 +61,7 @@ local metrics = import 'templates/metrics.libsonnet';
       } + if config.accelerator.type == 'gpu' then {
         priorityClassName: 'gpu-%(version)s' % config.accelerator,
       } else if config.accelerator.type == 'tpu' then {
-        priorityClassName: if config.accelerator.replicas == 1 then
+        priorityClassName: if config.accelerator.replicas == 1 && std.endsWith(config.testName, '-1vm') then
           'tpu-device' else 'tpu-pod',
       } else {},
     },
