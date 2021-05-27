@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
 
 {
   local bert = common.ModelGardenTest {
@@ -32,8 +34,11 @@ local tpus = import 'templates/tpus.libsonnet';
       '--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_model.ckpt',
       '--learning_rate=3e-5',
       '--distribution_strategy=tpu',
-      '--model_dir=$(MODEL_DIR)',
+      '--model_dir=%s' % self.flags.modelDir,
     ],
+    flags:: {
+      modelDir: '$(MODEL_DIR)',
+    },
   },
   local functional = common.Functional {
     command+: [
@@ -83,14 +88,30 @@ local tpus = import 'templates/tpus.libsonnet';
       '--eval_batch_size=256',
     ],
   },
+  local tpuVm = experimental.TensorFlowTpuVmMixin,
+  local tpuVmProfilingCheck = experimental.TensorFlowTpuVmMixin {
+    mode: 'profile',
+    command: utils.scriptCommand(|||
+      %s
+
+      grep -a -c device:TPU $(LOCAL_OUTPUT_DIR)/summaries/train/plugins/profile/*/*.xplane.pb
+    ||| % std.join(' ', super.command)),
+    flags+:: {
+      modelDir: '$(LOCAL_OUTPUT_DIR)',
+    },
+  },
 
   configs: [
     bert + v2_8 + functional,
+    bert + v2_8 + functional + tpuVm,
+    bert + v2_8 + functional + tpuVmProfilingCheck,
     bert + v3_8 + functional,
+    bert + v3_8 + functional + tpuVm,
     bert + v2_8 + convergence + timeouts.Hours(4),
     bert + v3_8 + convergence + timeouts.Hours(3),
-    bert + v2_32 + functional,
+    bert + v2_32 + functional + tpuVm,
     bert + v3_32 + functional,
+    bert + v3_32 + functional + tpuVm,
     bert + v2_32 + convergence + tpus.reserved + { schedule: '54 21 * * 1,3,5,6' },
     bert + v3_32 + convergence,
   ],

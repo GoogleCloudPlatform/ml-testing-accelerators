@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
@@ -123,6 +124,34 @@ local utils = import 'templates/utils.libsonnet';
       ||| % command_common
     ),
   },
+  local convergence_common = |||
+    --raw-data-file=/datasets/criteo-kaggle-mm/train.txt \
+    --processed-data-file=/datasets/criteo-kaggle-mm/kaggleAdDisplayChallenge_processed.npz \
+    --memory-map \
+    --arch-sparse-feature-size=16 \
+    --arch-mlp-bot="13-512-256-64-16" \
+    --arch-mlp-top="512-256-1" \
+    --data-generation=dataset \
+    --data-set=kaggle \
+    --loss-function=bce \
+    --round-targets=True \
+    --learning-rate=0.1 \
+    --mini-batch-size=128 \
+    --print-freq=1024 \
+    --print-time \
+    --test-mini-batch-size=16384 \
+    --test-freq=101376 \
+    --use-tpu \
+    --num-indices-per-lookup=1 \
+    --num-indices-per-lookup-fixed \
+    --tpu-model-parallel-group-len 8 \
+    --tpu-metrics-debug \
+    --tpu-cores=8 |& tee dlrm_logs.txt
+    acc=`grep Testing dlrm_logs.txt | tail -1 | grep -oP 'best \K[+-]?([0-9]*[.])?[0-9]+'`
+    echo 'Accuracy is' $acc
+    test $(echo $acc'>'78.75 | bc -l) -eq 1  # assert cls acc higher than 78.75
+  |||,
+
   local criteo_kaggle = common.Convergence {
     command: utils.scriptCommand(
       |||
@@ -130,33 +159,23 @@ local utils = import 'templates/utils.libsonnet';
         pip install onnx
         git clone --recursive https://github.com/pytorch-tpu/examples.git
         python examples/deps/dlrm/dlrm_tpu_runner.py \
-            --memory-map \
-            --arch-sparse-feature-size=16 \
-            --arch-mlp-bot="13-512-256-64-16" \
-            --arch-mlp-top="512-256-1" \
-            --data-generation=dataset \
-            --data-set=kaggle \
-            --raw-data-file=/datasets/criteo-kaggle-mm/train.txt \
-            --processed-data-file=/datasets/criteo-kaggle-mm/kaggleAdDisplayChallenge_processed.npz \
-            --loss-function=bce \
-            --round-targets=True \
-            --learning-rate=0.1 \
-            --mini-batch-size=128 \
-            --print-freq=1024 \
-            --print-time \
-            --test-mini-batch-size=16384 \
-            --test-num-workers=4 \
-            --test-freq=101376 \
-                --use-tpu \
-                --num-indices-per-lookup=1 \
-                --num-indices-per-lookup-fixed \
-                --tpu-model-parallel-group-len 8 \
-                --tpu-metrics-debug \
-                --tpu-cores=8 |& tee dlrm_logs.txt
-        acc=`grep Testing dlrm_logs.txt | tail -1 | grep -oP 'best \K[+-]?([0-9]*[.])?[0-9]+'`
-        echo 'Accuracy is' $acc
-        test $(echo $acc'>'78.75 | bc -l) -eq 1  # assert cls acc higher than 78.75
+          %(convergence_common)s
+      ||| % convergence_common
+    ),
+  },
+  local criteo_kaggle_tpu_vm = common.PyTorchTest {
+    // This test uses the default pytorch XLA version built into the TPUVM, which
+    // is 1.8.1 as of Apr 19.
+    frameworkPrefix: 'pt-r1.8.1',
+    modelName: 'dlrm-convergence',
+    schedule: '0 21 * * *',
+    command: utils.scriptCommand(
       |||
+        pip3 install onnx tqdm sklearn
+        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.8.1
+        python3 examples/deps/dlrm/dlrm_tpu_runner.py \
+          %(convergence_common)s
+      ||| % convergence_common
     ),
   },
   local v3_8 = {
@@ -168,5 +187,6 @@ local utils = import 'templates/utils.libsonnet';
     dlrm + v3_8 + mp_fwd + timeouts.Hours(3),
     dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
     dlrm_convergence + v3_8 + criteo_kaggle + timeouts.Hours(6),
+    criteo_kaggle_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(6) + experimental.PyTorchTpuVmMixin,
   ],
 }

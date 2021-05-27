@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local jax_targets = import 'jax/targets.jsonnet';
-local pytorch_targets = import 'pytorch/targets.jsonnet';
-local tensorflow_targets = import 'tensorflow/targets.jsonnet';
+local flaxExampleTests = import 'flax-examples.libsonnet';
+local podTest = import 'pod-test.libsonnet';
+local unitTests = import 'unit-tests.libsonnet';
 
-local all_targets = tensorflow_targets + pytorch_targets + jax_targets;
-
-// Mapping from unique test name to test config
-{
-  [test.testName]: test
-  for test in all_targets
-}
+std.flattenArrays([
+  unitTests.configs,
+  podTest.configs,
+  flaxExampleTests.configs,
+])

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
@@ -154,6 +155,7 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
+  local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
     retinanet + functional + k80x8 + mixins.Suspended,
@@ -162,10 +164,12 @@ local tpus = import 'templates/tpus.libsonnet';
     retinanet + functional + v100x4 + mixins.Suspended,
     retinanet + convergence + v100x4 + mixins.Experimental,
     retinanet + functional + v2_8,
+    retinanet + functional + v2_8 + tpuVm,
     retinanet + functional + v3_8,
     retinanet + convergence + v2_8,
     retinanet + convergence + v3_8,
     retinanet + functional + v2_32,
+    retinanet + functional + v2_32 + tpuVm,
     retinanet + functional + v3_32,
     retinanet + convergence + v2_32 + tpus.reserved + { schedule: '47 19 * * 1,3,5,6' },
     retinanet + convergence + v3_32,

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
@@ -28,9 +29,13 @@ local utils = import 'templates/utils.libsonnet';
     command: [
       'python3',
       'pytorch/xla/test/test_train_mp_mnist.py',
-      '--logdir=$(MODEL_DIR)',
-      '--datadir=/datasets/mnist-data',
+      '--logdir=%s' % self.flags.modelDir,
+      '%s' % self.flags.dataset,
     ],
+    flags:: {
+      modelDir: '$(MODEL_DIR)',
+      dataset: '--datadir=/datasets/mnist-data',
+    },
   },
 
   local gpu_command_base = |||
@@ -69,6 +74,10 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
     schedule: '4 17 * * *',
   },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+    schedule: '13 17 * * *',
+  },
   local v100 = {
     accelerator: gpus.teslaV100,
     command: utils.scriptCommand(
@@ -84,8 +93,35 @@ local utils = import 'templates/utils.libsonnet';
     schedule: '2 19 * * *',
   },
 
+  local tpuVm = experimental.PyTorchTpuVmMixin {
+    // This test uses the default pytorch XLA version built into the TPUVM, which
+    // is 1.8.1 as of Apr 19.
+    frameworkPrefix: 'pt-r1.8.1',
+    command: utils.scriptCommand(
+      |||
+        git clone https://github.com/pytorch/xla.git -b r1.8.1
+        python3 xla/test/test_train_mp_mnist.py --logdir='' --datadir=/datasets/mnist-data
+      |||
+    ),
+  },
+  local tpuVmPod = experimental.PyTorchTpuVmPodTest {
+    // This test uses the default pytorch XLA version built into the TPUVM, which
+    // is 1.8.1 as of Apr 19.
+    frameworkPrefix: 'pt-r1.8.1',
+    command: utils.scriptCommand(
+      |||
+        sudo ls -l /datasets
+        sudo ls -l /datasets/mnist-data
+        python3 -m torch_xla.distributed.xla_dist --tpu=$(cat ~/tpu_name) -- python3 /usr/share/xla/test/test_train_mp_mnist.py --logdir='' --fake_data
+      |||
+    ),
+  },
+
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1),
+    mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
+    mnist + convergence + v3_8 + timeouts.Hours(1) + tpuVm,
+    mnist + convergence + v3_32 + timeouts.Hours(1) + tpuVmPod,
     mnist + convergence + v3_8 + timeouts.Hours(1),
     mnist_gpu + convergence + v100 + timeouts.Hours(1),
     mnist_gpu + convergence + v100x4 + timeouts.Hours(1),
