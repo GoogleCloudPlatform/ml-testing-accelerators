@@ -16,7 +16,7 @@ local common = import 'common.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
-local experimental = import 'tests/experimental.libsonnet';
+local experimental = import '../experimental.libsonnet';
 
 {
   local roberta = {

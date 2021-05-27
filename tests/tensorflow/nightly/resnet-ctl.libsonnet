@@ -16,7 +16,7 @@ local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
-local experimental = import 'tests/experimental.libsonnet';
+local experimental = import '../experimental.libsonnet';
 
 {
   local resnet = common.ModelGardenTest {
