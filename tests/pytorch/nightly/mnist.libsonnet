@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
-local experimental = import '../experimental.libsonnet';
 
 {
   local mnist = common.PyTorchTest {
@@ -76,7 +76,7 @@ local experimental = import '../experimental.libsonnet';
   },
   local v3_32 = {
     accelerator: tpus.v3_32,
-    schedule: "13 17 * * *",
+    schedule: '13 17 * * *',
   },
   local v100 = {
     accelerator: gpus.teslaV100,
@@ -105,9 +105,9 @@ local experimental = import '../experimental.libsonnet';
     ),
   },
   local tpuVmPod = experimental.PyTorchTpuVmPodTest {
-    # This test uses the default pytorch XLA version built into the TPUVM, which
-    # is 1.8.1 as of Apr 19.
-    frameworkPrefix: "pt-r1.8.1",
+    // This test uses the default pytorch XLA version built into the TPUVM, which
+    // is 1.8.1 as of Apr 19.
+    frameworkPrefix: 'pt-r1.8.1',
     command: utils.scriptCommand(
       |||
         sudo ls -l /datasets

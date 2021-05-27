@@ -96,9 +96,9 @@ local experimental = import '../experimental.libsonnet';
                 exit $exit_code
               ||| % scriptSettings,
             ],
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   },
 }

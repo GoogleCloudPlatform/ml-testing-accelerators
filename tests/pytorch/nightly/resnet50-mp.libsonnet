@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
-local experimental = import '../experimental.libsonnet';
 
 {
   local gpu_command_base = |||
@@ -175,10 +175,10 @@ local experimental = import '../experimental.libsonnet';
     },
   },
   local resnet50_tpu_vm_pod = experimental.PyTorchTpuVmPodTest {
-    # This test uses the default pytorch XLA version built into the TPUVM, which
-    # is 1.8.1 as of Apr 19.
-    frameworkPrefix: "pt-r1.8.1",
-    modelName: "resnet50-mp",
+    // This test uses the default pytorch XLA version built into the TPUVM, which
+    // is 1.8.1 as of Apr 19.
+    frameworkPrefix: 'pt-r1.8.1',
+    modelName: 'resnet50-mp',
     command: utils.scriptCommand(
       |||
         sudo ls -l /datasets
