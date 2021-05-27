@@ -13,9 +13,10 @@
 // limitations under the License.
 
 local experimental = import '../experimental.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
 
 {
-  TensorFlowTpuVmMixin:: experimental.BaseTpuVmMixin {
+  TensorFlowTpuVmMixin:: experimental.BaseTpuVmMixin + mixins.Unsuspended {
     local config = self,
     tpuSettings+: {
       tpuVmEnvVars+: {
