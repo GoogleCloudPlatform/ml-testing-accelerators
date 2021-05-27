@@ -175,7 +175,7 @@ local tpus = import 'templates/tpus.libsonnet';
       softwareVersion: 'v2-alpha',
     },
   },
-  Functional:: mixins.Functional + mixins.Suspended {
+  Functional:: mixins.Functional {
     regressionTestConfig+: {
       metric_success_conditions+: {
         examples_per_second_average: {
