@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
@@ -199,36 +198,6 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local convergence_tpu_vm = common.Convergence {
-    // This test uses the default pytorch XLA version built into the TPUVM, which
-    // is 1.8.1 as of Apr 19.
-    frameworkPrefix: 'pt-r1.8.1',
-    modelName: 'fs-transformer',
-    regressionTestConfig: {
-      metric_subset_to_alert: [
-        'total_wall_time',
-      ],
-      metric_success_conditions: {
-        total_wall_time: {
-          comparison: 'less',
-          success_threshold: {
-            stddevs_from_mean: 5,
-          },
-          wait_for_n_points_of_history: 10,
-        },
-      },
-    },
-    command: utils.scriptCommand(
-      |||
-        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.8.1
-        pip install --editable examples/deps/fairseq
-        export PATH=~/.local/bin:$PATH
-        export XLA_USE_BF16=1
-        python3 examples/deps/fairseq/train.py \
-          %(conv_command_common)s
-      ||| % conv_command_common
-    ),
-  },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
@@ -239,7 +208,6 @@ local utils = import 'templates/utils.libsonnet';
     common.PyTorchXlaDistPodTest + transformer + v3_32 + functional_xla_dist + timeouts.Hours(1),
     common.PyTorchTest + transformer + v3_8 + functional + timeouts.Hours(1),
     common.PyTorchTest + transformer + v3_8 + convergence + timeouts.Hours(25),
-    common.PyTorchTest + v3_8 + convergence_tpu_vm + timeouts.Hours(25) + experimental.PyTorchTpuVmMixin,
     common.PyTorchTest + transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
     common.PyTorchTest + transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
   ],
