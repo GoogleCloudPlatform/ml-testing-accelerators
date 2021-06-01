@@ -24,7 +24,7 @@ local tpus = import 'templates/tpus.libsonnet';
     modelName: 'dlrm',
     paramsOverride:: {
       runtime: {
-          distribution_strategy: error 'Must set `runtime.distribution_strategy`',
+        distribution_strategy: error 'Must set `runtime.distribution_strategy`',
       },
       task: {
         train_data: {
@@ -37,13 +37,13 @@ local tpus = import 'templates/tpus.libsonnet';
         },
         model: {
           num_dense_features: 13,
-          bottom_mlp: [512,256,64],
+          bottom_mlp: [512, 256, 64],
           embedding_dim: 64,
-          top_mlp: [1024,1024,512,256,1],
+          top_mlp: [1024, 1024, 512, 256, 1],
           interaction: 'dot',
           vocab_sizes: [39884406, 39043, 17289, 7420, 20263, 3, 7120, 1543, 63,
-              38532951, 2953546, 403346, 10, 2208, 11938, 155, 4, 976, 14,
-              39979771, 25641295, 39664984, 585935, 12972, 108, 36],
+            38532951, 2953546, 403346, 10, 2208, 11938, 155, 4, 976, 14,
+            39979771, 25641295, 39664984, 585935, 12972, 108, 36],
         },
       },
       trainer: {
@@ -55,11 +55,11 @@ local tpus = import 'templates/tpus.libsonnet';
         optimizer_config: {
           embedding_optimizer: 'SGD',
           lr_config: {
-              decay_exp: 1.6,
-              decay_start_steps: 150000,
-              decay_steps: 136054,
-              learning_rate: 30,
-              warmup_steps: 8000,
+            decay_exp: 1.6,
+            decay_start_steps: 150000,
+            decay_steps: 136054,
+            learning_rate: 30,
+            warmup_steps: 8000,
           },
         },
       },
@@ -90,7 +90,7 @@ local tpus = import 'templates/tpus.libsonnet';
     ],
     paramsOverride+: {
       trainer+: {
-         train_steps: 256054,
+        train_steps: 256054,
       },
     },
   },
