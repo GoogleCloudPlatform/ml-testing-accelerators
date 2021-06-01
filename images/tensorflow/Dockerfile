@@ -21,7 +21,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends git
 
 RUN pip3 install cloud-tpu-client pyyaml
 
-# HACK: Remove this once it's added to the Model Garden requirements
+# HACKs: Remove this once they are added to the Model Garden requirements
+RUN pip3 install tensorflow-recommenders --no-deps
 RUN pip3 install tensorflow-text-nightly --no-deps
 
 # Checkout tensorflow/models at HEAD
