@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
@@ -151,7 +150,6 @@ local utils = import 'templates/utils.libsonnet';
     echo 'Accuracy is' $acc
     test $(echo $acc'>'78.75 | bc -l) -eq 1  # assert cls acc higher than 78.75
   |||,
-
   local criteo_kaggle = common.Convergence {
     command: utils.scriptCommand(
       |||
@@ -159,21 +157,6 @@ local utils = import 'templates/utils.libsonnet';
         pip install onnx
         git clone --recursive https://github.com/pytorch-tpu/examples.git
         python examples/deps/dlrm/dlrm_tpu_runner.py \
-          %(convergence_common)s
-      ||| % convergence_common
-    ),
-  },
-  local criteo_kaggle_tpu_vm = common.PyTorchTest {
-    // This test uses the default pytorch XLA version built into the TPUVM, which
-    // is 1.8.1 as of Apr 19.
-    frameworkPrefix: 'pt-r1.8.1',
-    modelName: 'dlrm-convergence',
-    schedule: '0 21 * * *',
-    command: utils.scriptCommand(
-      |||
-        pip3 install onnx tqdm sklearn
-        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.8.1
-        python3 examples/deps/dlrm/dlrm_tpu_runner.py \
           %(convergence_common)s
       ||| % convergence_common
     ),
@@ -187,6 +170,5 @@ local utils = import 'templates/utils.libsonnet';
     dlrm + v3_8 + mp_fwd + timeouts.Hours(3),
     dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
     dlrm_convergence + v3_8 + criteo_kaggle + timeouts.Hours(6),
-    criteo_kaggle_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(6) + experimental.PyTorchTpuVmMixin,
   ],
 }
