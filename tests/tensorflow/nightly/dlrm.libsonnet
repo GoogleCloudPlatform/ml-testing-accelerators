@@ -28,11 +28,11 @@ local tpus = import 'templates/tpus.libsonnet';
       },
       task: {
         train_data: {
-          input_path: '${CRITEO_DATA_DIR}/train/*',
+          input_path: '$(CRITEO_DATA_DIR)/train/*',
           global_batch_size: 16384,
         },
         validation_data: {
-          input_path: '${CRITEO_DATA_DIR}/eval/*',
+          input_path: '$(CRITEO_DATA_DIR)/eval/*',
           global_batch_size: 16384,
         },
         model: {
@@ -127,6 +127,12 @@ local tpus = import 'templates/tpus.libsonnet';
       runtime+: {
         distribution_strategy: 'mirrored',
         num_gpus: config.accelerator.count,
+      },
+      task: {
+        model: {
+          bottom_mlp: [512, 256, 12],
+          embedding_dim: 12,
+        },
       },
     },
   },
