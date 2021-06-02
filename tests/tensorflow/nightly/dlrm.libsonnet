@@ -21,18 +21,18 @@ local tpus = import 'templates/tpus.libsonnet';
 
 {
   local dlrm = common.ModelGardenTest {
-    modelName: 'dlrm',
+    modelName: 'ranking-dlrm',
     paramsOverride:: {
       runtime: {
         distribution_strategy: error 'Must set `runtime.distribution_strategy`',
       },
       task: {
         train_data: {
-          input_path: '${CRITEO_DATA_DIR}/train/*',
+          input_path: '$(CRITEO_DATA_DIR)/train/*',
           global_batch_size: 16384,
         },
         validation_data: {
-          input_path: '${CRITEO_DATA_DIR}/eval/*',
+          input_path: '$(CRITEO_DATA_DIR)/eval/*',
           global_batch_size: 16384,
         },
         model: {
@@ -128,6 +128,25 @@ local tpus = import 'templates/tpus.libsonnet';
         distribution_strategy: 'mirrored',
         num_gpus: config.accelerator.count,
       },
+      task+: {
+        model+: {
+          bottom_mlp: [512, 256, 12],
+          embedding_dim: 12,
+        },
+      },
+    },
+  },
+
+  local cross_interaction = {
+    modelName: 'ranking-dcn',
+    local config = self,
+
+    paramsOverride+:: {
+      task+: {
+        model+: {
+          interaction: 'cross',
+        },
+      },
     },
   },
 
@@ -159,11 +178,13 @@ local tpus = import 'templates/tpus.libsonnet';
   configs: [
     dlrm + functional + v3_8,
     dlrm + convergence + v3_8,
+    dlrm + convergence + cross_interaction + v3_8,
     dlrm + functional + v3_32,
     dlrm + convergence + v3_32,
     dlrm + functional + v100,
     dlrm + functional + v100x4,
     dlrm + convergence + v100,
+    dlrm + convergence + cross_interaction + v100,
     dlrm + convergence + v100x4,
   ],
 }
