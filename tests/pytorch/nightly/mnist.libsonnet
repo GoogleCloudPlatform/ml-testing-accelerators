@@ -28,9 +28,13 @@ local utils = import 'templates/utils.libsonnet';
     command: [
       'python3',
       'pytorch/xla/test/test_train_mp_mnist.py',
-      '--logdir=$(MODEL_DIR)',
-      '--datadir=/datasets/mnist-data',
+      '--logdir=%s' % self.flags.modelDir,
+      '%s' % self.flags.dataset,
     ],
+    flags:: {
+      modelDir: '$(MODEL_DIR)',
+      dataset: '--datadir=/datasets/mnist-data',
+    },
   },
 
   local gpu_command_base = |||
@@ -69,6 +73,10 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
     schedule: '4 17 * * *',
   },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+    schedule: '13 17 * * *',
+  },
   local v100 = {
     accelerator: gpus.teslaV100,
     command: utils.scriptCommand(
@@ -83,7 +91,6 @@ local utils = import 'templates/utils.libsonnet';
     ),
     schedule: '2 19 * * *',
   },
-
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1),
     mnist + convergence + v3_8 + timeouts.Hours(1),

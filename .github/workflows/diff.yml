@@ -33,11 +33,15 @@ jobs:
       run: |
         scripts/gen-tests.sh
 
-    # New files need to be added before git diff will recognize them.
-    - name: Show git diff
+    - name: Show git diff summary
       run: |
+        # New files need to be added before git diff will recognize them.
         git add -N k8s/
         git fetch origin gen
+        git diff origin/gen --compact-summary -- k8s/ || true
+
+    - name: Show full git diff
+      run: |
         git diff origin/gen -- k8s/ | tee generated.diff
 
     - name: Upload a diff file

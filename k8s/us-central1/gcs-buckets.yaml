@@ -33,6 +33,7 @@ data:
   SHAPEMASK_DIR: gs://xl-ml-test-us-central1/data/shapemask
   PERFZERO_DATA_DIR: gs://xl-ml-test-us-central1/data
   NCF_DIR: gs://xl-ml-test-us-central1/data/ncf
+  CRITEO_DATA_DIR: gs://xl-ml-test-us-central1/data/criteo/terabyte_processed_shuffled
   XLNET_CHECKPOINT_DIR: gs://cloud-tpu-checkpoints/xlnet/keras_xlnet
   XLNET_IMDB_DIR: gs://xl-ml-test-us-central1/data/xlnet-imdb
   XLNET_SQUAD_DIR: gs://xl-ml-test-us-central1/data/xlnet-squad

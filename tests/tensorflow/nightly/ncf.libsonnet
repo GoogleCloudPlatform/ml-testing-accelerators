@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
@@ -102,6 +103,7 @@ local tpus = import 'templates/tpus.libsonnet';
   local v3_32 = {
     accelerator: tpus.v3_32,
   },
+  local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
     ncf + k80 + functional + ctl,
@@ -116,5 +118,7 @@ local tpus = import 'templates/tpus.libsonnet';
     ncf + v3_8 + convergence + ctl,
     ncf + v2_32 + convergence + ctl + tpus.reserved + { schedule: '20 15 * * 1,3,5,6' },
     ncf + v3_32 + functional + ctl,
+    ncf + v2_8 + functional + ctl + tpuVm,
+    ncf + v2_32 + functional + ctl + tpuVm,
   ],
 }

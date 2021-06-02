@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
 
 {
   local operations = common.PyTorchTest {
@@ -31,9 +33,24 @@ local tpus = import 'templates/tpus.libsonnet';
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
+  local cpp_ops_tpu_vm = common.PyTorchTest {
+    modelName: 'cpp-ops',
+    schedule: '0 0 * * *',
+    command: utils.scriptCommand(
+      |||
+        %(command_common)s
+        cd xla/test/cpp
+        export TPUVM_MODE=1
+        ./run_tests.sh
+      ||| % common.tpu_vm_nightly_install
+    ),
+  },
 
   configs: [
     operations + v2_8 + common.Functional + timeouts.Hours(4),
     operations + v3_8 + common.Functional + timeouts.Hours(4),
+    // TPUVM not working yet: https://b.corp.google.com/issues/183450497#comment18
+    // cpp_ops_tpu_vm + v3_8 + common.Functional + timeouts.Hours(4) + experimental.PyTorchTpuVmMixin,
+    // cpp_ops_tpu_vm + v2_8 + common.Functional + timeouts.Hours(4) + experimental.PyTorchTpuVmMixin,
   ],
 }
