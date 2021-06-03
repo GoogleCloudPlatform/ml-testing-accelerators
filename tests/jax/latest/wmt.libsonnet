@@ -17,7 +17,7 @@ local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 {
   local functional = mixins.Functional {
-    extraFlags:: 'config.num_train_steps=10',
+    extraFlags:: '--config.num_train_steps=10',
     extraConfig:: 'default.py',
   },
   local convergence = mixins.Convergence {
