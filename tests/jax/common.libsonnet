@@ -23,7 +23,7 @@ local tpus = import 'templates/tpus.libsonnet';
       metric_to_aggregation_strategies+: {
         examples_per_second: ['average'],
       },
-      tags_to_ignore: ['_hparams_/session_start_info']
+      tags_to_ignore: ['_hparams_/session_start_info'],
     },
     local config = self,
 

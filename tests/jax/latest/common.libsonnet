@@ -52,10 +52,10 @@ local tpus = import 'templates/tpus.libsonnet';
 
       python3 main.py --workdir=$(MODEL_DIR)  --config=configs/%(extraConfig)s %(extraFlags)s
     ||| % (self.scriptConfig {
-              modelName: config.modelName,
-              extraDeps: config.extraDeps,
-	      extraConfig: config.extraConfig,
-              extraFlags: config.extraFlags,
+             modelName: config.modelName,
+             extraDeps: config.extraDeps,
+	     extraConfig: config.extraConfig,
+             extraFlags: config.extraFlags,
            }),
   },
 }
