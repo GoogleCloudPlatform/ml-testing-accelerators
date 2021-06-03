@@ -38,4 +38,3 @@ local tpus = import 'templates/tpus.libsonnet';
     imagenet + convergence + v3_8,
   ],
 }
-
