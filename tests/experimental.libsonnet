@@ -81,7 +81,8 @@ local volumes = import 'templates/volumes.libsonnet';
               local originalLimits = super.limits,
               limits: {
                 [field]: originalLimits[field]
-                for field in std.objectFields(originalLimits) if !std.startsWith(field, 'cloud-tpus.google.com')
+                for field in std.objectFields(originalLimits)
+                if !std.startsWith(field, 'cloud-tpus.google.com')
               },
             },
           },
