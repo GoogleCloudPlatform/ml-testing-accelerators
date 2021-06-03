@@ -54,7 +54,7 @@ local tpus = import 'templates/tpus.libsonnet';
     ||| % (self.scriptConfig {
              modelName: config.modelName,
              extraDeps: config.extraDeps,
-	     extraConfig: config.extraConfig,
+             extraConfig: config.extraConfig,
              extraFlags: config.extraFlags,
            }),
   },
