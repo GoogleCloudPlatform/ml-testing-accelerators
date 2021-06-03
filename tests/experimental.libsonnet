@@ -76,12 +76,6 @@ local volumes = import 'templates/volumes.libsonnet';
               else
                 'tpu-$(POD_UID)',
             },
-            resources+: {
-              // HACK: replace standard Cloud TPU resource.
-              limits: {
-                ['tpu.googleapis.com/v%s' % config.accelerator.version]: config.accelerator.size,
-              },
-            },
           },
         },
         initContainerMap+:: {

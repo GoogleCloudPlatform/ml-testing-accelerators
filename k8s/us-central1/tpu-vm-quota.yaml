@@ -48,10 +48,101 @@ metadata:
   name: tpu-pod-limit
 spec:
   hard:
-    requests.tpu.googleapis.com/v2: 32
-    requests.tpu.googleapis.com/v3: 32
+    requests.tpu.googleapis.com/v2: 0
+    requests.tpu.googleapis.com/v3: 0
   scopeSelector:
     matchExpressions:
     - scopeName: PriorityClass
       operator: In
       values: [ tpu-pod ]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tpu-vm-quota-patcher
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: quota-patcher
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - resourcequotas
+  verbs:
+  - get
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tpu-vm-quota-patcher
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: quota-patcher
+subjects:
+- kind: ServiceAccount
+  name: tpu-vm-quota-patcher
+  namespace: automated
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: tpu-daytime-limits
+spec:
+  schedule: "0 15 * * 1-5"
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          serviceAccountName: tpu-vm-quota-patcher
+          restartPolicy: Never
+          containers:
+          - name: update-quota
+            image: google/cloud-sdk
+            command:
+            - bash
+            - -cx
+            args:
+            - |
+              kubectl patch quota tpu-device-limit -p '{
+                "spec": {
+                  "hard": {
+                    "requests.tpu.googleapis.com/v2": "16",
+                    "requests.tpu.googleapis.com/v3": "16"
+                  }
+                }
+              }'
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: tpu-off-hours-limits
+spec:
+  schedule: "0 2 * * *"
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          serviceAccountName: tpu-vm-quota-patcher
+          restartPolicy: Never
+          containers:
+          - name: update-quota
+            image: google/cloud-sdk
+            command:
+            - bash
+            - -cx
+            args:
+            - |
+              kubectl patch quota tpu-device-limit -p '{
+                "spec": {
+                  "hard": {
+                    "requests.tpu.googleapis.com/v2": "64",
+                    "requests.tpu.googleapis.com/v3": "64"
+                  }
+                }
+              }'

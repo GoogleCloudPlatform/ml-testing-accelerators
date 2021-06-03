@@ -60,9 +60,18 @@ local metrics = import 'templates/metrics.libsonnet';
         else {},
       } + if config.accelerator.type == 'gpu' then {
         priorityClassName: 'gpu-%(version)s' % config.accelerator,
-      } else if config.accelerator.type == 'tpu' && std.endsWith(config.testName, '-1vm') then {
+      } else if config.accelerator.type == 'tpu' then {
         priorityClassName: if config.accelerator.replicas == 1 then
           'tpu-device' else 'tpu-pod',
+        containerMap+: {
+          train+: {
+            resources+: {
+              limits+: {
+                ['tpu.googleapis.com/v%s' % config.accelerator.version]: config.accelerator.size,
+              },
+            },
+          },
+        },
       } else {},
     },
 
