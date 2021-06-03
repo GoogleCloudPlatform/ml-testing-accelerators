@@ -13,6 +13,7 @@
 // limitations under the License.
 
 local common = import 'common.libsonnet';
+local experimental = import '../experimental.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
@@ -36,7 +37,41 @@ local utils = import 'templates/utils.libsonnet';
     cpu: '90.0',
     memory: '400Gi',
   },
-
+  local resnet50_tpu_vm = experimental.PyTorchTpuVmMixin {
+    frameworkPrefix: 'pt-r1.9',
+    modelName: 'resnet50-mp',
+    paramsOverride: {
+      num_epochs: error 'Must set `num_epochs`',
+      datadir: error 'Must set `datadir`',
+    },
+    command: utils.scriptCommand(
+      |||
+        pip3 install tensorboardX google-cloud-storage
+        python3 xla/test/test_train_mp_imagenet.py \
+          --logdir=$(MODEL_DIR) \
+          --datadir=%(datadir)s \
+          --model=resnet50 \
+          --num_workers=8 \
+          --batch_size=128 \
+          --log_steps=200 \
+          --num_epochs=%(num_epochs)d \
+      ||| % self.paramsOverride,
+    ),
+    podTemplate+:: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            resources+: {
+              requests: {
+                cpu: '1',
+                memory: '2Gi',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   local functional = common.Functional {
     command+: [
       '--num_epochs=2',
@@ -59,6 +94,28 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  local functional_tpu_vm = common.Functional {
+    paramsOverride: {
+      num_epochs: 2,
+      datadir: '/datasets/imagenet-mini',
+    },
+  },
+  local convergence_tpu_vm = common.Convergence {
+    paramsOverride: {
+      num_epochs: 5,
+      datadir: '/datasets/imagenet',
+    },
+    regressionTestConfig+: {
+      metric_success_conditions+: {
+        'Accuracy/test_final': {
+          success_threshold: {
+            fixed_value: 30.0,
+          },
+          comparison: 'greater',
+        },
+      },
+    },
+  },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
@@ -68,5 +125,9 @@ local utils = import 'templates/utils.libsonnet';
   configs: [
     resnet50_MP + v3_8 + convergence + timeouts.Hours(26) + mixins.PreemptibleTpu,
     resnet50_MP + v3_8 + functional + timeouts.Hours(2),
+    common.PyTorchTest + resnet50_tpu_vm + v3_8 + functional_tpu_vm + timeouts.Hours(2),
+    common.PyTorchTest + resnet50_tpu_vm + v3_8 + convergence_tpu_vm + timeouts.Hours(4),
+    // TODO: Make a version of TPUVM pod test that uses r1.9.
+    // common.PyTorchTest + resnet50_tpu_vm_pod + v3_32 + common.Functional + timeouts.Hours(4),
   ],
 }

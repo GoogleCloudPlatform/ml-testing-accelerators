@@ -13,6 +13,7 @@
 // limitations under the License.
 
 local common = import 'common.libsonnet';
+local experimental = import '../experimental.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
@@ -44,6 +45,25 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  local tpuVm = experimental.PyTorchTpuVmMixin {
+    frameworkPrefix: 'pt-r1.9',
+    command: utils.scriptCommand(
+      |||
+        %(command_common)s
+        python3 xla/test/test_train_mp_mnist.py --logdir='' --datadir=/datasets/mnist-data
+      ||| % common.tpu_vm_1_9_install
+    ),
+  },
+  local tpuVmPod = experimental.PyTorchTpuVmPodTest {
+    frameworkPrefix: 'pt-r1.9',
+    command: utils.scriptCommand(
+      |||
+        sudo ls -l /datasets
+        sudo ls -l /datasets/mnist-data
+        python3 -m torch_xla.distributed.xla_dist --tpu=$(cat ~/tpu_name) -- python3 /usr/share/xla/test/test_train_mp_mnist.py --logdir='' --fake_data
+      |||
+    ),
+  },
   local v2_8 = {
     accelerator: tpus.v2_8,
     schedule: '0 23 * * *',
@@ -59,5 +79,9 @@ local utils = import 'templates/utils.libsonnet';
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1),
     mnist + convergence + v3_8 + timeouts.Hours(1),
+    mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
+    mnist + convergence + v3_8 + timeouts.Hours(1) + tpuVm,
+    // TODO: make a TPUVM pod test that installs 1.9 wheels.
+    // mnist + convergence + v3_32 + timeouts.Hours(1) + tpuVmPod,
   ],
 }

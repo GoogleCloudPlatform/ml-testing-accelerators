@@ -13,6 +13,7 @@
 // limitations under the License.
 
 local common = import 'common.libsonnet';
+local experimental = import '../experimental.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
@@ -161,6 +162,19 @@ local utils = import 'templates/utils.libsonnet';
       ||| % convergence_common
     ),
   },
+  local criteo_kaggle_tpu_vm = common.PyTorchTest {
+    frameworkPrefix: 'pt-r1.9',
+    modelName: 'dlrm-convergence',
+    schedule: '30 20 * * *',
+    command: utils.scriptCommand(
+      |||
+        pip3 install onnx tqdm sklearn
+        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.9
+        python3 examples/deps/dlrm/dlrm_tpu_runner.py \
+          %(convergence_common)s
+      ||| % convergence_common
+    ),
+  },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
@@ -170,5 +184,6 @@ local utils = import 'templates/utils.libsonnet';
     dlrm + v3_8 + mp_fwd + timeouts.Hours(3),
     dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
     dlrm_convergence + v3_8 + criteo_kaggle + timeouts.Hours(6),
+    criteo_kaggle_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(6) + experimental.PyTorchTpuVmMixin,
   ],
 }
