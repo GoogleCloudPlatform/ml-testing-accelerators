@@ -60,7 +60,7 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local dlrm_convergence = common.PyTorchTest {
-    modelName: 'dlrm-convergence',
+    modelName: 'dlrm-pre',
     schedule: '0 21 * * *',
     volumeMap+: {
       datasets: common.datasetsVolume,
@@ -164,15 +164,16 @@ local utils = import 'templates/utils.libsonnet';
   },
   local criteo_kaggle_tpu_vm = common.PyTorchTest {
     frameworkPrefix: 'pt-r1.9',
-    modelName: 'dlrm-convergence',
+    modelName: 'dlrm-pre',
     schedule: '30 20 * * *',
     command: utils.scriptCommand(
       |||
+        %(command_common)s
         pip3 install onnx tqdm sklearn
         git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.9
         python3 examples/deps/dlrm/dlrm_tpu_runner.py \
           %(convergence_common)s
-      ||| % convergence_common
+      ||| % [common.tpu_vm_1_9_install, convergence_common]
     ),
   },
   local v3_8 = {

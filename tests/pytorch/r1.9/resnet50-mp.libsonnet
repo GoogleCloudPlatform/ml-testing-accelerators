@@ -46,6 +46,7 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: utils.scriptCommand(
       |||
+        %(setup_commands)s
         pip3 install tensorboardX google-cloud-storage
         python3 xla/test/test_train_mp_imagenet.py \
           --logdir=$(MODEL_DIR) \
@@ -96,12 +97,14 @@ local utils = import 'templates/utils.libsonnet';
   },
   local functional_tpu_vm = common.Functional {
     paramsOverride: {
+      setup_commands: common.tpu_vm_1_9_install,
       num_epochs: 2,
       datadir: '/datasets/imagenet-mini',
     },
   },
   local convergence_tpu_vm = common.Convergence {
     paramsOverride: {
+      setup_commands: common.tpu_vm_1_9_install,
       num_epochs: 5,
       datadir: '/datasets/imagenet',
     },

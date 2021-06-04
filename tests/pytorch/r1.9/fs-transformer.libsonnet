@@ -219,13 +219,14 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: utils.scriptCommand(
       |||
+        %(command_common)s
         git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.9
         pip install --editable examples/deps/fairseq
         export PATH=~/.local/bin:$PATH
         export XLA_USE_BF16=1
         python3 examples/deps/fairseq/train.py \
           %(conv_command_common)s
-      ||| % conv_command_common
+      ||| % [common.tpu_vm_1_9_install, conv_command_common]
     ),
   },
 
