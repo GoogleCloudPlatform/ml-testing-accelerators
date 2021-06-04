@@ -130,8 +130,8 @@ local tpus = import 'templates/tpus.libsonnet';
       },
       task+: {
         model+: {
-          bottom_mlp: [512, 256, 12],
-          embedding_dim: 12,
+          bottom_mlp: [512, 256, 8],
+          embedding_dim: 8,
         },
       },
     },
@@ -166,6 +166,14 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
+  local v2_8 = tpu_common {
+    accelerator: tpus.v2_8,
+  },
+
+  local v2_32 = tpu_common {
+    accelerator: tpus.v2_32,
+  },
+
   local v3_8 = tpu_common {
     accelerator: tpus.v3_8,
   },
@@ -177,9 +185,12 @@ local tpus = import 'templates/tpus.libsonnet';
 
   configs: [
     dlrm + functional + v3_8,
+    dlrm + functional + cross_interaction + v2_8,
     dlrm + convergence + v3_8,
     dlrm + convergence + cross_interaction + v3_8,
     dlrm + functional + v3_32,
+    dlrm + functional + cross_interaction + v2_32,
+    dlrm + convergence + cross_interaction + v3_32,
     dlrm + convergence + v3_32,
     dlrm + functional + v100,
     dlrm + functional + v100x4,
