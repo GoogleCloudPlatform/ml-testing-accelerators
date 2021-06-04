@@ -54,13 +54,13 @@ local utils = import 'templates/utils.libsonnet';
       ||| % common.tpu_vm_1_9_install
     ),
   },
-  local tpuVmPod = experimental.PyTorchTpuVmPodTest {
+  local tpuVmPod = experimental.PyTorch1_9TpuVmPodTest {
     frameworkPrefix: 'pt-r1.9',
     command: utils.scriptCommand(
       |||
         sudo ls -l /datasets
         sudo ls -l /datasets/mnist-data
-        python3 -m torch_xla.distributed.xla_dist --tpu=$(cat ~/tpu_name) -- python3 /usr/share/xla/test/test_train_mp_mnist.py --logdir='' --fake_data
+        python3 -m torch_xla.distributed.xla_dist --tpu=$(cat ~/tpu_name) -- python3 /usr/share/pytorch/xla/test/test_train_mp_mnist.py --logdir='' --fake_data
       |||
     ),
   },
@@ -81,7 +81,6 @@ local utils = import 'templates/utils.libsonnet';
     mnist + convergence + v3_8 + timeouts.Hours(1),
     mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
     mnist + convergence + v3_8 + timeouts.Hours(1) + tpuVm,
-    // TODO: make a TPUVM pod test that installs 1.9 wheels.
-    // mnist + convergence + v3_32 + timeouts.Hours(1) + tpuVmPod,
+    mnist + convergence + v3_32 + timeouts.Hours(1) + tpuVmPod,
   ],
 }

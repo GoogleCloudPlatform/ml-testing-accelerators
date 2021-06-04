@@ -95,6 +95,18 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  local resnet50_pod_func = common.PyTorchXlaDistPodTest {
+    modelName: 'resnet50-pod',
+    condaEnv: 'torch-xla-1.8.1',
+    command: [
+      'python3',
+      '/usr/share/torch-xla-1.8.1/pytorch/xla/test/test_train_mp_imagenet.py',
+      '--fake_data',
+      '--num_epochs=5',
+    ],
+    workerCpu: '8',
+    workerMemory: '16Gi',
+  },
   local functional_tpu_vm = common.Functional {
     paramsOverride: {
       setup_commands: common.tpu_vm_1_9_install,
@@ -119,6 +131,17 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  local resnet50_tpu_vm_pod = experimental.PyTorch1_9TpuVmPodTest {
+    frameworkPrefix: 'pt-r1.9',
+    modelName: 'resnet50-mp',
+    command: utils.scriptCommand(
+      |||
+        sudo ls -l /datasets
+        sudo ls -l /datasets/imagenet-mini
+        python3 -m torch_xla.distributed.xla_dist --tpu=$(cat ~/tpu_name) -- python3 /usr/share/pytorch/xla/test/test_train_mp_imagenet.py --num_epochs=2 --logdir='' --datadir=/datasets/imagenet-mini --model=resnet50 --num_workers=4 --batch_size=128 --log_steps=200
+      |||
+    ),
+  },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
@@ -128,9 +151,9 @@ local utils = import 'templates/utils.libsonnet';
   configs: [
     resnet50_MP + v3_8 + convergence + timeouts.Hours(26) + mixins.PreemptibleTpu,
     resnet50_MP + v3_8 + functional + timeouts.Hours(2),
+    resnet50_pod_func + v3_32 + common.Functional,
     common.PyTorchTest + resnet50_tpu_vm + v3_8 + functional_tpu_vm + timeouts.Hours(2),
     common.PyTorchTest + resnet50_tpu_vm + v3_8 + convergence_tpu_vm + timeouts.Hours(4),
-    // TODO: Make a version of TPUVM pod test that uses r1.9.
-    // common.PyTorchTest + resnet50_tpu_vm_pod + v3_32 + common.Functional + timeouts.Hours(4),
+    common.PyTorchTest + resnet50_tpu_vm_pod + v3_32 + common.Functional + timeouts.Hours(4),
   ],
 }
