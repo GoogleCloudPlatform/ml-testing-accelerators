@@ -124,9 +124,9 @@ local tpus = import 'templates/tpus.libsonnet';
         echo "Checking out TF..."
         cd ~/
         git clone https://github.com/tensorflow/tensorflow.git
-        cd tensorflow
+        sudo rm /usr/local/lib/python3.8/dist-packages/tensorflow/core/kernels/libtfkernel_sobol_op.so
+	cd tensorflow
         echo "TensorFlow git hash: $(git rev-parse HEAD)"
-
         echo "Building JAX..."
         cd ~/jax
         python3 build/build.py --enable_tpu --bazel_options="--override_repository=org_tensorflow=$HOME/tensorflow"
