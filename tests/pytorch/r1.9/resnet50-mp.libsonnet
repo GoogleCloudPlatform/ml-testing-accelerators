@@ -97,10 +97,10 @@ local utils = import 'templates/utils.libsonnet';
   },
   local resnet50_pod_func = common.PyTorchXlaDistPodTest {
     modelName: 'resnet50-pod',
-    condaEnv: 'torch-xla-1.8.1',
+    condaEnv: 'torch-xla-1.9',
     command: [
       'python3',
-      '/usr/share/torch-xla-1.8.1/pytorch/xla/test/test_train_mp_imagenet.py',
+      '/usr/share/torch-xla-1.9/pytorch/xla/test/test_train_mp_imagenet.py',
       '--fake_data',
       '--num_epochs=5',
     ],
