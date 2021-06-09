@@ -13,8 +13,12 @@
 // limitations under the License,
 
 local imagenet = import 'imagenet.libsonnet';
+local mnist = import 'mnist.libsonnet';
+local wmt = import 'wmt.libsonnet';
 
 // Add new models here
 std.flattenArrays([
   imagenet.configs,
+  wmt.configs,
+  mnist.configs,
 ])
