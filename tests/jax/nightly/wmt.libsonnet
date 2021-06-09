@@ -31,7 +31,7 @@ local timeouts = import 'templates/timeouts.libsonnet';
   local v2_8 = {
     accelerator: tpus.v2_8,
   },
-  local wmt = common.runFlaxLatest {
+  local wmt = common.runFlaxNightly {
     modelName:: 'wmt',
     extraDeps:: 'tensorflow_text sentencepiece',
   },
