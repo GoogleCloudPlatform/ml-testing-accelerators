@@ -14,8 +14,8 @@
 
 local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
-local tpus = import 'templates/tpus.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
 {
   local functional = mixins.Functional {
     extraFlags:: '--config.num_train_steps=10 --config.per_device_batch_size=16',
@@ -23,7 +23,7 @@ local timeouts = import 'templates/timeouts.libsonnet';
   },
   local convergence = mixins.Convergence {
     extraConfig:: 'default.py',
-    extraFlags:: '--config.reverse_translation=True  --config.per_device_batch_size=32'
+    extraFlags:: '--config.reverse_translation=True  --config.per_device_batch_size=32',
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
