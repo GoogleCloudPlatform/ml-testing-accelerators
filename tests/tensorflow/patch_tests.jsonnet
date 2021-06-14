@@ -59,7 +59,8 @@ function(
     for test in targets
     if
       std.startsWith(test.frameworkPrefix, 'tf-%s' % minorVersion) &&
-      std.member(modesList, test.mode)
+      std.member(modesList, test.mode) &&
+      test.accelerator.type == 'tpu'
   ];
   local clusterTests = utils.splitByCluster(
     tests, clusters.defaultCluster, clusters.clusterAccelerators,

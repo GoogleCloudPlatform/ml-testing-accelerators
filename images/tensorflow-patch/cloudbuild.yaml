@@ -21,7 +21,7 @@ steps:
   - '--build-arg=tensorflow_minor_version=$_TF_MINOR_VERSION'
   - '--destination=gcr.io/$PROJECT_ID/tensorflow-patch:$_TF_PATCH_VERSION'
   - '--cache=$_USE_DOCKER_CACHE'
-  - '--cache-ttl=8h'
+  - '--cache-ttl=24h'
 - name: 'golang'
   id: download-jsonnet
   waitFor: ['-']
@@ -49,7 +49,7 @@ steps:
     'tests/tensorflow/patch_tests.jsonnet',
     '-S',
     '-J', '.',
-    '--tla-str', 'patchVersion=r2.4.1',
+    '--tla-str', 'patchVersion=$_TF_PATCH_VERSION',
     '--tla-str', 'groupLabel=$BUILD_ID',
     '-m', 'output'
   ]
