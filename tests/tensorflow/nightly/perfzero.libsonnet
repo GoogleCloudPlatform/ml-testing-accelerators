@@ -1,16 +1,16 @@
-local common = import "common.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local gpus = import "templates/gpus.libsonnet";
-local utils = import "templates/utils.libsonnet";
+local common = import 'common.libsonnet';
+local gpus = import 'templates/gpus.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
 
 {
   local PerfZeroTest = common.ModelGardenTest {
     local config = self,
 
     timeout: timeouts.one_hour,
-    schedule: "0 8 * * *",
-    mode: "perfzero",
+    schedule: '0 8 * * *',
+    mode: 'perfzero',
 
     benchmarkOptions:: {
       test: {
@@ -19,45 +19,48 @@ local utils = import "templates/utils.libsonnet";
         method: null,
       },
       table: {
-        project: "xl-ml-test",
-        name: "perfzero_dataset.perfzero_table",
+        project: 'xl-ml-test',
+        name: 'perfzero_dataset.perfzero_table',
       },
     },
     command: [
-      "python3",
-      "/benchmarks/perfzero/lib/benchmark.py",
-      "--gcloud_key_file=",
-      "--bigquery_project_name=%s" % config.benchmarkOptions.table.project,
-      "--bigquery_dataset_table_name=%s" % config.benchmarkOptions.table.name,
-      "--benchmark_methods=%(module)s.%(class)s.%(method)s" % config.benchmarkOptions.test,
-      "--output_gcs_url=$(MODEL_DIR)",
+      'python3',
+      '/benchmarks/perfzero/lib/benchmark.py',
+      '--gcloud_key_file=',
+      '--bigquery_project_name=%s' % config.benchmarkOptions.table.project,
+      '--bigquery_dataset_table_name=%s' % config.benchmarkOptions.table.name,
+      '--benchmark_methods=%(module)s.%(class)s.%(method)s' % config.benchmarkOptions.test,
+      '--output_gcs_url=$(MODEL_DIR)',
     ],
 
-    jobSpec+:: {
-      activeDeadlineSeconds: config.timeout * (self.backoffLimit + 2),
-      template+: {
-        spec+: {
-          activeDeadlineSeconds: config.timeout,
-          containerMap+:: {
-            train+: {
-              envMap+:: {
-                BENCHMARK_OUTPUT_DIR: "$(MODEL_DIR)",
+    jobTemplate+:: {
+      spec+: {
+        activeDeadlineSeconds: config.timeout * (self.backoffLimit + 2),
+        template+: {
+          spec+: {
+            activeDeadlineSeconds: config.timeout,
+            containerMap+:: {
+              train+: {
+                envMap+:: {
+                  BENCHMARK_OUTPUT_DIR: '$(MODEL_DIR)',
+                },
+                args: utils.scriptCommand(
+                  // HACK: Replace some hard-coded data paths
+                  |||
+                    sed -i 's_gs://tf-perfzero-data/bert_$(PERFZERO_DATA_DIR)_g' /garden/official/benchmark/bert_squad_benchmark.py
+                    sed -i 's_gs://tf-perfzero-data_$(PERFZERO_DATA_DIR)_g' /garden/official/benchmark/retinanet_benchmark.py
+                    sed -i 's_gs://mlcompass-data/transformer_$(PERFZERO_DATA_DIR)_g' /garden/official/benchmark/transformer_benchmark.py
+                    sed -i 's_gs://mlcompass-data/imagenet/imagenet-2012-tfrecord_$(PERFZERO_DATA_DIR)/imagenet_g' /garden/official/benchmark/resnet_ctl_imagenet_benchmark.py
+                    sed -i 's/wmt32k-en2de-official/transformer/g' /garden/official/benchmark/transformer_benchmark.py
+
+                    if [ -v TPU_NAME ]; then
+                      export BENCHMARK_TPU=${TPU_NAME#*/}
+                    fi
+
+                    %s
+                  ||| % std.join(' ', config.command)
+                ),
               },
-              args: utils.scriptCommand(
-                # HACK: Replace some hard-coded data paths
-                |||
-                  sed -i 's_gs://tf-perfzero-data/bert_$(PERFZERO_DATA_DIR)_g' /garden/official/benchmark/bert_squad_benchmark.py
-                  sed -i 's_gs://tf-perfzero-data_$(PERFZERO_DATA_DIR)_g' /garden/official/benchmark/retinanet_benchmark.py
-                  sed -i 's_gs://mlcompass-data/transformer_$(PERFZERO_DATA_DIR)_g' /garden/official/benchmark/transformer_benchmark.py
-                  sed -i 's_gs://mlcompass-data/imagenet/imagenet-2012-tfrecord_$(PERFZERO_DATA_DIR)/imagenet_g' /garden/official/benchmark/resnet_ctl_imagenet_benchmark.py
-                  sed -i 's/wmt32k-en2de-official/transformer/g' /garden/official/benchmark/transformer_benchmark.py
-
-                  if [ -v TPU_NAME ]; then
-                    export BENCHMARK_TPU=${TPU_NAME#*/}
-                  fi
-
-                  %s
-                ||| % std.join(" ", config.command))
             },
           },
         },
@@ -84,12 +87,12 @@ local utils = import "templates/utils.libsonnet";
     },
   },
 
-  # Common benchmark methods.
+  // Common benchmark methods.
   local benchmark_1_gpu = {
     accelerator: gpus.teslaV100,
     benchmarkOptions+:: {
       test+: {
-        method: "benchmark_1_gpu",
+        method: 'benchmark_1_gpu',
       },
     },
   },
@@ -97,15 +100,15 @@ local utils = import "templates/utils.libsonnet";
     accelerator: gpus.teslaV100,
     benchmarkOptions+:: {
       test+: {
-        method: "benchmark_1_gpu_no_dist_strat",
+        method: 'benchmark_1_gpu_no_dist_strat',
       },
     },
   },
   local benchmark_8_gpu = {
-    accelerator: gpus.teslaV100 + { count: 8 },
+    accelerator: gpus.teslaV100 { count: 8 },
     benchmarkOptions+:: {
       test+: {
-        method: "benchmark_8_gpu",
+        method: 'benchmark_8_gpu',
       },
     },
   },
@@ -113,7 +116,7 @@ local utils = import "templates/utils.libsonnet";
     accelerator: tpus.v3_8,
     benchmarkOptions+:: {
       test+: {
-        method: "benchmark_2x2_tpu",
+        method: 'benchmark_2x2_tpu',
       },
     },
   },
@@ -121,7 +124,7 @@ local utils = import "templates/utils.libsonnet";
     accelerator: tpus.v3_8,
     benchmarkOptions+:: {
       test+: {
-        method: "benchmark_2x2_tpu_bf16",
+        method: 'benchmark_2x2_tpu_bf16',
       },
     },
   },
@@ -129,7 +132,7 @@ local utils = import "templates/utils.libsonnet";
     accelerator: tpus.v3_32,
     benchmarkOptions+:: {
       test+: {
-        method: "benchmark_4x4_tpu",
+        method: 'benchmark_4x4_tpu',
       },
     },
   },
@@ -137,125 +140,125 @@ local utils = import "templates/utils.libsonnet";
     accelerator: tpus.v3_32,
     benchmarkOptions+:: {
       test+: {
-        method: "benchmark_4x4_tpu_bf16",
+        method: 'benchmark_4x4_tpu_bf16',
       },
     },
   },
 
   local bertSquad = PerfZeroTest {
-    modelName: "bert-squad",
+    modelName: 'bert-squad',
     benchmarkOptions+:: {
       test+: {
-        module: "official.benchmark.bert_squad_benchmark",
-        class: "BertSquadBenchmarkReal",
+        module: 'official.benchmark.bert_squad_benchmark',
+        class: 'BertSquadBenchmarkReal',
       },
     },
   },
 
   local resnet50Keras = PerfZeroTest {
-    modelName: "resnet50-cfit",
+    modelName: 'resnet50-cfit',
     command+: [
-      # TODO: replace with env
-      "--root_data_dir=$(PERFZERO_DATA_DIR)"
+      // TODO: replace with env
+      '--root_data_dir=$(PERFZERO_DATA_DIR)',
     ],
     benchmarkOptions+:: {
       test+: {
-        module: "official.benchmark.keras_imagenet_benchmark",
-        class: "Resnet50KerasBenchmarkReal",
+        module: 'official.benchmark.keras_imagenet_benchmark',
+        class: 'Resnet50KerasBenchmarkReal',
       },
     },
   },
-  
+
   local resnet50Ctl = PerfZeroTest {
-    modelName: "resnet50-ctl",
+    modelName: 'resnet50-ctl',
     command+: [
-      # TODO: replace with env
-      "--root_data_dir=$(PERFZERO_DATA_DIR)"
+      // TODO: replace with env
+      '--root_data_dir=$(PERFZERO_DATA_DIR)',
     ],
     benchmarkOptions+:: {
       test+: {
-        module: "official.benchmark.resnet_ctl_imagenet_benchmark",
-        class: "Resnet50CtlBenchmarkReal",
+        module: 'official.benchmark.resnet_ctl_imagenet_benchmark',
+        class: 'Resnet50CtlBenchmarkReal',
       },
     },
   },
 
   local efficientnetKeras = PerfZeroTest {
-    modelName: "efficientnet",
+    modelName: 'efficientnet',
     command+: [
-      "--root_data_dir=$(PERFZERO_DATA_DIR)"
+      '--root_data_dir=$(PERFZERO_DATA_DIR)',
     ],
     benchmarkOptions+:: {
       test+: {
-        module: "official.benchmark.keras_imagenet_benchmark",
-        class: "EfficientNetKerasBenchmarkReal",
+        module: 'official.benchmark.keras_imagenet_benchmark',
+        class: 'EfficientNetKerasBenchmarkReal',
       },
     },
   },
 
-  # Detection benchmark names have a *_coco suffix.
+  // Detection benchmark names have a *_coco suffix.
   local coco = {
     benchmarkOptions+:: {
       test+: {
-        method+: "_coco",
+        method+: '_coco',
       },
     },
   },
   local retinanet = PerfZeroTest {
-    modelName: "retinanet",
+    modelName: 'retinanet',
     benchmarkOptions+:: {
       test+: {
-        module: "official.benchmark.retinanet_benchmark",
-        class: "RetinanetBenchmarkReal",
+        module: 'official.benchmark.retinanet_benchmark',
+        class: 'RetinanetBenchmarkReal',
       },
     },
   },
   local maskrcnn = PerfZeroTest {
-    modelName: "maskrcnn",
+    modelName: 'maskrcnn',
     benchmarkOptions+:: {
       test+: {
-        module: "official.benchmark.retinanet_benchmark",
-        class: "MaskRCNNBenchmarkReal",
+        module: 'official.benchmark.retinanet_benchmark',
+        class: 'MaskRCNNBenchmarkReal',
       },
     },
   },
   local shapemask = PerfZeroTest {
-    modelName: "shapemask",
+    modelName: 'shapemask',
     benchmarkOptions+:: {
       test+: {
-        module: "official.benchmark.retinanet_benchmark",
-        class: "ShapeMaskBenchmarkReal",
+        module: 'official.benchmark.retinanet_benchmark',
+        class: 'ShapeMaskBenchmarkReal',
       },
     },
   },
 
-  # Transformer multi-GPU methods have '_static_batch' suffix.
+  // Transformer multi-GPU methods have '_static_batch' suffix.
   local static_batch = {
     benchmarkOptions+:: {
-      method+: "_static_batch",
+      method+: '_static_batch',
     },
   },
   local transformer = PerfZeroTest {
-    modelName: "transformer",
+    modelName: 'transformer',
     command+: [
-      "--root_data_dir=$(PERFZERO_DATA_DIR)"
+      '--root_data_dir=$(PERFZERO_DATA_DIR)',
     ],
     benchmarkOptions+:: {
       test+: {
-        module: "official.benchmark.transformer_benchmark",
-        class: "TransformerBaseKerasBenchmarkReal",
+        module: 'official.benchmark.transformer_benchmark',
+        class: 'TransformerBaseKerasBenchmarkReal',
       },
     },
   },
   local transformerBig = PerfZeroTest {
-    modelName: "transformer",
+    modelName: 'transformer',
     command+: [
-      "--root_data_dir=$(PERFZERO_DATA_DIR)"
+      '--root_data_dir=$(PERFZERO_DATA_DIR)',
     ],
     benchmarkOptions+:: {
       test+: {
-        module: "official.benchmark.transformer_benchmark",
-        class: "TransformerBigKerasBenchmarkReal",
+        module: 'official.benchmark.transformer_benchmark',
+        class: 'TransformerBigKerasBenchmarkReal',
       },
     },
   },

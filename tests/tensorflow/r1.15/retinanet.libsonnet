@@ -1,43 +1,43 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-local common = import "common.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
+local common = import 'common.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
 
 {
   local retinanet = common.LegacyTpuTest {
-    modelName: "retinanet",
+    modelName: 'retinanet',
     paramsOverride: {
       train: {
-        train_batch_size: "Must set `train_batch_size`",
+        train_batch_size: 'Must set `train_batch_size`',
         total_steps: 22500,
         iterations_per_loop: 1000,
-        train_file_pattern: "$(COCO_DIR)/train*",
+        train_file_pattern: '$(COCO_DIR)/train*',
         checkpoint: {
-          path: "$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07",
-          prefix: "resnet50/"
+          path: '$(RESNET_PRETRAIN_DIR)/resnet50-checkpoint-2018-02-07',
+          prefix: 'resnet50/',
         },
       },
     },
     command: [
-      "python3",
-      "/tpu/models/official/detection/main.py",
-      "--mode=train",
-      "--use_tpu=True",
-      "--params_override=%s" % (std.manifestYamlDoc(self.paramsOverride) + "\n"),
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-      "--model_dir=$(MODEL_DIR)",
+      'python3',
+      '/tpu/models/official/detection/main.py',
+      '--mode=train',
+      '--use_tpu=True',
+      '--params_override=%s' % (std.manifestYamlDoc(self.paramsOverride) + '\n'),
+      '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
+      '--model_dir=$(MODEL_DIR)',
     ],
   },
   local v2_8 = {
@@ -48,7 +48,7 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
     command+: [
-      "--num_cores=8",
+      '--num_cores=8',
     ],
   },
   local v3_8 = {
@@ -59,7 +59,7 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
     command+: [
-      "--num_cores=8",
+      '--num_cores=8',
     ],
   },
   local v2_32 = {
@@ -70,7 +70,7 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
     command+: [
-      "--num_cores=32",
+      '--num_cores=32',
     ],
   },
   local v3_32 = {
@@ -81,7 +81,7 @@ local tpus = import "templates/tpus.libsonnet";
       },
     },
     command+: [
-      "--num_cores=32",
+      '--num_cores=32',
     ],
   },
   local convergence = common.Convergence,
@@ -96,7 +96,7 @@ local tpus = import "templates/tpus.libsonnet";
   configs: [
     retinanet + v2_8 + convergence,
     retinanet + v3_8 + convergence,
-    retinanet + v2_32 + convergence + tpus.reserved + {schedule: "37 13 * * 0,2,4"},
+    retinanet + v2_32 + convergence + tpus.reserved + { schedule: '37 13 * * 0,2,4' },
     retinanet + v3_32 + convergence,
     retinanet + v2_8 + functional,
     retinanet + v3_8 + functional,

@@ -1,23 +1,25 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-local tensorflow_targets = import "tensorflow/targets.jsonnet";
-local pytorch_targets = import "pytorch/targets.jsonnet";
+local jax_targets = import 'jax/targets.jsonnet';
+local pytorch_targets = import 'pytorch/targets.jsonnet';
+local tensorflow_targets = import 'tensorflow/targets.jsonnet';
 
-local all_targets = tensorflow_targets + pytorch_targets;
+local all_targets = tensorflow_targets + pytorch_targets + jax_targets;
 
-# Mapping from unique test name to test config
+// Mapping from unique test name to test config
 {
-  [test.testName]: test for test in all_targets
+  [test.testName]: test
+  for test in all_targets
 }

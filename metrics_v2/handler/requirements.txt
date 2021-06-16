@@ -9,4 +9,4 @@ numpy==1.19.2
 protobuf==3.14.0
 sendgrid==6.4.8
 tensorboard==2.4.0
-tensorflow-cpu==2.4.1
+tensorflow-cpu==2.5.0

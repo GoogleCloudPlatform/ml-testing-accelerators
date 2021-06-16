@@ -1,38 +1,38 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-local common = import "common.libsonnet";
-local mixins = import "templates/mixins.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
+local common = import 'common.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
 
 {
   local bert = common.ModelGardenTest {
-    modelName: "bert-mnli",
+    modelName: 'bert-mnli',
     command: [
-      "python3",
-      "official/nlp/bert/run_classifier.py",
-      "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)",
-      "--steps_per_loop=1000",
-      "--input_meta_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_meta_data",
-      "--train_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_train.tf_record",
-      "--eval_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_eval.tf_record",
-      "--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_config.json",
-      "--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_model.ckpt",
-      "--learning_rate=3e-5",
-      "--distribution_strategy=tpu",
-      "--model_dir=$(MODEL_DIR)",
+      'python3',
+      'official/nlp/bert/run_classifier.py',
+      '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
+      '--steps_per_loop=1000',
+      '--input_meta_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_meta_data',
+      '--train_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_train.tf_record',
+      '--eval_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_eval.tf_record',
+      '--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_config.json',
+      '--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_model.ckpt',
+      '--learning_rate=3e-5',
+      '--distribution_strategy=tpu',
+      '--model_dir=$(MODEL_DIR)',
     ],
   },
   local functional = common.Functional {
@@ -46,8 +46,8 @@ local tpus = import "templates/tpus.libsonnet";
     ],
     regressionTestConfig+: {
       metric_success_conditions+: {
-        "examples_per_second_average": {
-          comparison: "greater_or_equal",
+        examples_per_second_average: {
+          comparison: 'greater_or_equal',
           success_threshold: {
             stddevs_from_mean: 4.0,
           },
@@ -94,4 +94,3 @@ local tpus = import "templates/tpus.libsonnet";
     bert + v3_32 + convergence,
   ],
 }
-

@@ -1,34 +1,34 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-local common = import "../common.libsonnet";
-local mixins = import "templates/mixins.libsonnet";
+local common = import '../common.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
 
 {
   ModelGardenTest:: common.ModelGardenTest {
-    frameworkPrefix: "tf-r2.1.3",
+    frameworkPrefix: 'tf-r2.1.3',
     tpuSettings+: {
-      softwareVersion: "2.1.3",
+      softwareVersion: '2.1.3',
     },
-    imageTag: "r2.1.3",
+    imageTag: 'r2.1.3',
   },
-  # Don't run tests manually by default since this release is stable.
+  // Don't run tests manually by default since this release is stable.
   Functional:: mixins.Functional {
-    schedule: null
+    schedule: null,
   },
-  # Don't run tests manually by default since this release is stable.
+  // Don't run tests manually by default since this release is stable.
   Convergence:: mixins.Convergence {
-    schedule: null
+    schedule: null,
   },
 }

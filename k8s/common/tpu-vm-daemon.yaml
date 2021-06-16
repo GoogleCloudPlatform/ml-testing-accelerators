@@ -1,0 +1,94 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tpu-vm-resources-daemon
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-patcher
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes/status
+  verbs:
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tpu-vm-resources-daemon
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: node-patcher
+subjects:
+- kind: ServiceAccount
+  name: tpu-vm-resources-daemon
+  namespace: default
+- kind: ServiceAccount
+  name: tpu-vm-resources-daemon
+  namespace: automated
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: tpu-vm-resources
+  labels:
+    k8s-app: fluentd-logging
+spec:
+  selector:
+    matchLabels:
+      name: tpu-vm-resources
+  template:
+    metadata:
+      labels:
+        name: tpu-vm-resources
+    spec:
+      serviceAccountName: tpu-vm-resources-daemon
+      containers:
+      - name: updater
+        image: google/cloud-sdk
+        command:
+        - bash
+        - -c
+        args:
+        - |
+          set +x
+          set +e
+
+          curl -X PATCH \
+            --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
+            --header "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+            --header "Content-Type: application/json-patch+json" \
+            --data '[{"op": "replace", "path": "/status/capacity/tpu.googleapis.com~1v2", "value": "2048"}]' \
+            https://$KUBERNETES_SERVICE_HOST:443/api/v1/nodes/$NODE_NAME/status
+
+          curl -X PATCH \
+            --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
+            --header "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+            --header "Content-Type: application/json-patch+json" \
+            --data '[{"op": "replace", "path": "/status/capacity/tpu.googleapis.com~1v3", "value": "2048"}]' \
+            https://$KUBERNETES_SERVICE_HOST:443/api/v1/nodes/$NODE_NAME/status
+
+          tail -f /dev/null
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName

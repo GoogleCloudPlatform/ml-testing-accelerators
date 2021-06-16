@@ -1,21 +1,21 @@
-# Copyright 2020 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+// Copyright 2020 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-local common = import "common.libsonnet";
-local timeouts = import "templates/timeouts.libsonnet";
-local tpus = import "templates/tpus.libsonnet";
-local utils = import "templates/utils.libsonnet";
+local common = import 'common.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
 
 {
   local command_common = |||
@@ -25,7 +25,7 @@ local utils = import "templates/utils.libsonnet";
     pip install --editable fairseq
     export OMP_NUM_THREADS=1
     python fairseq/train.py \
-       /datasets/w2v2-librispeech-100hrs/manifest/ \
+       /datasets/w2v2-librispeech-100hrs/w2v/manifest/ \
        --num-batch-buckets 3 \
        --tpu \
        --max-sentences 4 \
@@ -81,13 +81,13 @@ local utils = import "templates/utils.libsonnet";
        --log-format simple \
   |||,
   local w2v2 = common.PyTorchTest {
-    modelName: "w2v2",
-    schedule: "0 21 * * *",
+    modelName: 'w2v2',
+    schedule: '0 21 * * *',
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    cpu: "40.0",
-    memory: "300Gi",
+    cpu: '40.0',
+    memory: '300Gi',
   },
   local func = common.Functional {
     command: utils.scriptCommand(
@@ -116,5 +116,5 @@ local utils = import "templates/utils.libsonnet";
   configs: [
     w2v2 + v3_8 + func + timeouts.Hours(2),
     w2v2 + v3_8 + conv + timeouts.Hours(20),
-  ]
+  ],
 }

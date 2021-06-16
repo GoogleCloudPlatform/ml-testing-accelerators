@@ -48,5 +48,3 @@ steps:
   env:
   - 'CLOUDSDK_COMPUTE_ZONE=europe-west4'
   - 'CLOUDSDK_CONTAINER_CLUSTER=oneshots-europe-west4'
-- name: 'gcr.io/cloud-builders/gcloud'
-  args: ['functions', 'deploy', 'metrics_handler', '--runtime=python37', '--trigger-topic=begin-metrics-handler',  '--memory=1024MB', '--source=metrics_handler/', '--entry-point=run_main']
