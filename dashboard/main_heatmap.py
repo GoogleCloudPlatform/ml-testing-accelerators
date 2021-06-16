@@ -15,6 +15,7 @@
 import collections
 import math
 import os
+import urllib.parse
 
 from bokeh.core.properties import Instance
 from bokeh.events import DoubleTap
@@ -118,6 +119,15 @@ def fetch_data(test_name_prefix, cutoff_timestamp):
 def process_dataframes(job_status_dataframe, metrics_dataframe):
   if job_status_dataframe.empty or 'job_status' not in job_status_dataframe:
     return pd.DataFrame()
+
+  # Default to logs tab of Kubernetes workload
+  def _append_workload_logs_path(url):
+    parsed = urllib.parse.urlparse(url)
+    parsed = parsed._replace(path=parsed.path + '/logs')
+    return urllib.parse.urlunparse(parsed)
+
+  job_status_dataframe['workload_link'] = (
+    job_status_dataframe['workload_link'].map(_append_workload_logs_path))
 
   # Collect all test+date combinations where metrics were out of bounds.
   oob_tests = collections.defaultdict(list)
