@@ -68,7 +68,7 @@ BASE_MODAL_STRING = """
 
 PASS_FAIL_GRID_MODAL_STRING = """
     var test_name = source.data['test_name'][cb_data.source.selected.indices];
-    var run_date = source.data['run_date'][cb_data.source.selected.indices];
+    var run_date = new Date(source.data['run_date'][cb_data.source.selected.indices]).toJSON().split('T')[0];
     var job_status = source.data['job_status'][cb_data.source.selected.indices];
     var failed_metrics = source.data['failed_metrics'][cb_data.source.selected.indices];
     var failed_metrics_html = '';
