@@ -48,7 +48,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
-    mnist + v2_8 + convergence,
-    mnist + v3_8 + convergence,
+    mnist + v2_8 + functional,
+    mnist + v3_8 + functional,
   ],
 }

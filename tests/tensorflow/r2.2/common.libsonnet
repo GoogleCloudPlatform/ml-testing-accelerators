@@ -23,7 +23,7 @@ local mixins = import 'templates/mixins.libsonnet';
     },
     imageTag: 'r2.2.3',
   },
-  // Don't run tests manually by default since this release is stable.
+  // Running functional tests at 10PM PST on Wed,Thu,Fri..
   Functional:: mixins.Functional {
     schedule: '0 6 * * 3,4,5',
   },
