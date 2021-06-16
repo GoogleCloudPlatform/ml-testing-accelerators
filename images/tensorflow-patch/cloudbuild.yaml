@@ -62,9 +62,6 @@ steps:
   - 'CLOUDSDK_COMPUTE_ZONE=us-central1'
   - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test-us-central1'
 - name: 'gcr.io/cloud-builders/kubectl'
-  waitFor:
-  - build-image
-  - build-templates
   args: ['create',  '-f', 'output/europe-west4']
   env:
   - 'CLOUDSDK_COMPUTE_ZONE=europe-west4'
