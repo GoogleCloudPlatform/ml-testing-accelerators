@@ -34,7 +34,7 @@ container_push(
   image = ":image",
   registry = "gcr.io",
   repository = "$(project)/event-publisher",
-  tag = "{BUILD_USER}",
+  tag = "{BUILD_USER}_{BUILD_TIMESTAMP}",
 )
 
 py_library(

@@ -82,7 +82,7 @@ spec:
             - find /tmp/health -mmin -5 | grep -qz .
           initialDelaySeconds: 60
           periodSeconds: 300
-          failureThreshold: 3
+          failureThreshold: 5
       volumes:
       - name: event-publisher-storage
         persistentVolumeClaim:
