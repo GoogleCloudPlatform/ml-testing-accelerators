@@ -26,7 +26,7 @@ local tpus = import 'templates/tpus.libsonnet';
       '--model_dir=$(MODEL_DIR)',
     ],
   },
-  local convergence = common.Convergence {
+  local functional = common.Functional {
     command+: [
       '--train_epochs=10',
       '--epochs_between_evals=10',
@@ -48,7 +48,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
-    mnist + v2_8 + convergence,
-    mnist + v3_8 + convergence,
+    mnist + v2_8 + functional,
+    mnist + v3_8 + functional,
   ],
 }
