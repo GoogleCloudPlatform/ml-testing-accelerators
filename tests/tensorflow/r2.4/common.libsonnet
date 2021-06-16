@@ -17,11 +17,11 @@ local mixins = import 'templates/mixins.libsonnet';
 
 {
   ModelGardenTest:: common.ModelGardenTest {
-    frameworkPrefix: 'tf-r2.4.1',
+    frameworkPrefix: 'tf-r2.4.2',
     tpuSettings+: {
-      softwareVersion: '2.4.1',
+      softwareVersion: '2.4.2',
     },
-    imageTag: 'r2.4.1',
+    imageTag: 'r2.4.2',
 
     metricCollectionConfig+: {
       metric_to_aggregation_strategies+: {
@@ -40,9 +40,9 @@ local mixins = import 'templates/mixins.libsonnet';
       },
     },
   },
-  // Running functional tests at 10PM PST on Fri.
+  // Running functional tests at 10PM PST on Wed,Thu,Fri.
   Functional:: mixins.Functional {
-    schedule: '0 6 * * 5',
+    schedule: '0 6 * * 3,4,5',
     tpuSettings+: {
       preemptible: false,
     },
