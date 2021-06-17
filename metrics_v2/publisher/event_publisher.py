@@ -15,6 +15,7 @@ from google.protobuf import duration_pb2
 from google.protobuf import timestamp_pb2
 import kubernetes
 import requests
+import pathlib
 
 import metrics_pb2
 
@@ -52,6 +53,9 @@ def _load_resource_version() -> typing.Optional[int]:
     logging.warning('Resource version file not found.', exc_info=e)
     return None
 
+def _update_health():
+  pathlib.Path('/tmp/health').touch()
+
 def _get_metadata(attribute):
   resp = requests.get(
       f'http://metadata.google.internal/computeMetadata/v1/instance/attributes/{attribute}',
@@ -75,7 +79,7 @@ def create_test_completed_event(
     cluster_name: Name of the current Kubernetes cluster.
     cluster_location: Location (region or zone) of the current Kubernetes cluster.
     project: The project ID of the current project.
-  
+
   Returns:
     A TestCompletedEvent with the information from job.
   """
@@ -121,7 +125,7 @@ def create_test_completed_event(
   stackdriver_link = "https://console.cloud.google.com/logs?{}".format(
       urllib.parse.urlencode(
           {'project': project, 'advancedFilter': stackdriver_query}))
-  
+
   start_time = timestamp_pb2.Timestamp()
   start_time.FromDatetime(job.status.start_time)
   duration = duration_pb2.Duration()
@@ -170,6 +174,7 @@ def main(argv):
           label_selector='benchmarkId',
           resource_version=resource_version)
       for event in event_stream:
+        _update_health()
         job = event['object']
         if event['type'] != 'MODIFIED':
           logging.info('Skipping event %s for Job %s', event['type'], job.metadata.name)

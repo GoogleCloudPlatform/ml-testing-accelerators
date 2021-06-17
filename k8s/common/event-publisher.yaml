@@ -74,6 +74,15 @@ spec:
         envFrom:
         - configMapRef:
             name: gcs-buckets
+        livenessProbe:
+          exec:
+            command:
+            - bash
+            - -c
+            - find /tmp/health -mmin -10 | grep -qz .
+          initialDelaySeconds: 60
+          periodSeconds: 600
+          failureThreshold: 3
       volumes:
       - name: event-publisher-storage
         persistentVolumeClaim:

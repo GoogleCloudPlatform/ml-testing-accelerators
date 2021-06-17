@@ -1,5 +1,5 @@
 absl-py==0.11.0
 google-cloud-pubsub==2.2.0
-kubernetes==12.0.1
+kubernetes==17.17.0
 protobuf==3.14.0
-grpcio==1.35.0
+grpcio==1.38.0
