@@ -79,10 +79,10 @@ spec:
             command:
             - bash
             - -c
-            - find /tmp/health -mmin -5 | grep -qz .
+            - find /tmp/health -mmin -10 | grep -qz .
           initialDelaySeconds: 60
-          periodSeconds: 300
-          failureThreshold: 5
+          periodSeconds: 600
+          failureThreshold: 3
       volumes:
       - name: event-publisher-storage
         persistentVolumeClaim:
