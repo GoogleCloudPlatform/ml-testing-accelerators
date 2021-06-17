@@ -13,8 +13,10 @@
 // limitations under the License.
 
 local common = import 'common.libsonnet';
+local experimental = import '../experimental.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
 
 {
   local operations = common.PyTorchTest {
@@ -31,9 +33,23 @@ local tpus = import 'templates/tpus.libsonnet';
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
-
+  local py_ops_tpu_vm = common.PyTorchTest {
+    modelName: 'python-ops',
+    schedule: '22 17 * * *',
+    command: utils.scriptCommand(
+      |||
+        %(command_common)s
+        sudo pip3 install hypothesis
+        cd xla/test
+        export TPUVM_MODE=1
+        ./run_tests.sh
+      ||| % common.tpu_vm_1_9_install
+    ),
+  },
   configs: [
     operations + v2_8 + common.Functional + timeouts.Hours(2),
     operations + v3_8 + common.Functional + timeouts.Hours(2),
+    py_ops_tpu_vm + v3_8 + common.Functional + timeouts.Hours(2) + experimental.PyTorchTpuVmMixin,
+    py_ops_tpu_vm + v2_8 + common.Functional + timeouts.Hours(2) + experimental.PyTorchTpuVmMixin,
   ],
 }
