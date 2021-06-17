@@ -36,6 +36,7 @@ export master=$(gcloud compute instance-groups \
 gcloud -q compute ssh --internal-ip --zone=$ZONE $master \
   --command "source /anaconda3/etc/profile.d/conda.sh && \
   conda activate ${CONDA_ENV} && \
+  export PATH=$PATH:/opt/google-cloud-sdk/bin && \
   python -m torch_xla.distributed.xla_dist --tpu=${TPU_POD_NAME} --conda-env=${CONDA_ENV} ${XLA_DIST_FLAGS} -- $*"
 exit_code=$?
 
