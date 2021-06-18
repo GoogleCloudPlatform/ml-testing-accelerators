@@ -26,6 +26,12 @@ export INSTANCE_GROUP_NAME="instance-group-${RESOURCE_SUFFIX}"
 # zone/name -> name
 export TPU_POD_NAME=$(echo ${TPU_NAME} | awk -F'/' '{print $2}')
 
+#  python -c \"import os; print(os.environ['PATH'])\" && \
+#  export PATH=\"$PATH:/opt/google-cloud-sdk/bin\" && \
+#  python -c \"import os; print(os.environ['PATH'])\" && \
+#  alias gcloud=/opt/google-cloud-sdk/bin/gcloud
+  #--command "source /anaconda3/etc/profile.d/conda.sh && \
+
 timeout 180 /setup-instances.sh && \
 export master=$(gcloud compute instance-groups \
   list-instances \
@@ -34,11 +40,11 @@ export master=$(gcloud compute instance-groups \
   --format="value(NAME)" \
   --limit=1) && \
 gcloud -q compute ssh --internal-ip --zone=$ZONE $master \
-  --command "source /anaconda3/etc/profile.d/conda.sh && \
+  --command "export PATH=\"$PATH:/opt/google-cloud-sdk/bin\" && \
+  python -c \"import os; print(os.environ['PATH'])\" && \
+  source /anaconda3/etc/profile.d/conda.sh && \
+  python -c \"import os; print(os.environ['PATH'])\" && \
   conda activate ${CONDA_ENV} && \
-  python -c \"import os; print(os.environ['PATH'])\" && \
-  export PATH=\"$PATH:/opt/google-cloud-sdk/bin\" && \
-  python -c \"import os; print(os.environ['PATH'])\" && \
   conda env list && \
   gcloud --version && \
   python -m torch_xla.distributed.xla_dist --tpu=${TPU_POD_NAME} --conda-env=${CONDA_ENV} ${XLA_DIST_FLAGS} -- $*"
