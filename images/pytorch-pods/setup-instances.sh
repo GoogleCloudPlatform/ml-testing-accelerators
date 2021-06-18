@@ -77,5 +77,3 @@ done
 sleep 30
 echo "Mounting pytorch datasets disk..."
 COMMAND='sudo mkdir -p /datasets && sudo mount -o ro -o discard,defaults /dev/sdb /datasets'; for instance in $(gcloud --project=${PROJECT} compute instance-groups managed list-instances ${INSTANCE_GROUP_NAME} --zone=${ZONE} --format='value(NAME)[terminator=" "]'); do gcloud compute ssh --internal-ip --project=${PROJECT} --zone=${ZONE} "$instance" --command="$COMMAND" --quiet; done
-
-
