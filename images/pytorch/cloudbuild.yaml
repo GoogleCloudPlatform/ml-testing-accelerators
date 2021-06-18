@@ -23,4 +23,4 @@ substitutions:
   _PT_XLA_VERSION: 'nightly_3.6'
 options:
     substitution_option: 'ALLOW_LOOSE'
-timeout: 1200s
+timeout: 1800s
