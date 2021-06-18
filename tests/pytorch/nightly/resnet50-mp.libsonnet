@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
@@ -113,6 +114,67 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  local resnet50_tpu_vm = experimental.PyTorchTpuVmMixin {
+    frameworkPrefix: 'pt-nightly',
+    modelName: 'resnet50-mp',
+    paramsOverride: {
+      num_epochs: error 'Must set `num_epochs`',
+      datadir: error 'Must set `datadir`',
+    },
+    command: utils.scriptCommand(
+      |||
+        %(setup_commands)s
+        pip3 install tensorboardX google-cloud-storage
+        python3 xla/test/test_train_mp_imagenet.py \
+          --logdir=$(MODEL_DIR) \
+          --datadir=%(datadir)s \
+          --model=resnet50 \
+          --num_workers=8 \
+          --batch_size=128 \
+          --log_steps=200 \
+          --num_epochs=%(num_epochs)d \
+      ||| % self.paramsOverride,
+    ),
+    podTemplate+:: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            resources+: {
+              requests: {
+                cpu: '1',
+                memory: '2Gi',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  local functional_tpu_vm = common.Functional {
+    paramsOverride: {
+      setup_commands: common.tpu_vm_nightly_install,
+      num_epochs: 2,
+      datadir: '/datasets/imagenet-mini',
+    },
+  },
+  local convergence_tpu_vm = common.Convergence {
+    paramsOverride: {
+      setup_commands: common.tpu_vm_nightly_install,
+      num_epochs: 5,
+      datadir: '/datasets/imagenet',
+    },
+    regressionTestConfig+: {
+      metric_success_conditions+: {
+        'Accuracy/test_final': {
+          success_threshold: {
+            fixed_value: 30.0,
+          },
+          comparison: 'greater',
+        },
+      },
+    },
+    schedule: '0 20 * * *',
+  },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
@@ -140,5 +202,7 @@ local utils = import 'templates/utils.libsonnet';
     resnet50_gpu_py37_cuda_102 + common.Functional + v100x4 + timeouts.Hours(1),
     resnet50_gpu_py37_cuda_112 + common.Functional + v100 + timeouts.Hours(2),
     resnet50_gpu_py37_cuda_112 + common.Functional + v100x4 + timeouts.Hours(1),
+    common.PyTorchTest + resnet50_tpu_vm + v3_8 + functional_tpu_vm + timeouts.Hours(2),
+    common.PyTorchTest + resnet50_tpu_vm + v3_8 + convergence_tpu_vm + timeouts.Hours(4),
   ],
 }
