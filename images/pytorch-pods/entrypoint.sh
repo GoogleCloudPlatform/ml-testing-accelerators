@@ -26,6 +26,7 @@ export INSTANCE_GROUP_NAME="instance-group-${RESOURCE_SUFFIX}"
 # zone/name -> name
 export TPU_POD_NAME=$(echo ${TPU_NAME} | awk -F'/' '{print $2}')
 
+#export PATH=\"$PATH:/opt/google-cloud-sdk/bin\" && \
 timeout 180 /setup-instances.sh && \
 export master=$(gcloud compute instance-groups \
   list-instances \
@@ -37,7 +38,6 @@ gcloud -q compute ssh --internal-ip --zone=$ZONE $master \
   --command "source /anaconda3/etc/profile.d/conda.sh && \
   conda activate ${CONDA_ENV} && \
   echo $PATH && \
-  export PATH=\"$PATH:/opt/google-cloud-sdk/bin\" && \
   echo $PATH && \
   conda env list && \
   gcloud --version && \
