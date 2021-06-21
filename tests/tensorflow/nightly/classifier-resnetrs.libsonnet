@@ -24,6 +24,7 @@ local tpus = import 'templates/tpus.libsonnet';
     paramsOverride:: {
       trainer: {
         train_steps: error 'Must set `trainer.train_steps`',
+        validation_interval: error 'Must set `trainer.validation_interval`',
       },
       task: {
         train_data: {
@@ -48,6 +49,7 @@ local tpus = import 'templates/tpus.libsonnet';
     paramsOverride+: {
       trainer+: {
         train_steps: 320,
+        validation_interval: 320,
       },
     },
   },
@@ -55,6 +57,10 @@ local tpus = import 'templates/tpus.libsonnet';
     paramsOverride+: {
       trainer+: {
         train_steps: 109200,
+        validation_interval: 3120,
+      },
+    },
+    regressionTestConfig+: {
       },
     },
     regressionTestConfig+: {
@@ -140,11 +146,11 @@ local tpus = import 'templates/tpus.libsonnet';
     resnetrs + v100x4 + convergence + mixins.Experimental + mixins.Suspended,
     resnetrs + v100x8 + functional + mixins.Unsuspended + mixins.Suspended,
     resnetrs + v100x8 + convergence + timeouts.Hours(14) + mixins.Suspended,
-    resnetrs + v2_8 + functional,
+    resnetrs + v2_8 + functional + mixins.Unsuspended,
     resnetrs + v3_8 + functional,
     resnetrs + v2_8 + convergence + timeouts.Hours(24),
     resnetrs + v3_8 + convergence + timeouts.Hours(24),
-    resnetrs + v2_32 + functional,
+    resnetrs + v2_32 + functional + mixins.Unsuspended,
     resnetrs + v3_32 + functional,
     resnetrs + v2_32 + convergence + tpus.reserved + { schedule: '7 11 * * 0,2,4' } + timeouts.Hours(15),
     resnetrs + v3_32 + convergence + timeouts.Hours(15),
