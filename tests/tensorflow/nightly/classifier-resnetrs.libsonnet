@@ -61,9 +61,6 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
     regressionTestConfig+: {
-      },
-    },
-    regressionTestConfig+: {
       metric_success_conditions+: {
         'validation/accuracy_final': {
           success_threshold: {
