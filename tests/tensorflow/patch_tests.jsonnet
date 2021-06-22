@@ -45,12 +45,6 @@ function(
         group: groupLabel,
       } else {},
 
-      local compareBenchmark = std.strReplace(
-        self.testName, self.frameworkPrefix, 'tf-nightly'),
-      metricConfig+: {
-#        compare_to_benchmark_id: compareBenchmark,
-      },
-
       jobTemplate+:: {
         metadata+: {
           namespace: 'automated',

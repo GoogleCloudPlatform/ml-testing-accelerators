@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Usage example: gcloud builds submit --config images/tensorflow-patch/cloudbuild.yaml --substitutions '_ARTIFACT_STORAGE_PATH=gs://bucket/dir,_TF_PATCH_VERSION=r2.3.3,_TF_MINOR_VERSION=r2.3'
 steps:
 - name: 'gcr.io/kaniko-project/executor:latest'
   id: build-image

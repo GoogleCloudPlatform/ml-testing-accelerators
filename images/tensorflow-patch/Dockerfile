@@ -14,9 +14,8 @@
 
 FROM python:3.6
 
-RUN apt update && apt install -y python3-dev python3-pip
+RUN apt update && apt install -y python3-dev
 
-#ARG tensorflow_patch_version=r2.4.1
 ARG tensorflow_minor_version=r2.4
 
 RUN git clone https://github.com/tensorflow/tensorflow.git --branch=$tensorflow_minor_version --depth=1
@@ -35,9 +34,6 @@ RUN bazel build --config=opt --jobs=$bazel_build_jobs //tensorflow/tools/pip_pac
 RUN ./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
 RUN ls /tmp/tensorflow_pkg
 
-#FROM gcr.io/deeplearning-platform-release/base-cpu
-
-#COPY --from=0 /tmp/tensorflow_pkg/*.whl /tensorflow_pkg/
 RUN pip install /tmp/tensorflow_pkg/*.whl
 
 # Model Garden does not create new branches for patch releases.
@@ -48,7 +44,7 @@ RUN pip3 install -r /models/official/requirements.txt
 ENV PYTHONPATH /models
 WORKDIR /models
 
-RUN rm -rf /tensorflow /bazel-*.sh /tmp/tensorflow_pkg
+RUN rm -rf /tensorflow /bazel-*.sh
 
 COPY images/tensorflow/entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
