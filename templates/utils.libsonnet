@@ -50,13 +50,11 @@
       else
         defaultCluster
     );
-    std.foldl(
-      function(result, test) result {
-        [getCluster(test)]+: [test],
-      },
-      tests,
-      {}
-    ),
+    local clusters = std.uniq(std.objectFields(clusterAccelerators) + [defaultCluster]);
+    {
+      [cluster]: [test for test in tests if getCluster(test) == cluster]
+      for cluster in clusters
+    },
 
   // Returns an object of the form {"cluster/gen/test_name.yaml": cronJobYaml}.
   // Skips tests with schedule == null.
