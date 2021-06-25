@@ -32,7 +32,7 @@ local cleaners = {
     apiVersion: 'batch/v1',
     kind: 'CronJob',
     metadata: {
-      name: 'cronjob-cleanup'
+      name: 'cronjob-cleanup',
     },
     spec: {
       schedule: '0 */4 * * *',
@@ -47,7 +47,7 @@ local cleaners = {
                   image: 'google/cloud-sdk',
                   command: [
                     'bash',
-                    '-cx'
+                    '-cx',
                   ],
                   args: [
                     |||
