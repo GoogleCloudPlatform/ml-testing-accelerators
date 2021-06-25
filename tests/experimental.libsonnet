@@ -77,9 +77,12 @@ local volumes = import 'templates/volumes.libsonnet';
                 'tpu-$(POD_UID)',
             },
             resources+: {
-              // HACK: replace standard Cloud TPU resource.
+              // HACK: remove standard Cloud TPU resource.
+              local originalLimits = super.limits,
               limits: {
-                ['tpu.googleapis.com/v%s' % config.accelerator.version]: config.accelerator.size,
+                [field]: originalLimits[field]
+                for field in std.objectFields(originalLimits)
+                if !std.startsWith(field, 'cloud-tpus.google.com')
               },
             },
           },
