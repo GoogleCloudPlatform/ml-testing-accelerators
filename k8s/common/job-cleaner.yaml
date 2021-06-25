@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cronjob-cleaner
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cronjob-cleaner
+rules:
+- apiGroups: ["batch"]
+  resources: ["cronjobs"]
+  verbs: ["get", "delete", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cronjob-cleaner
+subjects:
+- kind: ServiceAccount
+  name: cronjob-cleaner
+  namespace: default
+- kind: ServiceAccount
+  name: cronjob-cleaner
+  namespace: automated
+roleRef:
+  kind: ClusterRole
+  name: cronjob-cleaner
+  apiGroup: rbac.authorization.k8s.io
