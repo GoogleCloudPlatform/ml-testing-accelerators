@@ -157,8 +157,8 @@ spec:
               kubectl patch quota tpu-pod-limit -p '{
                 "spec": {
                   "hard": {
-                    "requests.tpu.googleapis.com/v2": "128",
-                    "requests.tpu.googleapis.com/v3": "128"
+                    "requests.tpu.googleapis.com/v2": "96",
+                    "requests.tpu.googleapis.com/v3": "96"
                   }
                 }
               }'
