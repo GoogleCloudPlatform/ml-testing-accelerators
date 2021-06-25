@@ -32,7 +32,9 @@ local tpus = import 'templates/tpus.libsonnet';
       rm .bash_logout
 
       pip install --upgrade pip
-      %(installJaxlib)s
+      %(installLatestJax)s
+      %(maybeBuildJaxlib)s
+      %(printDiagnostics)s
 
       pip install --upgrade clu %(extraDeps)s
 

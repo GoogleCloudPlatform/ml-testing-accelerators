@@ -28,9 +28,9 @@ local mixins = import 'templates/mixins.libsonnet';
       git clone https://github.com/google/jax.git
       cd jax
       echo "jax git hash: $(git rev-parse HEAD)"
-      pip install -e .
-
-      %(installJaxlib)s
+      %(installLocalJax)s
+      %(maybeBuildJaxlib)s
+      %(printDiagnostics)s
 
       # Very basic smoke test
       python3 -c "import jax; assert jax.device_count() == 32, jax.device_count()"

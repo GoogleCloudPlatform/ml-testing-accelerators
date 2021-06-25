@@ -35,15 +35,18 @@ local mixins = import 'templates/mixins.libsonnet';
       git clone https://github.com/google/jax.git
       cd jax
       echo "jax git hash: $(git rev-parse HEAD)"
-      pip install -e .
-
-      %(installJaxlib)s
+      %(installLocalJax)s
+      %(maybeBuildJaxlib)s
+      %(printDiagnostics)s
 
       num_devices=`python3 -c "import jax; print(jax.device_count())"`
       if [ "$num_devices" = "1" ]; then
         echo "No TPU devices detected"
         exit 1
       fi
+
+      # b/192016388
+      pip install tensorflow
 
       export JAX_NUM_GENERATED_CASES=5
       export COLUMNS=160

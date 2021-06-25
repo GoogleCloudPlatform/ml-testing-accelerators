@@ -27,26 +27,34 @@ local tpus = import 'templates/tpus.libsonnet';
       set -x
       set -u
       set -e
+
       # .bash_logout sometimes causes a spurious bad exit code, remove it.
       rm .bash_logout
+
       pip install --upgrade pip
       pip install --upgrade clu %(extraDeps)s
+
       echo "Checking out and installing JAX..."
       git clone https://github.com/google/jax.git
       cd jax
       echo "jax git hash: $(git rev-parse HEAD)"
-      pip install -e .
-      %(installJaxlib)s
+      %(installLocalJax)s
+      %(maybeBuildJaxlib)s
+      %(printDiagnostics)s
+
       sudo rm /usr/local/lib/python3.8/dist-packages/tensorflow/core/kernels/libtfkernel_sobol_op.so
+
       num_devices=`python3 -c "import jax; print(jax.device_count())"`
       if [ "$num_devices" = "1" ]; then
         echo "No TPU devices detected"
         exit 1
       fi
+
       cd ~/
       git clone https://github.com/google/flax
       cd flax
       pip install -e .
+
       cd examples/%(modelName)s
       export GCS_BUCKET=$(MODEL_DIR)
       export TFDS_DATA_DIR=$(TFDS_DIR)

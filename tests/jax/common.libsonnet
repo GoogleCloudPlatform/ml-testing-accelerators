@@ -34,7 +34,14 @@ local tpus = import 'templates/tpus.libsonnet';
     jaxlibVersion:: error 'Add jaxlib version mixin',
     libtpuVersion:: error 'Include libtpu version mixin',
     scriptConfig:: {
-      installJaxlib: error 'Must define `installJaxlib`',
+      maybeBuildJaxlib: error 'Must define `maybeBuildJaxlib`',
+      installLocalJax: error 'Must define `installLocalJax`',
+      installLatestJax: error 'Must define `installLatestJax`',
+      printDiagnostics: |||
+        python3 -c 'import jaxlib; print("jaxlib version:", jaxlib.__version__)'
+        python3 -c 'import jax; print("libtpu version:",
+          jax.lib.xla_bridge.get_backend().platform_version)'
+      |||,
     },
 
     tpuSettings+: {
@@ -118,8 +125,8 @@ local tpus = import 'templates/tpus.libsonnet';
 
   jaxlibHead:: {
     jaxlibVersion:: 'head',
-    scriptConfig:: {
-      installJaxlib: |||
+    scriptConfig+: {
+      maybeBuildJaxlib: |||
         echo "Building jaxlib from source at TF head"
         echo "Checking out TF..."
         cd ~/
@@ -127,21 +134,21 @@ local tpus = import 'templates/tpus.libsonnet';
         cd tensorflow
         echo "TensorFlow git hash: $(git rev-parse HEAD)"
 
-        echo "Building JAX..."
+        echo "Building jaxlib..."
         cd ~/jax
         python3 build/build.py --enable_tpu --bazel_options="--override_repository=org_tensorflow=$HOME/tensorflow"
-        pip install dist/*.whl
+        # jaxlib should already be installed, so we can use --no-deps
+        # to avoid reinstalling all dependencies
+        pip install dist/.whl --no-deps --force-reinstall
+        python3 -c 'import jaxlib; print("jaxlib version:", jaxlib.__version__)'
       |||,
     },
   },
 
   jaxlibLatest:: {
     jaxlibVersion:: 'latest',
-    scriptConfig:: {
-      installJaxlib: |||
-        pip install --upgrade jaxlib
-        python3 -c 'import jaxlib; print("jaxlib version:", jaxlib.__version__)'
-      |||,
+    scriptConfig+: {
+      maybeBuildJaxlib: '',
     },
   },
 
@@ -150,12 +157,27 @@ local tpus = import 'templates/tpus.libsonnet';
     tpuSettings+: {
       softwareVersion: 'v2-nightly',
     },
+    scriptConfig+: {
+      // Don't use [tpu] extra so we use system libtpu.so
+      installLocalJax: 'pip install . jaxlib',
+      installLatestJax: 'pip install jax jaxlib',
+    },
   },
 
   libtpuAlpha:: {
     libtpuVersion: 'alpha',
     tpuSettings+: {
       softwareVersion: 'v2-alpha',
+    },
+    scriptConfig+: {
+      installLocalJax: |||
+        pip install .[tpu] \
+          -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+      |||,
+      installLatestJax: |||
+        pip install jax[tpu] \
+          -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+      |||,
     },
   },
   Functional:: mixins.Functional {
