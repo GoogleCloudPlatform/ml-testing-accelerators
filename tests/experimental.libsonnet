@@ -92,6 +92,7 @@ local volumes = import 'templates/volumes.libsonnet';
               softwareVersion: std.escapeStringBash(config.tpuSettings.softwareVersion),
               startupScript: std.escapeStringBash(config.tpuSettings.tpuVmStartupScript),
               sleepTime: config.tpuSettings.tpuVmCreateSleepSeconds,
+              testName: config.testName,
             },
             command: utils.scriptCommand(|||
               project=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google")
@@ -100,40 +101,15 @@ local volumes = import 'templates/volumes.libsonnet';
               ssh-keygen -t rsa -f /scripts/id_rsa -q -N ""
 
               echo "
-              curl -X DELETE \
-                -H \"Authorization: Bearer \$(gcloud auth print-access-token)\" \
-                https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes/${tpu_name}
-              sleep 60
+              gcloud alpha compute tpus tpu-vm delete -q ${tpu_name} --zone=${zone}
               " > /scripts/cleanup.sh
 
-              curl -X POST \
-                -H "Authorization: Bearer $(gcloud auth print-access-token)" \
-                -H "Content-Type: application/json" \
-                -d "{
-                  accelerator_type: %(acceleratorName)s,
-                  runtime_version: %(softwareVersion)s,
-                  network_config: {enable_external_ips: true},
-                  metadata: {
-                    'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
-                    'startup-script': %(startupScript)s
-                  }
-                }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
-
-              echo "Waiting for TPU Pod ${tpu_name} to become ready..."
-              timeout 10m bash -c -- "
-              while [[ \${health:-NONE} != READY ]];
-                do sleep 60 && \
-                health=\$(gcloud \
-                  --project=${project} \
-                  compute \
-                  tpus \
-                  describe \
-                  ${tpu_name} \
-                  --zone=${zone} \
-                  --format='value(state)') && \
-                echo 'Waiting for ready TPU (current state \${health:-NONE})...';
-              done
-              "
+              gcloud alpha compute tpus tpu-vm create ${tpu_name} \
+                --accelerator-type=%(acceleratorName)s \
+                --version=%(softwareVersion)s  \
+                --metadata='ssh-keys=xl-ml-test:'"$(cat /scripts/id_rsa.pub)"',startup-script='%(startupScript)s \
+                --labels='test-name=%(testName)s' \
+                --zone=${zone}
 
               echo ${tpu_name} > /scripts/tpu_name
               gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(ipAddress)" > /scripts/tpu_ip
