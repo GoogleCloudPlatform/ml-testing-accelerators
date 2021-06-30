@@ -103,15 +103,15 @@ local utils = import 'templates/utils.libsonnet';
 
   configs: [
     bert + v2_8 + functional,
-#    bert + v2_8 + functional + tpuVm,
-#    bert + v2_8 + functional + tpuVmProfilingCheck,
+    //    bert + v2_8 + functional + tpuVm,
+    //    bert + v2_8 + functional + tpuVmProfilingCheck,
     bert + v3_8 + functional,
-#    bert + v3_8 + functional + tpuVm,
+    //    bert + v3_8 + functional + tpuVm,
     bert + v2_8 + convergence + timeouts.Hours(4),
     bert + v3_8 + convergence + timeouts.Hours(3),
-#    bert + v2_32 + functional + tpuVm,
+    //    bert + v2_32 + functional + tpuVm,
     bert + v3_32 + functional,
-#    bert + v3_32 + functional + tpuVm,
+    //    bert + v3_32 + functional + tpuVm,
     bert + v3_32 + convergence,
   ],
 }

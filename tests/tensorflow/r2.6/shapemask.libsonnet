@@ -131,10 +131,10 @@ local utils = import 'templates/utils.libsonnet';
   local tpuVm = experimental.TensorFlowTpuVmMixin,
   configs: [
     shapemask + functional + v2_8,
-#    shapemask + functional + v2_8 + tpuVm,
+    //    shapemask + functional + v2_8 + tpuVm,
     shapemask + functional + v3_8,
     shapemask + functional + v2_32,
-#    shapemask + functional + v2_32 + tpuVm,
+    //    shapemask + functional + v2_32 + tpuVm,
     shapemask + functional + v3_32,
     shapemask + convergence + v3_32,
     shapemask + convergence + v3_8,
