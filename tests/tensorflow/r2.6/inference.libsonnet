@@ -12,23 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import '../common.libsonnet';
+local experimental = import '../experimental.libsonnet';
+local common = import 'common.libsonnet';
+local gpus = import 'templates/gpus.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
 
 {
-  ModelGardenTest:: common.ModelGardenTest {
-    frameworkPrefix: 'tf-r2.2.3',
-    tpuSettings+: {
-      softwareVersion: '2.2.3',
-    },
-    imageTag: 'r2.2.3',
+  local inference = common.ModelGardenTest {
+    modelName: 'inference',
+    command: [
+      'curl',
+      '-v',
+      '-d',
+      '\'{"instances": [1.0, 2.0, 5.0]}\'',
+      'http://$(cat /scripts/tpu_ip):8501/v1/models/half_plus_two:predict',
+    ],
   },
-  // Running functional tests at 10PM PST on Thu.
-  Functional:: mixins.Functional {
-    schedule: '0 6 * * 4',
+  local functional = common.Functional,
+  local v2_8 = {
+    accelerator: tpus.v2_8,
   },
-  // Don't run tests by default since this release is stable.
-  Convergence:: mixins.Convergence {
-    schedule: null,
-  },
+  configs: [
+#    inference + functional + v2_8 + experimental.TensorflowServingTpuVmMixin + mixins.Experimental,
+  ],
 }

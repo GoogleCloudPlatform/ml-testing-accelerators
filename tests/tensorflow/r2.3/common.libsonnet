@@ -40,15 +40,15 @@ local mixins = import 'templates/mixins.libsonnet';
       },
     },
   },
-  // Don't run tests manually by default since this release is stable.
+  // Don't run tests by default since this release is stable.
   Functional:: mixins.Functional {
     schedule: null,
     tpuSettings+: {
       preemptible: false,
     },
   },
-  // Running convergence tests at Midnight PST on Saturday.
+  // Don't run tests by default since this release is stable.
   Convergence:: mixins.Convergence {
-    schedule: '0 8 * * 6',
+    schedule: 'null',
   },
 }
