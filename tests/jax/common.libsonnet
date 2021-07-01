@@ -139,7 +139,7 @@ local tpus = import 'templates/tpus.libsonnet';
         python3 build/build.py --enable_tpu --bazel_options="--override_repository=org_tensorflow=$HOME/tensorflow"
         # jaxlib should already be installed, so we can use --no-deps
         # to avoid reinstalling all dependencies
-        pip install dist/.whl --no-deps --force-reinstall
+        pip install dist/*.whl --no-deps --force-reinstall
         python3 -c 'import jaxlib; print("jaxlib version:", jaxlib.__version__)'
       |||,
     },
