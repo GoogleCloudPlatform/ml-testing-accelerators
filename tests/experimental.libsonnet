@@ -95,7 +95,7 @@ local volumes = import 'templates/volumes.libsonnet';
               softwareVersion: std.escapeStringBash(config.tpuSettings.softwareVersion),
               startupScript: std.escapeStringBash(config.tpuSettings.tpuVmStartupScript),
               sleepTime: config.tpuSettings.tpuVmCreateSleepSeconds,
-              testName: config.testName,
+              testName: std.strReplace(config.testName, '.', '-'),
             },
             command: utils.scriptCommand(|||
               project=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google")
