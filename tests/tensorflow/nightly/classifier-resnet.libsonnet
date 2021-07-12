@@ -136,7 +136,7 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
 
-    accelerator: gpus.teslaA100 + { count: 4 },
+    accelerator: gpus.teslaA100 { count: 4 },
   },
 
   local tpu_common = {
