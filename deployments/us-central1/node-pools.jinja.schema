@@ -41,8 +41,13 @@ properties:
     type: boolean
     default: true
     description: Whether to include a pool of GCE machines with 8 V100 GPUs.
-  
+
   gpu-k80x8:
     type: boolean
     default: true
     description: Whether to include a pool of GCE machines with 8 K80 GPUs.
+
+  gpu-a100x4:
+    type: boolean
+    default: true
+    description: Whether to include a pool of GCE machines with 4 A100 GPUs.

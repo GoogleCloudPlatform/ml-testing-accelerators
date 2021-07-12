@@ -137,3 +137,29 @@ resources:
           value: gpu
           effect: PREFER_NO_SCHEDULE
 {% endif %}
+{% if properties["gpu-a100x4"] %}
+- type: gcp-types/container-v1beta1:projects.locations.clusters.nodePools
+  name: gpu-a100x4-pool
+  properties:
+    parent: projects/{{ env["project"] }}/locations/us-central1/clusters/{{ properties["cluster-name"] }}
+    nodePool:
+      name: gpu-a100x4-pool
+      initialNodeCount: 0
+      autoscaling:
+        enabled: true
+        minNodeCount: 0
+        maxNodeCount: 2
+      locations:
+      - us-central1-c
+      config:
+        machineType: a2-highgpu-4g
+        accelerators:
+        - acceleratorType: nvidia-tesla-a100
+          acceleratorCount: 4
+        oauthScopes:
+        - https://www.googleapis.com/auth/cloud-platform
+        taints:
+        - key: expensive
+          value: gpu
+          effect: PREFER_NO_SCHEDULE
+{% endif %}
