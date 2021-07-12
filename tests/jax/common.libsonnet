@@ -172,11 +172,11 @@ local tpus = import 'templates/tpus.libsonnet';
     scriptConfig+: {
       installLocalJax: |||
         pip install .[tpu] \
-          -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+          -f https://storage.googleapis.com/jax-releases/jax_releases.html
       |||,
       installLatestJax: |||
         pip install jax[tpu] \
-          -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+          -f https://storage.googleapis.com/jax-releases/jax_releases.html
       |||,
     },
   },
