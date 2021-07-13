@@ -67,3 +67,25 @@ spec:
     - scopeName: PriorityClass
       operator: In
       values: [ gpu-k80 ]
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: gpu-a100
+value: 1000000
+globalDefault: false
+description: "PriorityClass for pods using NVidia A100 GPUs."
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gpu-a100-limit
+  namespace: automated
+spec:
+  hard:
+    requests.nvidia.com/gpu: 8
+  scopeSelector:
+    matchExpressions:
+    - scopeName: PriorityClass
+      operator: In
+      values: [ gpu-a100 ]
