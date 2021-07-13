@@ -148,14 +148,9 @@ local tpus = import 'templates/tpus.libsonnet';
   local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
-    resnet + k80 + functional + timeouts.Hours(5) + mixins.Suspended,
-    resnet + k80x8 + functional + timeouts.Hours(4) + mixins.Suspended,
-    resnet + k80x8 + convergence + mixins.Experimental,
-    resnet + v100 + functional + timeouts.Hours(3) + mixins.Suspended,
-    resnet + v100x4 + functional + mixins.Experimental,
-    resnet + v100x4 + convergence + mixins.Experimental,
+    resnet + k80x8 + convergence,
     resnet + v100x8 + functional + mixins.Unsuspended,
-    resnet + v100x8 + convergence + timeouts.Hours(14),
+    resnet + v100x8 + convergence + timeouts.Hours(45) + { schedule: '0 8 * * 1,4' },
     resnet + v2_8 + functional,
     //    resnet + v2_8 + functional + tpuVm,
     resnet + v3_8 + functional,

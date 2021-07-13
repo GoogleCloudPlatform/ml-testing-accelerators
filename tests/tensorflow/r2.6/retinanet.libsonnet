@@ -158,11 +158,8 @@ local tpus = import 'templates/tpus.libsonnet';
   local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
-    retinanet + functional + k80x8 + mixins.Suspended,
-    retinanet + convergence + k80x8 + mixins.Experimental,
-    retinanet + functional + v100 + mixins.Suspended,
-    retinanet + functional + v100x4 + mixins.Suspended,
-    retinanet + convergence + v100x4 + mixins.Experimental,
+    retinanet + functional + k80x8,
+    retinanet + convergence + v100x4,
     retinanet + functional + v2_8,
     //    retinanet + functional + v2_8 + tpuVm,
     retinanet + functional + v3_8,
