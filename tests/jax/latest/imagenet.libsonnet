@@ -29,11 +29,19 @@ local tpus = import 'templates/tpus.libsonnet';
   local v2_8 = {
     accelerator: tpus.v2_8,
   },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+  },
   local imagenet = common.runFlaxLatest {
+    modelName:: 'imagenet',
+  },
+  local imagenet_pod = common.PodFlaxLatest {
     modelName:: 'imagenet',
   },
   configs: [
     imagenet + functional + v2_8,
     imagenet + convergence + v3_8,
+    imagenet_pod + functional + v3_32,
+    imagenet_pod + convergence + v3_32,
   ],
 }
