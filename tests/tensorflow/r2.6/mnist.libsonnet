@@ -90,7 +90,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
-    mnist + k80 + functional + mixins.Experimental,
+    mnist + k80 + functional,
     mnist + v100 + functional,
     mnist + v2_8 + functional,
     mnist + v2_8 + convergence,

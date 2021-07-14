@@ -135,14 +135,8 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
-    resnetrs + k80 + functional + timeouts.Hours(5) + mixins.Suspended,
-    resnetrs + k80x8 + functional + timeouts.Hours(4) + mixins.Suspended,
-    resnetrs + k80x8 + convergence + mixins.Experimental + mixins.Suspended,
-    resnetrs + v100 + functional + timeouts.Hours(3) + mixins.Suspended,
-    resnetrs + v100x4 + functional + mixins.Experimental + mixins.Suspended,
-    resnetrs + v100x4 + convergence + mixins.Experimental + mixins.Suspended,
-    resnetrs + v100x8 + functional + mixins.Unsuspended + mixins.Suspended,
-    resnetrs + v100x8 + convergence + timeouts.Hours(14) + mixins.Suspended,
+    resnetrs + k80x8 + convergence + mixins.Experimental,
+    resnetrs + v100x8 + convergence + timeouts.Hours(14),
     resnetrs + v2_8 + functional + mixins.Unsuspended,
     resnetrs + v3_8 + functional,
     resnetrs + v2_8 + convergence + timeouts.Hours(24),
