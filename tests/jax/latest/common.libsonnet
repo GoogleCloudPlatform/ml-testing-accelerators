@@ -60,4 +60,35 @@ local tpus = import 'templates/tpus.libsonnet';
              extraFlags: config.extraFlags,
            }),
   },
+  PodFlaxLatest:: common.JaxPodTest + common.jaxlibLatest + common.libtpuAlpha{
+    local config = self,
+    frameworkPrefix: 'flax-latest',
+    extraDeps:: '',
+    extraFlags:: '',
+
+    testScript:: |||
+      set -x
+      set -u
+      set -e
+      # .bash_logout sometimes causes a spurious bad exit code, remove it.
+      rm .bash_logout
+      pip install --upgrade pip
+      %(installLatestJax)s
+      %(maybeBuildJaxlib)s
+      %(printDiagnostics)s
+      pip install --upgrade clu %(extraDeps)s
+      git clone https://github.com/google/flax
+      cd flax
+      pip install -e .
+      cd examples/%(modelName)s
+      export GCS_BUCKET=$(MODEL_DIR)
+      export TFDS_DATA_DIR=$(TFDS_DIR)
+      python3 main.py --workdir=$(MODEL_DIR)  --config=configs/%(extraConfig)s %(extraFlags)s
+    ||| % (self.scriptConfig {
+             modelName: config.modelName,
+             extraDeps: config.extraDeps,
+             extraConfig: config.extraConfig,
+             extraFlags: config.extraFlags,
+           }),
+  }
 }
