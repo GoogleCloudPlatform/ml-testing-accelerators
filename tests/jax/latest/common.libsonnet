@@ -90,5 +90,5 @@ local tpus = import 'templates/tpus.libsonnet';
              extraConfig: config.extraConfig,
              extraFlags: config.extraFlags,
            }),
-  }
+  },
 }
