@@ -86,7 +86,7 @@ local utils = import 'templates/utils.libsonnet';
 
   local save_and_load = API {
     mode: 'save-and-load',
-    testFeature:: 'save_and_load',
+    testFeature:: 'save_and_load.feature',
     // Run at 2:30AM PST daily
     schedule: '30 10 * * *',
   },
