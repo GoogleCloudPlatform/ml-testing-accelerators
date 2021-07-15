@@ -58,7 +58,7 @@ local mixins = import 'templates/mixins.libsonnet';
       f = pmap(lambda x: x - lax.psum(x, 'i'), axis_name='i')
       shape = (jax.lib.xla_bridge.device_count(), 4)
       x = np.arange(prod(shape), dtype=np.float32).reshape(shape)
-      f(x)
+      print(f(x))
       END_SCRIPT
 
       python3 integration.py
@@ -68,6 +68,10 @@ local mixins = import 'templates/mixins.libsonnet';
       num_of_files = sum(1 for f in os.listdir("/tmp/compilation_cache_integration_test"))
       assert num_of_files == 1, f"The number of files in the cache should be 1 but is {num_of_files}" 
       END_SCRIPT
+
+      python3 directory_size.py
+
+      python3 integration.py
 
       python3 directory_size.py
 

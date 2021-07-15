@@ -16,7 +16,7 @@ local latest = import 'latest/targets.jsonnet';
 local nightly = import 'nightly/targets.jsonnet';
 local podTest = import 'pod-test.libsonnet';
 local unitTests = import 'unit-tests.libsonnet';
-local compilationCacheTest = import 'unit-tests-cc.libsonnet';
+local compilationCacheTest = import 'compilation-cache.libsonnet';
 
 std.flattenArrays([
   unitTests.configs,
