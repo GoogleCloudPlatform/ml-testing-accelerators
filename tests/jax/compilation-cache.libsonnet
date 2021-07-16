@@ -32,10 +32,9 @@ local mixins = import 'templates/mixins.libsonnet';
           absl-py opt-einsum msgpack
 
       echo "Checking out and installing JAX..."
-      git clone https://github.com/colemanliyah/jax.git
+      git clone https://github.com/google/jax.git
       cd jax
       git fetch
-      git checkout pmap_integration
       echo "jax git hash: $(git rev-parse HEAD)"
       %(installLocalJax)s
       %(maybeBuildJaxlib)s
