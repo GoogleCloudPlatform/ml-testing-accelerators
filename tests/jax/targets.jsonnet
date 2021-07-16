@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local compilationCacheTest = import 'compilation-cache.libsonnet';
 local latest = import 'latest/targets.jsonnet';
 local nightly = import 'nightly/targets.jsonnet';
 local podTest = import 'pod-test.libsonnet';
@@ -20,6 +21,7 @@ local unitTests = import 'unit-tests.libsonnet';
 std.flattenArrays([
   unitTests.configs,
   podTest.configs,
+  compilationCacheTest.configs,
   latest,
   nightly,
 ])
