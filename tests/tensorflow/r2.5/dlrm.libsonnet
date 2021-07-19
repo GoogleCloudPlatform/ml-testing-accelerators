@@ -168,18 +168,42 @@ local tpus = import 'templates/tpus.libsonnet';
 
   local v2_8 = tpu_common {
     accelerator: tpus.v2_8,
+    task+: {
+      model+: {
+        bottom_mlp: [512, 256, 16],
+        embedding_dim: 16,
+      }
+    },
   },
 
   local v2_32 = tpu_common {
     accelerator: tpus.v2_32,
+    task+: {
+      model+: {
+        bottom_mlp: [512, 256, 64],
+        embedding_dim: 64,
+      }
+    },
   },
 
   local v3_8 = tpu_common {
     accelerator: tpus.v3_8,
+    task+: {
+      model+: {
+        bottom_mlp: [512, 256, 32],
+        embedding_dim: 32,
+      }
+    },
   },
 
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
+    task+: {
+      model+: {
+        bottom_mlp: [512, 256, 128],
+        embedding_dim: 128,
+      }
+    },
   },
   local tpuVm = experimental.TensorFlowTpuVmMixin,
 
