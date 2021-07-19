@@ -172,7 +172,7 @@ local tpus = import 'templates/tpus.libsonnet';
       model+: {
         bottom_mlp: [512, 256, 16],
         embedding_dim: 16,
-      }
+      },
     },
   },
 
@@ -182,7 +182,7 @@ local tpus = import 'templates/tpus.libsonnet';
       model+: {
         bottom_mlp: [512, 256, 64],
         embedding_dim: 64,
-      }
+      },
     },
   },
 
@@ -192,7 +192,7 @@ local tpus = import 'templates/tpus.libsonnet';
       model+: {
         bottom_mlp: [512, 256, 32],
         embedding_dim: 32,
-      }
+      },
     },
   },
 
@@ -202,7 +202,7 @@ local tpus = import 'templates/tpus.libsonnet';
       model+: {
         bottom_mlp: [512, 256, 128],
         embedding_dim: 128,
-      }
+      },
     },
   },
   local tpuVm = experimental.TensorFlowTpuVmMixin,
