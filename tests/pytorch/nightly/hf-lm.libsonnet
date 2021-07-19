@@ -83,7 +83,7 @@ local utils = import 'templates/utils.libsonnet';
       metric_success_conditions+: {
         'eval/loss_final': {
           success_threshold: {
-            fixed_value: 1.5,
+            fixed_value: 2.8,
           },
           comparison: 'less',
         },
