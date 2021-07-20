@@ -109,11 +109,11 @@ local utils = import 'templates/utils.libsonnet';
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1),
     mnist + convergence + v3_8 + timeouts.Hours(1),
-    mnist_gpu_py37_cuda_101 + convergence + v100 + timeouts.Hours(3),
-    mnist_gpu_py37_cuda_101 + convergence + v100x4 + timeouts.Hours(3),
-    mnist_gpu_py37_cuda_102 + convergence + v100 + timeouts.Hours(3),
-    mnist_gpu_py37_cuda_102 + convergence + v100x4 + timeouts.Hours(3),
-    mnist_gpu_py37_cuda_112 + convergence + v100 + timeouts.Hours(3),
-    mnist_gpu_py37_cuda_112 + convergence + v100x4 + timeouts.Hours(3),
+    mnist_gpu_py37_cuda_101 + convergence + v100 + timeouts.Hours(6),
+    mnist_gpu_py37_cuda_101 + convergence + v100x4 + timeouts.Hours(6),
+    mnist_gpu_py37_cuda_102 + convergence + v100 + timeouts.Hours(6),
+    mnist_gpu_py37_cuda_102 + convergence + v100x4 + timeouts.Hours(6),
+    mnist_gpu_py37_cuda_112 + convergence + v100 + timeouts.Hours(6),
+    mnist_gpu_py37_cuda_112 + convergence + v100x4 + timeouts.Hours(6),
   ],
 }
