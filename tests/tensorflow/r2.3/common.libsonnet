@@ -49,6 +49,6 @@ local mixins = import 'templates/mixins.libsonnet';
   },
   // Don't run tests by default since this release is stable.
   Convergence:: mixins.Convergence {
-    schedule: 'null',
+    schedule: null,
   },
 }
