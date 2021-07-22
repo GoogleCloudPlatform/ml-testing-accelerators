@@ -135,8 +135,6 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
-    resnetrs + k80x8 + convergence + mixins.Experimental,
-    resnetrs + v100x8 + convergence + timeouts.Hours(14),
     resnetrs + v2_8 + functional + mixins.Unsuspended,
     resnetrs + v3_8 + functional,
     resnetrs + v2_8 + convergence + timeouts.Hours(24),

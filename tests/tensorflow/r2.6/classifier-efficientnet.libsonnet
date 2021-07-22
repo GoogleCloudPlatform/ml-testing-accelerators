@@ -147,8 +147,6 @@ local tpus = import 'templates/tpus.libsonnet';
   local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
-    efficientnet + k80x8 + convergence,
-    efficientnet + v100x4 + convergence,
     efficientnet + v2_8 + functional,
     //    efficientnet + v2_8 + functional + tpuVm,
     efficientnet + v3_8 + functional,
