@@ -46,7 +46,7 @@ local mixins = import 'templates/mixins.libsonnet';
       fi
 
       # b/192016388
-      pip install tensorflow
+      %(maybeInstallTF)s
 
       export JAX_NUM_GENERATED_CASES=5
       export COLUMNS=160
