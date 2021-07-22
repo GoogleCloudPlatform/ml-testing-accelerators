@@ -24,7 +24,9 @@ local clusterTests = utils.splitByCluster(
 );
 local clusterTestNames = {
   [cluster]: [
-    test.testName for test in clusterTests[cluster] if test.schedule != null
+    test.testName
+    for test in clusterTests[cluster]
+    if test.schedule != null
   ]
   for cluster in std.objectFields(clusterTests)
 };
