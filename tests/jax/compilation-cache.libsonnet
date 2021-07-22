@@ -16,8 +16,8 @@ local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 
 {
-  local runUnitTests = common.JaxTest + mixins.Functional {
-    modelName: '%s-libtpu-%s' % [self.jaxlibVersion, self.libtpuVersion],
+  local compilationCacheTest = common.JaxTest + mixins.Functional {
+    modelName: 'compilation-cache-test',
 
     testScript:: |||
       set -x
@@ -34,6 +34,7 @@ local mixins = import 'templates/mixins.libsonnet';
       echo "Checking out and installing JAX..."
       git clone https://github.com/google/jax.git
       cd jax
+      git fetch
       echo "jax git hash: $(git rev-parse HEAD)"
       %(installLocalJax)s
       %(maybeBuildJaxlib)s
@@ -45,21 +46,34 @@ local mixins = import 'templates/mixins.libsonnet';
         exit 1
       fi
 
-      # b/192016388
-      %(maybeInstallTF)s
+      mkdir "/tmp/compilation_cache_integration_test"
+      cat >integration.py <<'END_SCRIPT'
+      import jax
+      from jax.experimental.compilation_cache import compilation_cache as cc
+      from jax import pmap, lax
+      from jax._src.util import prod
+      import numpy as np
 
-      export JAX_NUM_GENERATED_CASES=5
-      export COLUMNS=160
-      # Remove 'Captured stdout call' due to b/181896778
-      python3 -u -m pytest --tb=short tests examples | sed 's/Captured stdout call/output/'
-      exit ${PIPESTATUS[0]}
+      cc.initialize_cache("/tmp/compilation_cache_integration_test")
+      f = pmap(lambda x: x - lax.psum(x, 'i'), axis_name='i')
+      print(f(np.arange(8)))
+      END_SCRIPT
+
+      cat >directory_size.py <<'END_SCRIPT'
+      import os
+      num_of_files = sum(1 for f in os.listdir("/tmp/compilation_cache_integration_test"))
+      assert num_of_files == 1, f"The number of files in the cache should be 1 but is {num_of_files}" 
+      END_SCRIPT
+
+      python3 integration.py
+      python3 directory_size.py
+      python3 integration.py
+      python3 directory_size.py
+
     ||| % self.scriptConfig,
   },
 
   configs: [
-    runUnitTests + common.jaxlibHead + common.libtpuNightly,
-    runUnitTests + common.jaxlibLatest + common.libtpuNightly,
-    runUnitTests + common.jaxlibHead + common.libtpuAlpha,
-    runUnitTests + common.jaxlibLatest + common.libtpuAlpha,
+    compilationCacheTest + common.jaxlibLatest + common.libtpuAlpha,
   ],
 }
