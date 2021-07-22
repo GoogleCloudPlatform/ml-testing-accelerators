@@ -25,7 +25,7 @@ local mixins = import 'templates/mixins.libsonnet';
   },
   // Running functional tests at 10PM PST on Thu.
   Functional:: mixins.Functional {
-    schedule: '0 6 * * 4',
+    schedule: null,
   },
   // Don't run tests by default since this release is stable.
   Convergence:: mixins.Convergence {

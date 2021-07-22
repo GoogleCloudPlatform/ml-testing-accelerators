@@ -42,7 +42,7 @@ local mixins = import 'templates/mixins.libsonnet';
   },
   // Running functional tests at 10PM PST on Fri.
   Functional:: mixins.Functional {
-    schedule: '0 6 * * 5',
+    schedule: null,
     tpuSettings+: {
       preemptible: false,
     },

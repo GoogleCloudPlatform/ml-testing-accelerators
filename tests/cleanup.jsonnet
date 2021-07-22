@@ -23,7 +23,9 @@ local clusterTests = utils.splitByCluster(
   clusters.clusterAccelerators,
 );
 local clusterTestNames = {
-  [cluster]: [test.testName for test in clusterTests[cluster]]
+  [cluster]: [
+    test.testName for test in clusterTests[cluster] if test.schedule != null
+  ]
   for cluster in std.objectFields(clusterTests)
 };
 
