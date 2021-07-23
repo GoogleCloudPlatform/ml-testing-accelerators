@@ -121,21 +121,21 @@ local mixins = import 'templates/mixins.libsonnet';
       },
     },
   },
-  TensorflowServingTpuVmMixin:: experimental.BaseTpuVmMixin {
+  TensorflowServingTpuVmMixin:: experimental.BaseTpuVmTest {
     local config = self,
-    image: 'TODO',
-
     tpuSettings+: {
       tpuVmStartupScript: 'gcloud auth configure-docker && ' +
-                          'git clone --depth=1 https://github.com/tensorflow/serving.git /serving/ && ' +
-                          'docker run -d --privileged -e MODEL_NAME=half_plus_two -e TPU_MIN_LOG_LEVEL=0 -p 8501:8501 -v "/serving/tensorflow_serving/servables/tensorflow/testdata/saved_model_half_plus_two_cpu:/models/half_plus_two" %(image)s' % config,
-      tpuVmCreateSleepSeconds: 360,
+                          'mkdir -p /models/%(model)s && ' % config +
+                          'gsutil -m cp -R %(gcsDir)s/* /models/%(model)s && ' % config +
+                          'docker run -d --privileged -e MODEL_NAME=%(model)s -e TPU_MIN_LOG_LEVEL=0 -p 8500:8500 -v "/models:/models" -v "/lib/libtpu.so:/lib/libtpu.so" %(modelServerImage)s' % config,
+      tpuVmCreateSleepSeconds: 120,
     },
 
     podTemplate+: {
       spec+: {
         containerMap+:: {
           train+: {
+            image: '%(loadTestImage)s' % config,
             local scriptSettings = {
               testCommand:
                 std.join(
