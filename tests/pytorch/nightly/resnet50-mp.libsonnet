@@ -172,6 +172,12 @@ local utils = import 'templates/utils.libsonnet';
           },
           comparison: 'greater',
         },
+        'aten_ops_sum_final': {
+          success_threshold: {
+            fixed_value: 40.0,
+          },
+          comparison: 'less_or_equal',
+        },
       },
     },
     schedule: '0 20 * * *',
