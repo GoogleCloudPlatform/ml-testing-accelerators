@@ -37,4 +37,3 @@ data:
   XLNET_CHECKPOINT_DIR: gs://cloud-tpu-checkpoints/xlnet/keras_xlnet
   XLNET_IMDB_DIR: gs://xl-ml-test-us-central1/data/xlnet-imdb
   XLNET_SQUAD_DIR: gs://xl-ml-test-us-central1/data/xlnet-squad
-  SERVING_MODELS_DIR: gs://serving-benchmarks/

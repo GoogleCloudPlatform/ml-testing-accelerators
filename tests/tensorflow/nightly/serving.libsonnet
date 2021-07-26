@@ -41,7 +41,6 @@ local tpus = import 'templates/tpus.libsonnet';
     model: 'bert',
     dataType: 'synthetic_bert',
     batchSize: 4,
-    //gcsDir: '$(SERVING_MODELS_DIR)/bert-base-tf2/tpu',
     gcsDir: 'gs://serving-benchmarks/bert-base-tf2/tpu',
   },
   local tpuVm = experimental.TensorflowServingTpuVmMixin,
@@ -53,7 +52,7 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: tpus.v3_8,
   },
   configs: [
-    bert + functional + v2_8 + tpuVm,
-    bert + functional + v3_8 + tpuVm,
+    bert + functional + v2_8 + tpuVm + mixins.Experimental,
+    bert + functional + v3_8 + tpuVm + mixins.Experimental,
   ],
 }
