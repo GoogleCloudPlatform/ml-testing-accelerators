@@ -35,9 +35,6 @@ local tpus = import 'templates/tpus.libsonnet';
       '--use_tf_function=true',
       '--model_dir=$(MODEL_DIR)',
     ],
-    tpuSettings+: {
-      softwareVersion: 'test_nightly_direct_path_non_distrib_cache',
-    },
   },
   local functional = common.Functional {
     command+: [
