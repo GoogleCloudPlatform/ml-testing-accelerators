@@ -46,6 +46,7 @@ local mixins = import 'templates/mixins.libsonnet';
 
   // Setting the version for TPU VM.
   tpuVm:: experimental.TensorFlowTpuVmMixin {
+    local config = self,
     tpuSettings+: {
       softwareVersion: if config.accelerator.replicas == 1 then
         'tpu-vm-tf-2.6.0'
