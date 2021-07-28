@@ -13,6 +13,7 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
+local experimental = import '../experimental.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 
 {
@@ -42,6 +43,18 @@ local mixins = import 'templates/mixins.libsonnet';
       },
     },
   },
+
+  // Setting the version for TPU VM.
+  tpuVm:: experimental.TensorFlowTpuVmMixin {
+    local config = self,
+    tpuSettings+: {
+      softwareVersion: if config.accelerator.replicas == 1 then
+        'tpu-vm-tf-2.6.0'
+      else
+        'tpu-vm-tf-2.6.0-pod',
+    },
+  },
+
   // Running functional tests at 10PM PST daily.
   Functional:: mixins.Functional + mixins.Suspended {
     schedule: '0 6 * * *',
