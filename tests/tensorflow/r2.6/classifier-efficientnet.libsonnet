@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
@@ -144,17 +143,16 @@ local tpus = import 'templates/tpus.libsonnet';
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
   },
-  local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
     efficientnet + v2_8 + functional,
-    //    efficientnet + v2_8 + functional + tpuVm,
+    efficientnet + v2_8 + functional + common.tpuVm,
     efficientnet + v3_8 + functional,
     efficientnet + v3_8 + hbm + mixins.Unsuspended,
     efficientnet + v2_8 + convergence + timeouts.Hours(45) + { schedule: '0 8 * * 2,5' },
     efficientnet + v3_8 + convergence + timeouts.Hours(45) + { schedule: '0 8 * * 2,5' },
     efficientnet + v2_32 + functional,
-    //    efficientnet + v2_32 + functional + tpuVm,
+    efficientnet + v2_32 + functional + common.tpuVm,
     efficientnet + v3_32 + functional,
     efficientnet + v3_32 + convergence + timeouts.Hours(24),
   ],

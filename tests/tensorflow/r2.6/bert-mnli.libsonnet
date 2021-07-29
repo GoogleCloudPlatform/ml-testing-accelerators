@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
@@ -88,8 +87,7 @@ local utils = import 'templates/utils.libsonnet';
       '--eval_batch_size=256',
     ],
   },
-  local tpuVm = experimental.TensorFlowTpuVmMixin,
-  local tpuVmProfilingCheck = experimental.TensorFlowTpuVmMixin {
+  local tpuVmProfilingCheck = common.tpuVm {
     mode: 'profile',
     command: utils.scriptCommand(|||
       %s
@@ -103,15 +101,15 @@ local utils = import 'templates/utils.libsonnet';
 
   configs: [
     bert + v2_8 + functional,
-    //    bert + v2_8 + functional + tpuVm,
-    //    bert + v2_8 + functional + tpuVmProfilingCheck,
+    bert + v2_8 + functional + common.tpuVm,
+    bert + v2_8 + functional + tpuVmProfilingCheck,
     bert + v3_8 + functional,
-    //    bert + v3_8 + functional + tpuVm,
+    bert + v3_8 + functional + common.tpuVm,
     bert + v2_8 + convergence + timeouts.Hours(4),
     bert + v3_8 + convergence + timeouts.Hours(3),
-    //    bert + v2_32 + functional + tpuVm,
+    bert + v2_32 + functional + common.tpuVm,
     bert + v3_32 + functional,
-    //    bert + v3_32 + functional + tpuVm,
+    bert + v3_32 + functional + common.tpuVm,
     bert + v3_32 + convergence,
   ],
 }
