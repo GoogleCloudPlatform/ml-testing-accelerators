@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
@@ -123,18 +122,17 @@ local tpus = import 'templates/tpus.libsonnet';
       '--batch_size=24576',
     ],
   },
-  local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
     transformer + k80x8 + functional_short + timeouts.Hours(6),
     transformer + v100x4 + functional_short + timeouts.Hours(3),
     transformer + v2_8 + functional,
-    //    transformer + v2_8 + functional + tpuVm,
+    transformer + v2_8 + functional + common.tpuVm,
     transformer + v3_8 + functional,
     transformer + v2_8 + convergence,
     transformer + v3_8 + convergence,
     transformer + v2_32 + functional,
-    //   transformer + v2_32 + functional + tpuVm,
+    transformer + v2_32 + functional + common.tpuVm,
     transformer + v3_32 + functional,
     transformer + v3_32 + convergence,
   ],
