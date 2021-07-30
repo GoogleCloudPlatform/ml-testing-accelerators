@@ -47,6 +47,7 @@ local utils = import 'templates/utils.libsonnet';
                 args: utils.scriptCommand(
                   // HACK: Replace some hard-coded data paths
                   |||
+                    pip3 install google-cloud-bigquery>=0.31.0
                     sed -i 's_gs://tf-perfzero-data/bert_$(PERFZERO_DATA_DIR)_g' /garden/official/benchmark/bert_squad_benchmark.py
                     sed -i 's_gs://tf-perfzero-data_$(PERFZERO_DATA_DIR)_g' /garden/official/benchmark/retinanet_benchmark.py
                     sed -i 's_gs://mlcompass-data/transformer_$(PERFZERO_DATA_DIR)_g' /garden/official/benchmark/transformer_benchmark.py
