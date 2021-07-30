@@ -60,6 +60,5 @@ local volumes = import 'templates/volumes.libsonnet';
     git clone https://github.com/pytorch/pytorch.git -b release/1.8.1
     cd pytorch
     git clone https://github.com/pytorch/xla.git -b r1.8.1
-    export XRT_TPU_CONFIG='localservice;0;localhost:51011'
   |||,
 }
