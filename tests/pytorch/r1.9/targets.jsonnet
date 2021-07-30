@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local cppOperations = import 'cpp-ops.libsonnet';
 local colab = import 'colab.libsonnet';
+local cppOperations = import 'cpp-ops.libsonnet';
 local dlrm = import 'dlrm.libsonnet';
 local fairseqTransformer = import 'fs-transformer.libsonnet';
 local hfglue = import 'hf-glue.libsonnet';

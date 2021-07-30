@@ -30,7 +30,7 @@ local utils = import 'templates/utils.libsonnet';
 
         gsutil cp "${notebook_path}" "$(MODEL_DIR)/%(notebook)s"
       ||| % config.colabSettings
-    )
+    ),
   },
 
   local mnist = {
