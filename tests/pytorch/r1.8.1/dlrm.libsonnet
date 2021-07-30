@@ -163,18 +163,21 @@ local utils = import 'templates/utils.libsonnet';
     ),
   },
   local criteo_kaggle_tpu_vm = common.PyTorchTest {
-    // This test uses the default pytorch XLA version built into the TPUVM, which
-    // is 1.8.1 as of Apr 19.
     frameworkPrefix: 'pt-r1.8.1',
     modelName: 'dlrm-convergence',
     schedule: '0 21 * * *',
+    commandSpecifics: {
+      training_flags: convergence_common,
+      setup_commands: common.tpu_vm_1_8_1_install,
+    },
     command: utils.scriptCommand(
       |||
+        %(setup_commands)s
         pip3 install onnx tqdm sklearn
         git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.8.1
         python3 examples/deps/dlrm/dlrm_tpu_runner.py \
-          %(convergence_common)s
-      ||| % convergence_common
+          %(training_flags)s
+      ||| % self.commandSpecifics
     ),
   },
   local v3_8 = {
