@@ -1,9 +1,10 @@
 local common = import 'common.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local colab = common.PyTorchTest {
+  local colab = common.PyTorchTest + timeouts.Minutes(15) {
     local config = self,
 
     mode: 'colab',
