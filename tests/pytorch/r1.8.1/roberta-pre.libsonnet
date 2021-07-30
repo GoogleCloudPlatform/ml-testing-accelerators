@@ -82,14 +82,12 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local roberta_tpu_vm = common.PyTorchTest {
-    // This test uses the default pytorch XLA version built into the TPUVM, which
-    // is 1.8.1 as of Apr 19.
     frameworkPrefix: 'pt-r1.8.1',
     modelName: 'roberta-convergence',
     schedule: '0 19 * * *',
     command: utils.scriptCommand(
       |||
-        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.8.1
+        %s(setup_commands)s
         pip3 install --editable examples/deps/fairseq
         python3 \
           examples/deps/fairseq/train.py \
@@ -123,7 +121,7 @@ local utils = import 'templates/utils.libsonnet';
         wps=$(cat training_logs.txt | grep '| wps ' | tail -1 | grep -o -E ' wps [0-9]+' | sed 's/[^0-9]*//g')
         echo 'final words per second (wps) is' $wps
         test $wps -gt 19000
-      |||
+      ||| % common.tpu_vm_1_8_1_install,
     ),
   },
   local functional = common.Functional {

@@ -202,8 +202,6 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   local convergence_tpu_vm = common.Convergence {
-    // This test uses the default pytorch XLA version built into the TPUVM, which
-    // is 1.8.1 as of Apr 19.
     frameworkPrefix: 'pt-r1.8.1',
     modelName: 'fs-transformer',
     regressionTestConfig: {
@@ -220,15 +218,19 @@ local utils = import 'templates/utils.libsonnet';
         },
       },
     },
+    commandSpecifics: {
+      training_flags: conv_command_common,
+      setup_commands: common.tpu_vm_1_8_1_install,
+    },
     command: utils.scriptCommand(
       |||
-        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.8.1
+        %(setup_commands)s
         pip install --editable examples/deps/fairseq
         export PATH=~/.local/bin:$PATH
         export XLA_USE_BF16=1
         python3 examples/deps/fairseq/train.py \
-          %(conv_command_common)s
-      ||| % conv_command_common
+          %(training_flags)s
+      ||| % self.commandSpecifics
     ),
   },
 

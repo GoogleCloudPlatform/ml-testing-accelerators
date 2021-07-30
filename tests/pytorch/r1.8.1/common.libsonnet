@@ -52,4 +52,14 @@ local volumes = import 'templates/volumes.libsonnet';
     name: 'pytorch-datasets-claim',
     mountPath: '/datasets',
   },
+  tpu_vm_1_8_1_install: |||
+    sudo pip3 uninstall --yes torch torch_xla torchvision
+    sudo pip3 install torch==1.8.1
+    sudo pip3 install torchvision==0.9.1
+    sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/torch_xla-1.8.1-cp36-cp36m-linux_x86_64.whl
+    git clone https://github.com/pytorch/pytorch.git -b release/1.8.1
+    cd pytorch
+    git clone https://github.com/pytorch/xla.git -b r1.8.1
+    export XRT_TPU_CONFIG='localservice;0;localhost:51011'
+  |||,
 }

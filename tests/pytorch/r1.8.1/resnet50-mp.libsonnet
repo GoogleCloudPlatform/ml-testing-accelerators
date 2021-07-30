@@ -68,10 +68,11 @@ local utils = import 'templates/utils.libsonnet';
     paramsOverride: {
       num_epochs: error 'Must set `num_epochs`',
       datadir: error 'Must set `datadir`',
+      setup_commands: common.tpu_vm_1_8_1_install,
     },
     command: utils.scriptCommand(
       |||
-        git clone https://github.com/pytorch/xla.git -b r1.8.1
+        %(setup_commands)s
         pip3 install tensorboardX google-cloud-storage
         python3 xla/test/test_train_mp_imagenet.py \
           --logdir=$(MODEL_DIR) \
@@ -102,12 +103,14 @@ local utils = import 'templates/utils.libsonnet';
     paramsOverride: {
       num_epochs: 2,
       datadir: '/datasets/imagenet-mini',
+      setup_commands: common.tpu_vm_1_8_1_install,
     },
   },
   local convergence_tpu_vm = common.Convergence {
     paramsOverride: {
       num_epochs: 5,
       datadir: '/datasets/imagenet',
+      setup_commands: common.tpu_vm_1_8_1_install,
     },
     regressionTestConfig+: {
       metric_success_conditions+: {
