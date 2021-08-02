@@ -123,11 +123,12 @@ local mixins = import 'templates/mixins.libsonnet';
   },
   TensorflowServingTpuVmMixin:: experimental.BaseTpuVmTest {
     local config = self,
+    local image = error 'must supply base `image`.',
     tpuSettings+: {
       tpuVmStartupScript: 'gcloud auth configure-docker && ' +
-                          'mkdir -p /models/%(model)s && ' % config +
-                          'gsutil -m cp -R %(gcsDir)s/* /models/%(model)s && ' % config +
-                          'docker run -d --privileged -e MODEL_NAME=%(model)s -e TPU_MIN_LOG_LEVEL=0 -p 8500:8500 -v "/models:/models" -v "/lib/libtpu.so:/lib/libtpu.so" %(modelServerImage)s' % config,
+                          'mkdir -p /models/%(model)s && ' % config.servingConfig +
+                          'gsutil -m cp -R %(gcsDir)s/* /models/%(model)s && ' % config.servingConfig +
+                          'docker run -d --privileged -e MODEL_NAME=%(model)s -e TPU_MIN_LOG_LEVEL=0 -p 8500:8500 -v "/models:/models" -v "/lib/libtpu.so:/lib/libtpu.so" %(modelServerImage)s' % config.servingConfig,
       tpuVmCreateSleepSeconds: 120,
     },
 
@@ -135,7 +136,7 @@ local mixins = import 'templates/mixins.libsonnet';
       spec+: {
         containerMap+:: {
           train+: {
-            image: '%(loadTestImage)s' % config,
+            image: '%(image)s' % config,
             local scriptSettings = {
               testCommand:
                 std.join(

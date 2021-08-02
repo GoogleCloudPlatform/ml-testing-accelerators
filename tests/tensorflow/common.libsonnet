@@ -47,12 +47,14 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   ServingTest:: common.CloudAcceleratorTest {
     local config = self,
-    gcsDir: error 'must set gcsDir.',
-    dataType: error 'must set dataType.',
-    batchSize: error 'must set batchSize.',
-    servingImage: error 'must set servingImage.',
     loadTestImage: error 'must set loadTestImage.',
-    model: error 'must set model.',
-    modelName: '%(model)s-serving' % config,
+    servingConfig:: {
+      gcsDir: error 'must set gcsDir.',
+      dataType: error 'must set dataType.',
+      batchSize: error 'must set batchSize.',
+      servingImage: error 'must set servingImage.',
+      model: error 'must set model.',
+    },
+    modelName: '%(model)s-serving' % config.servingConfig,
   },
 }

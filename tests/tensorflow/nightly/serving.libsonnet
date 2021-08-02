@@ -19,32 +19,32 @@ local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  local servingTest = common.ServingTest {
+  local servingTest = common.ServingTest + experimental.TensorflowServingTpuVmMixin {
     local config = self,
     command: [
       'python3',
       'tpu/models/experimental/inference/load_test/examples/loadgen_grpc_main.py',
       '--target=grpc://$(cat /scripts/tpu_ip):8500',
-      '--model_name=%(model)s' % config,
+      '--model_name=%(model)s' % config.servingConfig,
       '--scenario=server',
       '--performance_sample_count=100',
-      '--data_type=%(dataType)s' % config,
+      '--data_type=%(dataType)s' % config.servingConfig,
       '--target_latency_percentile=0.99',
       '--target_latency_ns=100000000',
-      '--batch_size=%(batchSize)d' % config,
+      '--batch_size=%(batchSize)d' % config.servingConfig,
       '--duration_ms=1000',
       '--query_count=100',
     ],
   },
   local functional = common.Functional,
   local bert = servingTest {
-    model: 'bert',
-    dataType: 'synthetic_bert',
-    batchSize: 4,
-    gcsDir: 'gs://serving-benchmarks/bert-base-tf2/tpu',
+    servingConfig+: {
+      model: 'bert',
+      dataType: 'synthetic_bert',
+      batchSize: 4,
+      gcsDir: 'gs://serving-benchmarks/bert-base-tf2/tpu',
+    },
   },
-  local tpuVm = experimental.TensorflowServingTpuVmMixin,
-
   local v2_8 = {
     accelerator: tpus.v2_8,
   },
@@ -52,7 +52,7 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: tpus.v3_8,
   },
   configs: [
-    bert + functional + v2_8 + tpuVm + mixins.Experimental,
-    bert + functional + v3_8 + tpuVm + mixins.Experimental,
+    bert + functional + v2_8 + mixins.Experimental,
+    bert + functional + v3_8 + mixins.Experimental,
   ],
 }

@@ -18,6 +18,17 @@ local volumes = import 'templates/volumes.libsonnet';
 {
   BaseTpuVmTest:: {
     local config = self,
+    local cleanupHook = {
+      preStop: {
+        exec: {
+          command: [
+            'bash',
+            '/scripts/cleanup.sh',
+          ],
+        },
+      },
+    },
+
     publisherImage: null,
     volumeMap+: {
       scripts: volumes.MemoryVolumeSpec {
@@ -47,6 +58,21 @@ local volumes = import 'templates/volumes.libsonnet';
     },
     podTemplate+:: {
       spec+: {
+        containerMap+:: {
+          monitor: null,
+          train+: {
+            lifecycle: cleanupHook,
+            resources+: {
+              // HACK: remove standard Cloud TPU resource.
+              local originalLimits = super.limits,
+              limits: {
+                [field]: originalLimits[field]
+                for field in std.objectFields(originalLimits)
+                if !std.startsWith(field, 'cloud-tpus.google.com')
+              },
+            },
+          },
+        },
         initContainerMap+:: {
           'create-tpu': {
             image: 'google/cloud-sdk',
@@ -104,16 +130,6 @@ local volumes = import 'templates/volumes.libsonnet';
   // `BaseTpuVmMixin` is used to convert a 2VM target to 1VM.
   BaseTpuVmMixin:: self.BaseTpuVmTest {
     local config = self,
-    local cleanupHook = {
-      preStop: {
-        exec: {
-          command: [
-            'bash',
-            '/scripts/cleanup.sh',
-          ],
-        },
-      },
-    },
 
     // Disable retries
     jobTemplate+:: {
@@ -124,25 +140,14 @@ local volumes = import 'templates/volumes.libsonnet';
     podTemplate+:: {
       spec+: {
         containerMap+:: {
-          monitor: null,
           train+: {
             image: 'google/cloud-sdk',
-            lifecycle: cleanupHook,
             envMap+:: {
               LOCAL_OUTPUT_DIR: '/tmp/model_dir',
               KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS: if config.accelerator.replicas == 1 then
                 'local'
               else
                 'tpu-$(POD_UID)',
-            },
-            resources+: {
-              // HACK: remove standard Cloud TPU resource.
-              local originalLimits = super.limits,
-              limits: {
-                [field]: originalLimits[field]
-                for field in std.objectFields(originalLimits)
-                if !std.startsWith(field, 'cloud-tpus.google.com')
-              },
             },
           },
         },
