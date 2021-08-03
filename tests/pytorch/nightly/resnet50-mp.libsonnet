@@ -194,6 +194,14 @@ local utils = import 'templates/utils.libsonnet';
       gpu_command_base % 1
     ),
   },
+  local v100_amp = {
+    accelerator: gpus.teslaV100,
+    command: utils.scriptCommand(
+      |||
+        %(gpu_command_base)s --amp
+      ||| % (gpu_command_base % 1)
+    ),
+  },
   local v100x4 = v100 {
     accelerator: gpus.teslaV100 { count: 4 },
     command: utils.scriptCommand(
@@ -204,8 +212,10 @@ local utils = import 'templates/utils.libsonnet';
     resnet50_MP + v3_8 + convergence + timeouts.Hours(26) + mixins.PreemptibleTpu,
     resnet50_MP + v3_8 + functional + timeouts.Hours(2),
     resnet50_gpu_py37_cuda_101 + common.Functional + v100 + timeouts.Hours(2),
+    resnet50_gpu_py37_cuda_101 + common.Functional + v100_amp + timeouts.Hours(2) + { modelName: 'resnet50-cuda-10-1-amp' },
     resnet50_gpu_py37_cuda_101 + common.Functional + v100x4 + timeouts.Hours(1),
     resnet50_gpu_py37_cuda_102 + common.Functional + v100 + timeouts.Hours(2),
+    resnet50_gpu_py37_cuda_102 + common.Functional + v100_amp + timeouts.Hours(2) + { modelName: 'resnet50-cuda-10-2-amp' },
     resnet50_gpu_py37_cuda_102 + common.Functional + v100x4 + timeouts.Hours(1),
     resnet50_gpu_py37_cuda_112 + common.Functional + v100 + timeouts.Hours(2),
     resnet50_gpu_py37_cuda_112 + common.Functional + v100x4 + timeouts.Hours(1),
