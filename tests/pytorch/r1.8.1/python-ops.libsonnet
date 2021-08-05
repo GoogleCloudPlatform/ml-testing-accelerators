@@ -51,7 +51,7 @@ local utils = import 'templates/utils.libsonnet';
   configs: [
     operations + v2_8 + common.Functional + timeouts.Hours(2),
     operations + v3_8 + common.Functional + timeouts.Hours(2),
-    py_ops_tpu_vm + v2_8 + common.Functional + timeouts.Hours(4) + experimental.PyTorchTpuVmMixin,
-    py_ops_tpu_vm + v3_8 + common.Functional + timeouts.Hours(4) + experimental.PyTorchTpuVmMixin,
+    py_ops_tpu_vm + v2_8 + common.Functional + timeouts.Hours(4) + common.TpuVmMixin_1_8_1,
+    py_ops_tpu_vm + v3_8 + common.Functional + timeouts.Hours(4) + common.TpuVmMixin_1_8_1,
   ],
 }

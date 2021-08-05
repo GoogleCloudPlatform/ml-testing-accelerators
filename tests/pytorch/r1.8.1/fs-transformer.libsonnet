@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
@@ -246,6 +245,6 @@ local utils = import 'templates/utils.libsonnet';
     common.PyTorchTest + transformer + v3_8 + convergence + timeouts.Hours(25),
     common.PyTorchTest + transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
     common.PyTorchTest + transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
-    common.PyTorchTest + convergence_tpu_vm + v3_8 + timeouts.Hours(25) + experimental.PyTorchTpuVmMixin,
+    common.PyTorchTest + convergence_tpu_vm + v3_8 + timeouts.Hours(25) + common.TpuVmMixin_1_8_1,
   ],
 }

@@ -45,7 +45,7 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local tpuVm = experimental.PyTorchTpuVmMixin {
+  local tpuVm = common.TpuVmMixin_1_9 {
     frameworkPrefix: 'pt-r1.9',
     command: utils.scriptCommand(
       |||

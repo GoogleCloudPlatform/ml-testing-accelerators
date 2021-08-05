@@ -13,6 +13,7 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
+local experimental = import '../experimental.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
@@ -51,6 +52,11 @@ local volumes = import 'templates/volumes.libsonnet';
   datasetsVolume: volumes.PersistentVolumeSpec {
     name: 'pytorch-datasets-claim',
     mountPath: '/datasets',
+  },
+  TpuVmMixin_1_9:: experimental.PyTorchTpuVmMixin {
+    tpuSettings+: {
+      softwareVersion: 'v2-alpha',
+    },
   },
   tpu_vm_1_9_install: |||
     sudo bash /var/scripts/docker-login.sh

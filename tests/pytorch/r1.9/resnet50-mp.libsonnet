@@ -37,7 +37,7 @@ local utils = import 'templates/utils.libsonnet';
     cpu: '90.0',
     memory: '400Gi',
   },
-  local resnet50_tpu_vm = experimental.PyTorchTpuVmMixin {
+  local resnet50_tpu_vm = common.TpuVmMixin_1_9 {
     frameworkPrefix: 'pt-r1.9',
     modelName: 'resnet50-mp',
     paramsOverride: {

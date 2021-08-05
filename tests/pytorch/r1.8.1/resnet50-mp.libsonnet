@@ -60,9 +60,7 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local resnet50_tpu_vm = experimental.PyTorchTpuVmMixin {
-    // This test uses the default pytorch XLA version built into the TPUVM, which
-    // is 1.8.1 as of Apr 19.
+  local resnet50_tpu_vm = common.TpuVmMixin_1_8_1 {
     frameworkPrefix: 'pt-r1.8.1',
     modelName: 'resnet50-mp',
     paramsOverride: {
