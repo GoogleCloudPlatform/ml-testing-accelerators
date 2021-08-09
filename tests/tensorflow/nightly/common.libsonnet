@@ -66,4 +66,12 @@ local mixins = import 'templates/mixins.libsonnet';
       },
     },
   },
+  ServingTest:: common.ServingTest {
+    local config = self,
+    image: 'gcr.io/xl-ml-test/allencwang-load-test',
+    frameworkPrefix: 'tf-nightly',
+    servingConfig+: {
+      modelServerImage: 'gcr.io/xl-ml-test/allencwang-tf-serving-tpu:latest',
+    },
+  },
 }
