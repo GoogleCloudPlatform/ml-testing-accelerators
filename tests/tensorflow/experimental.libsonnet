@@ -136,7 +136,6 @@ local mixins = import 'templates/mixins.libsonnet';
       spec+: {
         containerMap+:: {
           train+: {
-            image: '%(image)s' % config,
             local scriptSettings = {
               testCommand:
                 std.join(
