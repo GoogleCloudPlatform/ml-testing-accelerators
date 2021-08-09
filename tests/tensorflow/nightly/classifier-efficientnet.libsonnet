@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
@@ -125,7 +126,6 @@ local tpus = import 'templates/tpus.libsonnet';
   local v100x4 = gpu_common {
     accelerator: gpus.teslaV100 { count: 4 },
   },
-
   local tpu_common = {
     command+: [
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
@@ -144,6 +144,7 @@ local tpus = import 'templates/tpus.libsonnet';
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
   },
+  local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
     efficientnet + k80x8 + functional + timeouts.Hours(4) + mixins.Suspended,
@@ -152,11 +153,13 @@ local tpus = import 'templates/tpus.libsonnet';
     efficientnet + v100x4 + functional + timeouts.Hours(2) + mixins.Suspended,
     efficientnet + v100x4 + convergence + mixins.Experimental,
     efficientnet + v2_8 + functional,
+    efficientnet + v2_8 + functional + tpuVm,
     efficientnet + v3_8 + functional,
     efficientnet + v3_8 + hbm + mixins.Unsuspended,
     efficientnet + v2_8 + convergence + timeouts.Hours(45),
     efficientnet + v3_8 + convergence + timeouts.Hours(45),
     efficientnet + v2_32 + functional,
+    efficientnet + v2_32 + functional + tpuVm,
     efficientnet + v3_32 + functional,
     efficientnet + v2_32 + convergence + timeouts.Hours(10) + tpus.reserved + { schedule: '0 7 * * 1,3,5,6' },
     efficientnet + v3_32 + convergence + timeouts.Hours(24),

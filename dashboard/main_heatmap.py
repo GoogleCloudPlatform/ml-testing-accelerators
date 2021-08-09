@@ -15,10 +15,11 @@
 import collections
 import math
 import os
+import urllib.parse
 
 from bokeh.core.properties import Instance
 from bokeh.events import DoubleTap
-from bokeh.models import ColumnDataSource, CategoricalColorMapper, CustomJS, TapTool
+from bokeh.models import ColumnDataSource, CategoricalColorMapper, CustomJS, TapTool, HoverTool
 from bokeh.plotting import figure
 
 import javascript_utils
@@ -119,6 +120,15 @@ def process_dataframes(job_status_dataframe, metrics_dataframe):
   if job_status_dataframe.empty or 'job_status' not in job_status_dataframe:
     return pd.DataFrame()
 
+  # Default to logs tab of Kubernetes workload
+  def _append_workload_logs_path(url):
+    parsed = urllib.parse.urlparse(url)
+    parsed = parsed._replace(path=parsed.path + '/logs')
+    return urllib.parse.urlunparse(parsed)
+
+  job_status_dataframe['workload_link'] = (
+    job_status_dataframe['workload_link'].map(_append_workload_logs_path))
+
   # Collect all test+date combinations where metrics were out of bounds.
   oob_tests = collections.defaultdict(list)
   def _test_date_key(test, date):
@@ -172,10 +182,15 @@ def process_dataframes(job_status_dataframe, metrics_dataframe):
   return job_status_dataframe
 
 def make_plot(dataframe):
-  source = ColumnDataSource(data=dataframe)
-  if 'run_date' not in source.data:
+  if 'run_date' not in dataframe:
     return None  # No dates to render.
-  all_dates = np.unique(source.data['run_date']).tolist()
+  dataframe['display_date'] = dataframe.run_date
+  dataframe.run_date = pd.to_datetime(dataframe.run_date)
+  latest_results = dataframe.loc[dataframe.reset_index().groupby(['test_name'])['run_date'].idxmax()]
+  latest_results.display_date = 'latest'
+  dataframe = dataframe.append(latest_results)
+  source = ColumnDataSource(data=dataframe)
+  all_dates = np.unique(source.data['display_date']).tolist()
   if not all_dates:
     return None  # No dates to render.
 
@@ -191,7 +206,6 @@ def make_plot(dataframe):
   all_test_names = np.unique(source.data['test_name']).tolist()
   longest_test_name = max(len(name) for name in all_test_names)
 
-  tooltip_template = """@overall_status on @run_date"""
   plot = figure(
       plot_width=(2*longest_test_name)+(45*len(all_dates)),
       plot_height=100 + 30*len(all_test_names),
@@ -199,8 +213,18 @@ def make_plot(dataframe):
       x_axis_location='above',
       y_range = all_test_names[-1::-1],  # Reverse for alphabetical.
       tools="tap",
-      toolbar_location=None,
-      tooltips=tooltip_template)
+      toolbar_location=None)
+  plot.add_tools(
+    HoverTool(
+      tooltips=[
+        ('status', '@overall_status'),
+        ('date', '@run_date{%F}'),
+      ],
+      formatters={
+        '@run_date': 'datetime',
+      }
+    )
+  )
 
   plot.grid.grid_line_color = None
   plot.axis.axis_line_color = None
@@ -214,7 +238,7 @@ def make_plot(dataframe):
       factors=['success', 'failure', 'timeout'],
       palette=[COLORS['success'], COLORS['failure'], COLORS['failure']])
   rect = plot.rect(
-      x="run_date", y="test_name", width=1, height=1,
+      x="display_date", y="test_name", width=1, height=1,
       source=source, line_color='#ffffff', line_width=1.5,
       fill_color={'field': 'overall_status', 'transform': color_mapper})
 
@@ -226,7 +250,7 @@ def make_plot(dataframe):
 
   # Add the 1-letter 'F' codes for failed jobs onto the grid of rectangles.
   plot.text(
-      x='run_date',
+      x='display_date',
       y='test_name',
       text='job_status_abbrev',
       source=source,

@@ -34,6 +34,11 @@ local tpus = import 'templates/tpus.libsonnet';
       '--model_dir=$(MODEL_DIR)',
     ],
   },
+  local functional = common.Functional {
+    command+: [
+      '--num_train_epochs=1',
+    ],
+  },
   local convergence = common.Convergence {
     command+: [
       '--num_train_epochs=3',
@@ -69,6 +74,10 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
+    bert + v2_8 + functional,
+    bert + v3_8 + functional,
+    bert + v2_32 + functional,
+    bert + v3_32 + functional,
     bert + v2_8 + convergence + timeouts.Hours(2),
     bert + v3_8 + convergence + timeouts.Hours(2),
     bert + v2_32 + convergence,

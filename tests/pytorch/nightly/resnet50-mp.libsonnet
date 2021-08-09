@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
@@ -27,20 +28,40 @@ local utils = import 'templates/utils.libsonnet';
     --model=resnet50 \
     --batch_size=128 \
     --log_steps=100 \
-    --num_workers=4 \
+    --num_workers=2 \
     --num_epochs=2 \
     --datadir=/datasets/imagenet-mini \
   |||,
-  local resnet50_gpu = common.PyTorchTest {
-    imageTag: 'nightly_3.6_cuda',
-    modelName: 'resnet50-mp',
+  local resnet50_gpu_py37_cuda_101 = common.PyTorchTest {
+    imageTag: 'nightly_3.7_cuda_10.1',
+    modelName: 'resnet50-mp-cuda-10-1',
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    cpu: '13.0',
+    cpu: '7.0',
     memory: '40Gi',
+    schedule: '0 20 * * *',
   },
-
+  local resnet50_gpu_py37_cuda_102 = common.PyTorchTest {
+    imageTag: 'nightly_3.7_cuda_10.2',
+    modelName: 'resnet50-mp-cuda-10-2',
+    volumeMap+: {
+      datasets: common.datasetsVolume,
+    },
+    cpu: '7.0',
+    memory: '40Gi',
+    schedule: '0 18 * * *',
+  },
+  local resnet50_gpu_py37_cuda_112 = common.PyTorchTest {
+    imageTag: 'nightly_3.7_cuda_11.2',
+    modelName: 'resnet50-mp-cuda-11-2',
+    volumeMap+: {
+      datasets: common.datasetsVolume,
+    },
+    cpu: '7.0',
+    memory: '40Gi',
+    schedule: '0 16 * * *',
+  },
   local resnet50_MP = common.PyTorchTest {
     modelName: 'resnet50-mp',
     command: [
@@ -93,6 +114,74 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  local resnet50_tpu_vm = common.PyTorchTest {
+    frameworkPrefix: 'pt-nightly',
+    modelName: 'resnet50-mp',
+    paramsOverride: {
+      num_epochs: error 'Must set `num_epochs`',
+      datadir: error 'Must set `datadir`',
+      setup_commands: error 'Must set `setup_commands`',
+    },
+    command: utils.scriptCommand(
+      |||
+        %(setup_commands)s
+        pip3 install tensorboardX google-cloud-storage
+        python3 xla/test/test_train_mp_imagenet.py \
+          --logdir=$(MODEL_DIR) \
+          --datadir=%(datadir)s \
+          --model=resnet50 \
+          --num_workers=8 \
+          --batch_size=128 \
+          --log_steps=200 \
+          --num_epochs=%(num_epochs)d \
+      ||| % self.paramsOverride,
+    ),
+    podTemplate+:: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            resources+: {
+              requests: {
+                cpu: '1',
+                memory: '2Gi',
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  local functional_tpu_vm = common.Functional {
+    paramsOverride: {
+      setup_commands: common.tpu_vm_nightly_install,
+      num_epochs: 2,
+      datadir: '/datasets/imagenet-mini',
+    },
+  },
+  local convergence_tpu_vm = common.Convergence {
+    paramsOverride: {
+      setup_commands: common.tpu_vm_nightly_install,
+      num_epochs: 5,
+      datadir: '/datasets/imagenet',
+    },
+    regressionTestConfig+: {
+      metric_success_conditions+: {
+        'Accuracy/test_final': {
+          success_threshold: {
+            fixed_value: 30.0,
+          },
+          comparison: 'greater',
+        },
+        aten_ops_sum_final: {
+          success_threshold: {
+            fixed_value: 40.0,
+          },
+          comparison: 'less_or_equal',
+        },
+      },
+    },
+    schedule: '0 20 * * *',
+  },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
@@ -104,19 +193,33 @@ local utils = import 'templates/utils.libsonnet';
     command: utils.scriptCommand(
       gpu_command_base % 1
     ),
-    schedule: '0 20 * * *',
+  },
+  local v100_amp = {
+    accelerator: gpus.teslaV100,
+    command: utils.scriptCommand(
+      |||
+        %(gpu_command_base)s --amp
+      ||| % (gpu_command_base % 1)
+    ),
   },
   local v100x4 = v100 {
     accelerator: gpus.teslaV100 { count: 4 },
     command: utils.scriptCommand(
       gpu_command_base % 4
     ),
-    schedule: '2 20 * * *',
   },
   configs: [
     resnet50_MP + v3_8 + convergence + timeouts.Hours(26) + mixins.PreemptibleTpu,
     resnet50_MP + v3_8 + functional + timeouts.Hours(2),
-    resnet50_gpu + common.Functional + v100 + timeouts.Hours(2),
-    resnet50_gpu + common.Functional + v100x4 + timeouts.Hours(1),
+    resnet50_gpu_py37_cuda_101 + common.Functional + v100 + timeouts.Hours(2),
+    resnet50_gpu_py37_cuda_101 + common.Functional + v100_amp + timeouts.Hours(2) + { modelName: 'resnet50-cuda-10-1-amp' },
+    resnet50_gpu_py37_cuda_101 + common.Functional + v100x4 + timeouts.Hours(1),
+    resnet50_gpu_py37_cuda_102 + common.Functional + v100 + timeouts.Hours(2),
+    resnet50_gpu_py37_cuda_102 + common.Functional + v100_amp + timeouts.Hours(2) + { modelName: 'resnet50-cuda-10-2-amp' },
+    resnet50_gpu_py37_cuda_102 + common.Functional + v100x4 + timeouts.Hours(1),
+    resnet50_gpu_py37_cuda_112 + common.Functional + v100 + timeouts.Hours(2),
+    resnet50_gpu_py37_cuda_112 + common.Functional + v100x4 + timeouts.Hours(1),
+    resnet50_tpu_vm + v3_8 + functional_tpu_vm + timeouts.Hours(2) + experimental.PyTorchTpuVmMixin,
+    resnet50_tpu_vm + v3_8 + convergence_tpu_vm + timeouts.Hours(4) + experimental.PyTorchTpuVmMixin,
   ],
 }

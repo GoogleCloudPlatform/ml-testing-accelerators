@@ -39,6 +39,12 @@ local tpus = import 'templates/tpus.libsonnet';
       '--model_dir=$(MODEL_DIR)',
     ],
   },
+  local functional = common.Functional {
+    command+: [
+      '--steps_between_evals=2000',
+      '--train_steps=2000',
+    ],
+  },
   local convergence = common.Convergence {
     command+: [
       '--steps_between_evals=200000',
@@ -70,6 +76,10 @@ local tpus = import 'templates/tpus.libsonnet';
     ],
   },
   configs: [
+    transformer + functional + v2_8,
+    transformer + functional + v3_8,
+    transformer + functional + v2_32,
+    transformer + functional + v3_32,
     transformer + convergence + v2_8,
     transformer + convergence + v3_8,
     transformer + convergence + v2_32,

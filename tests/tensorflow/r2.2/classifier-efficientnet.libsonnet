@@ -46,6 +46,16 @@ local tpus = import 'templates/tpus.libsonnet';
       '--params_override=%s' % std.manifestYamlDoc(self.paramsOverride),
     ],
   },
+  local functional = common.Functional {
+    paramsOverride+: {
+      train+: {
+        epochs: 1,
+      },
+      evaluation+: {
+        epochs_between_evals: 1,
+      },
+    },
+  },
   local convergence = common.Convergence {
     paramsOverride+: {
       train+: {
@@ -80,6 +90,10 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
+    efficientnet + v2_8 + functional,
+    efficientnet + v3_8 + functional,
+    efficientnet + v2_32 + functional,
+    efficientnet + v3_32 + functional,
     efficientnet + v2_8 + convergence + timeouts.Hours(31),
     efficientnet + v3_8 + convergence + timeouts.Hours(31),
     efficientnet + v2_32 + convergence + timeouts.Hours(30),

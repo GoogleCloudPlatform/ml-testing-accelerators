@@ -7,4 +7,5 @@ set -x
 which jsonnet &> /dev/null
 rm -f k8s/*/gen/*.yaml
 jsonnet -S -J . tests/cronjobs.jsonnet -m k8s/
+jsonnet -J . -S -m k8s/ tests/cleanup.jsonnet
 cd -

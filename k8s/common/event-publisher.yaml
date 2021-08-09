@@ -66,7 +66,7 @@ spec:
         args:
         - --save_dir=/workspace/
         - --namespace=automated
-        - --pubsub_topic=wcromar-test-topic
+        - --pubsub_topic=metrics-v2-topic
         - --model_output_bucket=$(OUTPUT_BUCKET)
         volumeMounts:
         - name: event-publisher-storage
@@ -74,6 +74,15 @@ spec:
         envFrom:
         - configMapRef:
             name: gcs-buckets
+        livenessProbe:
+          exec:
+            command:
+            - bash
+            - -c
+            - find /tmp/health -mmin -10 | grep -qz .
+          initialDelaySeconds: 60
+          periodSeconds: 600
+          failureThreshold: 3
       volumes:
       - name: event-publisher-storage
         persistentVolumeClaim:

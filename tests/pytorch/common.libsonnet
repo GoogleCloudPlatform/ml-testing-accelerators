@@ -17,6 +17,7 @@ local volumes = import 'templates/volumes.libsonnet';
 
 {
   local PyTorchBaseTest = common.CloudAcceleratorTest {
+    configMaps+: ['pytorch-nfs-ip'],
     regressionTestConfig+: {
       metric_subset_to_alert: [
         'ExecuteTime__Percentile_99_sec_final',

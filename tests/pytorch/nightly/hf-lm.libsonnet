@@ -22,7 +22,7 @@ local utils = import 'templates/utils.libsonnet';
     git clone https://github.com/huggingface/transformers.git
     cd transformers && pip install .
     git log -1
-    pip install datasets
+    pip install datasets sklearn
     python examples/pytorch/xla_spawn.py \
       --num_cores 8 \
       examples/pytorch/language-modeling/run_mlm.py \
@@ -83,7 +83,7 @@ local utils = import 'templates/utils.libsonnet';
       metric_success_conditions+: {
         'eval/loss_final': {
           success_threshold: {
-            fixed_value: 1.5,
+            fixed_value: 2.8,
           },
           comparison: 'less',
         },

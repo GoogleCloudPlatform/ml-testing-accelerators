@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
@@ -24,7 +25,6 @@ local tpus = import 'templates/tpus.libsonnet';
       'python3',
       'official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py',
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
-      '--data_dir=$(IMAGENET_DIR)',
       '--distribution_strategy=tpu',
       '--use_synthetic_data=false',
       '--dtype=fp32',
@@ -33,6 +33,7 @@ local tpus = import 'templates/tpus.libsonnet';
       '--log_steps=50',
       '--single_l2_loss_op=true',
       '--use_tf_function=true',
+      '--data_dir=$(IMAGENET_DIR)',
       '--model_dir=$(MODEL_DIR)',
     ],
     tpuSettings+: {
@@ -67,13 +68,15 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: tpus.v3_32,
     command+: ['--batch_size=8192'],
   },
+  local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
     resnet + v2_8 + functional,
+    resnet + v2_8 + functional + tpuVm,
     resnet + v3_8 + functional,
     resnet + v2_8 + convergence + timeouts.Hours(16),
     resnet + v3_8 + convergence,
-    resnet + v2_32 + functional,
+    resnet + v2_32 + functional + tpuVm,
     resnet + v3_32 + functional,
     resnet + v2_32 + convergence + tpus.reserved + { schedule: '20 8 * * 0,2,4' },
     resnet + v3_32 + convergence,

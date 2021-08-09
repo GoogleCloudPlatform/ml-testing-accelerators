@@ -49,6 +49,16 @@ local tpus = import 'templates/tpus.libsonnet';
       '--model_dir=$(MODEL_DIR)',
     ],
   },
+  local functional = common.Functional {
+    command+: [
+      '--mode=train',
+    ],
+    paramsOverride+: {
+      train+: {
+        total_steps: 1000,
+      },
+    },
+  },
   local convergence = common.Convergence {
     command+: [
       '--mode=train',
@@ -93,6 +103,10 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
+    maskrcnn + functional + v2_8,
+    maskrcnn + functional + v3_8,
+    maskrcnn + functional + v2_32,
+    maskrcnn + functional + v3_32,
     maskrcnn + convergence + v2_8,
     maskrcnn + convergence + v3_8,
     maskrcnn + convergence + v2_32,
