@@ -1,0 +1,88 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Usage example: gcloud builds submit --config images/tensorflow-patch/cloudbuild.yaml --substitutions '_ARTIFACT_STORAGE_PATH=gs://bucket/dir,_TF_PATCH_VERSION=r2.3.3,_TF_MINOR_VERSION=r2.3'
+steps:
+- name: 'gcr.io/kaniko-project/executor:latest'
+  id: build-image
+  waitFor: ['-']
+  args:
+  - '--dockerfile=images/tensorflow-patch/Dockerfile'
+  - '--build-arg=tensorflow_minor_version=$_TF_MINOR_VERSION'
+  - '--destination=gcr.io/$PROJECT_ID/tensorflow-patch:$_TF_PATCH_VERSION'
+  - '--cache=$_USE_DOCKER_CACHE'
+  - '--cache-ttl=24h'
+- name: 'golang'
+  id: download-jsonnet
+  waitFor: ['-']
+  entrypoint: 'go'
+  args: [
+    'get',
+    'github.com/google/go-jsonnet/cmd/jsonnet',
+  ]
+- name: 'google/cloud-sdk'
+  id: create-dirs
+  waitFor: ['-']
+  entrypoint: 'bash'
+  args:
+    - '-cx'
+    - |
+      mkdir -p output/us-central1
+      mkdir -p output/europe-west4
+- name: 'golang'
+  id: build-templates
+  waitFor:
+  - download-jsonnet
+  - create-dirs
+  entrypoint: 'jsonnet'
+  args: [
+    'tests/tensorflow/patch_tests.jsonnet',
+    '-S',
+    '-J', '.',
+    '--tla-str', 'patchVersion=$_TF_PATCH_VERSION',
+    '--tla-str', 'groupLabel=$BUILD_ID',
+    '-m', 'output'
+  ]
+- name: 'gcr.io/cloud-builders/kubectl'
+  waitFor:
+  - build-image
+  - build-templates
+  args: ['create', '-f', 'output/us-central1']
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test-us-central1'
+- name: 'gcr.io/cloud-builders/kubectl'
+  args: ['create',  '-f', 'output/europe-west4']
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=europe-west4'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test-europe-west4'
+artifacts:
+  objects:
+    location: '$_ARTIFACT_STORAGE_PATH/$_TF_PATCH_VERSION/$BUILD_ID'
+    paths: ['output/*/*.yaml']
+timeout: 14400s
+options:
+  substitution_option: 'ALLOW_LOOSE'
+  machineType: E2_HIGHCPU_32
+  diskSizeGb: 200
+  volumes:
+  - name: go-modules
+    path: /go
+  - name: jsonnet-output
+    path: /output
+substitutions:
+  _USE_DOCKER_CACHE: 'true'
+  _TF_PATCH_VERSION: 'r2.4.1'
+  _TF_MINOR_VERSION: 'r2.4'
+  _ARTIFACT_STORAGE_PATH: 'gs://your-gcs-bucket/tf-patch-build'
