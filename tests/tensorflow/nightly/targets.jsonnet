@@ -18,7 +18,6 @@ local classifier_efficientnet = import 'classifier-efficientnet.libsonnet';
 local classifier_resnet = import 'classifier-resnet.libsonnet';
 local classifier_resnetrs = import 'classifier-resnetrs.libsonnet';
 local dlrm = import 'dlrm.libsonnet';
-local inference = import 'inference.libsonnet';
 local keras_api = import 'keras-api.libsonnet';
 local maskrcnn = import 'maskrcnn.libsonnet';
 local mnist = import 'mnist.libsonnet';
@@ -26,6 +25,7 @@ local ncf = import 'ncf.libsonnet';
 local perfzero = import 'perfzero.libsonnet';
 local resnet_ctl = import 'resnet-ctl.libsonnet';
 local retinanet = import 'retinanet.libsonnet';
+local serving = import 'serving.libsonnet';
 local shapemask = import 'shapemask.libsonnet';
 local transformer_translate = import 'transformer-translate.libsonnet';
 local xlnet_imdb = import 'xlnet-imdb.libsonnet';
@@ -39,7 +39,7 @@ std.flattenArrays([
   classifier_resnetrs.configs,
   classifier_efficientnet.configs,
   dlrm.configs,
-  inference.configs,
+  serving.configs,
   keras_api.configs,
   mnist.configs,
   maskrcnn.configs,

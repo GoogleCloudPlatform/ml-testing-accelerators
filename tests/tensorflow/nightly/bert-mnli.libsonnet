@@ -94,7 +94,7 @@ local utils = import 'templates/utils.libsonnet';
     command: utils.scriptCommand(|||
       %s
 
-      grep -a -c device:TPU $(LOCAL_OUTPUT_DIR)/summaries/train/plugins/profile/*/*.xplane.pb
+      grep -a -c device:TPU $(LOCAL_OUTPUT_DIR)/summaries/plugins/profile/*/*.xplane.pb
     ||| % std.join(' ', super.command)),
     flags+:: {
       modelDir: '$(LOCAL_OUTPUT_DIR)',

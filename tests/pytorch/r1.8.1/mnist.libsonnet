@@ -47,14 +47,12 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   local tpuVm = experimental.PyTorchTpuVmMixin {
-    // This test uses the default pytorch XLA version built into the TPUVM, which
-    // is 1.8.1 as of Apr 19.
     frameworkPrefix: 'pt-r1.8.1',
     command: utils.scriptCommand(
       |||
-        git clone https://github.com/pytorch/xla.git -b r1.8.1
+        %(command_common)s
         python3 xla/test/test_train_mp_mnist.py --logdir='' --datadir=/datasets/mnist-data
-      |||
+      ||| % common.tpu_vm_1_8_1_install
     ),
   },
   local tpuVmPod = experimental.PyTorchTpuVmPodTest {

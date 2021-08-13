@@ -42,7 +42,17 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   LegacyTpuTest:: common.CloudAcceleratorTest {
     local config = self,
-
     image: 'gcr.io/xl-ml-test/tensorflow-tpu-1x',
+  },
+  ServingTest:: common.CloudAcceleratorTest {
+    local config = self,
+    servingConfig:: {
+      gcsDir: error 'must set gcsDir.',
+      dataType: error 'must set dataType.',
+      batchSize: error 'must set batchSize.',
+      servingImage: error 'must set servingImage.',
+      model: error 'must set model.',
+    },
+    modelName: '%(model)s-serving' % config.servingConfig,
   },
 }
