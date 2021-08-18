@@ -42,9 +42,9 @@ local mixins = import 'templates/mixins.libsonnet';
       },
     },
   },
-  // Running functional tests at 10PM PST Sat.
+  // Don't run tests by default since the release is stable.
   Functional:: mixins.Functional + mixins.Suspended {
-    schedule: '0 6 * * 6',
+    schedule: null,
     regressionTestConfig+: {
       metric_success_conditions+: {
         examples_per_second_average: {
@@ -56,9 +56,9 @@ local mixins = import 'templates/mixins.libsonnet';
       },
     },
   },
-  // Running convergence tests at Midnight PST Sat.
+  // Don't run tests by default since the release is stable.
   Convergence:: mixins.Convergence {
-    schedule: '0 8 * * 6',
+    schedule: null,
     regressionTestConfig+: {
       metric_success_conditions+: {
         examples_per_second_average: {

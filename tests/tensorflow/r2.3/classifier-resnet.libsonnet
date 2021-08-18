@@ -57,7 +57,6 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
   local convergence = common.Convergence {
-    schedule: '0 8 * * 0',
     paramsOverride+: {
       train+: {
         epochs: 90,
