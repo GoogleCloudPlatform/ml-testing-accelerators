@@ -23,7 +23,7 @@ RUN pip3 install cloud-tpu-client pyyaml
 
 # HACKs: Remove this once they are added to the Model Garden requirements
 RUN pip3 install tensorflow-recommenders --no-deps
-RUN pip3 install tensorflow-text-nightly --no-deps
+RUN pip3 install tensorflow-text==2.6.0rc0 --no-deps
 
 # Checkout tensorflow/models at HEAD
 WORKDIR /
