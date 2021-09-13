@@ -1,0 +1,248 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "labels":
+    "accelerator": "v3-8"
+    "benchmarkId": "tf-r2.6.0-xlnet-squad-conv-v3-8"
+    "frameworkVersion": "tf-r2.6.0"
+    "mode": "conv"
+    "model": "xlnet-squad"
+  "name": "tf-r2.6.0-xlnet-squad-conv-v3-8"
+  "namespace": "automated"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "metadata":
+      "annotations":
+        "ml-testing-accelerators/gcs-subdir": "tf-r2.6.0/xlnet-squad/conv/v3-8"
+        "ml-testing-accelerators/metric-config": |
+          {
+            "sources": [
+              {
+                "literals": {
+                  "assertions": {
+                    "duration": {
+                      "inclusive_bounds": false,
+                      "std_devs_from_mean": {
+                        "comparison": "LESS",
+                        "std_devs": 5
+                      },
+                      "wait_for_n_data_points": 10
+                    }
+                  }
+                }
+              },
+              {
+                "tensorboard": {
+                  "aggregate_assertions": [
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "GREATER",
+                          "std_devs": 2
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "AVERAGE",
+                      "tag": "examples_per_second"
+                    }
+                  ],
+                  "exclude_tags": [
+          
+                  ],
+                  "include_tags": [
+                    {
+                      "strategies": [
+                        "FINAL"
+                      ],
+                      "tag_pattern": "*"
+                    }
+                  ],
+                  "merge_runs": false
+                }
+              }
+            ]
+          }
+      "labels":
+        "accelerator": "v3-8"
+        "benchmarkId": "tf-r2.6.0-xlnet-squad-conv-v3-8"
+        "frameworkVersion": "tf-r2.6.0"
+        "mode": "conv"
+        "model": "xlnet-squad"
+    "spec":
+      "activeDeadlineSeconds": 36000
+      "backoffLimit": 1
+      "template":
+        "metadata":
+          "annotations":
+            "reserved.cloud-tpus.google.com": "false"
+            "tf-version.cloud-tpus.google.com": "2.6.0"
+        "spec":
+          "containers":
+          - "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            "image": "gcr.io/xl-ml-test/health-monitor:stable"
+            "imagePullPolicy": "Always"
+            "name": "monitor"
+          - "args":
+            - "python3"
+            - "official/nlp/xlnet/run_squad.py"
+            - "--strategy_type=tpu"
+            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
+            - "--init_checkpoint=$(XLNET_CHECKPOINT_DIR)/xlnet_model.ckpt"
+            - "--model_dir=$(MODEL_DIR)"
+            - "--train_tfrecord_path=$(XLNET_SQUAD_DIR)"
+            - "--test_tfrecord_path=$(XLNET_SQUAD_DIR)/12048.eval.tf_record"
+            - "--test_feature_path=$(XLNET_SQUAD_DIR)/spiece.model.slen-512.qlen-64.eval.features.pkl"
+            - "--predict_file=$(XLNET_SQUAD_DIR)/dev-v2.0.json"
+            - "--predict_dir=$(MODEL_DIR)"
+            - "--seq_len=512"
+            - "--reuse_len=256"
+            - "--mem_len=0"
+            - "--n_layer=24"
+            - "--d_model=1024"
+            - "--d_embed=1024"
+            - "--n_head=16"
+            - "--d_head=64"
+            - "--d_inner=4096"
+            - "--untie_r=true"
+            - "--ff_activation=gelu"
+            - "--learning_rate=.00003"
+            - "--warmup_steps=1000"
+            - "--iterations=1000"
+            - "--bi_data=false"
+            - "--query_len=64"
+            - "--adam_epsilon=.000001"
+            - "--lr_layer_decay_rate=0.75"
+            - "--train_batch_size=48"
+            - "--train_steps=8000"
+            "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.6.0/xlnet-squad/conv/v3-8/$(JOB_NAME)"
+            - "name": "TF_ENABLE_LEGACY_FILESYSTEM"
+              "value": "1"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
+            "image": "gcr.io/xl-ml-test/tensorflow:r2.6.0"
+            "imagePullPolicy": "Always"
+            "name": "train"
+            "resources":
+              "limits":
+                "cloud-tpus.google.com/v3": 8
+                "tpu.googleapis.com/v3": 8
+              "requests":
+                "cpu": 2
+                "memory": "20G"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
+          "initContainers":
+          - "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.6.0/xlnet-squad/conv/v3-8/$(JOB_NAME)"
+            - "name": "METRIC_CONFIG"
+              "value": |
+                {
+                 "metric_collection_config": {
+                  "default_aggregation_strategies": [
+                   "final"
+                  ],
+                  "metric_to_aggregation_strategies": {
+                   "examples_per_second": [
+                    "average"
+                   ]
+                  },
+                  "use_run_name_prefix": true,
+                  "write_to_bigquery": true
+                 },
+                 "regression_test_config": {
+                  "metric_success_conditions": {
+                   "examples_per_second_average": {
+                    "comparison": "greater_or_equal",
+                    "success_threshold": {
+                     "stddevs_from_mean": 2
+                    }
+                   },
+                   "total_wall_time": {
+                    "comparison": "less",
+                    "success_threshold": {
+                     "stddevs_from_mean": 5
+                    },
+                    "wait_for_n_points_of_history": 10
+                   }
+                  }
+                 },
+                 "test_name": "tf-r2.6.0-xlnet-squad-conv-v3-8"
+                }
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
+            "image": "gcr.io/xl-ml-test/publisher:stable"
+            "imagePullPolicy": "Always"
+            "name": "publisher"
+          "nodeSelector":
+            "tpu-available": "true"
+          "priorityClassName": "tpu-device"
+          "restartPolicy": "Never"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+  "schedule": "0 8 * * 6"
+  "successfulJobsHistoryLimit": 1

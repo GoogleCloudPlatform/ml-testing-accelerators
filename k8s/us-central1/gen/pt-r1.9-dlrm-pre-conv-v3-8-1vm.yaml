@@ -1,0 +1,281 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "labels":
+    "accelerator": "v3-8"
+    "benchmarkId": "pt-r1.9-dlrm-pre-conv-v3-8-1vm"
+    "frameworkVersion": "pt-r1.9"
+    "mode": "conv"
+    "model": "dlrm-pre"
+  "name": "pt-r1.9-dlrm-pre-conv-v3-8-1vm"
+  "namespace": "automated"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "metadata":
+      "annotations":
+        "ml-testing-accelerators/gcs-subdir": "pt-r1.9/dlrm-pre/conv/v3-8"
+        "ml-testing-accelerators/metric-config": |
+          {
+            "sources": [
+              {
+                "literals": {
+                  "assertions": {
+                    "duration": {
+                      "inclusive_bounds": false,
+                      "std_devs_from_mean": {
+                        "comparison": "LESS",
+                        "std_devs": 5
+                      },
+                      "wait_for_n_data_points": 10
+                    }
+                  }
+                }
+              },
+              {
+                "tensorboard": {
+                  "aggregate_assertions": [
+                    {
+                      "assertion": {
+                        "inclusive_bounds": false,
+                        "std_devs_from_mean": {
+                          "comparison": "LESS",
+                          "std_devs": 5
+                        },
+                        "wait_for_n_data_points": 10
+                      },
+                      "strategy": "FINAL",
+                      "tag": "ExecuteTime__Percentile_99_sec"
+                    },
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "LESS",
+                          "std_devs": 0
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "FINAL",
+                      "tag": "aten_ops_sum"
+                    }
+                  ],
+                  "exclude_tags": [
+                    "LearningRate"
+                  ],
+                  "include_tags": [
+                    {
+                      "strategies": [
+                        "FINAL"
+                      ],
+                      "tag_pattern": "*"
+                    }
+                  ],
+                  "merge_runs": true
+                }
+              }
+            ]
+          }
+      "labels":
+        "accelerator": "v3-8"
+        "benchmarkId": "pt-r1.9-dlrm-pre-conv-v3-8-1vm"
+        "frameworkVersion": "pt-r1.9"
+        "mode": "conv"
+        "model": "dlrm-pre"
+    "spec":
+      "activeDeadlineSeconds": 21600
+      "backoffLimit": 0
+      "template":
+        "metadata":
+          "annotations":
+            "reserved.cloud-tpus.google.com": "false"
+            "tf-version.cloud-tpus.google.com": "v2-nightly"
+        "spec":
+          "containers":
+          - "args": null
+            "command":
+            - "bash"
+            - "-c"
+            - |
+              set -x
+              set -u
+              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                'sudo apt-get -y update && sudo apt-get -y install nfs-common git google-perftools'
+              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                'sudo mkdir /datasets && sudo mount $(PYTORCH_DATA_LOCATION) /datasets'
+              ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) << 'TEST_SCRIPT_EOF'
+                export XRT_TPU_CONFIG='localservice;0;localhost:51011'
+                export LD_PRELOAD='/usr/lib/x86_64-linux-gnu/libtcmalloc.so.4'
+                /bin/bash -c set -u
+              set -e
+              set -x
+              
+              sudo bash /var/scripts/docker-login.sh
+              sudo docker rm libtpu || true
+              sudo docker create --name libtpu gcr.io/cloud-tpu-v2-images/libtpu:pytorch-1.9 "/bin/bash"
+              sudo docker cp libtpu:libtpu.so /lib
+              sudo pip3 uninstall --yes torch torch_xla torchvision
+              sudo pip3 install torch==1.9.0
+              sudo pip3 install torchvision==0.10.0
+              sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.9-cp38-cp38-linux_x86_64.whl
+              git clone https://github.com/pytorch/pytorch.git -b release/1.9
+              cd pytorch
+              git clone https://github.com/pytorch/xla.git -b r1.9
+              export XRT_TPU_CONFIG='localservice;0;localhost:51011'
+              export LD_PRELOAD='/usr/lib/x86_64-linux-gnu/libtcmalloc.so.4'
+              
+              pip3 install onnx tqdm sklearn
+              git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.9
+              python3 examples/deps/dlrm/dlrm_tpu_runner.py \
+                --raw-data-file=/datasets/criteo-kaggle-mm/train.txt \
+              --processed-data-file=/datasets/criteo-kaggle-mm/kaggleAdDisplayChallenge_processed.npz \
+              --memory-map \
+              --arch-sparse-feature-size=16 \
+              --arch-mlp-bot="13-512-256-64-16" \
+              --arch-mlp-top="512-256-1" \
+              --data-generation=dataset \
+              --data-set=kaggle \
+              --loss-function=bce \
+              --round-targets=True \
+              --learning-rate=0.1 \
+              --mini-batch-size=128 \
+              --print-freq=1024 \
+              --print-time \
+              --test-mini-batch-size=16384 \
+              --test-freq=101376 \
+              --use-tpu \
+              --num-indices-per-lookup=1 \
+              --num-indices-per-lookup-fixed \
+              --tpu-model-parallel-group-len 8 \
+              --tpu-metrics-debug \
+              --tpu-cores=8 |& tee dlrm_logs.txt
+              acc=`grep Testing dlrm_logs.txt | tail -1 | grep -oP 'best \K[+-]?([0-9]*[.])?[0-9]+'`
+              echo 'Accuracy is' $acc
+              test $(echo $acc'>'78.75 | bc -l) -eq 1  # assert cls acc higher than 78.75
+              
+              
+              
+              TEST_SCRIPT_EOF
+              exit_code=$?
+              bash /scripts/cleanup.sh
+              exit $exit_code
+            "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "$(OUTPUT_BUCKET)/pt-r1.9/dlrm-pre/conv/v3-8/$(JOB_NAME)"
+            - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
+              "value": "local"
+            - "name": "LOCAL_OUTPUT_DIR"
+              "value": "/tmp/model_dir"
+            - "name": "XLA_USE_BF16"
+              "value": "0"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
+            - "configMapRef":
+                "name": "pytorch-nfs-ip"
+            "image": "google/cloud-sdk"
+            "imagePullPolicy": "Always"
+            "lifecycle":
+              "preStop":
+                "exec":
+                  "command":
+                  - "bash"
+                  - "/scripts/cleanup.sh"
+            "name": "train"
+            "resources":
+              "limits":
+                "tpu.googleapis.com/v3": 8
+              "requests":
+                "cpu": "4.5"
+                "memory": "8Gi"
+            "volumeMounts":
+            - "mountPath": "/scripts"
+              "name": "scripts"
+              "readOnly": false
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
+          "initContainers":
+          - "command":
+            - "/bin/bash"
+            - "-c"
+            - |
+              set -u
+              set -e
+              set -x
+              
+              project=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google")
+              zone=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google" | awk -F'/' '{print $4}')
+              tpu_name=tpu-${POD_UID}
+              ssh-keygen -t rsa -f /scripts/id_rsa -q -N ""
+              
+              echo "
+              gcloud alpha compute tpus tpu-vm delete -q ${tpu_name} --zone=${zone}
+              " > /scripts/cleanup.sh
+              
+              gcloud alpha compute tpus tpu-vm create ${tpu_name} \
+                --accelerator-type='v3-8' \
+                --version='v2-nightly'  \
+                --metadata='ssh-keys=xl-ml-test:'"$(cat /scripts/id_rsa.pub)"',startup-script=''echo Running startup script' \
+                --labels='test-name=pt-r1-9-dlrm-pre-conv-v3-8-1vm' \
+                --zone=${zone}
+              
+              echo ${tpu_name} > /scripts/tpu_name
+              gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(ipAddress)" > /scripts/tpu_ip
+              gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --flatten="networkEndpoints[]" --format="csv[no-heading](networkEndpoints.ipAddress)" > /scripts/all_tpu_ips
+              
+              sleep 60
+              
+            "env":
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            "image": "google/cloud-sdk"
+            "name": "create-tpu"
+            "volumeMounts":
+            - "mountPath": "/scripts"
+              "name": "scripts"
+          "nodeSelector":
+            "tpu-available": "true"
+          "priorityClassName": "tpu-device"
+          "restartPolicy": "Never"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "scripts"
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+  "schedule": "0 7 * * 1,3,5"
+  "successfulJobsHistoryLimit": 1
