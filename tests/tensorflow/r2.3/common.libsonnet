@@ -40,14 +40,13 @@ local mixins = import 'templates/mixins.libsonnet';
       },
     },
   },
-  // Running functional tests at Midnight PST daily.
+  // Don't run tests by default since this release is stable.
   Functional:: mixins.Functional {
-    schedule: '0 8 * * *',
+    schedule: null,
     tpuSettings+: {
       preemptible: false,
     },
   },
-  // Don't run tests by default since this release is stable.
   Convergence:: mixins.Convergence {
     schedule: null,
   },
