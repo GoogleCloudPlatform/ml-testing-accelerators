@@ -16,26 +16,51 @@
 "kind": "CronJob"
 "metadata":
   "labels":
-    "accelerator": "v2-8"
-    "benchmarkId": "tf-nightly-keras-api-preprocess-layers-v2-8"
+    "accelerator": "v2-32"
+    "benchmarkId": "tf-nightly-bert-mnli-func-v2-32"
     "frameworkVersion": "tf-nightly"
-    "mode": "preprocess-layers"
-    "model": "keras-api"
-  "name": "tf-nightly-keras-api-preprocess-layers-v2-8"
+    "mode": "func"
+    "model": "bert-mnli"
+  "name": "tf-nightly-bert-mnli-func-v2-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
       "annotations":
-        "ml-testing-accelerators/gcs-subdir": "tf-nightly/keras-api/preprocess-layers/v2-8"
+        "ml-testing-accelerators/gcs-subdir": "tf-nightly/bert-mnli/func/v2-32"
         "ml-testing-accelerators/metric-config": |
           {
             "sources": [
               {
+                "literals": {
+                  "assertions": {
+                    "duration": {
+                      "inclusive_bounds": false,
+                      "std_devs_from_mean": {
+                        "comparison": "LESS",
+                        "std_devs": 5
+                      },
+                      "wait_for_n_data_points": 10
+                    }
+                  }
+                }
+              },
+              {
                 "tensorboard": {
                   "aggregate_assertions": [
-          
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "GREATER",
+                          "std_devs": 4
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "AVERAGE",
+                      "tag": "examples_per_second"
+                    }
                   ],
                   "exclude_tags": [
           
@@ -54,11 +79,11 @@
             ]
           }
       "labels":
-        "accelerator": "v2-8"
-        "benchmarkId": "tf-nightly-keras-api-preprocess-layers-v2-8"
+        "accelerator": "v2-32"
+        "benchmarkId": "tf-nightly-bert-mnli-func-v2-32"
         "frameworkVersion": "tf-nightly"
-        "mode": "preprocess-layers"
-        "model": "keras-api"
+        "mode": "func"
+        "model": "bert-mnli"
     "spec":
       "activeDeadlineSeconds": 3600
       "backoffLimit": 1
@@ -82,19 +107,21 @@
             "imagePullPolicy": "Always"
             "name": "monitor"
           - "args":
-            - "/bin/bash"
-            - "-c"
-            - |
-              set -u
-              set -e
-              set -x
-              
-              export PATH=$PATH:/root/google-cloud-sdk/bin
-              gcloud source repos clone tf2-api-tests --project=xl-ml-test
-              cd tf2-api-tests
-              pip3 install behave
-              behave -e ipynb_checkpoints --tags=-fails  -i preprocessing_layers
-              
+            - "python3"
+            - "official/nlp/bert/run_classifier.py"
+            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
+            - "--steps_per_loop=1000"
+            - "--input_meta_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_meta_data"
+            - "--train_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_train.tf_record"
+            - "--eval_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_eval.tf_record"
+            - "--bert_config_file=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_config.json"
+            - "--init_checkpoint=$(KERAS_BERT_DIR)/uncased_L-24_H-1024_A-16/bert_model.ckpt"
+            - "--learning_rate=3e-5"
+            - "--distribution_strategy=tpu"
+            - "--model_dir=$(MODEL_DIR)"
+            - "--train_batch_size=256"
+            - "--eval_batch_size=256"
+            - "--num_train_epochs=1"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -113,7 +140,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/keras-api/preprocess-layers/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/bert-mnli/func/v2-32/$(JOB_NAME)"
             - "name": "TF_ENABLE_LEGACY_FILESYSTEM"
               "value": "1"
             "envFrom":
@@ -124,8 +151,8 @@
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v2": 8
-                "tpu.googleapis.com/v2": 8
+                "cloud-tpus.google.com/preemptible-v2": 32
+                "tpu.googleapis.com/v2": 32
               "requests":
                 "cpu": 2
                 "memory": "20G"
@@ -152,7 +179,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/keras-api/preprocess-layers/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/bert-mnli/func/v2-32/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -169,9 +196,23 @@
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
-                  "alert_for_failed_jobs": true
+                  "metric_success_conditions": {
+                   "examples_per_second_average": {
+                    "comparison": "greater_or_equal",
+                    "success_threshold": {
+                     "stddevs_from_mean": 4
+                    }
+                   },
+                   "total_wall_time": {
+                    "comparison": "less",
+                    "success_threshold": {
+                     "stddevs_from_mean": 5
+                    },
+                    "wait_for_n_points_of_history": 10
+                   }
+                  }
                  },
-                 "test_name": "tf-nightly-keras-api-preprocess-layers-v2-8"
+                 "test_name": "tf-nightly-bert-mnli-func-v2-32"
                 }
             "envFrom":
             - "configMapRef":
@@ -181,7 +222,7 @@
             "name": "publisher"
           "nodeSelector":
             "tpu-available": "true"
-          "priorityClassName": "tpu-device"
+          "priorityClassName": "tpu-pod"
           "restartPolicy": "Never"
           "volumes":
           - "emptyDir":

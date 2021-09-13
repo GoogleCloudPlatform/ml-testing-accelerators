@@ -16,22 +16,36 @@
 "kind": "CronJob"
 "metadata":
   "labels":
-    "accelerator": "v2-8"
-    "benchmarkId": "tf-nightly-keras-api-preprocess-layers-v2-8"
-    "frameworkVersion": "tf-nightly"
-    "mode": "preprocess-layers"
-    "model": "keras-api"
-  "name": "tf-nightly-keras-api-preprocess-layers-v2-8"
+    "accelerator": "v2-32"
+    "benchmarkId": "tf-r1.15.5-resnet-func-v2-32"
+    "frameworkVersion": "tf-r1.15.5"
+    "mode": "func"
+    "model": "resnet"
+  "name": "tf-r1.15.5-resnet-func-v2-32"
   "namespace": "automated"
 "spec":
   "concurrencyPolicy": "Forbid"
   "jobTemplate":
     "metadata":
       "annotations":
-        "ml-testing-accelerators/gcs-subdir": "tf-nightly/keras-api/preprocess-layers/v2-8"
+        "ml-testing-accelerators/gcs-subdir": "tf-r1.15.5/resnet/func/v2-32"
         "ml-testing-accelerators/metric-config": |
           {
             "sources": [
+              {
+                "literals": {
+                  "assertions": {
+                    "duration": {
+                      "inclusive_bounds": false,
+                      "std_devs_from_mean": {
+                        "comparison": "LESS",
+                        "std_devs": 5
+                      },
+                      "wait_for_n_data_points": 10
+                    }
+                  }
+                }
+              },
               {
                 "tensorboard": {
                   "aggregate_assertions": [
@@ -48,17 +62,17 @@
                       "tag_pattern": "*"
                     }
                   ],
-                  "merge_runs": false
+                  "merge_runs": true
                 }
               }
             ]
           }
       "labels":
-        "accelerator": "v2-8"
-        "benchmarkId": "tf-nightly-keras-api-preprocess-layers-v2-8"
-        "frameworkVersion": "tf-nightly"
-        "mode": "preprocess-layers"
-        "model": "keras-api"
+        "accelerator": "v2-32"
+        "benchmarkId": "tf-r1.15.5-resnet-func-v2-32"
+        "frameworkVersion": "tf-r1.15.5"
+        "mode": "func"
+        "model": "resnet"
     "spec":
       "activeDeadlineSeconds": 3600
       "backoffLimit": 1
@@ -66,7 +80,7 @@
         "metadata":
           "annotations":
             "reserved.cloud-tpus.google.com": "false"
-            "tf-version.cloud-tpus.google.com": "nightly"
+            "tf-version.cloud-tpus.google.com": "1.15.5"
         "spec":
           "containers":
           - "env":
@@ -82,19 +96,15 @@
             "imagePullPolicy": "Always"
             "name": "monitor"
           - "args":
-            - "/bin/bash"
-            - "-c"
-            - |
-              set -u
-              set -e
-              set -x
-              
-              export PATH=$PATH:/root/google-cloud-sdk/bin
-              gcloud source repos clone tf2-api-tests --project=xl-ml-test
-              cd tf2-api-tests
-              pip3 install behave
-              behave -e ipynb_checkpoints --tags=-fails  -i preprocessing_layers
-              
+            - "python3"
+            - "/tpu/models/official/resnet/resnet_main.py"
+            - "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"
+            - "--iterations_per_loop=1000"
+            - "--mode=train"
+            - "--data_dir=$(IMAGENET_DIR)"
+            - "--model_dir=$(MODEL_DIR)"
+            - "--config_file=/tpu/models/official/resnet/configs/cloud/v2-32.yaml"
+            - "--train_steps=1000"
             "env":
             - "name": "POD_NAME"
               "valueFrom":
@@ -113,26 +123,17 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/keras-api/preprocess-layers/v2-8/$(JOB_NAME)"
-            - "name": "TF_ENABLE_LEGACY_FILESYSTEM"
-              "value": "1"
+              "value": "$(OUTPUT_BUCKET)/tf-r1.15.5/resnet/func/v2-32/$(JOB_NAME)"
             "envFrom":
             - "configMapRef":
                 "name": "gcs-buckets"
-            "image": "gcr.io/xl-ml-test/tensorflow:nightly"
+            "image": "gcr.io/xl-ml-test/tensorflow-tpu-1x:r1.15.5"
             "imagePullPolicy": "Always"
             "name": "train"
             "resources":
               "limits":
-                "cloud-tpus.google.com/preemptible-v2": 8
-                "tpu.googleapis.com/v2": 8
-              "requests":
-                "cpu": 2
-                "memory": "20G"
-            "volumeMounts":
-            - "mountPath": "/dev/shm"
-              "name": "dshm"
-              "readOnly": false
+                "cloud-tpus.google.com/preemptible-v2": 32
+                "tpu.googleapis.com/v2": 32
           "initContainers":
           - "env":
             - "name": "POD_NAME"
@@ -152,7 +153,7 @@
                 "fieldRef":
                   "fieldPath": "metadata.labels['job-name']"
             - "name": "MODEL_DIR"
-              "value": "$(OUTPUT_BUCKET)/tf-nightly/keras-api/preprocess-layers/v2-8/$(JOB_NAME)"
+              "value": "$(OUTPUT_BUCKET)/tf-r1.15.5/resnet/func/v2-32/$(JOB_NAME)"
             - "name": "METRIC_CONFIG"
               "value": |
                 {
@@ -160,18 +161,20 @@
                   "default_aggregation_strategies": [
                    "final"
                   ],
-                  "metric_to_aggregation_strategies": {
-                   "examples_per_second": [
-                    "average"
-                   ]
-                  },
-                  "use_run_name_prefix": true,
                   "write_to_bigquery": true
                  },
                  "regression_test_config": {
-                  "alert_for_failed_jobs": true
+                  "metric_success_conditions": {
+                   "total_wall_time": {
+                    "comparison": "less",
+                    "success_threshold": {
+                     "stddevs_from_mean": 5
+                    },
+                    "wait_for_n_points_of_history": 10
+                   }
+                  }
                  },
-                 "test_name": "tf-nightly-keras-api-preprocess-layers-v2-8"
+                 "test_name": "tf-r1.15.5-resnet-func-v2-32"
                 }
             "envFrom":
             - "configMapRef":
@@ -181,11 +184,7 @@
             "name": "publisher"
           "nodeSelector":
             "tpu-available": "true"
-          "priorityClassName": "tpu-device"
+          "priorityClassName": "tpu-pod"
           "restartPolicy": "Never"
-          "volumes":
-          - "emptyDir":
-              "medium": "Memory"
-            "name": "dshm"
-  "schedule": "0 7 * * *"
+  "schedule": "0 8 * * 0"
   "successfulJobsHistoryLimit": 1

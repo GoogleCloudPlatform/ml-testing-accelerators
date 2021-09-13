@@ -15,21 +15,11 @@
 local bert = import 'bert.libsonnet';
 local efficientnet = import 'efficientnet.libsonnet';
 local mask_rcnn = import 'mask-rcnn.libsonnet';
-local mnasnet = import 'mnasnet.libsonnet';
 local resnet = import 'resnet.libsonnet';
-local retinanet = import 'retinanet.libsonnet';
-local shapemask = import 'shapemask.libsonnet';
-local transformer = import 'transformer.libsonnet';
-local unet = import 'unet.libsonnet';
 
 std.flattenArrays([
   bert.configs,
   efficientnet.configs,
   mask_rcnn.configs,
-  mnasnet.configs,
   resnet.configs,
-  retinanet.configs,
-  shapemask.configs,
-  transformer.configs,
-  unet.configs,
 ])

@@ -33,157 +33,57 @@
               pt-r1.9-roberta-pre-func-v3-32
               tf-nightly-bert-mnli-conv-v2-32
               tf-nightly-bert-mnli-conv-v3-32
+              tf-nightly-bert-mnli-func-v2-32
               tf-nightly-bert-mnli-func-v2-32-1vm
-              tf-nightly-bert-mnli-func-v3-32
-              tf-nightly-bert-mnli-func-v3-32-1vm
               tf-nightly-classifier-efficientnet-conv-v2-32
               tf-nightly-classifier-efficientnet-conv-v3-32
-              tf-nightly-classifier-efficientnet-func-v2-32
-              tf-nightly-classifier-efficientnet-func-v2-32-1vm
-              tf-nightly-classifier-efficientnet-func-v3-32
               tf-nightly-classifier-resnet-conv-v2-32
               tf-nightly-classifier-resnet-conv-v3-32
               tf-nightly-classifier-resnet-func-v2-32
               tf-nightly-classifier-resnet-func-v2-32-1vm
-              tf-nightly-classifier-resnet-func-v3-32
-              tf-nightly-classifier-resnet-func-v3-32-1vm
               tf-nightly-classifier-resnetrs-conv-v2-32
               tf-nightly-classifier-resnetrs-conv-v3-32
-              tf-nightly-classifier-resnetrs-func-v2-32
-              tf-nightly-classifier-resnetrs-func-v3-32
-              tf-nightly-efficientnet-perfzero-v3-32
-              tf-nightly-keras-api-connection-v2-32
-              tf-nightly-keras-api-connection-v3-32
-              tf-nightly-keras-api-ctl-v2-32
-              tf-nightly-keras-api-ctl-v3-32
-              tf-nightly-keras-api-custom-layers-v2-32
-              tf-nightly-keras-api-feature-column-v3-32
-              tf-nightly-keras-api-preprocess-layers-v3-32
-              tf-nightly-keras-api-rnn-v2-32
-              tf-nightly-keras-api-save-and-load-v2-32
-              tf-nightly-keras-api-save-load-localhost-v2-32
-              tf-nightly-keras-api-train-and-evaluate-v2-32
-              tf-nightly-keras-api-train-and-evaluate-v3-32
-              tf-nightly-keras-api-train-eval-dataset-v3-32
-              tf-nightly-keras-api-transfer-learning-v3-32
               tf-nightly-maskrcnn-conv-v2-32
               tf-nightly-maskrcnn-conv-v3-32
               tf-nightly-maskrcnn-func-v2-32
-              tf-nightly-maskrcnn-func-v2-32-1vm
-              tf-nightly-maskrcnn-func-v3-32
-              tf-nightly-maskrcnn-perfzero-v3-32
               tf-nightly-mnist-conv-v2-32-1vm
               tf-nightly-ncf-conv-v2-32
-              tf-nightly-ncf-func-v2-32-1vm
-              tf-nightly-ncf-func-v3-32
               tf-nightly-ranking-dcn-conv-v3-32
-              tf-nightly-ranking-dcn-func-v2-32
               tf-nightly-ranking-dlrm-conv-v3-32
-              tf-nightly-ranking-dlrm-func-v3-32
               tf-nightly-resnet-ctl-conv-v2-32
               tf-nightly-resnet-ctl-conv-v3-32
-              tf-nightly-resnet-ctl-func-v2-32-1vm
-              tf-nightly-resnet-ctl-func-v3-32
-              tf-nightly-resnet50-cfit-perfzero-v3-32
-              tf-nightly-resnet50-ctl-perfzero-v3-32
               tf-nightly-retinanet-conv-v2-32
               tf-nightly-retinanet-conv-v3-32
-              tf-nightly-retinanet-func-v2-32
-              tf-nightly-retinanet-func-v2-32-1vm
-              tf-nightly-retinanet-func-v3-32
-              tf-nightly-retinanet-perfzero-v3-32
               tf-nightly-shapemask-conv-v3-32
-              tf-nightly-shapemask-func-v2-32
-              tf-nightly-shapemask-func-v2-32-1vm
-              tf-nightly-shapemask-func-v3-32
-              tf-nightly-shapemask-perfzero-v3-32
-              tf-nightly-transformer-perfzero-v3-32
               tf-nightly-transformer-translate-conv-v2-32
               tf-nightly-transformer-translate-conv-v3-32
               tf-nightly-transformer-translate-func-v2-32
-              tf-nightly-transformer-translate-func-v2-32-1vm
-              tf-nightly-transformer-translate-func-v3-32
               tf-nightly-xlnet-imdb-conv-v2-32
               tf-nightly-xlnet-imdb-conv-v3-32
               tf-r1.15.5-bert-conv-v2-32
-              tf-r1.15.5-bert-conv-v3-32
-              tf-r1.15.5-efficientnet-conv-v2-32
-              tf-r1.15.5-efficientnet-conv-v3-32
+              tf-r1.15.5-bert-func-v2-32
+              tf-r1.15.5-bert-func-v3-32
+              tf-r1.15.5-efficientnet-func-v2-32
+              tf-r1.15.5-efficientnet-func-v3-32
               tf-r1.15.5-mask-rcnn-conv-v2-32
-              tf-r1.15.5-mask-rcnn-conv-v3-32
-              tf-r1.15.5-mnasnet-conv-v2-32
-              tf-r1.15.5-mnasnet-conv-v3-32
+              tf-r1.15.5-mask-rcnn-func-v2-32
+              tf-r1.15.5-mask-rcnn-func-v3-32
               tf-r1.15.5-resnet-conv-v2-32
               tf-r1.15.5-resnet-conv-v3-32
-              tf-r1.15.5-retinanet-conv-v2-32
-              tf-r1.15.5-retinanet-conv-v3-32
-              tf-r1.15.5-shapemask-conv-v2-32
-              tf-r1.15.5-shapemask-conv-v3-32
-              tf-r1.15.5-transformer-conv-v2-32
-              tf-r1.15.5-transformer-conv-v3-32
-              tf-r1.15.5-unet-conv-v2-32
-              tf-r1.15.5-unet-conv-v3-32
-              tf-r2.2.3-resnet-ctl-conv-v2-32
-              tf-r2.2.3-resnet-ctl-conv-v3-32
-              tf-r2.3.4-bert-mnli-func-v2-32
-              tf-r2.3.4-bert-mnli-func-v3-32
-              tf-r2.3.4-classifier-efficientnet-func-v2-32
-              tf-r2.3.4-classifier-efficientnet-func-v3-32
-              tf-r2.3.4-classifier-resnet-func-v2-32
-              tf-r2.3.4-classifier-resnet-func-v3-32
-              tf-r2.3.4-maskrcnn-func-v2-32
-              tf-r2.3.4-maskrcnn-func-v3-32
-              tf-r2.3.4-ncf-func-v3-32
-              tf-r2.3.4-resnet-ctl-func-v2-32
-              tf-r2.3.4-resnet-ctl-func-v3-32
-              tf-r2.3.4-retinanet-func-v2-32
-              tf-r2.3.4-retinanet-func-v3-32
-              tf-r2.3.4-shapemask-func-v2-32
-              tf-r2.3.4-shapemask-func-v3-32
-              tf-r2.3.4-transformer-translate-func-v2-32
-              tf-r2.3.4-transformer-translate-func-v3-32
-              tf-r2.4.2-keras-api-connection-v2-32
-              tf-r2.4.2-keras-api-connection-v3-32
-              tf-r2.4.2-keras-api-ctl-v2-32
-              tf-r2.4.2-keras-api-ctl-v3-32
-              tf-r2.4.2-keras-api-custom-layers-v2-32
-              tf-r2.4.2-keras-api-feature-column-v3-32
-              tf-r2.4.2-keras-api-preprocess-layers-v3-32
-              tf-r2.4.2-keras-api-rnn-v2-32
+              tf-r1.15.5-resnet-func-v2-32
+              tf-r1.15.5-resnet-func-v3-32
               tf-r2.4.2-keras-api-save-and-load-v2-32
-              tf-r2.4.2-keras-api-save-load-localhost-v2-32
-              tf-r2.4.2-keras-api-train-and-evaluate-v2-32
-              tf-r2.4.2-keras-api-train-and-evaluate-v3-32
-              tf-r2.4.2-keras-api-train-eval-dataset-v3-32
-              tf-r2.4.2-keras-api-transfer-learning-v3-32
-              tf-r2.5.0-keras-api-connection-v2-32
-              tf-r2.5.0-keras-api-connection-v3-32
-              tf-r2.5.0-keras-api-ctl-v2-32
-              tf-r2.5.0-keras-api-ctl-v3-32
-              tf-r2.5.0-keras-api-custom-layers-v2-32
-              tf-r2.5.0-keras-api-feature-column-v3-32
-              tf-r2.5.0-keras-api-preprocess-layers-v3-32
-              tf-r2.5.0-keras-api-rnn-v2-32
               tf-r2.5.0-keras-api-save-and-load-v2-32
-              tf-r2.5.0-keras-api-save-load-localhost-v2-32
-              tf-r2.5.0-keras-api-train-and-evaluate-v2-32
-              tf-r2.5.0-keras-api-train-and-evaluate-v3-32
-              tf-r2.5.0-keras-api-train-eval-dataset-v3-32
-              tf-r2.5.0-keras-api-transfer-learning-v3-32
-              tf-r2.6.0-bert-mnli-conv-v3-32
               tf-r2.6.0-bert-mnli-func-v2-32-1vm
               tf-r2.6.0-bert-mnli-func-v3-32
               tf-r2.6.0-bert-mnli-func-v3-32-1vm
-              tf-r2.6.0-classifier-efficientnet-conv-v3-32
               tf-r2.6.0-classifier-efficientnet-func-v2-32
               tf-r2.6.0-classifier-efficientnet-func-v2-32-1vm
               tf-r2.6.0-classifier-efficientnet-func-v3-32
-              tf-r2.6.0-classifier-resnet-conv-v3-32
               tf-r2.6.0-classifier-resnet-func-v2-32
               tf-r2.6.0-classifier-resnet-func-v2-32-1vm
               tf-r2.6.0-classifier-resnet-func-v3-32
               tf-r2.6.0-classifier-resnet-func-v3-32-1vm
-              tf-r2.6.0-classifier-resnetrs-conv-v3-32
               tf-r2.6.0-classifier-resnetrs-func-v2-32
               tf-r2.6.0-classifier-resnetrs-func-v3-32
               tf-r2.6.0-keras-api-connection-v2-32
@@ -200,33 +100,24 @@
               tf-r2.6.0-keras-api-train-and-evaluate-v3-32
               tf-r2.6.0-keras-api-train-eval-dataset-v3-32
               tf-r2.6.0-keras-api-transfer-learning-v3-32
-              tf-r2.6.0-maskrcnn-conv-v3-32
               tf-r2.6.0-maskrcnn-func-v2-32
               tf-r2.6.0-maskrcnn-func-v2-32-1vm
               tf-r2.6.0-maskrcnn-func-v3-32
-              tf-r2.6.0-mnist-conv-v2-32-1vm
               tf-r2.6.0-ncf-func-v2-32-1vm
               tf-r2.6.0-ncf-func-v3-32
-              tf-r2.6.0-ranking-dcn-conv-v3-32
               tf-r2.6.0-ranking-dcn-func-v2-32
-              tf-r2.6.0-ranking-dlrm-conv-v3-32
               tf-r2.6.0-ranking-dlrm-func-v3-32
-              tf-r2.6.0-resnet-ctl-conv-v3-32
               tf-r2.6.0-resnet-ctl-func-v2-32-1vm
               tf-r2.6.0-resnet-ctl-func-v3-32
-              tf-r2.6.0-retinanet-conv-v3-32
               tf-r2.6.0-retinanet-func-v2-32
               tf-r2.6.0-retinanet-func-v2-32-1vm
               tf-r2.6.0-retinanet-func-v3-32
-              tf-r2.6.0-shapemask-conv-v3-32
               tf-r2.6.0-shapemask-func-v2-32
               tf-r2.6.0-shapemask-func-v2-32-1vm
               tf-r2.6.0-shapemask-func-v3-32
-              tf-r2.6.0-transformer-translate-conv-v3-32
               tf-r2.6.0-transformer-translate-func-v2-32
               tf-r2.6.0-transformer-translate-func-v2-32-1vm
               tf-r2.6.0-transformer-translate-func-v3-32
-              tf-r2.6.0-xlnet-imdb-conv-v3-32
               EOF
               
               delete_list=$(kubectl get cronjob --namespace=automated -l benchmarkId -o name | grep -vx -f tests.txt)
