@@ -24,7 +24,7 @@ local clusterTests = utils.splitByCluster(
 );
 local clusterTestNames = {
   [cluster]: [
-    test.testName
+    'cronjob.batch/' + test.testName
     for test in clusterTests[cluster]
     if test.schedule != null
   ]
