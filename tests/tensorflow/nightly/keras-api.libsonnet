@@ -37,7 +37,7 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
 
-  local API = common.RunNightly + {
+  local API = common.RunNightly {
     mode: 'api',
     timeout: timeouts.one_hour,
     tpuSettings+: {
