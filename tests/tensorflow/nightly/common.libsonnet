@@ -25,37 +25,6 @@ local mixins = import 'templates/mixins.libsonnet';
       softwareVersion: 'nightly',
     },
     imageTag: 'nightly',
-
-    metricConfig: metrics.MetricCollectionConfigHelper {
-      sourceMap:: {
-        tensorboard: metrics.TensorBoardSourceHelper {
-          exclude_tags: [
-
-          ],
-          include_tags: [
-            {
-              strategies: [
-                'FINAL',
-              ],
-              tag_pattern: '*',
-            },
-          ],
-          merge_runs: false,
-        },
-        literals: {
-          assertions: {
-            duration: {
-              inclusive_bounds: false,
-              std_devs_from_mean: {
-                comparison: 'LESS',
-                std_devs: 5,
-              },
-              wait_for_n_data_points: 10,
-            },
-          },
-        },
-      },
-    },
   },
   Functional:: mixins.Functional + mixins.Suspended {
     metricConfig+: {

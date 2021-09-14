@@ -60,7 +60,7 @@ local tpus = import 'templates/tpus.libsonnet';
             'eval/hit_rate': {
               FINAL: {
                 fixed_value: {
-                  comparison: "GREATER",
+                  comparison: 'GREATER',
                   value: 0.62,
                 },
                 inclusive_bounds: false,

@@ -94,7 +94,7 @@ local tpus = import 'templates/tpus.libsonnet';
             'validation/epoch_accuracy': {
               FINAL: {
                 fixed_value: {
-                  comparison: "GREATER",
+                  comparison: 'GREATER',
                   value: 0.76,
                 },
                 inclusive_bounds: false,

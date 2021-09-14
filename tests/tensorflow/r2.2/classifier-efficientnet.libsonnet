@@ -69,10 +69,10 @@ local tpus = import 'templates/tpus.libsonnet';
       sourceMap+:: {
         tensorboard+: {
           aggregateAssertionsMap+:: {
-            'val_epoch_accuracy': {
+            val_epoch_accuracy: {
               FINAL: {
                 fixed_value: {
-                  comparison: "GREATER",
+                  comparison: 'GREATER',
                   value: 0.76,
                 },
                 inclusive_bounds: false,

@@ -67,7 +67,7 @@ local tpus = import 'templates/tpus.libsonnet';
             'validation/accuracy': {
               FINAL: {
                 fixed_value: {
-                  comparison: "GREATER",
+                  comparison: 'GREATER',
                   value: 0.79,
                 },
                 inclusive_bounds: false,
