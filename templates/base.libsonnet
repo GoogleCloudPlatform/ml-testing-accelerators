@@ -32,7 +32,7 @@ local volumes = import 'volumes.libsonnet';
     imageTag: 'latest',
 
     // URL of image used for publishing PubSub messages. See images/publisher.
-    publisherImage: error 'Must set `publisherImage`',
+    publisherImage: null,
 
     // Timeout deadline for test, in seconds.
     timeout: error 'Must specify `timeout`',

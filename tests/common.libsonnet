@@ -19,8 +19,6 @@ local metrics = import 'templates/metrics.libsonnet';
   CloudAcceleratorTest:: base.BaseTest {
     local config = self,
 
-    publisherImage: 'gcr.io/xl-ml-test/publisher:stable',
-
     tpuSettings+: {
       requireTpuAvailableLabel: true,
     },
