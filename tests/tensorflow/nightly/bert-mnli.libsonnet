@@ -112,7 +112,7 @@ local utils = import 'templates/utils.libsonnet';
     bert + v2_32 + functional + common.RunNightly,
     bert + v2_32 + functional + tpuVm + common.RunNightly,
     bert + v3_32 + functional,
-    bert + v3_32 + functional + tpuVm,
+    bert + v3_32 + functional + tpuVm + common.RunNightly,
     bert + v2_32 + convergence + tpus.reserved + { schedule: '54 21 * * 1,3,5,6' },
     bert + v3_32 + convergence,
   ],
