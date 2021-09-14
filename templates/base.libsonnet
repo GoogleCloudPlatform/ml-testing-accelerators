@@ -31,9 +31,6 @@ local volumes = import 'volumes.libsonnet';
     image: error 'Must specify mode `image`',
     imageTag: 'latest',
 
-    // URL of image used for publishing PubSub messages. See images/publisher.
-    publisherImage: null,
-
     // Timeout deadline for test, in seconds.
     timeout: error 'Must specify `timeout`',
     // Schedule for CronJob in UTC
@@ -149,30 +146,7 @@ local volumes = import 'volumes.libsonnet';
         ],
 
         restartPolicy: 'Never',
-        initContainerMap:: if config.publisherImage != null then {
-          publisher: {
-            image: config.publisherImage,
-            imagePullPolicy: 'Always',
-            envFrom: [
-              {
-                configMapRef: {
-                  name: bucketName,
-                },
-              }
-              for bucketName in config.configMaps
-            ],
-            env: commonEnv + [
-              {
-                name: 'METRIC_CONFIG',
-                value: std.manifestJsonEx({
-                  test_name: config.testName,
-                  metric_collection_config: config.metricCollectionConfig,
-                  regression_test_config: config.regressionTestConfig,
-                }, ' ') + '\n',  // Add newline to make JSonnet generate a multi-line YAML string.
-              },
-            ],
-          },
-        } else {},
+        initContainerMap:: {},
         initContainers: [
           { name: name } + pod.initContainerMap[name]
           for name in std.objectFields(pod.initContainerMap)

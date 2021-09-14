@@ -20,9 +20,13 @@ local volumes = import 'templates/volumes.libsonnet';
   local PyTorchBaseTest = common.CloudAcceleratorTest {
     configMaps+: ['pytorch-nfs-ip'],
 
-    metricConfig: metrics.MetricCollectionConfigHelper {
-      sourceMap:: {
-        tensorboard: metrics.TensorBoardSourceHelper {
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          exclude_tags: [
+            'LearningRate',
+          ],
+          merge_runs: true,
           aggregateAssertionsMap+:: {
             ExecuteTime__Percentile_99_sec: {
               FINAL: {
@@ -43,30 +47,6 @@ local volumes = import 'templates/volumes.libsonnet';
                 },
                 wait_for_n_data_points: 0,
               },
-            },
-          },
-          exclude_tags: [
-            'LearningRate',
-          ],
-          include_tags: [
-            {
-              strategies: [
-                'FINAL',
-              ],
-              tag_pattern: '*',
-            },
-          ],
-          merge_runs: true,
-        },
-        literals: {
-          assertions: {
-            duration: {
-              inclusive_bounds: false,
-              std_devs_from_mean: {
-                comparison: 'LESS',
-                std_devs: 5,
-              },
-              wait_for_n_data_points: 10,
             },
           },
         },

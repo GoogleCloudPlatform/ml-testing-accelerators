@@ -19,17 +19,20 @@ local tpus = import 'templates/tpus.libsonnet';
 
 {
   JaxTest:: common.CloudAcceleratorTest + experimental.BaseTpuVmMixin {
-    metricCollectionConfig+: {
-      metric_to_aggregation_strategies+: {
-        examples_per_second: ['average'],
-      },
-      tags_to_ignore: ['_hparams_/session_start_info'],
-    },
     local config = self,
 
     frameworkPrefix: 'jax',
     image: 'google/cloud-sdk',
     accelerator: tpus.v2_8,
+
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          exclude_tags: ['_hparams_/session_start_info'],
+          merge_runs: true,
+        },
+      },
+    },
 
     jaxlibVersion:: error 'Add jaxlib version mixin',
     libtpuVersion:: error 'Include libtpu version mixin',
