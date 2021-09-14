@@ -46,7 +46,7 @@ local mixins = import 'templates/mixins.libsonnet';
   Functional:: mixins.Functional {
     // Only schedule v3-8 TPU tests by default
     schedule:
-      if !(self.accelerator.type == 'tpu') && self.accelerator.name == 'v3-8' then
+      if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' then
         functional_schedule
       else
         null,
