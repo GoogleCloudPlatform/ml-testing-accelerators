@@ -13,37 +13,64 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
+local metrics = import 'templates/metrics.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
 {
   local PyTorchBaseTest = common.CloudAcceleratorTest {
     configMaps+: ['pytorch-nfs-ip'],
-    regressionTestConfig+: {
-      metric_subset_to_alert: [
-        'ExecuteTime__Percentile_99_sec_final',
-        'total_wall_time',
-        'Accuracy/test_final',
-        'aten_ops_sum_final',
-      ],
-      metric_success_conditions+: {
-        ExecuteTime__Percentile_99_sec_final: {
-          success_threshold: {
-            stddevs_from_mean: 5.0,
+
+    metricConfig: metrics.MetricCollectionConfigHelper {
+      sourceMap:: {
+        tensorboard: metrics.TensorBoardSourceHelper {
+          aggregateAssertionsMap+:: {
+            ExecuteTime__Percentile_99_sec: {
+              FINAL: {
+                std_devs_from_mean: {
+                  comparison: 'LESS',
+                  std_devs: 5.0,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 10,
+              },
+            },
+            aten_ops_sum: {
+              FINAL: {
+                inclusive_bounds: true,
+                std_devs_from_mean: {
+                  comparison: 'LESS',
+                  std_devs: 0.0,
+                },
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'less',
-          wait_for_n_points_of_history: 10,
+          exclude_tags: [
+            'LearningRate',
+          ],
+          include_tags: [
+            {
+              strategies: [
+                'FINAL',
+              ],
+              tag_pattern: '*',
+            },
+          ],
+          merge_runs: true,
         },
-        aten_ops_sum_final: {
-          success_threshold: {
-            stddevs_from_mean: 0.0,
+        literals: {
+          assertions: {
+            duration: {
+              inclusive_bounds: false,
+              std_devs_from_mean: {
+                comparison: 'LESS',
+                std_devs: 5,
+              },
+              wait_for_n_data_points: 10,
+            },
           },
-          comparison: 'less_or_equal',
         },
       },
-    },
-
-    metricCollectionConfig+: {
-      tags_to_ignore: ['LearningRate'],
     },
   },
   PyTorchTest:: PyTorchBaseTest {

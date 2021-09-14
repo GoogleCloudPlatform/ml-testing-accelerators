@@ -125,7 +125,14 @@ local utils = import 'templates/utils.libsonnet';
     ),
   },
   local functional = common.Functional {
-    regressionTestConfig: null,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap:: {},
+        },
+        literals: {},
+      },
+    },
     paramsOverride: {
       maxEpoch: 1,
       wpsTarget: 10000,

@@ -35,7 +35,7 @@
     sourceMap:: {
       tensorboard: {},
       perfzero: {},
-      literal: {},
+      literals: {},
     },
 
     sources: [
