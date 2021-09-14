@@ -42,7 +42,14 @@ local mixins = import 'templates/mixins.libsonnet';
       },
     },
   },
-  Functional:: mixins.Functional + mixins.Suspended {
+  local functional_schedule = '0 7 * * *',
+  Functional:: mixins.Functional {
+    // Only schedule v3-8 TPU tests by default
+    schedule:
+      if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' then
+        functional_schedule
+      else
+        null,
     regressionTestConfig+: {
       metric_success_conditions+: {
         examples_per_second_average: {
@@ -53,6 +60,10 @@ local mixins = import 'templates/mixins.libsonnet';
         },
       },
     },
+  },
+  // Override default schedule for Functional.
+  RunNightly:: {
+    schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
     regressionTestConfig+: {
