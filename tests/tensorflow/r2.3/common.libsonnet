@@ -22,23 +22,6 @@ local mixins = import 'templates/mixins.libsonnet';
       softwareVersion: '2.3.4',
     },
     imageTag: 'r2.3.4',
-
-    metricCollectionConfig+: {
-      metric_to_aggregation_strategies+: {
-        examples_per_second: ['average'],
-      },
-      use_run_name_prefix: true,
-    },
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 2.0,
-          },
-        },
-      },
-    },
   },
   // Running functional tests at Midnight PST daily.
   Functional:: mixins.Functional {
@@ -46,9 +29,45 @@ local mixins = import 'templates/mixins.libsonnet';
     tpuSettings+: {
       preemptible: false,
     },
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            examples_per_second: {
+              AVERAGE: {
+                inclusive_bounds: true,
+                std_devs_from_mean: {
+                  comparison: 'GREATER',
+                  std_devs: 2.0,
+                },
+                wait_for_n_data_points: 0,
+              },
+            },
+          },
+        },
+      },
+    },
   },
   // Don't run tests by default since this release is stable.
   Convergence:: mixins.Convergence {
     schedule: null,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            examples_per_second: {
+              AVERAGE: {
+                inclusive_bounds: true,
+                std_devs_from_mean: {
+                  comparison: 'GREATER',
+                  std_devs: 2.0,
+                },
+                wait_for_n_data_points: 0,
+              },
+            },
+          },
+        },
+      },
+    },
   },
 }

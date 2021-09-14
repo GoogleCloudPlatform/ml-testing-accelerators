@@ -53,13 +53,21 @@ local tpus = import 'templates/tpus.libsonnet';
       '--train_epochs=14',
       '--ml_perf=false',
     ],
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        'eval/hit_rate_final': {
-          success_threshold: {
-            fixed_value: 0.62,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'eval/hit_rate': {
+              FINAL: {
+                fixed_value: {
+                  comparison: "GREATER",
+                  value: 0.62,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'greater',
         },
       },
     },

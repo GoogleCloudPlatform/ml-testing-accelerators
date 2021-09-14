@@ -13,6 +13,7 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
+local metrics = import 'templates/metrics.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 
 {
@@ -25,42 +26,73 @@ local mixins = import 'templates/mixins.libsonnet';
     },
     imageTag: 'nightly',
 
-    metricCollectionConfig+: {
-      metric_to_aggregation_strategies+: {
-        examples_per_second: ['average'],
-      },
-      use_run_name_prefix: true,
-    },
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 2.0,
+    metricConfig: metrics.MetricCollectionConfigHelper {
+      sourceMap:: {
+        tensorboard: metrics.TensorBoardSourceHelper {
+          exclude_tags: [
+
+          ],
+          include_tags: [
+            {
+              strategies: [
+                'FINAL',
+              ],
+              tag_pattern: '*',
+            },
+          ],
+          merge_runs: false,
+        },
+        literals: {
+          assertions: {
+            duration: {
+              inclusive_bounds: false,
+              std_devs_from_mean: {
+                comparison: 'LESS',
+                std_devs: 5,
+              },
+              wait_for_n_data_points: 10,
+            },
           },
         },
       },
     },
   },
   Functional:: mixins.Functional + mixins.Suspended {
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 4.0,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            examples_per_second: {
+              AVERAGE: {
+                inclusive_bounds: true,
+                std_devs_from_mean: {
+                  comparison: 'GREATER',
+                  std_devs: 4.0,
+                },
+                wait_for_n_data_points: 0,
+              },
+            },
           },
         },
       },
     },
   },
   Convergence:: mixins.Convergence {
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 2.0,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            examples_per_second: {
+              AVERAGE: {
+                inclusive_bounds: true,
+                std_devs_from_mean: {
+                  comparison: 'GREATER',
+                  // TODO(wcromar): Tighten this restriction
+                  std_devs: 2.0,
+                },
+                wait_for_n_data_points: 0,
+              },
+            },
           },
         },
       },

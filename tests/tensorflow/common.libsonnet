@@ -13,6 +13,7 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
+local metrics = import 'templates/metrics.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
 {
@@ -34,6 +35,36 @@ local volumes = import 'templates/volumes.libsonnet';
           train+: {
             envMap+: {
               TF_ENABLE_LEGACY_FILESYSTEM: '1',
+            },
+          },
+        },
+      },
+    },
+    metricConfig: metrics.MetricCollectionConfigHelper {
+      sourceMap:: {
+        tensorboard: metrics.TensorBoardSourceHelper {
+          exclude_tags: [
+
+          ],
+          include_tags: [
+            {
+              strategies: [
+                'FINAL',
+              ],
+              tag_pattern: '*',
+            },
+          ],
+          merge_runs: false,
+        },
+        literals: {
+          assertions: {
+            duration: {
+              inclusive_bounds: false,
+              std_devs_from_mean: {
+                comparison: 'LESS',
+                std_devs: 5,
+              },
+              wait_for_n_data_points: 10,
             },
           },
         },
