@@ -17,7 +17,7 @@ produce many metrics that you want to monitor for regressions.
 1. Follow instructions in the [`deployments`](deployments/README.md) directory to set up a Kubernetes Cluster.
 1. Follow instructions in the [`images`](images/README.md) directory to set up the Docker image that your tests will run.
 1. Deploy the [metrics handler](metrics_handler/README.md) to [Google Cloud Functions](https://cloud.google.com/functions).
-1. See [`templates`](templates/README.md) directory for a [JSonnet](https://jsonnet.org/) template library to generate test config files programmatically.
+1. See [`templates`](templates/README.md) directory for a [JSonnet](https://jsonnet.org/) template library to generate test config files.
 1. (Optional) Set up a dashboard to view test results. See [ dashboard ](dashboard/README.md) directory for instructions.
 
 ## Getting Started (lighter-weight Continuous Integration mode)
