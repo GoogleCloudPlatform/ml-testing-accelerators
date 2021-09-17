@@ -37,7 +37,7 @@ local tpus = import 'templates/tpus.libsonnet';
       maybeBuildJaxlib: error 'Must define `maybeBuildJaxlib`',
       installLocalJax: error 'Must define `installLocalJax`',
       installLatestJax: error 'Must define `installLatestJax`',
-      maybeInstallTF: error 'Must define `maybeInstallTF`',
+      testEnvWorkarounds: error 'Must define `testEnvWorkarounds`',
       printDiagnostics: |||
         python3 -c 'import jaxlib; print("jaxlib version:", jaxlib.__version__)'
         python3 -c 'import jax; print("libtpu version:",
@@ -162,7 +162,10 @@ local tpus = import 'templates/tpus.libsonnet';
       // Don't use [tpu] extra so we use system libtpu.so
       installLocalJax: 'pip install . jaxlib',
       installLatestJax: 'pip install jax jaxlib',
-      maybeInstallTF: '',
+      testEnvWorkarounds: |||
+        # b/200277707: upgrade numpy to fix torch import
+        pip install --upgrade numpy
+      |||,
     },
   },
 
@@ -180,8 +183,10 @@ local tpus = import 'templates/tpus.libsonnet';
         pip install jax[tpu] \
           -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
       |||,
-      // b/192016388
-      maybeInstallTF: 'pip install tensorflow',
+      testEnvWorkarounds: |||
+        # b/192016388: fix host_callback_to_tf_test.py
+        pip install tensorflow
+      |||,
     },
   },
   Functional:: mixins.Functional {

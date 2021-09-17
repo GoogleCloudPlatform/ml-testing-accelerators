@@ -45,8 +45,7 @@ local mixins = import 'templates/mixins.libsonnet';
         exit 1
       fi
 
-      # b/192016388
-      %(maybeInstallTF)s
+      %(testEnvWorkarounds)s
 
       export JAX_NUM_GENERATED_CASES=5
       export COLUMNS=160
