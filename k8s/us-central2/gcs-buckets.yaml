@@ -1,0 +1,39 @@
+# Copyright 2021 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gcs-buckets
+data:
+  OUTPUT_BUCKET: gs://xl-ml-test-us-central2/output
+  TFDS_DIR: gs://xl-ml-test-us-central2/tfds-data
+  MNIST_DIR: gs://xl-ml-test-us-central2/data/mnist
+  BERT_CLASSIFICATION_DIR: gs://cloud-tpu-checkpoints/bert/classification
+  BERT_SQUAD_DIR: gs://xl-ml-test-us-central2/data/squad
+  KERAS_BERT_DIR: gs://cloud-tpu-checkpoints/bert/keras_bert
+  IMAGENET_DIR: gs://xl-ml-test-us-central2/imagenet
+  COCO_DIR: gs://xl-ml-test-us-central2/data/coco
+  RESNET_PRETRAIN_DIR: gs://xl-ml-test-us-central2/data/pretrain
+  TRANSFORMER_DIR: gs://xl-ml-test-us-central2/data/transformer
+  TF1_BERT_DIR: gs://xl-ml-test-us-central2/data/old-bert
+  T2T_TRANSFORMER_DIR: gs://xl-ml-test-us-central2/data/old-transformer
+  LITS_DIR: gs://xl-ml-test-us-central2/data/liver-seg
+  SHAPEMASK_DIR: gs://xl-ml-test-us-central2/data/shapemask
+  PERFZERO_DATA_DIR: gs://xl-ml-test-us-central2/data
+  NCF_DIR: gs://xl-ml-test-us-central2/data/ncf
+  CRITEO_DATA_DIR: gs://xl-ml-test-us-central2/data/criteo/terabyte_processed_shuffled
+  XLNET_CHECKPOINT_DIR: gs://cloud-tpu-checkpoints/xlnet/keras_xlnet
+  XLNET_IMDB_DIR: gs://xl-ml-test-us-central2/data/xlnet-imdb
+  XLNET_SQUAD_DIR: gs://xl-ml-test-us-central2/data/xlnet-squad
