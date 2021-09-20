@@ -24,6 +24,11 @@ local mixins = import 'templates/mixins.libsonnet';
       } + if config.accelerator.replicas > 1 then {
         TPU_LOAD_LIBRARY: '0',
       } else {},
+
+      softwareVersion+: if config.accelerator.replicas > 1 then
+        '-pod'
+      else
+        ''
     },
 
     podTemplate+:: {
