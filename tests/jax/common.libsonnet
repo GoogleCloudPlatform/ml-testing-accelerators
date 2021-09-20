@@ -55,7 +55,6 @@ local tpus = import 'templates/tpus.libsonnet';
     },
 
     tpuSettings+: {
-      softwareVersion: error 'Must define `tpuSettings.softwareVersion`',
       tpuVmCreateSleepSeconds: 60,
     },
 
@@ -189,7 +188,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
   alphaImage:: {
     tpuSettings+: {
-      softwareVersion: 'v2-alpha',
+      softwareVersion: std.strReplace(super.softwareVersion, 'nightly', 'alpha'),
     },
     scriptConfig+: {
       testEnvWorkarounds: |||

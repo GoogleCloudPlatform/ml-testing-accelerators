@@ -29,6 +29,9 @@ local tpus = import 'templates/tpus.libsonnet';
   local v2_8 = {
     accelerator: tpus.v2_8,
   },
+  local v4_8 = {
+    accelerator: tpus.v4_8,
+  },
   local mnist = common.runFlaxNightly {
     modelName:: 'mnist',
   },
@@ -36,5 +39,6 @@ local tpus = import 'templates/tpus.libsonnet';
   configs: [
     mnist + functional + v2_8,
     mnist + convergence + v3_8,
+    mnist + convergence + v4_8,
   ],
 }

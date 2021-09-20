@@ -61,7 +61,6 @@ local experimental = import '../experimental.libsonnet';
   PyTorchTpuVmPodTest:: experimental.BaseTpuVmMixin {
     local config = self,
     tpuSettings+: {
-      softwareVersion: 'v2-nightly',
       tpuVmStartupScript: |||
         #! /bin/bash
         cd /usr/share
@@ -118,7 +117,6 @@ local experimental = import '../experimental.libsonnet';
   PyTorch1_9TpuVmPodTest:: experimental.BaseTpuVmMixin {
     local config = self,
     tpuSettings+: {
-      softwareVersion: 'v2-nightly',
       tpuVmStartupScript: |||
         sudo bash /var/scripts/docker-login.sh
         sudo docker rm libtpu || true
