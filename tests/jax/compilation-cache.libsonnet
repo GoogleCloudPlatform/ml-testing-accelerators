@@ -62,7 +62,7 @@ local mixins = import 'templates/mixins.libsonnet';
       cat >directory_size.py <<'END_SCRIPT'
       import os
       num_of_files = sum(1 for f in os.listdir("/tmp/compilation_cache_integration_test"))
-      assert num_of_files == 1, f"The number of files in the cache should be 1 but is {num_of_files}" 
+      assert num_of_files == 1, f"The number of files in the cache should be 1 but is {num_of_files}"
       END_SCRIPT
 
       python3 integration.py
@@ -74,6 +74,6 @@ local mixins = import 'templates/mixins.libsonnet';
   },
 
   configs: [
-    compilationCacheTest + common.jaxlibLatest + common.libtpuAlpha,
+    compilationCacheTest + common.jaxlibLatest + common.alphaImage,
   ],
 }

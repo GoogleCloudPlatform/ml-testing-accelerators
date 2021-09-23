@@ -17,7 +17,7 @@ local mixins = import 'templates/mixins.libsonnet';
 
 {
   local podTest = common.JaxPodTest + mixins.Functional {
-    modelName: 'pod-%s-libtpu-%s' % [self.jaxlibVersion, self.libtpuVersion],
+    modelName: 'pod-%s-%s' % [self.jaxlibVersion, self.tpuSettings.softwareVersion],
 
     testScript:: |||
       set -x
@@ -48,8 +48,8 @@ local mixins = import 'templates/mixins.libsonnet';
   },
 
   configs: [
-    podTest + common.jaxlibLatest + common.libtpuNightly,
-    podTest + common.jaxlibHead + common.libtpuNightly,
-    podTest + common.jaxlibLatest + common.libtpuAlpha,
+    podTest + common.jaxlibHead + common.nightlyImage,
+    podTest + common.jaxlibHead + common.alphaImage,
+    podTest + common.jaxlibLatest + common.alphaImage,
   ],
 }
