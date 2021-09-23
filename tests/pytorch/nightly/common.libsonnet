@@ -19,25 +19,25 @@ local volumes = import 'templates/volumes.libsonnet';
 local version = 'nightly';
 {
   PyTorchTest:: common.PyTorchTest {
-    frameworkPrefix: 'pt-%(version)',
+    frameworkPrefix: std.format('pt-%s', version),
     tpuSettings+: {
-      softwareVersion: 'pytorch-%(version)',
+      softwareVersion: std.format('pytorch-%s', version),
     },
-    imageTag: '%(version)',
+    imageTag: version,
   },
   PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest {
-    frameworkPrefix: 'pt-%(version)',
+    frameworkPrefix: std.format('pt-%s', version),
     tpuSettings+: {
-      softwareVersion: 'pytorch-%(version)',
+      softwareVersion: std.format('pytorch-%s', version),
     },
-    imageTag: '%(version)',
+    imageTag: version,
   },
   PyTorchGkePodTest:: common.PyTorchGkePodTest {
-    frameworkPrefix: 'pt-%(version)',
+    frameworkPrefix: std.format('pt-%s', version),
     tpuSettings+: {
-      softwareVersion: 'pytorch-%(version)',
+      softwareVersion: std.format('pytorch-%s', version),
     },
-    imageTag: '%(version)',
+    imageTag: version,
   },
   Functional:: mixins.Functional {
     schedule: '0 18 * * *',
