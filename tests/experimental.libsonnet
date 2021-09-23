@@ -98,6 +98,7 @@ local volumes = import 'templates/volumes.libsonnet';
 
               # Retry every 30 seconds for 10 minutes
               for i in {1..20}; do
+                set +e
                 gcloud alpha compute tpus tpu-vm create ${tpu_name} \
                   --accelerator-type=%(acceleratorName)s \
                   --version=%(softwareVersion)s  \
@@ -106,6 +107,7 @@ local volumes = import 'templates/volumes.libsonnet';
                   --zone=${zone}
 
                 exit_code=$?
+                set -e
                 test $exit_code = 0 && break || sleep 30;
               done
 
