@@ -17,7 +17,7 @@ local mixins = import 'templates/mixins.libsonnet';
 
 {
   local runUnitTests = common.JaxTest + mixins.Functional {
-    modelName: '%s-libtpu-%s' % [self.jaxlibVersion, self.libtpuVersion],
+    modelName: '%s-%s' % [self.jaxlibVersion, self.tpuSettings.softwareVersion],
 
     testScript:: |||
       set -x
@@ -27,14 +27,14 @@ local mixins = import 'templates/mixins.libsonnet';
       # .bash_logout sometimes causes a spurious bad exit code, remove it.
       rm .bash_logout
 
-      pip install --upgrade pip
-      pip install --upgrade numpy==1.18.5 scipy wheel future six cython pytest \
-          absl-py opt-einsum msgpack
+      # Via https://jax.readthedocs.io/en/latest/developer.html#building-jaxlib-from-source
+      pip install numpy six wheel
 
       echo "Checking out and installing JAX..."
       git clone https://github.com/google/jax.git
       cd jax
       echo "jax git hash: $(git rev-parse HEAD)"
+      pip install -r build/test-requirements.txt
       %(installLocalJax)s
       %(maybeBuildJaxlib)s
       %(printDiagnostics)s
@@ -57,9 +57,8 @@ local mixins = import 'templates/mixins.libsonnet';
   },
 
   configs: [
-    runUnitTests + common.jaxlibHead + common.libtpuNightly,
-    runUnitTests + common.jaxlibLatest + common.libtpuNightly,
-    runUnitTests + common.jaxlibHead + common.libtpuAlpha,
-    runUnitTests + common.jaxlibLatest + common.libtpuAlpha,
+    runUnitTests + common.jaxlibHead + common.nightlyImage,
+    runUnitTests + common.jaxlibHead + common.alphaImage,
+    runUnitTests + common.jaxlibLatest + common.alphaImage,
   ],
 }
