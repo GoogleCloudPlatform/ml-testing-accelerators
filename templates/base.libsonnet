@@ -61,24 +61,6 @@ local volumes = import 'volumes.libsonnet';
     // List of ConfigMaps to pull environment variables from.
     configMaps: ['gcs-buckets'],
 
-    // DEPRECATED: Use metricConfig for new code.
-    // Default regression test settings. Alert when time for test increases significantly.
-    metricCollectionConfig: {
-      write_to_bigquery: true,
-      default_aggregation_strategies: ['final'],
-    },
-    regressionTestConfig: {
-      metric_success_conditions: {
-        total_wall_time: {
-          success_threshold: {
-            stddevs_from_mean: 5.0,
-          },
-          comparison: 'less',
-          wait_for_n_points_of_history: 10,
-        },
-      },
-    },
-
     // Settings for metric collection and assertions. Should evaluate to
     // MetricCollectionConfig from metrics/metrics.proto. See
     // metrics.MetricCollectionConfigHelper
