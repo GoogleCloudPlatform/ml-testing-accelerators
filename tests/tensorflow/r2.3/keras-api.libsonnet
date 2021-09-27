@@ -36,8 +36,7 @@ local utils = import 'templates/utils.libsonnet';
   local API = {
     mode: 'api',
     timeout: timeouts.one_hour,
-    // Don't run tests manually by default since this release is stable.
-    schedule: null,
+    schedule: common.Functional.schedule,
     tpuSettings+: {
       preemptible: true,
     },
@@ -71,29 +70,21 @@ local utils = import 'templates/utils.libsonnet';
   local save_and_load = API {
     mode: 'save-and-load',
     testFeature:: 'save_and_load',
-    // Run at 2:30AM PST daily
-    schedule: '0 10 30 * *',
   },
 
   local train_and_evaluate = API {
     mode: 'train-and-evaluate',
     testFeature:: 'train_and_evaluate',
-    // Run at 2:30AM PST daily
-    schedule: '0 10 30 * *',
   },
 
   local train_validation_dataset = API {
     mode: 'train-eval-dataset',
     testFeature:: 'train_validation_dataset',
-    // Run at 2:30AM PST daily
-    schedule: '0 10 30 * *',
   },
 
   local transfer_learning = API {
     mode: 'transfer-learning',
     testFeature:: 'transfer_learning',
-    // Run at 2:30AM PST daily
-    schedule: '0 10 30 * *',
   },
 
   local v2_8 = {

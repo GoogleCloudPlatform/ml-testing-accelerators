@@ -93,12 +93,27 @@ local volumes = import 'templates/volumes.libsonnet';
               gcloud alpha compute tpus tpu-vm delete -q ${tpu_name} --zone=${zone}
               " > /scripts/cleanup.sh
 
-              gcloud alpha compute tpus tpu-vm create ${tpu_name} \
-                --accelerator-type=%(acceleratorName)s \
-                --version=%(softwareVersion)s  \
-                --metadata='ssh-keys=xl-ml-test:'"$(cat /scripts/id_rsa.pub)"',startup-script='%(startupScript)s \
-                --labels='test-name=%(testName)s' \
-                --zone=${zone}
+              echo "xl-ml-test:$(cat /scripts/id_rsa.pub)" > ssh-keys.txt
+              echo %(startupScript)s > startup-script.txt
+
+              # Retry every 30 seconds for 10 minutes
+              for i in {1..20}; do
+                set +e
+                gcloud alpha compute tpus tpu-vm create ${tpu_name} \
+                  --accelerator-type=%(acceleratorName)s \
+                  --version=%(softwareVersion)s  \
+                  --metadata-from-file='ssh-keys=ssh-keys.txt,startup-script=startup-script.txt' \
+                  --labels='test-name=%(testName)s' \
+                  --zone=${zone}
+
+                exit_code=$?
+                set -e
+                test $exit_code = 0 && break || sleep 30;
+              done
+
+              if [ $exit_code -ne 0 ]; then
+                exit $exit_code
+              fi
 
               echo ${tpu_name} > /scripts/tpu_name
               gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(ipAddress)" > /scripts/tpu_ip

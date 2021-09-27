@@ -22,7 +22,6 @@ local keras_api = import 'keras-api.libsonnet';
 local maskrcnn = import 'maskrcnn.libsonnet';
 local mnist = import 'mnist.libsonnet';
 local ncf = import 'ncf.libsonnet';
-local perfzero = import 'perfzero.libsonnet';
 local resnet_ctl = import 'resnet-ctl.libsonnet';
 local retinanet = import 'retinanet.libsonnet';
 local serving = import 'serving.libsonnet';
@@ -44,7 +43,6 @@ std.flattenArrays([
   mnist.configs,
   maskrcnn.configs,
   ncf.configs,
-  perfzero.configs,
   resnet_ctl.configs,
   retinanet.configs,
   shapemask.configs,

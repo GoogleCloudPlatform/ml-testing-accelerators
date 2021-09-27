@@ -26,7 +26,13 @@ local mixins = import 'templates/mixins.libsonnet';
     },
     imageTag: 'nightly',
   },
-  Functional:: mixins.Functional + mixins.Suspended {
+  local functional_schedule = '0 7 * * *',
+  Functional:: mixins.Functional {
+    schedule:
+      if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' then
+        functional_schedule
+      else
+        null,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -45,6 +51,10 @@ local mixins = import 'templates/mixins.libsonnet';
         },
       },
     },
+  },
+  // Override default schedule for Functional.
+  RunNightly:: {
+    schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
     metricConfig+: {

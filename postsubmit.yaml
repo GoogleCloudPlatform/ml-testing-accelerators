@@ -14,22 +14,12 @@
 
 steps:
 - name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-k', 'examples/metrics', '--dry-run']
+  args: ['apply', '-f', 'k8s/us-central1/gen', '-f', 'k8s/us-central1/', '--dry-run']
   env:
   - 'CLOUDSDK_COMPUTE_ZONE=us-central1'
   - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test-us-central1'
 - name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', 'k8s/us-central1/gen', '-f', 'k8s/us-central1/', '-f', 'examples/', '--dry-run']
-  env:
-  - 'CLOUDSDK_COMPUTE_ZONE=us-central1'
-  - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test-us-central1'
-- name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-f', 'k8s/common/', '-f', 'k8s/us-central1/', '-f', 'k8s/us-central1/gen', '-f', 'examples/', '--namespace=automated']
-  env:
-  - 'CLOUDSDK_COMPUTE_ZONE=us-central1'
-  - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test-us-central1'
-- name: 'gcr.io/cloud-builders/kubectl'
-  args: ['apply', '-k', 'examples/metrics', '--namespace=automated']
+  args: ['apply', '-f', 'k8s/common/', '-f', 'k8s/us-central1/', '-f', 'k8s/us-central1/gen', '--namespace=automated']
   env:
   - 'CLOUDSDK_COMPUTE_ZONE=us-central1'
   - 'CLOUDSDK_CONTAINER_CLUSTER=xl-ml-test-us-central1'

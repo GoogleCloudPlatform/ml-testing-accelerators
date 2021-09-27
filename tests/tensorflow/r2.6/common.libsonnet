@@ -62,7 +62,7 @@ local mixins = import 'templates/mixins.libsonnet';
   },
   // Running convergence tests at Midnight PST Sat.
   Convergence:: mixins.Convergence {
-    schedule: '0 8 * * 6',
+    schedule: null,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
