@@ -31,6 +31,12 @@ local tpus = import 'templates/tpus.libsonnet';
           exclude_tags: ['_hparams_/session_start_info'],
           merge_runs: true,
         },
+        // Remove default duration assertion.
+        literals+: {
+          assertions+: {
+            duration: null,
+          },
+        },
       },
     },
 
@@ -193,24 +199,40 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
   Functional:: mixins.Functional {
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 4.0,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            examples_per_second: {
+              AVERAGE: {
+                inclusive_bounds: true,
+                std_devs_from_mean: {
+                  comparison: 'GREATER',
+                  std_devs: 4.0,
+                },
+                wait_for_n_data_points: 0,
+              },
+            },
           },
         },
       },
     },
   },
   Convergence:: mixins.Convergence {
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 4.0,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            examples_per_second: {
+              AVERAGE: {
+                inclusive_bounds: true,
+                std_devs_from_mean: {
+                  comparison: 'GREATER',
+                  std_devs: 4.0,
+                },
+                wait_for_n_data_points: 0,
+              },
+            },
           },
         },
       },
