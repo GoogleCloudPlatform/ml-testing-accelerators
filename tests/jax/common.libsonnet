@@ -198,44 +198,4 @@ local tpus = import 'templates/tpus.libsonnet';
       |||,
     },
   },
-  Functional:: mixins.Functional {
-    metricConfig+: {
-      sourceMap+:: {
-        tensorboard+: {
-          aggregateAssertionsMap+:: {
-            examples_per_second: {
-              AVERAGE: {
-                inclusive_bounds: true,
-                std_devs_from_mean: {
-                  comparison: 'GREATER',
-                  std_devs: 4.0,
-                },
-                wait_for_n_data_points: 0,
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-  Convergence:: mixins.Convergence {
-    metricConfig+: {
-      sourceMap+:: {
-        tensorboard+: {
-          aggregateAssertionsMap+:: {
-            examples_per_second: {
-              AVERAGE: {
-                inclusive_bounds: true,
-                std_devs_from_mean: {
-                  comparison: 'GREATER',
-                  std_devs: 4.0,
-                },
-                wait_for_n_data_points: 0,
-              },
-            },
-          },
-        },
-      },
-    },
-  },
 }
