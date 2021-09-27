@@ -25,7 +25,14 @@ local utils = import 'templates/utils.libsonnet';
       'bash',
       'pytorch/xla/test/cpp/run_tests.sh',
     ],
-    regressionTestConfig: null,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap:: {},
+        },
+        literals: {},
+      },
+    },
   },
   local v2_8 = {
     accelerator: tpus.v2_8,

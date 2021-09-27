@@ -54,14 +54,21 @@ local utils = import 'templates/utils.libsonnet';
         %(common_copy)s
       ||| % { common: command_common, common_copy: command_copy_metrics }
     ),
-    regressionTestConfig+: {
-      required_metrics: ['eval/loss_final'],
-      metric_success_conditions+: {
-        'eval/loss_final': {
-          success_threshold: {
-            fixed_value: 2.7,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'eval/loss': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'LESS',
+                  value: 2.7,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'less',
         },
       },
     },
@@ -78,14 +85,21 @@ local utils = import 'templates/utils.libsonnet';
         %(common_copy)s
       ||| % { common: command_common, common_copy: command_copy_metrics }
     ),
-    regressionTestConfig+: {
-      required_metrics: ['eval/loss_final'],
-      metric_success_conditions+: {
-        'eval/loss_final': {
-          success_threshold: {
-            fixed_value: 2.8,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'eval/loss': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'LESS',
+                  value: 2.8,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'less',
         },
       },
     },
@@ -102,14 +116,21 @@ local utils = import 'templates/utils.libsonnet';
         %(common_copy)s
       ||| % { common: command_common, common_copy: command_copy_metrics }
     ),
-    regressionTestConfig+: {
-      required_metrics: ['eval/loss_final'],
-      metric_success_conditions+: {
-        'eval/loss_final': {
-          success_threshold: {
-            fixed_value: 7.2,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'eval/loss': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'LESS',
+                  value: 7.2,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'less',
         },
       },
     },
@@ -126,14 +147,21 @@ local utils = import 'templates/utils.libsonnet';
         %(common_copy)s
       ||| % { common: command_common, common_copy: command_copy_metrics }
     ),
-    regressionTestConfig+: {
-      required_metrics: ['eval/loss_final'],
-      metric_success_conditions+: {
-        'eval/loss_final': {
-          success_threshold: {
-            fixed_value: 7.4,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'eval/loss': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'LESS',
+                  value: 7.4,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'less',
         },
       },
     },

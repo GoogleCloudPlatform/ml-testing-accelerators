@@ -19,14 +19,40 @@ local metrics = import 'templates/metrics.libsonnet';
   CloudAcceleratorTest:: base.BaseTest {
     local config = self,
 
-    publisherImage: 'gcr.io/xl-ml-test/publisher:stable',
-
     tpuSettings+: {
       requireTpuAvailableLabel: true,
     },
 
-    metricConfig:
-      metrics.CompatMetrics(config.metricCollectionConfig, config.regressionTestConfig),
+    metricConfig: metrics.MetricCollectionConfigHelper {
+      sourceMap:: {
+        tensorboard: metrics.TensorBoardSourceHelper {
+          exclude_tags: [
+
+          ],
+          include_tags: [
+            {
+              strategies: [
+                'FINAL',
+              ],
+              tag_pattern: '*',
+            },
+          ],
+          merge_runs: false,
+        },
+        literals: {
+          assertions: {
+            duration: {
+              inclusive_bounds: false,
+              std_devs_from_mean: {
+                comparison: 'LESS',
+                std_devs: 5,
+              },
+              wait_for_n_data_points: 10,
+            },
+          },
+        },
+      },
+    },
 
     // Add experimental TPU health monitor to Job.
     podTemplate+:: {

@@ -32,9 +32,6 @@ local utils = import 'templates/utils.libsonnet';
         behave -e ipynb_checkpoints --tags=-fails %s -i %s
       ||| % [if self.isTPUPod then '--tags=-failspod' else '', self.testFeature]
     ),
-    regressionTestConfig: {
-      alert_for_failed_jobs: true,
-    },
   },
 
   local API = common.RunNightly {

@@ -35,13 +35,21 @@ local tpus = import 'templates/tpus.libsonnet';
   local convergence = common.Convergence {
     // Run daily instead of 2x per week since convergence is fast.
     schedule: '30 17 * * *',
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        'Accuracy/test_final': {
-          success_threshold: {
-            fixed_value: 98.0,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'Accuracy/test': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 98.0,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'greater',
         },
       },
     },

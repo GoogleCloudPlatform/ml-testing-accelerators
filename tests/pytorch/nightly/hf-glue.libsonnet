@@ -54,14 +54,21 @@ local utils = import 'templates/utils.libsonnet';
         %(common_copy)s
       ||| % { common: command_common, common_copy: command_copy_metrics }
     ),
-    regressionTestConfig+: {
-      required_metrics: ['eval/accuracy_final'],
-      metric_success_conditions+: {
-        'eval/accuracy_final': {
-          success_threshold: {
-            fixed_value: 0.80,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'eval/accuracy': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 0.80,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'greater',
         },
       },
     },
@@ -76,14 +83,21 @@ local utils = import 'templates/utils.libsonnet';
         %(common_copy)s
       ||| % { common: command_common, common_copy: command_copy_metrics }
     ),
-    regressionTestConfig+: {
-      required_metrics: ['eval/accuracy_final'],
-      metric_success_conditions+: {
-        'eval/accuracy_final': {
-          success_threshold: {
-            fixed_value: 0.85,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'eval/accuracy': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 0.85,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'greater',
         },
       },
     },
@@ -98,14 +112,21 @@ local utils = import 'templates/utils.libsonnet';
         %(common_copy)s
       ||| % { common: command_common, common_copy: command_copy_metrics }
     ),
-    regressionTestConfig+: {
-      required_metrics: ['eval/accuracy_final'],
-      metric_success_conditions+: {
-        'eval/accuracy_final': {
-          success_threshold: {
-            fixed_value: 0.85,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'eval/accuracy': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 0.85,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'greater',
         },
       },
     },
@@ -120,14 +141,21 @@ local utils = import 'templates/utils.libsonnet';
         %(common_copy)s
       ||| % { common: command_common, common_copy: command_copy_metrics }
     ),
-    regressionTestConfig+: {
-      required_metrics: ['eval/accuracy_final'],
-      metric_success_conditions+: {
-        'eval/accuracy_final': {
-          success_threshold: {
-            fixed_value: 0.70,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'eval/accuracy': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 0.70,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'greater',
         },
       },
     },

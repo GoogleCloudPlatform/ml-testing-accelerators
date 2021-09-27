@@ -13,6 +13,7 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
+local metrics = import 'templates/metrics.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
 {
@@ -43,6 +44,13 @@ local volumes = import 'templates/volumes.libsonnet';
   LegacyTpuTest:: common.CloudAcceleratorTest {
     local config = self,
     image: 'gcr.io/xl-ml-test/tensorflow-tpu-1x',
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          merge_runs: true,
+        },
+      },
+    },
   },
   ServingTest:: common.CloudAcceleratorTest {
     local config = self,

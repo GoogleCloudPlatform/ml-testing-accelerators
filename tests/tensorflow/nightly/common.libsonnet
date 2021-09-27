@@ -13,6 +13,7 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
+local metrics = import 'templates/metrics.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 
 {
@@ -24,38 +25,28 @@ local mixins = import 'templates/mixins.libsonnet';
       softwareVersion: 'nightly',
     },
     imageTag: 'nightly',
-
-    metricCollectionConfig+: {
-      metric_to_aggregation_strategies+: {
-        examples_per_second: ['average'],
-      },
-      use_run_name_prefix: true,
-    },
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 2.0,
-          },
-        },
-      },
-    },
   },
   local functional_schedule = '0 7 * * *',
   Functional:: mixins.Functional {
-    // Only schedule v3-8 TPU tests by default
     schedule:
       if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' then
         functional_schedule
       else
         null,
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 4.0,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            examples_per_second: {
+              AVERAGE: {
+                inclusive_bounds: true,
+                std_devs_from_mean: {
+                  comparison: 'GREATER',
+                  std_devs: 4.0,
+                },
+                wait_for_n_data_points: 0,
+              },
+            },
           },
         },
       },
@@ -66,12 +57,21 @@ local mixins = import 'templates/mixins.libsonnet';
     schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 2.0,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            examples_per_second: {
+              AVERAGE: {
+                inclusive_bounds: true,
+                std_devs_from_mean: {
+                  comparison: 'GREATER',
+                  // TODO(wcromar): Tighten this restriction
+                  std_devs: 2.0,
+                },
+                wait_for_n_data_points: 0,
+              },
+            },
           },
         },
       },

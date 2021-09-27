@@ -49,13 +49,21 @@ local utils = import 'templates/utils.libsonnet';
       '--num_epochs=90',
       '--datadir=/datasets/imagenet',
     ],
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        'Accuracy/test_final': {
-          success_threshold: {
-            fixed_value: 75.0,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'Accuracy/test': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 75.0,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'greater',
         },
       },
     },
@@ -112,13 +120,21 @@ local utils = import 'templates/utils.libsonnet';
       datadir: '/datasets/imagenet',
       setup_commands: common.tpu_vm_1_8_1_install,
     },
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        'Accuracy/test_final': {
-          success_threshold: {
-            fixed_value: 30.0,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'Accuracy/test': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 30.0,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'greater',
         },
       },
     },

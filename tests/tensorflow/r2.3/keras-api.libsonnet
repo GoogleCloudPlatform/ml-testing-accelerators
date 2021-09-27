@@ -31,9 +31,6 @@ local utils = import 'templates/utils.libsonnet';
         behave -e ipynb_checkpoints --tags=-fails -i %s
       ||| % self.testFeature
     ),
-    regressionTestConfig: {
-      alert_for_failed_jobs: true,
-    },
   },
 
   local API = {

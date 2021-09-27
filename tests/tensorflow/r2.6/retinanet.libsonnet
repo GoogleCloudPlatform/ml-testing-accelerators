@@ -101,11 +101,6 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
     accelerator: gpus.teslaV100,
-
-    // TODO: remove this when this model is fixed.
-    regressionTestConfig: {
-      alert_for_failed_jobs: false,
-    },
   },
   local v100x4 = v100 {
     accelerator: gpus.teslaV100 { count: 4 },

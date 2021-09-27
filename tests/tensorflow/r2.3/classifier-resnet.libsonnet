@@ -65,13 +65,21 @@ local tpus = import 'templates/tpus.libsonnet';
         epochs_between_evals: 1,
       },
     },
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        'validation/epoch_accuracy_final': {
-          success_threshold: {
-            fixed_value: 0.76,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'validation/epoch_accuracy': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 0.76,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'greater',
         },
       },
     },
