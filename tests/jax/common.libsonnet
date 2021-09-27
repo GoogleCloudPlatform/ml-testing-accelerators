@@ -31,6 +31,12 @@ local tpus = import 'templates/tpus.libsonnet';
           exclude_tags: ['_hparams_/session_start_info'],
           merge_runs: true,
         },
+        // Remove default duration assertion.
+        literals+: {
+          assertions+: {
+            duration: null,
+          },
+        },
       },
     },
 
@@ -190,30 +196,6 @@ local tpus = import 'templates/tpus.libsonnet';
         # b/192016388: fix host_callback_to_tf_test.py
         pip install tensorflow
       |||,
-    },
-  },
-  Functional:: mixins.Functional {
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 4.0,
-          },
-        },
-      },
-    },
-  },
-  Convergence:: mixins.Convergence {
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 4.0,
-          },
-        },
-      },
     },
   },
 }
