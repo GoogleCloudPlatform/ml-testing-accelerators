@@ -191,8 +191,6 @@ local experimental = import '../experimental.libsonnet';
       tpuVmStartupScript: |||
         sudo bash /var/scripts/docker-login.sh
         sudo docker rm libtpu || true
-        sudo docker create --name libtpu gcr.io/cloud-tpu-v2-images/libtpu:pytorch-1.9.1 "/bin/bash"
-        sudo docker cp libtpu:libtpu.so /lib
         sudo pip3 uninstall --yes torch torch_xla torchvision numpy
         sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-1.9%2B20210923-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.9%2B20210923-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-1.9%2B20210923-cp38-cp38-linux_x86_64.whl numpy
         sudo pip3 install mkl mkl-include numpy
