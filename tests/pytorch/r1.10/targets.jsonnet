@@ -23,7 +23,6 @@ local pythonOperations = import 'python-ops.libsonnet';
 local resnet50_mp = import 'resnet50-mp.libsonnet';
 local resnet50_pod = import 'resnet50-pod.libsonnet';
 local fairseqRobertaPretrain = import 'roberta-pre.libsonnet';
-local wav2vec2 = import 'wav2vec2.libsonnet';
 
 // Add new models here
 std.flattenArrays([
