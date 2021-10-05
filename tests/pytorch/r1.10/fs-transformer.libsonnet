@@ -106,7 +106,7 @@ local utils = import 'templates/utils.libsonnet';
   local functional_xla_dist = common.Functional {
     command: [
       'python',
-      '/usr/share/torch-xla-nightly/tpu-examples/deps/fairseq/train.py',
+      '/usr/share/torch-xla-1.10/tpu-examples/deps/fairseq/train.py',
       '/datasets/wmt18_en_de_bpej32k',
       '--metrics_debug',
       '--arch=transformer_vaswani_wmt_en_de_big',
@@ -193,7 +193,7 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local transformer_tpu_vm = common.PyTorchTest {
-    frameworkPrefix: 'pt-nightly',
+    frameworkPrefix: 'pt-r1.10',
     modelName: 'fs-transformer',
     schedule: '33 17 * * *',
     metricConfig+: {
@@ -205,12 +205,12 @@ local utils = import 'templates/utils.libsonnet';
     },
     commandSpecifics: {
       training_flags: conv_command_common,
-      setup_commands: common.tpu_vm_nightly_install,
+      setup_commands: common.tpu_vm_1_10_install,
     },
     command: utils.scriptCommand(
       |||
         %(setup_commands)s
-        git clone --recursive https://github.com/pytorch-tpu/examples.git
+        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.10
         pip install --editable examples/deps/fairseq
         export PATH=~/.local/bin:$PATH
         export XLA_USE_BF16=1

@@ -102,13 +102,13 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local roberta_tpu_vm = common.PyTorchTest {
-    frameworkPrefix: 'pt-nightly',
+    frameworkPrefix: 'pt-r1.10',
     modelName: 'roberta-pre',
     schedule: '30 13 * * *',
     command: utils.scriptCommand(
       |||
         %(command_common)s
-        git clone --recursive https://github.com/pytorch-tpu/examples.git
+        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.10
         pip3 install --editable examples/deps/fairseq
         python3 \
           examples/deps/fairseq/train.py \
@@ -142,7 +142,7 @@ local utils = import 'templates/utils.libsonnet';
         wps=$(cat training_logs.txt | grep '| wps ' | tail -1 | grep -o -E ' wps [0-9]+' | sed 's/[^0-9]*//g')
         echo 'final words per second (wps) is' $wps
         test $wps -gt 19000
-      ||| % common.tpu_vm_nightly_install
+      ||| % common.tpu_vm_1_10_install
     ),
   },
   local v3_8 = {

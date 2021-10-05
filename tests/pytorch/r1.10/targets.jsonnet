@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local colab = import 'colab.libsonnet';
 local cppOperations = import 'cpp-ops.libsonnet';
 local pythonOperations = import 'python-ops.libsonnet';
 local dlrm = import 'dlrm.libsonnet';
@@ -27,6 +28,7 @@ local resnet50_pod = import 'resnet50-pod.libsonnet';
 
 // Add new models here
 std.flattenArrays([
+  colab.configs,
   cppOperations.configs,
   pythonOperations.configs,
   dlrm.configs,
