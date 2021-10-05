@@ -38,5 +38,4 @@ std.flattenArrays([
   pythonOperations.configs,
   resnet50_mp.configs,
   resnet50_pod.configs,
-  wav2vec2.configs,
 ])
