@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -40,14 +40,14 @@ local version = '1.10';
     imageTag: version,
   },
   Functional:: mixins.Functional {
-    schedule: '0 18 * * *',
+    schedule: '30 5 * * *',
     tpuSettings+: {
       preemptible: false,
     },
   },
   Convergence:: mixins.Convergence {
-    // Run at 22:00 PST on Monday and Thursday.
-    schedule: '0 6 * * 1,3,6',
+    // Run 3 times/week.
+    schedule: '0 7 * * 1,3,5',
   },
   datasetsVolume: volumes.PersistentVolumeSpec {
     name: 'pytorch-datasets-claim',
