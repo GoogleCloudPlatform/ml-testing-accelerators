@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local colab = import 'colab.libsonnet';
 local cppOperations = import 'cpp-ops.libsonnet';
 local dlrm = import 'dlrm.libsonnet';
 local fairseqTransformer = import 'fs-transformer.libsonnet';
@@ -26,12 +27,11 @@ local fairseqRobertaPretrain = import 'roberta-pre.libsonnet';
 
 // Add new models here
 std.flattenArrays([
+  colab.configs,
   cppOperations.configs,
   dlrm.configs,
   fairseqRobertaPretrain.configs,
   fairseqTransformer.configs,
-  huggingfaceGlue.configs,
-  huggingfaceLanguageModeling.configs,
   mnist.configs,
   mnist_3_7.configs,
   pythonOperations.configs,
