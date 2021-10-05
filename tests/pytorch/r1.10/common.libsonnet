@@ -16,7 +16,7 @@ local common = import '../common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
-local version = 'nightly';
+local version = '1.10';
 {
   PyTorchTest:: common.PyTorchTest {
     frameworkPrefix: 'pt-%s' % version,
@@ -53,14 +53,19 @@ local version = 'nightly';
     name: 'pytorch-datasets-claim',
     mountPath: '/datasets',
   },
-  tpu_vm_nightly_install: |||
-    sudo pip3 uninstall --yes torch torch_xla torchvision numpy
-    sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-nightly-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-nightly-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-nightly-cp38-cp38-linux_x86_64.whl numpy
-    sudo pip3 install mkl mkl-include
-    sudo apt-get -y update
-    sudo apt-get install -y libomp5
-    git clone https://github.com/pytorch/pytorch.git
+  tpu_vm_1_10_install: |||
+    sudo bash /var/scripts/docker-login.sh
+    sudo docker rm libtpu || true
+    sudo docker create --name libtpu gcr.io/cloud-tpu-v2-images/libtpu:pytorch-1.9 "/bin/bash"
+    sudo docker cp libtpu:libtpu.so /lib
+    sudo pip3 uninstall --yes torch torch_xla torchvision
+    sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-1.10-cp38-cp38-linux_x86_64.whl
+    sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-1.10-cp38-cp38-linux_x86_64.whl
+    sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.10-cp38-cp38-linux_x86_64.whl
+    git clone https://github.com/pytorch/pytorch.git -b release/1.10
     cd pytorch
-    git clone https://github.com/pytorch/xla.git
+    git clone https://github.com/pytorch/xla.git -b r1.10
+    export XRT_TPU_CONFIG='localservice;0;localhost:51011'
+    export LD_PRELOAD='/usr/lib/x86_64-linux-gnu/libtcmalloc.so.4'
   |||,
 }

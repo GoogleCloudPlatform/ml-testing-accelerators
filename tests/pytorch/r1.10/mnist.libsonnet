@@ -45,7 +45,7 @@ local utils = import 'templates/utils.libsonnet';
   |||,
 
   local mnist_gpu_py37_cuda_101 = common.PyTorchTest {
-    imageTag: 'nightly_3.7_cuda_10.1',
+    imageTag: 'r1.10_3.7_cuda_10.1',
     modelName: 'mnist-cuda-10-1',
     volumeMap+: {
       datasets: common.datasetsVolume,
@@ -53,7 +53,7 @@ local utils = import 'templates/utils.libsonnet';
     schedule: '0 19 * * *',
   },
   local mnist_gpu_py37_cuda_102 = common.PyTorchTest {
-    imageTag: 'nightly_3.7_cuda_10.2',
+    imageTag: 'r1.10_3.7_cuda_10.2',
     modelName: 'mnist-cuda-10-2',
     volumeMap+: {
       datasets: common.datasetsVolume,
@@ -61,7 +61,7 @@ local utils = import 'templates/utils.libsonnet';
     schedule: '0 21 * * *',
   },
   local mnist_gpu_py37_cuda_112 = common.PyTorchTest {
-    imageTag: 'nightly_3.7_cuda_11.2',
+    imageTag: 'r1.10_3.7_cuda_11.2',
     modelName: 'mnist-cuda-11-2',
     volumeMap+: {
       datasets: common.datasetsVolume,
