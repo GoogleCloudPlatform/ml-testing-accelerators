@@ -14,4 +14,4 @@
 
 local all_tests = import 'all_tests.jsonnet';
 
-std.trace("%s" % [std.manifestYamlDoc(all_tests)], all_tests)
+std.trace('%s' % [std.manifestYamlDoc(all_tests)], all_tests)
