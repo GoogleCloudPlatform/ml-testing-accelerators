@@ -16,7 +16,7 @@ local common = import '../common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
-local version = '1.10';
+local version = 'r1.10';
 {
   PyTorchTest:: common.PyTorchTest {
     frameworkPrefix: 'pt-%s' % version,
