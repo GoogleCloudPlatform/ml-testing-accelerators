@@ -159,8 +159,6 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_32,
   },
   configs: [
-    resnet50_MP + v3_8 + convergence + timeouts.Hours(26) + mixins.PreemptibleTpu,
-    resnet50_MP + v3_8 + functional + timeouts.Hours(2),
     common.PyTorchTest + resnet50_tpu_vm + v3_8 + functional_tpu_vm + timeouts.Hours(2),
     common.PyTorchTest + resnet50_tpu_vm + v3_8 + convergence_tpu_vm + timeouts.Hours(4),
     common.PyTorchTest + resnet50_tpu_vm_pod + v3_32 + common.Functional + timeouts.Hours(4),

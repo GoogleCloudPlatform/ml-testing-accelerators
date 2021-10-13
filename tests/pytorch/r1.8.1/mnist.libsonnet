@@ -88,8 +88,6 @@ local utils = import 'templates/utils.libsonnet';
     schedule: '12 17 * * *',
   },
   configs: [
-    mnist + convergence + v2_8 + timeouts.Hours(1),
-    mnist + convergence + v3_8 + timeouts.Hours(1),
     mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
     mnist + convergence + v3_8 + timeouts.Hours(1) + tpuVm,
     mnist + convergence + v3_32 + timeouts.Hours(1) + tpuVmPod,

@@ -25,14 +25,10 @@ local fairseqRobertaPretrain = import 'roberta-pre.libsonnet';
 
 // Add new models here
 std.flattenArrays([
-  cppOperations.configs,
   dlrm.configs,
   fairseqRobertaPretrain.configs,
   fairseqTransformer.configs,
-  hfglue.configs,
   mnist.configs,
-  mnist_3_7.configs,
   pythonOperations.configs,
   resnet50.configs,
-  resnet50_pod.configs,
 ])
