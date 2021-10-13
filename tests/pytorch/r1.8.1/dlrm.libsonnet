@@ -184,11 +184,6 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
   },
   configs: [
-    dlrm + v3_8 + one_core + timeouts.Hours(3),
-    dlrm + v3_8 + seq_fwd + timeouts.Hours(3),
-    dlrm + v3_8 + mp_fwd + timeouts.Hours(3),
-    dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
-    dlrm_convergence + v3_8 + criteo_kaggle + timeouts.Hours(6),
     criteo_kaggle_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(6) + experimental.PyTorchTpuVmMixin,
   ],
 }
