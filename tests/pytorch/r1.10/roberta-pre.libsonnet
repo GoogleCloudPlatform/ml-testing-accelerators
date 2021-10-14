@@ -104,7 +104,7 @@ local utils = import 'templates/utils.libsonnet';
   local roberta_tpu_vm = common.PyTorchTest {
     frameworkPrefix: 'pt-r1.10',
     modelName: 'roberta-pre',
-    schedule: '30 13 * * *',
+
     command: utils.scriptCommand(
       |||
         %(command_common)s

@@ -39,7 +39,7 @@ local utils = import 'templates/utils.libsonnet';
   |||,
   local dlrm = common.PyTorchTest {
     modelName: 'dlrm',
-    schedule: '0 21 * * *',
+
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
@@ -60,7 +60,7 @@ local utils = import 'templates/utils.libsonnet';
   },
   local dlrm_convergence = common.PyTorchTest {
     modelName: 'dlrm-convergence',
-    schedule: '0 21 * * *',
+
     volumeMap+: {
       datasets: common.datasetsVolume,
     },

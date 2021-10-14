@@ -40,14 +40,14 @@ local version = 'r1.10';
     imageTag: version,
   },
   Functional:: mixins.Functional {
-    schedule: '30 5 * * *',
+    schedule: '0 7 * * *',
     tpuSettings+: {
       preemptible: false,
     },
   },
   Convergence:: mixins.Convergence {
-    // Run 3 times/week.
-    schedule: '0 7 * * 1,3,5',
+    // Run 2 times/week.
+    schedule: '0 7 * * 1,5',
   },
   datasetsVolume: volumes.PersistentVolumeSpec {
     name: 'pytorch-datasets-claim',
