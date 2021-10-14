@@ -8,6 +8,7 @@ local utils = import 'templates/utils.libsonnet';
     local config = self,
 
     mode: 'colab',
+    schedule: common.Functional.schedule,
 
     accelerator: tpus.v3_8,
     cpu: 8,
