@@ -33,8 +33,6 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   local convergence = common.Convergence {
-    // Run daily instead of 2x per week since convergence is fast.
-
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {

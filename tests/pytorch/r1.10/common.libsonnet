@@ -46,8 +46,8 @@ local version = 'r1.10';
     },
   },
   Convergence:: mixins.Convergence {
-    // Run 2 times/week.
-    schedule: '0 7 * * 1,5',
+    // Run 3 times/week.
+    schedule: '0 7 * * 1,3,5',
   },
   datasetsVolume: volumes.PersistentVolumeSpec {
     name: 'pytorch-datasets-claim',
