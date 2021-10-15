@@ -34,9 +34,11 @@ local utils = import 'templates/utils.libsonnet';
     ),
   },
 
-  local API = common.RunNightly {
+  local API = {
     mode: 'api',
     timeout: timeouts.one_hour,
+    // Run at 2AM PST daily
+    schedule: '0 10 * * *',
     tpuSettings+: {
       preemptible: true,
     },
