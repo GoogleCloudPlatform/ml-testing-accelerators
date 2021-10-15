@@ -13,7 +13,7 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
-local metrics = import 'templates/metrics.libsonnet';
+local experimental = import '../experimental.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 
 {
