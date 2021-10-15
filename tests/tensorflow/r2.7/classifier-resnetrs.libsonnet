@@ -19,83 +19,56 @@ local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  local efficientnet = common.ModelGardenTest {
-    modelName: 'classifier-efficientnet',
+  local resnetrs = common.ModelGardenTest {
+    modelName: 'classifier-resnetrs',
     paramsOverride:: {
-      train: {
-        epochs: error 'Must set `train.epochs`',
+      trainer: {
+        train_steps: error 'Must set `trainer.train_steps`',
+        validation_interval: error 'Must set `trainer.validation_interval`',
       },
-      model: {
-        model_params: {
-          model_name: 'efficientnet-b0',
+      task: {
+        train_data: {
+          input_path: '$(IMAGENET_DIR)/train*',
         },
-      },
-      evaluation: {
-        epochs_between_evals: error 'Must set `evaluation.epochs_between_evals`',
-      },
-      train_dataset: {
-        builder: 'records',
-      },
-      validation_dataset: {
-        builder: 'records',
+        validation_data: {
+          input_path: '$(IMAGENET_DIR)/valid*',
+        },
       },
     },
     command: [
       'python3',
-      'official/vision/image_classification/classifier_trainer.py',
-      '--data_dir=$(IMAGENET_DIR)',
-      '--model_type=efficientnet',
-      '--dataset=imagenet',
+      'official/vision/beta/train.py',
+      '--experiment=resnet_rs_imagenet',
       '--mode=train_and_eval',
       '--model_dir=$(MODEL_DIR)',
+      '--config_file=official/vision/beta/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml',
       '--params_override=%s' % std.manifestYamlDoc(self.paramsOverride) + '\n',
     ],
   },
-  local hbm = common.Functional {
-    // Tests EfficientNet-b7 to check for HBM OOM.
-    mode: 'hbm',
-    paramsOverride+: {
-      train+: {
-        epochs: 1,
-      },
-      model+: {
-        model_params+: {
-          model_name: 'efficientnet-b7',
-        },
-      },
-      evaluation+: {
-        epochs_between_evals: 1,
-      },
-    },
-  },
   local functional = common.Functional {
     paramsOverride+: {
-      train+: {
-        epochs: 1,
-      },
-      evaluation+: {
-        epochs_between_evals: 1,
+      trainer+: {
+        train_steps: 320,
+        validation_interval: 320,
       },
     },
   },
   local convergence = common.Convergence {
     paramsOverride+: {
-      train+: {
-        epochs: 350,
-      },
-      evaluation+: {
-        epochs_between_evals: 10,
+      trainer+: {
+        train_steps: 109200,
+        validation_interval: 3120,
       },
     },
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
           aggregateAssertionsMap+:: {
-            'validation/epoch_accuracy': {
+            'validation/accuracy': {
               FINAL: {
                 fixed_value: {
                   comparison: 'GREATER',
-                  value: 0.76,
+                  value: 0.79,
                 },
                 inclusive_bounds: false,
                 wait_for_n_data_points: 0,
@@ -106,20 +79,34 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
+
   local gpu_common = {
     local config = self,
 
-    modelName: 'efficientnet',
     paramsOverride+:: {
-      runtime: {
+      runtime+: {
+        distribution_strategy: 'mirrored',
+        loss_scale: 'dynamic',
         num_gpus: config.accelerator.count,
       },
     },
-    command+: [
-      '--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-gpu.yaml',
-    ],
   },
-  local k80x8 = gpu_common {
+  local k80 = gpu_common {
+    local config = self,
+
+    paramsOverride+:: {
+      task+: {
+        train_data+: {
+          global_batch_size: 128,
+        },
+        validation_data+: {
+          global_batch_size: 128,
+        },
+      },
+    },
+    accelerator: gpus.teslaK80,
+  },
+  local k80x8 = k80 {
     paramsOverride+:: {
       runtime+: {
         all_reduce_alg: 'hierarchical_copy',
@@ -130,13 +117,16 @@ local tpus = import 'templates/tpus.libsonnet';
   local v100 = gpu_common {
     accelerator: gpus.teslaV100,
   },
-  local v100x4 = gpu_common {
+  local v100x4 = v100 {
     accelerator: gpus.teslaV100 { count: 4 },
   },
+  local v100x8 = v100 {
+    accelerator: gpus.teslaV100 { count: 8 },
+  },
+
   local tpu_common = {
     command+: [
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
-      '--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-tpu.yaml',
     ],
   },
   local v2_8 = tpu_common {
@@ -153,15 +143,12 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
-    efficientnet + v2_8 + functional,
-    efficientnet + v2_8 + functional + common.tpuVm,
-    efficientnet + v3_8 + functional,
-    efficientnet + v3_8 + hbm + mixins.Unsuspended,
-//    efficientnet + v2_8 + convergence + timeouts.Hours(45) + { schedule: '0 8 * * 2,5' },
-//    efficientnet + v3_8 + convergence + timeouts.Hours(45) + { schedule: '0 8 * * 2,5' },
-    efficientnet + v2_32 + functional,
-    efficientnet + v2_32 + functional + common.tpuVm,
-    efficientnet + v3_32 + functional,
-    efficientnet + v3_32 + convergence + timeouts.Hours(24),
+    resnetrs + v2_8 + functional + mixins.Unsuspended,
+    resnetrs + v3_8 + functional,
+    resnetrs + v2_8 + convergence + timeouts.Hours(30),
+    resnetrs + v3_8 + convergence + timeouts.Hours(30),
+    resnetrs + v2_32 + functional,
+    resnetrs + v3_32 + functional,
+    resnetrs + v3_32 + convergence + timeouts.Hours(15),
   ],
 }

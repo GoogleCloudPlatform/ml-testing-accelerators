@@ -160,7 +160,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
   configs: [
     resnet + v100x8 + functional + mixins.Unsuspended,
-    resnet + v100x8 + convergence + timeouts.Hours(45) + { schedule: '0 8 * * 1,4' },
+//    resnet + v100x8 + convergence + timeouts.Hours(45) + { schedule: '0 8 * * 1,4' },
     resnet + v2_8 + functional,
     resnet + v2_8 + functional + common.tpuVm,
     resnet + v3_8 + functional,
