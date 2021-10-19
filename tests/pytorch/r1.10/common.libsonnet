@@ -39,7 +39,7 @@ local volumes = import 'templates/volumes.libsonnet';
     imageTag: 'r1.10',
   },
   Functional:: mixins.Functional {
-    schedule: '30 5 * * *',
+    schedule: '0 7 * * *',
     tpuSettings+: {
       preemptible: false,
     },

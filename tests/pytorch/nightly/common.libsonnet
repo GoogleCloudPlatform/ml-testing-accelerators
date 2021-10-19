@@ -40,15 +40,12 @@ local version = 'nightly';
     imageTag: version,
   },
   Functional:: mixins.Functional {
-    schedule: '0 18 * * *',
+    schedule: '0 7 * * *',
     tpuSettings+: {
       preemptible: false,
     },
   },
-  Convergence:: mixins.Convergence {
-    // Run at 22:00 PST on Monday and Thursday.
-    schedule: '0 6 * * 1,3,6',
-  },
+  Convergence:: mixins.Convergence,
   datasetsVolume: volumes.PersistentVolumeSpec {
     name: 'pytorch-datasets-claim',
     mountPath: '/datasets',

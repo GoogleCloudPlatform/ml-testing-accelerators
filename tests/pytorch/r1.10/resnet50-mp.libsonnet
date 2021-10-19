@@ -40,7 +40,7 @@ local utils = import 'templates/utils.libsonnet';
     },
     cpu: '7.0',
     memory: '40Gi',
-    schedule: '0 20 * * *',
+
   },
   local resnet50_gpu_py37_cuda_102 = common.PyTorchTest {
     imageTag: 'r1.10_3.7_cuda_10.2',
@@ -50,7 +50,7 @@ local utils = import 'templates/utils.libsonnet';
     },
     cpu: '7.0',
     memory: '40Gi',
-    schedule: '0 18 * * *',
+
   },
   local resnet50_gpu_py37_cuda_112 = common.PyTorchTest {
     imageTag: 'r1.10_3.7_cuda_11.2',
@@ -60,7 +60,7 @@ local utils = import 'templates/utils.libsonnet';
     },
     cpu: '7.0',
     memory: '40Gi',
-    schedule: '0 16 * * *',
+
   },
   local resnet50_MP = common.PyTorchTest {
     modelName: 'resnet50-mp',
@@ -200,7 +200,7 @@ local utils = import 'templates/utils.libsonnet';
         },
       },
     },
-    schedule: '0 20 * * *',
+
   },
   local v3_8 = {
     accelerator: tpus.v3_8,

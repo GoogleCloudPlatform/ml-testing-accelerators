@@ -42,7 +42,7 @@ local utils = import 'templates/utils.libsonnet';
   },
   local py_ops_tpu_vm = common.PyTorchTest {
     modelName: 'python-ops',
-    schedule: '0 1 * * *',
+
     command: utils.scriptCommand(
       |||
         sudo pip3 install hypothesis
