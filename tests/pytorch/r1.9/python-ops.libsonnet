@@ -42,7 +42,7 @@ local utils = import 'templates/utils.libsonnet';
   },
   local py_ops_tpu_vm = common.PyTorchTest {
     modelName: 'python-ops',
-    schedule: '22 17 * * *',
+
     command: utils.scriptCommand(
       |||
         %(command_common)s

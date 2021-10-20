@@ -195,7 +195,7 @@ local utils = import 'templates/utils.libsonnet';
   local transformer_tpu_vm = common.PyTorchTest {
     frameworkPrefix: 'pt-nightly',
     modelName: 'fs-transformer',
-    schedule: '33 17 * * *',
+
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {

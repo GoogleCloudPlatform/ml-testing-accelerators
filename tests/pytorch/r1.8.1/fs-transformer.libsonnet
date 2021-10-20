@@ -227,11 +227,6 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_32,
   },
   configs: [
-    common.PyTorchXlaDistPodTest + transformer + v3_32 + functional_xla_dist + timeouts.Hours(1),
-    common.PyTorchTest + transformer + v3_8 + functional + timeouts.Hours(1),
-    common.PyTorchTest + transformer + v3_8 + convergence + timeouts.Hours(25),
-    common.PyTorchTest + transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
-    common.PyTorchTest + transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
     common.PyTorchTest + convergence_tpu_vm + v3_8 + timeouts.Hours(25) + experimental.PyTorchTpuVmMixin,
   ],
 }

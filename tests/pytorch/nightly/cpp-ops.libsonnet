@@ -42,7 +42,7 @@ local utils = import 'templates/utils.libsonnet';
   },
   local cpp_ops_tpu_vm = common.PyTorchTest {
     modelName: 'cpp-ops',
-    schedule: '0 0 * * *',
+
     command: utils.scriptCommand(
       |||
         %(command_common)s

@@ -77,19 +77,17 @@ local utils = import 'templates/utils.libsonnet';
   },
   local v2_8 = {
     accelerator: tpus.v2_8,
-    schedule: '0 23 * * *',
+
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
-    schedule: '2 23 * * *',
+
   },
   local v3_32 = {
     accelerator: tpus.v3_32,
-    schedule: '12 17 * * *',
+
   },
   configs: [
-    mnist + convergence + v2_8 + timeouts.Hours(1),
-    mnist + convergence + v3_8 + timeouts.Hours(1),
     mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
     mnist + convergence + v3_8 + timeouts.Hours(1) + tpuVm,
     mnist + convergence + v3_32 + timeouts.Hours(1) + tpuVmPod,

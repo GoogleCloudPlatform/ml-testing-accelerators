@@ -84,7 +84,7 @@ local utils = import 'templates/utils.libsonnet';
   local roberta_tpu_vm = common.PyTorchTest {
     frameworkPrefix: 'pt-r1.8.1',
     modelName: 'roberta-convergence',
-    schedule: '0 19 * * *',
+
     command: utils.scriptCommand(
       |||
         %s(setup_commands)s
@@ -151,9 +151,6 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_32,
   },
   configs: [
-    common.PyTorchGkePodTest + roberta + v3_32 + functional + timeouts.Hours(1),
-    common.PyTorchTest + roberta + v3_8 + functional + timeouts.Hours(1),
-    common.PyTorchTest + roberta + v3_8 + convergence + timeouts.Hours(2),
     roberta_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(6) + experimental.PyTorchTpuVmMixin,
   ],
 }

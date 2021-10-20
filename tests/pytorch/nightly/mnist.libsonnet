@@ -50,7 +50,7 @@ local utils = import 'templates/utils.libsonnet';
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    schedule: '0 19 * * *',
+
   },
   local mnist_gpu_py37_cuda_102 = common.PyTorchTest {
     imageTag: 'nightly_3.7_cuda_10.2',
@@ -58,7 +58,7 @@ local utils = import 'templates/utils.libsonnet';
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    schedule: '0 21 * * *',
+
   },
   local mnist_gpu_py37_cuda_112 = common.PyTorchTest {
     imageTag: 'nightly_3.7_cuda_11.2',
@@ -66,7 +66,7 @@ local utils = import 'templates/utils.libsonnet';
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    schedule: '0 23 * * *',
+
   },
 
   local convergence = common.Convergence {
@@ -92,15 +92,15 @@ local utils = import 'templates/utils.libsonnet';
 
   local v2_8 = {
     accelerator: tpus.v2_8,
-    schedule: '10 17 * * *',
+
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
-    schedule: '4 17 * * *',
+
   },
   local v3_32 = {
     accelerator: tpus.v3_32,
-    schedule: '13 17 * * *',
+
   },
   local v100 = {
     accelerator: gpus.teslaV100,

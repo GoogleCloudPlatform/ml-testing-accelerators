@@ -82,7 +82,7 @@ local utils = import 'templates/utils.libsonnet';
   |||,
   local w2v2 = common.PyTorchTest {
     modelName: 'w2v2',
-    schedule: '0 21 * * *',
+
     volumeMap+: {
       datasets: common.datasetsVolume,
     },

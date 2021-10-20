@@ -40,7 +40,7 @@ local utils = import 'templates/utils.libsonnet';
   |||,
   local dlrm = common.PyTorchTest {
     modelName: 'dlrm',
-    schedule: '0 21 * * *',
+
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
@@ -61,7 +61,7 @@ local utils = import 'templates/utils.libsonnet';
   },
   local dlrm_convergence = common.PyTorchTest {
     modelName: 'dlrm-convergence',
-    schedule: '0 21 * * *',
+
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
@@ -165,7 +165,7 @@ local utils = import 'templates/utils.libsonnet';
   local criteo_kaggle_tpu_vm = common.PyTorchTest {
     frameworkPrefix: 'pt-r1.8.1',
     modelName: 'dlrm-convergence',
-    schedule: '0 21 * * *',
+
     commandSpecifics: {
       training_flags: convergence_common,
       setup_commands: common.tpu_vm_1_8_1_install,
@@ -184,11 +184,6 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
   },
   configs: [
-    dlrm + v3_8 + one_core + timeouts.Hours(3),
-    dlrm + v3_8 + seq_fwd + timeouts.Hours(3),
-    dlrm + v3_8 + mp_fwd + timeouts.Hours(3),
-    dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
-    dlrm_convergence + v3_8 + criteo_kaggle + timeouts.Hours(6),
     criteo_kaggle_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(6) + experimental.PyTorchTpuVmMixin,
   ],
 }
