@@ -20,11 +20,11 @@ local mixins = import 'templates/mixins.libsonnet';
   ModelGardenTest:: common.ModelGardenTest {
     local config = self,
 
-    frameworkPrefix: 'tf-2.7.0',
+    frameworkPrefix: 'tf-r2.7.0',
     tpuSettings+: {
       softwareVersion: '2.7.0',
     },
-    imageTag: '2.7.0',
+    imageTag: 'r2.7.0',
   },
 
   // Setting the version for TPU VM.
@@ -61,9 +61,9 @@ local mixins = import 'templates/mixins.libsonnet';
     },
   },
 
-  // Running convergence tests at Midnight PST daily.
+  // Running convergence tests at Midnight PST Tue, Sat.
   Convergence:: mixins.Convergence {
-    schedule: '0 8 * * *',
+    schedule: '0 8 * * 2,6',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
