@@ -191,7 +191,7 @@ local experimental = import '../experimental.libsonnet';
       tpuVmStartupScript: |||
         sudo bash /var/scripts/docker-login.sh
         sudo pip3 uninstall --yes torch torch_xla torchvision numpy
-	sudo pip3 install https://storage.googleapis.com/cloud-tpu-tpuvm-artifacts/wheels/libtpu-nightly/libtpu_nightly-0.1.dev20211013-py3-none-any.whl
+    	  sudo pip3 install https://storage.googleapis.com/cloud-tpu-tpuvm-artifacts/wheels/libtpu-nightly/libtpu_nightly-0.1.dev20211013-py3-none-any.whl
         sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-1.10-cp38-cp38-linux_x86_64.whl
         sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.10-cp38-cp38-linux_x86_64.whl
         sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-1.10-cp38-cp38-linux_x86_64.whl numpy
