@@ -192,10 +192,9 @@ local experimental = import '../experimental.libsonnet';
         sudo bash /var/scripts/docker-login.sh
         sudo pip3 uninstall --yes torch torch_xla torchvision numpy
         sudo pip3 install https://storage.googleapis.com/cloud-tpu-tpuvm-artifacts/wheels/libtpu-nightly/libtpu_nightly-0.1.dev20211013-py3-none-any.whl
-        sudo cp /usr/local/lib/python3.8/dist-packages/libtpu/libtpu.so /lib
-        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-1.10-cp38-cp38-linux_x86_64.whl
+        sudo pip3 install torch==1.10.0 
         sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.10-cp38-cp38-linux_x86_64.whl
-        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-1.10-cp38-cp38-linux_x86_64.whl numpy
+        sudo pip3 install torchvision==0.11.1
         sudo pip3 install mkl mkl-include numpy
         sudo ln -s /usr/local/lib/libmkl_intel_lp64.so.1 /usr/local/lib/libmkl_intel_lp64.so
         sudo ln -s /usr/local/lib/libmkl_intel_thread.so.1 /usr/local/lib/libmkl_intel_thread.so
