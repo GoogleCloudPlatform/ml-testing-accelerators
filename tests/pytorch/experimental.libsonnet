@@ -187,7 +187,7 @@ local experimental = import '../experimental.libsonnet';
   PyTorch1_10TpuVmPodTest:: experimental.BaseTpuVmMixin {
     local config = self,
     tpuSettings+: {
-      softwareVersion: 'tpu-vm-pt-1.10.0',
+      softwareVersion: 'tpu-vm-pt-1.10',
       tpuVmStartupScript: |||
         sudo bash /var/scripts/docker-login.sh
         sudo pip3 uninstall --yes torch torch_xla torchvision numpy
