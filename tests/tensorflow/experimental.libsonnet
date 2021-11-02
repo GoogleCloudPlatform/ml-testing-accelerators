@@ -28,7 +28,7 @@ local mixins = import 'templates/mixins.libsonnet';
       softwareVersion+: if config.accelerator.replicas > 1 then
         '-pod'
       else
-        ''
+        '',
     },
 
     podTemplate+:: {
