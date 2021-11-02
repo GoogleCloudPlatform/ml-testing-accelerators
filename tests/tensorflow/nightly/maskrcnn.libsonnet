@@ -176,6 +176,24 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
+  local v4_8 = {
+    accelerator: tpus.v4_8,
+    paramsOverride+: {
+      train+: {
+        batch_size: 16,
+      },
+    },
+
+  },
+  local v4_32 = {
+    accelerator: tpus.v4_32,
+    paramsOverride+: {
+      train+: {
+        batch_size: 64,
+      },
+    },
+
+  },
   local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
@@ -194,5 +212,7 @@ local tpus = import 'templates/tpus.libsonnet';
     maskrcnn + convergence + v3_32,
     maskrcnn + functional + v2_8 + tpuVm + { paramsOverride+: { train+: { batch_size: 16 } } },
     maskrcnn + functional + v2_32 + tpuVm + { paramsOverride+: { train+: { batch_size: 64 } } },
+    maskrcnn + functional + v4_8 + tpuVm,
+    maskrcnn + functional + v4_32 + tpuVm,
   ],
 }

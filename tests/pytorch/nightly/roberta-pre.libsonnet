@@ -145,6 +145,9 @@ local utils = import 'templates/utils.libsonnet';
       ||| % common.tpu_vm_nightly_install
     ),
   },
+  local v4_8 = {
+    accelerator: tpus.v4_8,
+  },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
@@ -156,5 +159,6 @@ local utils = import 'templates/utils.libsonnet';
     common.PyTorchTest + roberta + v3_8 + functional + timeouts.Hours(1),
     common.PyTorchTest + roberta + v3_8 + convergence + timeouts.Hours(2),
     roberta_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(6) + experimental.PyTorchTpuVmMixin,
+    roberta_tpu_vm + v4_8 + common.Convergence + timeouts.Hours(6) + experimental.PyTorchTpuVmMixin,
   ],
 }
