@@ -28,6 +28,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local v4_8 = {
     accelerator: tpus.v4_8,
+    extraFlags+:: '--config.batch_size=1024'
   },
   local v2_8 = {
     accelerator: tpus.v2_8,
