@@ -39,7 +39,7 @@ local mixins = import 'templates/mixins.libsonnet';
   local functional_schedule = '0 7 * * *',
   Functional:: mixins.Functional {
     schedule:
-      if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' then
+      if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' || self.accelerator.version == 4 then
         functional_schedule
       else
         null,
