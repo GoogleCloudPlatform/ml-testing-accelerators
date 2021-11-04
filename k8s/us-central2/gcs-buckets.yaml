@@ -23,7 +23,7 @@ data:
   BERT_CLASSIFICATION_DIR: gs://cloud-tpu-checkpoints/bert/classification
   BERT_SQUAD_DIR: gs://xl-ml-test-us-central2/data/squad
   KERAS_BERT_DIR: gs://cloud-tpu-checkpoints/bert/keras_bert
-  IMAGENET_DIR: gs://xl-ml-test-us-central2/imagenet
+  IMAGENET_DIR: gs://xl-ml-test-us-central2/data/imagenet
   COCO_DIR: gs://xl-ml-test-us-central2/data/coco
   RESNET_PRETRAIN_DIR: gs://xl-ml-test-us-central2/data/pretrain
   TRANSFORMER_DIR: gs://xl-ml-test-us-central2/data/transformer
