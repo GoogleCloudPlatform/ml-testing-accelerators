@@ -51,7 +51,7 @@ local utils = import 'templates/utils.libsonnet';
       ||| % common.tpu_vm_1_10_install
     ),
   },
-  
+
   configs: [
     operations + v2_8 + common.Functional + timeouts.Hours(4),
     operations + v3_8 + common.Functional + timeouts.Hours(4),

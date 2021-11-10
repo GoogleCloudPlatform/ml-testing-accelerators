@@ -13,9 +13,9 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
+local experimental = import '../experimental.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
-local experimental = import '../experimental.libsonnet';
 
 {
   PyTorchTest:: common.PyTorchTest {
