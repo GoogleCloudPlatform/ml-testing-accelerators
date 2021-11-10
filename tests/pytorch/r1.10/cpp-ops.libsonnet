@@ -51,23 +51,11 @@ local utils = import 'templates/utils.libsonnet';
       ||| % common.tpu_vm_1_10_install
     ),
   },
-  local tpu_vm = common.PyTorchTpuVm {
-    modelName: 'cpp-ops',
-
-    command: utils.scriptCommand(
-      |||
-        %(command_common)s
-        cd xla/test/cpp
-        export TPUVM_MODE=1
-        ./run_tests.sh
-      ||| % common.tpu_vm_1_10_install
-    ),
-  },
-
+  
   configs: [
     operations + v2_8 + common.Functional + timeouts.Hours(4),
     operations + v3_8 + common.Functional + timeouts.Hours(4),
-    tpu_vm + v3_8 + common.Functional + timeouts.Hours(4),
-    tpu_vm + v2_8 + common.Functional + timeouts.Hours(4),
+    cpp_ops_tpu_vm + v3_8 + common.Functional + timeouts.Hours(4) + common.PyTorchTpuVm,
+    cpp_ops_tpu_vm + v2_8 + common.Functional + timeouts.Hours(4) + common.PyTorchTpuVm,
   ],
 }
