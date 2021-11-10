@@ -22,18 +22,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends git
 RUN pip3 install cloud-tpu-client pyyaml
 
 ARG tensorflow_text_version=latest
-ARG keras_version=latest
 
 # HACKs: Remove this once they are added to the Model Garden requirements
 RUN pip3 install tensorflow-recommenders --no-deps
-RUN pip3 install tensorflow-text==${tensorflow_text_version} --no-deps
-RUN pip3 install keras==${keras_version} --no-deps
+RUN if [ "${image_version}" = "nightly" -o "${tensorflow_text_version}" = "latest" ]; then \
+    pip3 install tensorflow-text --no-deps; \
+    else \
+    pip3 install tensorflow-text==${tensorflow_text_version} --no-deps; \
+    fi
 
+ 
 # Checkout tensorflow/models at HEAD
 WORKDIR /
 RUN curl -L https://github.com/tensorflow/models/archive/${model_garden_branch}.tar.gz | tar zx
 RUN mv models-${model_garden_branch} garden/
-RUN pip3 install -r /garden/official/requirements.txt
+RUN pip3 install -r /garden/official/requirements.txt --no-deps
 ENV PYTHONPATH /garden
 
 RUN curl -L https://github.com/tensorflow/benchmarks/archive/master.tar.gz | tar xz
