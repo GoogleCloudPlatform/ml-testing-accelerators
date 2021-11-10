@@ -15,6 +15,7 @@
 local common = import '../common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
+local experimental = import '../experimental.libsonnet';
 
 {
   PyTorchTest:: common.PyTorchTest {
@@ -23,6 +24,13 @@ local volumes = import 'templates/volumes.libsonnet';
       softwareVersion: 'pytorch-1.10',
     },
     imageTag: 'r1.10',
+  },
+  // pytorch does not use a specific image for pods
+  PyTorchTpuVm:: experimental.PyTorchTpuVmMixin {
+    local config = self,
+    tpuSettings+: {
+      softwareVersion: 'tpu-vm-pt-1.10',
+    },
   },
   PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest {
     frameworkPrefix: 'pt-r1.10',
@@ -54,11 +62,6 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   tpu_vm_1_10_install: |||
     sudo bash /var/scripts/docker-login.sh
-    sudo pip3 uninstall --yes torch torch_xla torchvision
-    sudo pip3 install https://storage.googleapis.com/cloud-tpu-tpuvm-artifacts/wheels/libtpu-nightly/libtpu_nightly-0.1.dev20211013-py3-none-any.whl
-    sudo pip3 install torch==1.10.0 
-    sudo pip3 install torchvision==0.11.1
-    sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.10-cp38-cp38-linux_x86_64.whl
     git clone https://github.com/pytorch/pytorch.git -b release/1.10
     cd pytorch
     git clone https://github.com/pytorch/xla.git -b r1.10
