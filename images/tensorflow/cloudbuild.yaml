@@ -20,7 +20,9 @@ steps:
     'gcr.io/$PROJECT_ID/tensorflow:$_VERSION', '.',
     '-f', 'images/tensorflow/Dockerfile',
     '--build-arg', 'image_version=$_BASE_IMAGE_VERSION',
-    '--build-arg', 'model_garden_branch=$_MODEL_GARDEN_BRANCH'
+    '--build-arg', 'model_garden_branch=$_MODEL_GARDEN_BRANCH',
+    '--build-arg', 'tensorflow_text_version=$_TENSORFLOW_TEXT_VERSION',
+    '--build-arg', 'keras_version=$_KERAS_VERSION'
   ]
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'gcr.io/$PROJECT_ID/tensorflow:$_VERSION']
@@ -30,5 +32,7 @@ substitutions:
   _VERSION: 'latest'
   _BASE_IMAGE_VERSION: 'nightly'
   _MODEL_GARDEN_BRANCH: 'master'
+  _TENSORFLOW_TEXT_VERSION: 'latest'
+  _KERAS_VERSION: 'latest'
 options:
   substitution_option: 'ALLOW_LOOSE'
