@@ -15,10 +15,12 @@
 local imagenet = import 'imagenet.libsonnet';
 local mnist = import 'mnist.libsonnet';
 local wmt = import 'wmt.libsonnet';
+local vit = import 'vit.libsonnet';
 
 // Add new models here
 std.flattenArrays([
   imagenet.configs,
   wmt.configs,
   mnist.configs,
+  vit.configs,
 ])
