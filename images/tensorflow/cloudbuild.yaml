@@ -31,6 +31,6 @@ substitutions:
   _VERSION: 'latest'
   _BASE_IMAGE_VERSION: 'nightly'
   _MODEL_GARDEN_BRANCH: 'master'
-  _TENSORFLOW_TEXT_VERSION: 'latest'
+  _TENSORFLOW_TEXT_VERSION: 'nightly'
 options:
   substitution_option: 'ALLOW_LOOSE'
