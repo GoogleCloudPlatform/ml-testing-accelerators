@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
@@ -56,8 +55,7 @@ local utils = import 'templates/utils.libsonnet';
   configs: [
     operations + v2_8 + common.Functional + timeouts.Hours(4),
     operations + v3_8 + common.Functional + timeouts.Hours(4),
-    // TPUVM not working yet: https://b.corp.google.com/issues/183450497#comment18
-    // cpp_ops_tpu_vm + v3_8 + common.Functional + timeouts.Hours(4) + experimental.PyTorchTpuVmMixin,
-    // cpp_ops_tpu_vm + v2_8 + common.Functional + timeouts.Hours(4) + experimental.PyTorchTpuVmMixin,
+    cpp_ops_tpu_vm + v3_8 + common.Functional + timeouts.Hours(4) + common.PyTorchTpuVm,
+    cpp_ops_tpu_vm + v2_8 + common.Functional + timeouts.Hours(4) + common.PyTorchTpuVm,
   ],
 }
