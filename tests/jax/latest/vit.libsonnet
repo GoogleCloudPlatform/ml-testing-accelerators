@@ -57,8 +57,12 @@ local tpus = import 'templates/tpus.libsonnet';
     cd vision_transformer
     pip install -r vit_jax/requirements.txt
 
-    python3 -m vit_jax.main --config=$(pwd)/vit_jax/configs/vit.py:b16,cifar10 --workdir=$(MODEL_DIR) \
-      --config.pretrained_dir="gs://vit_models/imagenet21k" %(extraFlags)s
+    export GCS_BUCKET=$(MODEL_DIR)
+    export TFDS_DATA_DIR=$(TFDS_DIR)
+    python3 -m vit_jax.main --config=$(pwd)/vit_jax/configs/vit.py:b16,cifar10 \
+      --workdir=$(MODEL_DIR) \
+      --config.pretrained_dir="gs://vit_models/imagenet21k" \
+      %(extraFlags)s
   |||,
 
   local vit = common.JaxTest + common.jaxlibLatest + common.alphaImage {
@@ -68,9 +72,9 @@ local tpus = import 'templates/tpus.libsonnet';
     extraDeps:: '',
     extraFlags:: '',
     testScript:: vitTestScriptTemplate % (self.scriptConfig {
-      extraFlags: config.extraFlags,
-      extraDeps: config.extraDeps,
-    }),
+                                            extraFlags: config.extraFlags,
+                                            extraDeps: config.extraDeps,
+                                          }),
   },
 
   local vit_pod = common.JaxPodTest + common.jaxlibLatest + common.alphaImage {
@@ -80,9 +84,9 @@ local tpus = import 'templates/tpus.libsonnet';
     extraDeps:: '',
     extraFlags:: '',
     testScript:: vitTestScriptTemplate % (self.scriptConfig {
-      extraFlags: config.extraFlags,
-      extraDeps: config.extraDeps,
-    }),
+                                            extraFlags: config.extraFlags,
+                                            extraDeps: config.extraDeps,
+                                          }),
   },
 
   configs: [

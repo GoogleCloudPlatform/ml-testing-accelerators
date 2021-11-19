@@ -69,9 +69,9 @@ local tpus = import 'templates/tpus.libsonnet';
       python3 -m vit_jax.main --config=$(pwd)/vit_jax/configs/vit.py:b16,cifar10 --workdir=$(MODEL_DIR) \
         --config.pretrained_dir="gs://vit_models/imagenet21k" %(extraFlags)s
     ||| % (self.scriptConfig {
-        extraFlags: config.extraFlags,
-        extraDeps: config.extraDeps,
-      }),
+             extraFlags: config.extraFlags,
+             extraDeps: config.extraDeps,
+           }),
   },
 
   configs: [
