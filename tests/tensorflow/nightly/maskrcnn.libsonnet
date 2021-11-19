@@ -176,7 +176,7 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
-  local v4_8 = {
+  local v4_8 = tpu_common {
     accelerator: tpus.v4_8,
     paramsOverride+: {
       train+: {
@@ -185,7 +185,7 @@ local tpus = import 'templates/tpus.libsonnet';
     },
 
   },
-  local v4_32 = {
+  local v4_32 = tpu_common {
     accelerator: tpus.v4_32,
     paramsOverride+: {
       train+: {
