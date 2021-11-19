@@ -19,7 +19,7 @@ RUN apt update && apt install -y python3-dev
 ARG tensorflow_minor_version=r2.4
 
 RUN git clone https://github.com/tensorflow/tensorflow.git --branch=$tensorflow_minor_version --depth=1
-RUN bash -c "source tensorflow/tensorflow/tools/ci_build/release/common.sh && install_ubuntu_16_pip_deps"
+RUN bash -c "cd tensorflow && source tensorflow/tools/ci_build/release/common.sh && install_ubuntu_16_pip_deps"
 RUN curl -sSLO https://github.com/bazelbuild/bazel/releases/download/$(cat /tensorflow/.bazelversion)/bazel-$(cat /tensorflow/.bazelversion)-installer-linux-x86_64.sh
 RUN chmod +x bazel-*.sh
 RUN ./bazel-*.sh
