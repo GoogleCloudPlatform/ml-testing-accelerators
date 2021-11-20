@@ -77,18 +77,6 @@ local tpus = import 'templates/tpus.libsonnet';
                                           }),
   },
 
-  local vit_pod = common.JaxPodTest + common.jaxlibLatest + common.alphaImage {
-    local config = self,
-    frameworkPrefix: 'flax-latest',
-    modelName:: 'vit',
-    extraDeps:: '',
-    extraFlags:: '',
-    testScript:: vitTestScriptTemplate % (self.scriptConfig {
-                                            extraFlags: config.extraFlags,
-                                            extraDeps: config.extraDeps,
-                                          }),
-  },
-
   configs: [
     vit + functional + v2_8,
     vit + convergence + v3_8,

@@ -29,6 +29,7 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: tpus.v2_8,
   },
 
+  // TODO: move shared code into a common file
   local vit = common.JaxTest + common.jaxlibHead + common.nightlyImage {
     local config = self,
     frameworkPrefix: 'flax-nightly',
@@ -53,8 +54,6 @@ local tpus = import 'templates/tpus.libsonnet';
       %(installLocalJax)s
       %(maybeBuildJaxlib)s
       %(printDiagnostics)s
-
-      sudo rm /usr/local/lib/python3.8/dist-packages/tensorflow/core/kernels/libtfkernel_sobol_op.so
 
       num_devices=`python3 -c "import jax; print(jax.device_count())"`
       if [ "$num_devices" = "1" ]; then
