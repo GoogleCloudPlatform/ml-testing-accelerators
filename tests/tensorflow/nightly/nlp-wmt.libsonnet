@@ -29,7 +29,7 @@ local utils = import 'templates/utils.libsonnet';
           sentencepiece_model_path: '$(TRANSFORMER_DIR)/ende_bpe_32k.model',
         },
       },
-    }
+    },
   },
   local functional = common.Functional {
     scriptConfig+: {
