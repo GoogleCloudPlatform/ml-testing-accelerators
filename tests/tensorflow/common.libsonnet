@@ -43,19 +43,14 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   TfNlpVisionMixin:: {
     local config = self,
-    experiment: error 'Must define `experiment`',
     additionalOverrides:: {},
-    configFiles: [],
-    additionalConfigFile: '',
-    trainFilePattern: '',
-    evalFilePattern: '',
 
     scriptConfig:: {
       runnerPath: error 'Must define `runnerPath.`',
-      experiment: config.experiment,
-      configFiles: config.configFiles,
-      trainFilePattern: config.trainFilePattern,
-      evalFilePattern: config.evalFilePattern,
+      experiment: error 'Must define `experiment`',
+      configFiles: [],
+      trainFilePattern: '',
+      evalFilePattern: '',
       paramsOverride:: {
         runtime: {
           distribution_strategy: 'tpu',
@@ -80,7 +75,7 @@ local volumes = import 'templates/volumes.libsonnet';
       '--mode=train_and_eval' % config.scriptConfig,
       '--model_dir=$(MODEL_DIR)',
       '--params_override=%(paramsOverride)s' % config.scriptConfig {
-        paramsOverride: std.manifestYamlDoc(config.scriptConfig.paramsOverride + config.additionalOverrides) + '\n',
+        paramsOverride: std.manifestYamlDoc(config.scriptConfig.paramsOverride) + '\n',
       },
     ] + ['--config_file=%s' % configFile for configFile in config.scriptConfig.configFiles],
   },

@@ -22,18 +22,22 @@ local utils = import 'templates/utils.libsonnet';
 {
   local transformer = common.TfNlpTest {
     modelName: 'nlp-wmt-transformer',
-    experiment: 'wmt_transformer/large',
-    additionalOverrides:: {
-      task+: {
-        sentencepiece_model_path: '$(TRANSFORMER_DIR)/ende_bpe_32k.model',
+    scriptConfig+: {
+      experiment: 'wmt_transformer/large',
+      paramsOverride+: {
+        task+: {
+          sentencepiece_model_path: '$(TRANSFORMER_DIR)/ende_bpe_32k.model',
+        },
       },
-    },
+    }
   },
   local functional = common.Functional {
-    additionalOverrides+: {
-      trainer: {
-        train_steps: 10000,
-        validation_interval: 10000,
+    scriptConfig+: {
+      paramsOverride+: {
+        trainer+: {
+          train_steps: 10000,
+          validation_interval: 10000,
+        },
       },
     },
   },
@@ -50,7 +54,6 @@ local utils = import 'templates/utils.libsonnet';
   local v3_32 = {
     accelerator: tpus.v3_32,
   },
-
   configs: [
     transformer + accelerator + test_type
     for accelerator in [v2_8, v3_8, v2_32, v3_32]

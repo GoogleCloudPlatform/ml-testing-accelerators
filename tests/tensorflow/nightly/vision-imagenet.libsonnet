@@ -21,24 +21,31 @@ local utils = import 'templates/utils.libsonnet';
 
 {
   local imagenet = {
-    trainFilePattern: '$(IMAGENET_DIR)/train*',
-    evalFilePattern: '$(IMAGENET_DIR)/valid*',
+    scriptConfig+: {
+      trainFilePattern: '$(IMAGENET_DIR)/train*',
+      evalFilePattern: '$(IMAGENET_DIR)/valid*',
+    },
   },
   local resnet = common.TfVisionTest + imagenet {
     modelName: 'vision-resnet',
-    experiment: 'resnet_imagenet',
-    configFiles: ['official/vision/beta/configs/experiments/image_classification/imagenet_resnet101_tpu.yaml'],
+    scriptConfig+: {
+      experiment: 'resnet_imagenet',
+    },
   },
   local resnet_rs = common.TfVisionTest + imagenet {
     modelName: 'vision-resnetrs',
-    experiment: 'resnet_rs_imagenet',
-    configFile: ['official/vision/beta/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml'],
+    scriptConfig+: {
+      experiment: 'resnet_rs_imagenet',
+      configFile: ['official/vision/beta/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml'],
+    },
   },
   local functional = common.Functional {
-    additionalOverrides+: {
-      trainer: {
-        train_steps: 320,
-        validation_interval: 320,
+    scriptConfig+: {
+      paramsOverride+: {
+        trainer: {
+          train_steps: 320,
+          validation_interval: 320,
+        },
       },
     },
   },
@@ -55,10 +62,20 @@ local utils = import 'templates/utils.libsonnet';
   local v3_32 = {
     accelerator: tpus.v3_32,
   },
-  configs: [
-    benchmark + accelerator + test_type
+  local functionalTests = [
+    benchmark + accelerator + functional
     for benchmark in [resnet, resnet_rs]
     for accelerator in [v2_8, v3_8, v2_32, v3_32]
-    for test_type in [functional, convergence]
   ],
+  local convergenceTests = [
+    resnet + v2_8 + convergence,
+    resnet + v3_8 + convergence,
+    resnet + v2_32+ convergence,
+    resnet + v3_32 + convergence,
+    resnet_rs + v2_8 + convergence + timeouts.Hours(24),
+    resnet_rs + v3_8 + convergence + timeouts.Hours(24),
+    resnet_rs + v2_32+ convergence + timeouts.Hours(15),
+    resnet_rs + v3_32 + convergence + timeouts.Hours(15),
+  ],
+  configs: functionalTests + convergenceTests
 }
