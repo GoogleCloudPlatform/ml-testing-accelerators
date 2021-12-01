@@ -41,6 +41,49 @@ local volumes = import 'templates/volumes.libsonnet';
       },
     },
   },
+  TfNlpVisionMixin:: {
+    local config = self,
+    experiment: error 'Must define `experiment`',
+    additionalOverrides:: {},
+    configFiles: [],
+    additionalConfigFile: '',
+    trainFilePattern: '',
+    evalFilePattern: '',
+
+    scriptConfig:: {
+      runnerPath: error 'Must define `runnerPath.`',
+      experiment: config.experiment,
+      configFiles: config.configFiles,
+      trainFilePattern: config.trainFilePattern,
+      evalFilePattern: config.evalFilePattern,
+      paramsOverride:: {
+        runtime: {
+          distribution_strategy: 'tpu',
+        },
+        task: {
+          train_data: {
+            tfds_data_dir: '$(TFDS_DIR)',
+            input_path: '%s' % config.scriptConfig.trainFilePattern,
+          },
+          validation_data: {
+            tfds_data_dir: '$(TFDS_DIR)',
+            input_path: '%s' % config.scriptConfig.evalFilePattern,
+          },
+        },
+      },
+    },
+    command: [
+      'python3',
+      '%(runnerPath)s' % config.scriptConfig,
+      '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
+      '--experiment=%(experiment)s' % config.scriptConfig,
+      '--mode=train_and_eval' % config.scriptConfig,
+      '--model_dir=$(MODEL_DIR)',
+      '--params_override=%(paramsOverride)s' % config.scriptConfig {
+        paramsOverride: std.manifestYamlDoc(config.scriptConfig.paramsOverride + config.additionalOverrides) + '\n',
+      },
+    ] + ['--config_file=%s' % configFile for configFile in config.scriptConfig.configFiles],
+  },
   LegacyTpuTest:: common.CloudAcceleratorTest {
     local config = self,
     image: 'gcr.io/xl-ml-test/tensorflow-tpu-1x',
