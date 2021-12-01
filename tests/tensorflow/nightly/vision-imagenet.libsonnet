@@ -77,5 +77,5 @@ local utils = import 'templates/utils.libsonnet';
     resnet_rs + v2_32 + convergence + timeouts.Hours(15),
     resnet_rs + v3_32 + convergence + timeouts.Hours(15),
   ],
-  configs: functionalTests + convergenceTests
+  configs: functionalTests + convergenceTests,
 }
