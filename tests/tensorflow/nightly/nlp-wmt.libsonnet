@@ -55,8 +55,12 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_32,
   },
   configs: [
-    transformer + accelerator + test_type
+    transformer + accelerator + functional
     for accelerator in [v2_8, v3_8, v2_32, v3_32]
-    for test_type in [functional, convergence]
+  ] + [
+    transformer + v2_8 + convergence,
+    transformer + v3_8 + convergence,
+    transformer + v2_32 + convergence,
+    transformer + v3_32 + convergence,
   ],
 }

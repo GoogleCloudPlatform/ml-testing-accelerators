@@ -43,7 +43,6 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   TfNlpVisionMixin:: {
     local config = self,
-    additionalOverrides:: {},
 
     scriptConfig:: {
       runnerPath: error 'Must define `runnerPath.`',
