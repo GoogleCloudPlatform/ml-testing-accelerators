@@ -22,11 +22,13 @@ local keras_api = import 'keras-api.libsonnet';
 local maskrcnn = import 'maskrcnn.libsonnet';
 local mnist = import 'mnist.libsonnet';
 local ncf = import 'ncf.libsonnet';
+local nlp_wmt = import 'nlp-wmt.libsonnet';
 local resnet_ctl = import 'resnet-ctl.libsonnet';
 local retinanet = import 'retinanet.libsonnet';
 local serving = import 'serving.libsonnet';
 local shapemask = import 'shapemask.libsonnet';
 local transformer_translate = import 'transformer-translate.libsonnet';
+local vision_imagenet = import 'vision-imagenet.libsonnet';
 local xlnet_imdb = import 'xlnet-imdb.libsonnet';
 local xlnet_squad = import 'xlnet-squad.libsonnet';
 
@@ -43,10 +45,12 @@ std.flattenArrays([
   mnist.configs,
   maskrcnn.configs,
   ncf.configs,
+  nlp_wmt.configs,
   resnet_ctl.configs,
   retinanet.configs,
   shapemask.configs,
   transformer_translate.configs,
+  vision_imagenet.configs,
   xlnet_imdb.configs,
   xlnet_squad.configs,
 ])

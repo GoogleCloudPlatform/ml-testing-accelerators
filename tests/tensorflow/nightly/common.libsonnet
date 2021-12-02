@@ -26,6 +26,16 @@ local mixins = import 'templates/mixins.libsonnet';
     },
     imageTag: 'nightly',
   },
+  TfVisionTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
+    scriptConfig+: {
+      runnerPath: 'official/vision/beta/train.py',
+    },
+  },
+  TfNlpTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
+    scriptConfig+: {
+      runnerPath: 'official/nlp/train.py',
+    },
+  },
   local functional_schedule = '0 7 * * *',
   Functional:: mixins.Functional {
     schedule:
