@@ -25,12 +25,18 @@ local minorVersionFromPatchVersion(patchVersion) =
 local tpuVersionFromPatchVersion(patchVersion) =
   std.lstripChars(patchVersion, 'r');
 
+// Convert rX.Y.Z to X.Y.0
+local tpuBaseVersionFromPatchVersion(patchVersion) =
+  local minorVersion = minorVersionFromPatchVersion(patchVersion);
+  std.lstripChars(minorVersion + '.0', 'r');
+
 function(
   patchVersion,
   groupLabel=null,
   modes='func',
   minorVersion=minorVersionFromPatchVersion(patchVersion),
   tpuVersion=tpuVersionFromPatchVersion(patchVersion),
+  tpuBaseVersion=tpuBaseVersionFromPatchVersion(patchVersion),
 )
   local modesList = std.split(modes, ',');
   local tests = [
@@ -39,7 +45,7 @@ function(
       image+: '-patch',
       imageTag: patchVersion,
       tpuSettings+: {
-        softwareVersion: tpuVersion,
+        softwareVersion: std.strReplace(test.tpuSettings.softwareVersion, tpuBaseVersion, tpuVersion),
       },
       labels+: if groupLabel != null then {
         group: groupLabel,
