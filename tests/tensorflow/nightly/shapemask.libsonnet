@@ -21,7 +21,7 @@ local utils = import 'templates/utils.libsonnet';
 
 {
   local command_common = |||
-    python3 official/vision/detection/main.py \
+    python3 official/legacy/detection/main.py \
       --tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS) \
       --strategy_type=tpu \
       --model=shapemask \
