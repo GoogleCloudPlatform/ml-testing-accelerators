@@ -31,7 +31,7 @@ local utils = import 'templates/utils.libsonnet';
         python3 /usr/share/pytorch/xla/test/test_train_mp_imagenet.py \
         --num_epochs=90 --datadir=/datasets/imagenet --batch_size=128 --log_steps=200
   |||,
-  
+
   local resnet50_pod = common.PyTorchGkePodTest {
     modelName: 'resnet50-mp',
     command: utils.scriptCommand(
