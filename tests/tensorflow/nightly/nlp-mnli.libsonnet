@@ -20,31 +20,32 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local imagenet = {
+  local bert = common.TfNlpTest {
+    modelName: 'nlp-bert-mnli',
     scriptConfig+: {
-      trainFilePattern: '$(IMAGENET_DIR)/train*',
-      evalFilePattern: '$(IMAGENET_DIR)/valid*',
-    },
-  },
-  local resnet = common.TfVisionTest + imagenet {
-    modelName: 'vision-resnet',
-    scriptConfig+: {
-      experiment: 'resnet_imagenet',
-    },
-  },
-  local resnet_rs = common.TfVisionTest + imagenet {
-    modelName: 'vision-resnetrs',
-    scriptConfig+: {
-      experiment: 'resnet_rs_imagenet',
-      configFiles: ['official/vision/beta/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml'],
+      experiment: 'bert/sentence_prediction_text',
+      configFiles: [
+        'official/nlp/configs/experiments/glue_mnli_text.yaml',
+      ],
+      paramsOverride+: {
+        task+: {
+          init_checkpoint+: '$(TF_NLP_BERT_DIR)/uncased_L-12_H-768_A-12/bert_model.ckpt',
+          train_data+: {
+            vocab_file: '$(TF_NLP_BERT_DIR)/uncased_L-12_H-768_A-12/vocab.txt',
+          },
+          validation_data+: {
+            vocab_file: '$(TF_NLP_BERT_DIR)/uncased_L-12_H-768_A-12/vocab.txt',
+          },
+        },
+      },
     },
   },
   local functional = common.Functional {
     scriptConfig+: {
       paramsOverride+: {
-        trainer: {
-          train_steps: 320,
-          validation_interval: 320,
+        trainer+: {
+          train_steps: 2000,
+          validation_interval: 1000,
         },
       },
     },
@@ -62,20 +63,13 @@ local utils = import 'templates/utils.libsonnet';
   local v3_32 = {
     accelerator: tpus.v3_32,
   },
-  local functionalTests = [
-    benchmark + accelerator + functional
-    for benchmark in [resnet, resnet_rs]
+  configs: [
+    bert + accelerator + functional
     for accelerator in [v2_8, v3_8, v2_32, v3_32]
+  ] + [
+    bert + v2_8 + convergence + timeouts.Hours(4),
+    bert + v3_8 + convergence + timeouts.Hours(3),
+    bert + v2_32 + convergence,
+    bert + v3_32 + convergence,
   ],
-  local convergenceTests = [
-    resnet + v2_8 + convergence,
-    resnet + v3_8 + convergence,
-    resnet + v2_32 + convergence,
-    resnet + v3_32 + convergence,
-    resnet_rs + v2_8 + convergence + timeouts.Hours(24),
-    resnet_rs + v3_8 + convergence + timeouts.Hours(24),
-    resnet_rs + v2_32 + convergence + timeouts.Hours(15),
-    resnet_rs + v3_32 + convergence + timeouts.Hours(15),
-  ],
-  configs: functionalTests + convergenceTests,
 }
