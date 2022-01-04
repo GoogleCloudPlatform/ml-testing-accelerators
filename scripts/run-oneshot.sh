@@ -75,8 +75,10 @@ set_test_name()
   platform="${split[1]}"
   if grep -q "tensorflow" <<< "$platform"; then
     platform="tf"
-  else
+  elif grep -q "pytorch" <<< "$platform"; then
     platform="pt"
+  else
+    platform="flax"
   fi
 
   if [ -z "$patch" ]
@@ -109,12 +111,12 @@ run()
     gcloud container clusters get-credentials oneshots-$region --region $region --project xl-ml-test
     temp_file=$(mktemp)
     jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$test_name > $temp_file
-    
+
     job_name=$(kubectl create -f $temp_file -o name)
     pod_name=$(kubectl get pod -l job-name=${job_name#job.batch/} -o name)
 
     echo "GKE pod name: ${pod_name#pod/}"
-    kubectl wait --for=condition=ready --timeout=10m $pod_name 
+    kubectl wait --for=condition=ready --timeout=10m $pod_name
     kubectl logs -f $pod_name --container=train
   else
     echo "gcloud container clusters get-credentials oneshots-$region --region $region --project xl-ml-test"
@@ -143,7 +145,7 @@ while [ "$1" != "" ]; do
                             patch="$1"
                             ;;
     * )                     echo "Invalid option: $1"
-                            help 
+                            help
                             exit 1
   esac
   shift

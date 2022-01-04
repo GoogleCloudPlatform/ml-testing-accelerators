@@ -96,22 +96,10 @@ local utils = import 'templates/utils.libsonnet';
       '--eval_batch_size=256',
     ],
   },
-  local tpuVmProfilingCheck = common.tpuVm {
-    mode: 'profile',
-    command: utils.scriptCommand(|||
-      %s
-
-      grep -a -c device:TPU $(LOCAL_OUTPUT_DIR)/summaries/plugins/profile/*/*.xplane.pb
-    ||| % std.join(' ', super.command)),
-    flags+:: {
-      modelDir: '$(LOCAL_OUTPUT_DIR)',
-    },
-  },
 
   configs: [
     bert + v2_8 + functional,
     bert + v2_8 + functional + common.tpuVm,
-    bert + v2_8 + functional + tpuVmProfilingCheck,
     bert + v3_8 + functional,
     bert + v3_8 + functional + common.tpuVm,
     bert + v2_8 + convergence + timeouts.Hours(4),
