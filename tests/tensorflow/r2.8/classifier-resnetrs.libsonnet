@@ -19,74 +19,58 @@ local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  local resnet = common.ModelGardenTest {
-    modelName: 'classifier-resnet',
+  local resnetrs = common.ModelGardenTest {
+    modelName: 'classifier-resnetrs',
     paramsOverride:: {
-      train: {
-        epochs: error 'Must set `train.epochs`',
+      trainer: {
+        train_steps: error 'Must set `trainer.train_steps`',
+        validation_interval: error 'Must set `trainer.validation_interval`',
       },
-      evaluation: {
-        epochs_between_evals: error 'Must set `evaluation.epochs_between_evals`',
-      },
-      train_dataset: {
-        builder: 'records',
-      },
-      validation_dataset: {
-        builder: 'records',
+      task: {
+        train_data: {
+          input_path: '$(IMAGENET_DIR)/train*',
+        },
+        validation_data: {
+          input_path: '$(IMAGENET_DIR)/valid*',
+        },
       },
     },
     command: [
       'python3',
-      'official/vision/image_classification/classifier_trainer.py',
-      '--data_dir=$(IMAGENET_DIR)',
-      '--model_type=resnet',
-      '--dataset=imagenet',
+      'official/vision/beta/train.py',
+      '--experiment=resnet_rs_imagenet',
       '--mode=train_and_eval',
       '--model_dir=$(MODEL_DIR)',
-      '--params_override=%s\n' % std.manifestYamlDoc(self.paramsOverride),
+      '--config_file=official/vision/beta/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml',
+      '--params_override=%s' % std.manifestYamlDoc(self.paramsOverride) + '\n',
     ],
   },
   local functional = common.Functional {
     paramsOverride+: {
-      train+: {
-        epochs: 1,
-      },
-      evaluation+: {
-        epochs_between_evals: 1,
+      trainer+: {
+        train_steps: 320,
+        validation_interval: 320,
       },
     },
   },
   local convergence = common.Convergence {
     paramsOverride+: {
-      train+: {
-        epochs: 90,
-      },
-      evaluation+: {
-        epochs_between_evals: 1,
+      trainer+: {
+        train_steps: 109200,
+        validation_interval: 3120,
       },
     },
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
           aggregateAssertionsMap+:: {
-            'validation/epoch_accuracy': {
+            'validation/accuracy': {
               FINAL: {
                 fixed_value: {
                   comparison: 'GREATER',
-                  value: 0.76,
+                  value: 0.79,
                 },
                 inclusive_bounds: false,
-                wait_for_n_data_points: 0,
-              },
-            },
-            examples_per_second: {
-              AVERAGE: {
-                inclusive_bounds: true,
-                std_devs_from_mean: {
-                  comparison: 'GREATER',
-                  // TODO(wcromar): Tighten this restriction
-                  std_devs: 4.0,
-                },
                 wait_for_n_data_points: 0,
               },
             },
@@ -101,22 +85,23 @@ local tpus = import 'templates/tpus.libsonnet';
 
     paramsOverride+:: {
       runtime+: {
+        distribution_strategy: 'mirrored',
+        loss_scale: 'dynamic',
         num_gpus: config.accelerator.count,
       },
     },
-    command+: [
-      '--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/gpu.yaml',
-    ],
   },
   local k80 = gpu_common {
     local config = self,
 
     paramsOverride+:: {
-      train_dataset+: {
-        batch_size: 128,
-      },
-      validation_dataset+: {
-        batch_size: 128,
+      task+: {
+        train_data+: {
+          global_batch_size: 128,
+        },
+        validation_data+: {
+          global_batch_size: 128,
+        },
       },
     },
     accelerator: gpus.teslaK80,
@@ -138,23 +123,10 @@ local tpus = import 'templates/tpus.libsonnet';
   local v100x8 = v100 {
     accelerator: gpus.teslaV100 { count: 8 },
   },
-  local a100x4 = gpu_common {
-    paramsOverride+:: {
-      train_dataset+: {
-        batch_size: 512,
-      },
-      validation_dataset+: {
-        batch_size: 512,
-      },
-    },
-
-    accelerator: gpus.teslaA100 { count: 4 },
-  },
 
   local tpu_common = {
     command+: [
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
-      '--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/tpu.yaml',
     ],
   },
   local v2_8 = tpu_common {
@@ -171,19 +143,12 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
-    resnet + v100x8 + functional + mixins.Unsuspended,
-    resnet + v100x8 + convergence + timeouts.Hours(45),
-    resnet + a100x4 + convergence,
-    resnet + v2_8 + functional,
-    resnet + v2_8 + functional + common.tpuVm,
-    resnet + v3_8 + functional,
-    resnet + v3_8 + functional + common.tpuVm,
-    resnet + v2_8 + convergence,
-    resnet + v3_8 + convergence,
-    resnet + v2_32 + functional,
-    resnet + v2_32 + functional + common.tpuVm,
-    resnet + v3_32 + functional,
-    resnet + v3_32 + functional + common.tpuVm,
-    resnet + v3_32 + convergence,
+    resnetrs + v2_8 + functional + mixins.Unsuspended,
+    resnetrs + v3_8 + functional,
+    resnetrs + v2_8 + convergence + timeouts.Hours(30),
+    resnetrs + v3_8 + convergence + timeouts.Hours(30),
+    resnetrs + v2_32 + functional,
+    resnetrs + v3_32 + functional,
+    resnetrs + v3_32 + convergence + timeouts.Hours(15),
   ],
 }
