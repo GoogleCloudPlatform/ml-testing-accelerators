@@ -37,7 +37,7 @@ local tpus = import 'templates/tpus.libsonnet';
     },
     command: [
       'python3',
-      'official/vision/image_classification/classifier_trainer.py',
+      'official/legacy/image_classification/classifier_trainer.py',
       '--data_dir=$(IMAGENET_DIR)',
       '--model_type=resnet',
       '--dataset=imagenet',
@@ -105,7 +105,7 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
     command+: [
-      '--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/gpu.yaml',
+      '--config_file=official/legacy/image_classification/configs/examples/resnet/imagenet/gpu.yaml',
     ],
   },
   local k80 = gpu_common {
@@ -154,7 +154,7 @@ local tpus = import 'templates/tpus.libsonnet';
   local tpu_common = {
     command+: [
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
-      '--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/tpu.yaml',
+      '--config_file=official/legacy/image_classification/configs/examples/resnet/imagenet/tpu.yaml',
     ],
   },
   local v2_8 = tpu_common {
@@ -172,7 +172,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
   configs: [
     resnet + v100x8 + functional + mixins.Unsuspended,
-    resnet + v100x8 + convergence + timeouts.Hours(45),
+    resnet + v100x8 + convergence + timeouts.Hours(45) + { schedule: '0 8 * * 1,4' },
     resnet + a100x4 + convergence,
     resnet + v2_8 + functional,
     resnet + v2_8 + functional + common.tpuVm,

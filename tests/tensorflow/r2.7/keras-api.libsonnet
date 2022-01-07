@@ -38,7 +38,7 @@ local utils = import 'templates/utils.libsonnet';
     mode: 'api',
     timeout: timeouts.one_hour,
     // Run at 2AM PST daily
-    schedule: '0 10 * * *',
+    schedule: null,
     tpuSettings+: {
       preemptible: true,
     },

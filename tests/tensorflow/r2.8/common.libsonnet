@@ -20,11 +20,11 @@ local mixins = import 'templates/mixins.libsonnet';
   ModelGardenTest:: common.ModelGardenTest {
     local config = self,
 
-    frameworkPrefix: 'tf-r2.6.0',
+    frameworkPrefix: 'tf-2.8.0',
     tpuSettings+: {
-      softwareVersion: '2.6.0',
+      softwareVersion: '2.8.0',
     },
-    imageTag: 'r2.6.0',
+    imageTag: '2.8.0',
   },
 
   // Setting the version for TPU VM.
@@ -32,15 +32,15 @@ local mixins = import 'templates/mixins.libsonnet';
     local config = self,
     tpuSettings+: {
       softwareVersion: if config.accelerator.replicas == 1 then
-        'tpu-vm-tf-2.6.0'
+        'tpu-vm-tf-2.8.0'
       else
-        'tpu-vm-tf-2.6.0-pod',
+        'tpu-vm-tf-2.8.0-pod',
     },
   },
 
-  // Don't run tests by default since the release is stable.
-  Functional:: mixins.Functional + mixins.Suspended {
-    schedule: null,
+  // Running functional tests at 10PM PST daily.
+  Functional:: mixins.Functional {
+    schedule: '0 6 * * *',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -60,9 +60,10 @@ local mixins = import 'templates/mixins.libsonnet';
       },
     },
   },
-  // Don't run tests by default since the release is stable.
+
+  // Running convergence tests at Midnight PST daily.
   Convergence:: mixins.Convergence {
-    schedule: null,
+    schedule: '0 8 * * *',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -72,6 +73,7 @@ local mixins = import 'templates/mixins.libsonnet';
                 inclusive_bounds: true,
                 std_devs_from_mean: {
                   comparison: 'GREATER',
+                  // TODO(wcromar): Tighten this restriction
                   std_devs: 2.0,
                 },
                 wait_for_n_data_points: 0,
