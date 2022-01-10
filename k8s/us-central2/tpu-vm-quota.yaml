@@ -18,9 +18,9 @@ metadata:
   name: tpu-device-limit
 spec:
   hard:
-    requests.tpu.googleapis.com/v2: 16
-    requests.tpu.googleapis.com/v3: 16
-    requests.tpu.googleapis.com/v4: 16
+    requests.tpu.googleapis.com/v2: 0
+    requests.tpu.googleapis.com/v3: 0
+    requests.tpu.googleapis.com/v4: 0
   scopeSelector:
     matchExpressions:
     - scopeName: PriorityClass
@@ -35,6 +35,7 @@ spec:
   hard:
     requests.tpu.googleapis.com/v2: 0
     requests.tpu.googleapis.com/v3: 0
+    requests.tpu.googleapis.com/v4: 48
   scopeSelector:
     matchExpressions:
     - scopeName: PriorityClass
@@ -93,12 +94,10 @@ spec:
             - -cx
             args:
             - |
-              kubectl patch quota tpu-device-limit -p '{
+              kubectl patch quota tpu-pod-limit -p '{
                 "spec": {
                   "hard": {
-                    "requests.tpu.googleapis.com/v2": "16",
-                    "requests.tpu.googleapis.com/v3": "16",
-                    "requests.tpu.googleapis.com/v4": "16"
+                    "requests.tpu.googleapis.com/v4": "48"
                   }
                 }
               }'
@@ -124,12 +123,10 @@ spec:
             - -cx
             args:
             - |
-              kubectl patch quota tpu-device-limit -p '{
+              kubectl patch quota tpu-pod-limit -p '{
                 "spec": {
                   "hard": {
-                    "requests.tpu.googleapis.com/v2": "48",
-                    "requests.tpu.googleapis.com/v3": "48",
-                    "requests.tpu.googleapis.com/v4": "48"
+                    "requests.tpu.googleapis.com/v4": "96"
                   }
                 }
               }'
