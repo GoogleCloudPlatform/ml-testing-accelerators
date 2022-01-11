@@ -165,7 +165,7 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: utils.scriptCommand(
       |||
-        pip install --editable /tpu-examples/deps/fairseq
+        pip install --editable tpu-examples/deps/fairseq
         %s 2>&1 | tee training_logs.txt
         bleu=`fairseq-generate \
           /datasets/wmt18_en_de_bpej32k \
@@ -191,36 +191,26 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  /*
-  local transformer_tpu_vm = common.PyTorchTest {
-    frameworkPrefix: 'pt-nightly',
-    modelName: 'fs-transformer',
 
-    metricConfig+: {
-      sourceMap+:: {
-        tensorboard+: {
-          aggregateAssertionsMap:: {},
-        },
-      },
-    },
-    commandSpecifics: {
-      training_flags: conv_command_common,
+  local tpuVm = experimental.PyTorchTpuVmMixin {
+    local config = self,
+    local superCmd = super.command[2],
+
+    local commandSpecifics = {
+      train_command: superCmd, #utils.toCommandString(config.paramsOverride.trainCommand),
       setup_commands: common.tpu_vm_nightly_install,
     },
+    volumeMap+: { datasets: null },
     command: utils.scriptCommand(
       |||
         %(setup_commands)s
-        git clone --recursive https://github.com/pytorch-tpu/examples.git
-        pip install --editable examples/deps/fairseq
+        git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/,
         export PATH=~/.local/bin:$PATH
         export XLA_USE_BF16=1
-        python3 examples/deps/fairseq/train.py \
-          %(training_flags)s
-      ||| % self.commandSpecifics,
+        %(train_command)s
+      ||| % commandSpecifics,
     ),
   },
-  */
-
 
   local v3_8 = {
     accelerator: tpus.v3_8,
@@ -232,7 +222,7 @@ local utils = import 'templates/utils.libsonnet';
     common.PyTorchXlaDistPodTest + transformer + v3_32 + functional_no_save + timeouts.Hours(1),
     common.PyTorchTest + transformer + v3_8 + functional_no_save + timeouts.Hours(1),
     common.PyTorchTest + transformer + v3_8 + convergence + timeouts.Hours(25),
-    # transformer_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(25) + experimental.PyTorchTpuVmMixin,
+    common.PyTorchTest + transformer + v3_8 + convergence + timeouts.Hours(25) + tpuVm,
     common.PyTorchTest + transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
     common.PyTorchTest + transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
   ],
