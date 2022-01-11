@@ -155,7 +155,7 @@ local volumes = import 'templates/volumes.libsonnet';
 
     // TPU VM tests don't run the models directly
     cpu: 1,
-    memory: "2Gi",
+    memory: '2Gi',
 
     // Pass TPU VM name to test container
     podTemplate+:: {
