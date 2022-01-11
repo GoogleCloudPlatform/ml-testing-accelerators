@@ -39,6 +39,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local imagenet = common.runFlaxNightly {
     modelName:: 'imagenet',
+    extraDeps:: 'tensorflow==2.6.2 keras==2.6.0 tensorflow-estimator==2.6.0',
   },
 
   configs: [
