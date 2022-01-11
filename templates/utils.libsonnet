@@ -27,6 +27,11 @@
       ||| % script,
     ],
 
+  // Converts list of command parts (e.g. ['python3', 'script.py']) to a
+  // multi-line string.
+  toCommandString(list):
+    std.join(' \\\n', list),
+
   // Return an object of the form {cluster: tests} where cluster is either the
   // cluster preferred for the accelerator used in the test or the default
   // cluster.

@@ -19,43 +19,70 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local common_flags = |||
-    /datasets/wmt18_en_de_bpej32k \
-    --metrics_debug \
-    --arch=transformer_vaswani_wmt_en_de_big \
-    --max-target-positions=64 \
-    --attention-dropout=0.1 \
-    --no-progress-bar \
-    --criterion=label_smoothed_cross_entropy \
-    --source-lang=en \
-    --lr-scheduler=inverse_sqrt  \
-    --min-lr=1e-09 \
-    --skip-invalid-size-inputs-valid-test \
-    --target-lang=de \
-    --label-smoothing=0.1 \
-    --update-freq=1 \
-    --optimizer=adam \
-    --adam-betas='(0.9,0.98)' \
-    --warmup-init-lr=1e-07 \
-    --lr=0.0005 \
-    --warmup-updates=4000 \
-    --share-all-embeddings \
-    --dropout=0.3 \
-    --weight-decay=0.0 \
-    --num_cores=8 \
-  |||,
-  local chpt_command_common = |||
-    python3 tpu-examples/deps/fairseq/train.py \
-      %(common_flags)s  --log_steps=10 \
-        --train-subset=test \
-        --valid-subset=valid \
-        --save-interval=1 \
-        --input_shapes=128x64 \
-  ||| % common_flags,
   local transformer = {
+    local config = self,
+
     modelName: 'fs-transformer',
     volumeMap+: {
       datasets: common.datasetsVolume,
+    },
+    paramsOverride:: {
+      func_command_common: [
+        'python3',
+        "/usr/share/torch-xla-nightly/tpu-examples/deps/fairseq/train.py",
+      ] + self.flags + [
+        '--log_steps=10',
+        "--train-subset=valid",
+        "--valid-subset=test",
+        '--input_shapes=128x64',
+      ],
+      conv_command_common: [
+        'python3',
+        'tpu-examples/deps/fairseq/train.py',
+      ] + self.flags + [
+        '--save-interval=5',
+        '--save-dir=/tmp/checkpoints',
+        '--max-epoch=25',
+        '--log_steps=200',
+        '--train-subset=train',
+        '--valid-subset=valid',
+        '--input_shapes 256x64 512x32',
+      ],
+      chpt_command_common: [
+        'python3',
+        'tpu-examples/deps/fairseq/train.py'
+      ] + self.flags + [
+        '--log_steps=10',
+        '--train-subset=test',
+        '--valid-subset=valid',
+        '--save-interval=1',
+        '--input_shapes=128x64',
+      ],
+      flags: [
+        '/datasets/wmt18_en_de_bpej32k',
+        '--metrics_debug',
+        '--arch=transformer_vaswani_wmt_en_de_big',
+        '--max-target-positions=64',
+        '--attention-dropout=0.1',
+        '--no-progress-bar',
+        '--criterion=label_smoothed_cross_entropy',
+        '--source-lang=en',
+        '--lr-scheduler=inverse_sqrt',
+        '--min-lr=1e-09',
+        '--skip-invalid-size-inputs-valid-test',
+        '--target-lang=de',
+        '--label-smoothing=0.1',
+        '--update-freq=1',
+        '--optimizer=adam',
+        "--adam-betas='(0.9,0.98)'",
+        '--warmup-init-lr=1e-07',
+        '--lr=0.0005',
+        '--warmup-updates=4000',
+        '--share-all-embeddings',
+        '--dropout=0.3',
+        '--weight-decay=0.0',
+        '--num_cores=%d' % config.accelerator.numCores,
+      ],
     },
     cpu: '9.0',
     memory: '30Gi',
@@ -66,30 +93,49 @@ local utils = import 'templates/utils.libsonnet';
         },
       },
     },
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap:: {},
+        },
+      },
+    },
   },
   local checkpoint_local = common.Functional {
     modelName: 'fs-checkpoint-local',
+    paramsOverride+:: {
+      chpt_command_common+: [
+        '--save-dir=/tmp/checkpoints',
+      ],
+    },
     command: utils.scriptCommand(
       |||
-        %(common)s  --max-epoch=1 \
-          --save-dir=/tmp/checkpoints
-        %(common)s  --max-epoch=2 \
-          --save-dir=/tmp/checkpoints
-      ||| % { common: chpt_command_common }
-    ),
+        %s
+        %s
+      ||| % [
+        utils.toCommandString(self.paramsOverride.chpt_command_common + ['--max-epoch=1']),
+        utils.toCommandString(self.paramsOverride.chpt_command_common + ['--max-epoch=2']),
+      ]
+    )
   },
   local checkpoint_gcs = common.Functional {
     modelName: 'fs-checkpoint-gcs',
+    paramsOverride+:: {
+      chpt_command_common+: [
+        '--save-dir=$(MODEL_DIR)/checkpoints',
+      ],
+    },
     command: utils.scriptCommand(
       |||
-        %(common)s  --max-epoch=1 \
-          --save-dir=%(savedir)s
+        %s
         set +e
-        %(common)s  --max-epoch=2 \
-          --save-dir=%(savedir)s
-        gsutil ls -l %(savedir)s
-        gsutil rm -r %(savedir)s
-      ||| % { common: chpt_command_common, savedir: '$MODEL_DIR/checkpoints' }
+        %s
+        gsutil ls -l $(MODEL_DIR)/checkpoints
+        gsutil rm -r $(MODEL_DIR)/checkpoints
+      ||| % [
+        utils.toCommandString(self.paramsOverride.chpt_command_common + ['--max-epoch=1']),
+        utils.toCommandString(self.paramsOverride.chpt_command_common + ['--max-epoch=2']),
+      ]
     ),
     podTemplate+:: {
       spec+: {
@@ -103,82 +149,44 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local functional_xla_dist = common.Functional {
-    command: [
-      'python',
-      '/usr/share/torch-xla-nightly/tpu-examples/deps/fairseq/train.py',
-      '/datasets/wmt18_en_de_bpej32k',
-      '--metrics_debug',
-      '--arch=transformer_vaswani_wmt_en_de_big',
-      '--max-target-positions=64',
-      '--attention-dropout=0.1',
-      '--no-progress-bar',
-      '--criterion=label_smoothed_cross_entropy',
-      '--source-lang=en',
-      '--lr-scheduler=inverse_sqrt',
-      '--min-lr=1e-09',
-      '--skip-invalid-size-inputs-valid-test',
-      '--target-lang=de',
-      '--label-smoothing=0.1',
-      '--update-freq=1',
-      '--optimizer=adam',
-      "--adam-betas='(0.9,0.98)'",
-      '--warmup-init-lr=1e-07',
-      '--lr=0.0005',
-      '--warmup-updates=4000',
-      '--share-all-embeddings',
-      '--dropout=0.3',
-      '--weight-decay=0.0',
-      '--num_cores=8',
-      '--no-save',
-      '--max-epoch=1',
-      '--log_steps=10',
-      '--train-subset=valid',
-      '--valid-subset=test',
-      '--input_shapes=128x64',
-    ],
-  },
   local functional = common.Functional {
-    command: utils.scriptCommand(
-      |||
-        python3 tpu-examples/deps/fairseq/train.py \
-          %(common_flags)s  --no-save \
-          --max-epoch=1 \
-          --log_steps=10 \
-          --train-subset=valid \
-          --valid-subset=test \
-          --input_shapes=128x64
-      ||| % common_flags
-    ),
+    local config = self,
+    paramsOverride+:: {
+      flags+: [
+        '--no-save',
+        '--max-epoch=1',
+      ],
+    },
+    command: self.paramsOverride.func_command_common,
   },
-  local conv_command_common = |||
-    %(common_flags)s  --save-interval=5 \
-      --save-dir=/tmp/checkpoints \
-      --max-epoch=25 \
-      --log_steps=200 \
-      --train-subset=train \
-      --valid-subset=valid \
-      --input_shapes 256x64 512x32 \
-      2>&1 | tee training_logs.txt
-    bleu=`fairseq-generate \
-      /datasets/wmt18_en_de_bpej32k \
-      --remove-bpe --quiet --lenpen 0.6 --beam 4 \
-      --path /tmp/checkpoints/checkpoint25.pt \
-      --skip-invalid-size-inputs-valid-test | grep BLEU \
-      | grep -v loadi | tail -1 | cut -d '=' -f 3| cut -d'.' -f 1`
-    echo 'BLEU score is' $bleu
-    wps=$(cat training_logs.txt | grep '| wps ' | tail -1 | grep -o -E ' wps [0-9]+' | sed 's/[^0-9]*//g')
-    echo 'final words per second (wps) is' $wps
-    test $bleu -gt 27 -a $wps -gt 10000
-  ||| % common_flags,
 
   local convergence = common.Convergence {
+    paramsOverride+:: {
+      conv_command_common+: [
+        '--save-interval=5',
+        '--save-dir=/tmp/checkpoints',
+        '--max-epoch=25',
+        '--log_steps=200',
+        '--train-subset=train',
+        '--valid-subset=valid',
+        '--input_shapes 256x64 512x32',
+      ],
+    },
     command: utils.scriptCommand(
       |||
         pip install --editable /tpu-examples/deps/fairseq
-        python3 tpu-examples/deps/fairseq/train.py \
-          %(conv_command_common)s
-      ||| % conv_command_common
+        %s 2>&1 | tee training_logs.txt
+        bleu=`fairseq-generate \
+          /datasets/wmt18_en_de_bpej32k \
+          --remove-bpe --quiet --lenpen 0.6 --beam 4 \
+          --path /tmp/checkpoints/checkpoint25.pt \
+          --skip-invalid-size-inputs-valid-test | grep BLEU \
+          | grep -v loadi | tail -1 | cut -d '=' -f 3| cut -d'.' -f 1`
+        echo 'BLEU score is' $bleu
+        wps=$(cat training_logs.txt | grep '| wps ' | tail -1 | grep -o -E ' wps [0-9]+' | sed 's/[^0-9]*//g')
+        echo 'final words per second (wps) is' $wps
+        test $bleu -gt 27 -a $wps -gt 10000
+      ||| % utils.toCommandString(self.paramsOverride.conv_command_common)
     ),
     podTemplate+:: {
       spec+: {
@@ -192,6 +200,7 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  /*
   local transformer_tpu_vm = common.PyTorchTest {
     frameworkPrefix: 'pt-nightly',
     modelName: 'fs-transformer',
@@ -219,6 +228,7 @@ local utils = import 'templates/utils.libsonnet';
       ||| % self.commandSpecifics,
     ),
   },
+  */
 
 
   local v3_8 = {
@@ -228,10 +238,10 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_32,
   },
   configs: [
-    common.PyTorchXlaDistPodTest + transformer + v3_32 + functional_xla_dist + timeouts.Hours(1),
+    common.PyTorchXlaDistPodTest + transformer + v3_32 + functional + timeouts.Hours(1),
     common.PyTorchTest + transformer + v3_8 + functional + timeouts.Hours(1),
     common.PyTorchTest + transformer + v3_8 + convergence + timeouts.Hours(25),
-    transformer_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(25) + experimental.PyTorchTpuVmMixin,
+    # transformer_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(25) + experimental.PyTorchTpuVmMixin,
     common.PyTorchTest + transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
     common.PyTorchTest + transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
   ],
