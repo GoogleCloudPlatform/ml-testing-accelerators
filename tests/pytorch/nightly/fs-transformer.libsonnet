@@ -28,6 +28,10 @@ local utils = import 'templates/utils.libsonnet';
     },
     paramsOverride:: {
       scriptPath: 'tpu-examples/deps/fairseq/train.py',
+      logSteps: 200,
+      trainSubset: 'train',
+      validSubset: 'valid',
+      inputShape: '256x64 512x32',
       trainCommand: [
         'python3',
         self.scriptPath,
@@ -54,6 +58,10 @@ local utils = import 'templates/utils.libsonnet';
         '--dropout=0.3',
         '--weight-decay=0.0',
         '--num_cores=%d' % config.accelerator.numCores,
+        '--log_steps=%d' % config.paramsOverride.logSteps,
+        '--train-subset=%s' % config.paramsOverride.trainSubset,
+        '--valid-subset=%s' % config.paramsOverride.validSubset,
+        '--input_shapes=%s' % config.paramsOverride.inputShape,
       ],
     },
     cpu: '9.0',
@@ -73,15 +81,20 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local checkpoint_local = common.Functional {
+
+  // Run the test over a small subset of the data.
+  local base_functional = common.Functional {
+    paramsOverride+:: {
+      logSteps: 10,
+      inputShape: '128x64',
+    },
+  },
+  local checkpoint_local = base_functional {
     modelName: 'fs-checkpoint-local',
     paramsOverride+:: {
+      trainSubset: 'test',
       trainCommand+: [
-        '--log_steps=10',
-        '--train-subset=test',
-        '--valid-subset=valid',
         '--save-interval=1',
-        '--input_shapes=128x64',
         '--save-dir=/tmp/checkpoints',
       ],
     },
@@ -95,15 +108,12 @@ local utils = import 'templates/utils.libsonnet';
       ]
     )
   },
-  local checkpoint_gcs = common.Functional {
+  local checkpoint_gcs = base_functional {
     modelName: 'fs-checkpoint-gcs',
     paramsOverride+:: {
+      trainSubset: 'test',
       trainCommand+: [
-        '--log_steps=10',
-        '--train-subset=test',
-        '--valid-subset=valid',
         '--save-interval=1',
-        '--input_shapes=128x64',
         '--save-dir=$(MODEL_DIR)/checkpoints',
       ],
     },
@@ -131,17 +141,15 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local functional = common.Functional {
+  local functional_no_save = base_functional {
     local config = self,
     paramsOverride+:: {
       scriptPath: '/usr/share/torch-xla-nightly/tpu-examples/deps/fairseq/train.py',
+      trainSubset: 'valid',
+      validSubset: 'test',
       trainCommand+: [
         '--no-save',
         '--max-epoch=1',
-        '--log_steps=10',
-        "--train-subset=valid",
-        "--valid-subset=test",
-        '--input_shapes=128x64',
       ],
     },
     command: self.paramsOverride.trainCommand,
@@ -153,10 +161,6 @@ local utils = import 'templates/utils.libsonnet';
         '--save-interval=5',
         '--save-dir=/tmp/checkpoints',
         '--max-epoch=25',
-        '--log_steps=200',
-        '--train-subset=train',
-        '--valid-subset=valid',
-        '--input_shapes 256x64 512x32',
       ],
     },
     command: utils.scriptCommand(
@@ -225,8 +229,8 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_32,
   },
   configs: [
-    common.PyTorchXlaDistPodTest + transformer + v3_32 + functional + timeouts.Hours(1),
-    common.PyTorchTest + transformer + v3_8 + functional + timeouts.Hours(1),
+    common.PyTorchXlaDistPodTest + transformer + v3_32 + functional_no_save + timeouts.Hours(1),
+    common.PyTorchTest + transformer + v3_8 + functional_no_save + timeouts.Hours(1),
     common.PyTorchTest + transformer + v3_8 + convergence + timeouts.Hours(25),
     # transformer_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(25) + experimental.PyTorchTpuVmMixin,
     common.PyTorchTest + transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
