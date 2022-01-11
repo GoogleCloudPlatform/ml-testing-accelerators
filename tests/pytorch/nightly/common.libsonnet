@@ -15,13 +15,11 @@
 local common = import '../common.libsonnet';
 local experimental = import '../experimental.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
-local volumes = import 'templates/volumes.libsonnet';
 local utils = import 'templates/utils.libsonnet';
+local volumes = import 'templates/volumes.libsonnet';
 
 local version = 'nightly';
 {
-#  local common = self,
-
   PyTorchTest:: common.PyTorchTest {
     frameworkPrefix: 'pt-%s' % version,
     tpuSettings+: {

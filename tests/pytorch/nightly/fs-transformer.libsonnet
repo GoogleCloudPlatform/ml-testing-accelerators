@@ -98,7 +98,7 @@ local utils = import 'templates/utils.libsonnet';
         utils.toCommandString(self.paramsOverride.trainCommand + ['--max-epoch=1']),
         utils.toCommandString(self.paramsOverride.trainCommand + ['--max-epoch=2']),
       ]
-    )
+    ),
   },
   local checkpoint_gcs = base_functional {
     modelName: 'fs-checkpoint-gcs',
