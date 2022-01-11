@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
@@ -192,24 +191,14 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
 
-  local tpuVm = experimental.PyTorchTpuVmMixin {
-    local config = self,
-    local superCmd = super.command[2],
-
-    local commandSpecifics = {
-      train_command: superCmd, #utils.toCommandString(config.paramsOverride.trainCommand),
-      setup_commands: common.tpu_vm_nightly_install,
-    },
-    volumeMap+: { datasets: null },
-    command: utils.scriptCommand(
-      |||
-        %(setup_commands)s
-        git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/,
+  local tpuVm = common.PyTorchTpuVmMixin {
+    tpuSettings+: {
+      tpuVmExtraSetup: |||
+        git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
         export PATH=~/.local/bin:$PATH
         export XLA_USE_BF16=1
-        %(train_command)s
-      ||| % commandSpecifics,
-    ),
+      |||,
+    },
   },
 
   local v3_8 = {
