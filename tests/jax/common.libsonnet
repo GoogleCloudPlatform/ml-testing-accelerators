@@ -188,7 +188,7 @@ local tpus = import 'templates/tpus.libsonnet';
       maybeInstallLibtpuV4: if config.accelerator.type == 'tpu' && config.accelerator.version == 4 then |||
         gsutil cp gs://cloud-tpu-tpuvm-v4-artifacts/wheels/libtpu/latest/libtpu_tpuv4-0.1.dev20211028-py3-none-any.whl .
         pip install libtpu_tpuv4-0.1.dev20211028-py3-none-any.whl
-      ||| else "",
+      ||| else '',
     },
   },
 

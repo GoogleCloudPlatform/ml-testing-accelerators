@@ -25,7 +25,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
-    extraFlags+:: '--config.batch_size=1024'
+    extraFlags+:: '--config.batch_size=1024',
   },
   local v4_8 = {
     accelerator: tpus.v4_8,
@@ -35,7 +35,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local v4_32 = {
     accelerator: tpus.v4_32,
-    extraFlags+:: '--config.batch_size=2048'
+    extraFlags+:: '--config.batch_size=2048',
   },
   local imagenet = common.runFlaxNightly {
     modelName:: 'imagenet',
