@@ -44,7 +44,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
   configs: [
     imagenet + functional + v2_8,
-    imagenet + functional + v3_8,
+    imagenet + convergence + v3_8,
     imagenet + functional + v4_8,
     imagenet + functional + v4_32,
   ],
