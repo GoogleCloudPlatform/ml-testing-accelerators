@@ -72,13 +72,6 @@ local utils = import 'templates/utils.libsonnet';
         },
       },
     },
-    metricConfig+: {
-      sourceMap+:: {
-        tensorboard+: {
-          aggregateAssertionsMap:: {},
-        },
-      },
-    },
   },
 
   // Run the test over a small subset of the data.
