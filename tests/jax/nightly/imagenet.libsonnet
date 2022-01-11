@@ -18,17 +18,17 @@ local tpus = import 'templates/tpus.libsonnet';
 {
   local functional = mixins.Functional {
     extraFlags:: '--config.num_epochs=1',
-    extraConfig:: 'default.py',
+    extraConfig:: 'tpu.py',
   },
   local convergence = mixins.Convergence {
     extraConfig:: 'tpu.py',
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
+    extraFlags+:: '--config.batch_size=1024'
   },
   local v4_8 = {
     accelerator: tpus.v4_8,
-    extraFlags+:: '--config.batch_size=1024'
   },
   local v2_8 = {
     accelerator: tpus.v2_8,
@@ -44,7 +44,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
   configs: [
     imagenet + functional + v2_8,
-    imagenet + convergence + v3_8,
+    imagenet + functional + v3_8,
     imagenet + functional + v4_8,
     imagenet + functional + v4_32,
   ],
