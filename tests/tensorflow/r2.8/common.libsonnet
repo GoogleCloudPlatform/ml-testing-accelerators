@@ -24,7 +24,7 @@ local mixins = import 'templates/mixins.libsonnet';
     tpuSettings+: {
       softwareVersion: '2.8.0',
     },
-    imageTag: '2.8.0',
+    imageTag: 'r2.8.0',
   },
 
   // Setting the version for TPU VM.
