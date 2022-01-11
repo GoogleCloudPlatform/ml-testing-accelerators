@@ -27,38 +27,10 @@ local utils = import 'templates/utils.libsonnet';
       datasets: common.datasetsVolume,
     },
     paramsOverride:: {
-      func_command_common: [
+      scriptPath: 'tpu-examples/deps/fairseq/train.py',
+      trainCommand: [
         'python3',
-        "/usr/share/torch-xla-nightly/tpu-examples/deps/fairseq/train.py",
-      ] + self.flags + [
-        '--log_steps=10',
-        "--train-subset=valid",
-        "--valid-subset=test",
-        '--input_shapes=128x64',
-      ],
-      conv_command_common: [
-        'python3',
-        'tpu-examples/deps/fairseq/train.py',
-      ] + self.flags + [
-        '--save-interval=5',
-        '--save-dir=/tmp/checkpoints',
-        '--max-epoch=25',
-        '--log_steps=200',
-        '--train-subset=train',
-        '--valid-subset=valid',
-        '--input_shapes 256x64 512x32',
-      ],
-      chpt_command_common: [
-        'python3',
-        'tpu-examples/deps/fairseq/train.py'
-      ] + self.flags + [
-        '--log_steps=10',
-        '--train-subset=test',
-        '--valid-subset=valid',
-        '--save-interval=1',
-        '--input_shapes=128x64',
-      ],
-      flags: [
+        self.scriptPath,
         '/datasets/wmt18_en_de_bpej32k',
         '--metrics_debug',
         '--arch=transformer_vaswani_wmt_en_de_big',
@@ -104,7 +76,12 @@ local utils = import 'templates/utils.libsonnet';
   local checkpoint_local = common.Functional {
     modelName: 'fs-checkpoint-local',
     paramsOverride+:: {
-      chpt_command_common+: [
+      trainCommand+: [
+        '--log_steps=10',
+        '--train-subset=test',
+        '--valid-subset=valid',
+        '--save-interval=1',
+        '--input_shapes=128x64',
         '--save-dir=/tmp/checkpoints',
       ],
     },
@@ -113,15 +90,20 @@ local utils = import 'templates/utils.libsonnet';
         %s
         %s
       ||| % [
-        utils.toCommandString(self.paramsOverride.chpt_command_common + ['--max-epoch=1']),
-        utils.toCommandString(self.paramsOverride.chpt_command_common + ['--max-epoch=2']),
+        utils.toCommandString(self.paramsOverride.trainCommand + ['--max-epoch=1']),
+        utils.toCommandString(self.paramsOverride.trainCommand + ['--max-epoch=2']),
       ]
     )
   },
   local checkpoint_gcs = common.Functional {
     modelName: 'fs-checkpoint-gcs',
     paramsOverride+:: {
-      chpt_command_common+: [
+      trainCommand+: [
+        '--log_steps=10',
+        '--train-subset=test',
+        '--valid-subset=valid',
+        '--save-interval=1',
+        '--input_shapes=128x64',
         '--save-dir=$(MODEL_DIR)/checkpoints',
       ],
     },
@@ -133,8 +115,8 @@ local utils = import 'templates/utils.libsonnet';
         gsutil ls -l $(MODEL_DIR)/checkpoints
         gsutil rm -r $(MODEL_DIR)/checkpoints
       ||| % [
-        utils.toCommandString(self.paramsOverride.chpt_command_common + ['--max-epoch=1']),
-        utils.toCommandString(self.paramsOverride.chpt_command_common + ['--max-epoch=2']),
+        utils.toCommandString(self.paramsOverride.trainCommand + ['--max-epoch=1']),
+        utils.toCommandString(self.paramsOverride.trainCommand + ['--max-epoch=2']),
       ]
     ),
     podTemplate+:: {
@@ -152,17 +134,22 @@ local utils = import 'templates/utils.libsonnet';
   local functional = common.Functional {
     local config = self,
     paramsOverride+:: {
-      flags+: [
+      scriptPath: '/usr/share/torch-xla-nightly/tpu-examples/deps/fairseq/train.py',
+      trainCommand+: [
         '--no-save',
         '--max-epoch=1',
+        '--log_steps=10',
+        "--train-subset=valid",
+        "--valid-subset=test",
+        '--input_shapes=128x64',
       ],
     },
-    command: self.paramsOverride.func_command_common,
+    command: self.paramsOverride.trainCommand,
   },
 
   local convergence = common.Convergence {
     paramsOverride+:: {
-      conv_command_common+: [
+      trainCommand+: [
         '--save-interval=5',
         '--save-dir=/tmp/checkpoints',
         '--max-epoch=25',
@@ -186,7 +173,7 @@ local utils = import 'templates/utils.libsonnet';
         wps=$(cat training_logs.txt | grep '| wps ' | tail -1 | grep -o -E ' wps [0-9]+' | sed 's/[^0-9]*//g')
         echo 'final words per second (wps) is' $wps
         test $bleu -gt 27 -a $wps -gt 10000
-      ||| % utils.toCommandString(self.paramsOverride.conv_command_common)
+      ||| % utils.toCommandString(self.paramsOverride.trainCommand)
     ),
     podTemplate+:: {
       spec+: {
