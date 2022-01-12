@@ -139,6 +139,8 @@ local utils = import 'templates/utils.libsonnet';
     bert + v2_32 + convergence + tpus.reserved + { schedule: '54 21 * * 1,3,5,6' },
     bert + v3_32 + convergence,
     bert + v4_8 + functional + tpuVm,
+    bert + v4_8 + convergence + tpuVm,
     bert + v4_32 + functional + tpuVm,
+    bert + v4_32 + convergence + tpuVm,
   ],
 }

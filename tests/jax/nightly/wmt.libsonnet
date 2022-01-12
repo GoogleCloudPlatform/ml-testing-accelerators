@@ -39,7 +39,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local wmt = common.runFlaxNightly {
     modelName:: 'wmt',
-    extraDeps:: 'tensorflow_text sentencepiece tensorflow==2.6.2 keras==2.6.0 tensorflow-estimator==2.6.0',
+    extraDeps:: 'tensorflow_text sentencepiece',
   },
   configs: [
     wmt + functional + v2_8,

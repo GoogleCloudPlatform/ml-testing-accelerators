@@ -221,9 +221,6 @@ local utils = import 'templates/utils.libsonnet';
   },
 
 
-  local v4_8 = {
-    accelerator: tpus.v4_8,
-  },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
@@ -235,7 +232,6 @@ local utils = import 'templates/utils.libsonnet';
     common.PyTorchTest + transformer + v3_8 + functional + timeouts.Hours(1),
     common.PyTorchTest + transformer + v3_8 + convergence + timeouts.Hours(25),
     transformer_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(25) + experimental.PyTorchTpuVmMixin,
-    transformer_tpu_vm + v4_8 + common.Convergence + timeouts.Hours(25) + experimental.PyTorchTpuVmMixin,
     common.PyTorchTest + transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
     common.PyTorchTest + transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
   ],

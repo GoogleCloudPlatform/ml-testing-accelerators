@@ -205,8 +205,8 @@ local utils = import 'templates/utils.libsonnet';
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
-  local v4_8 = {
-    accelerator: tpus.v4_8,
+  local v3_32 = {
+    accelerator: tpus.v3_32,
   },
   local v100 = {
     accelerator: gpus.teslaV100,
@@ -241,6 +241,5 @@ local utils = import 'templates/utils.libsonnet';
     resnet50_gpu_py37_cuda_112 + common.Functional + v100x4 + timeouts.Hours(1),
     resnet50_tpu_vm + v3_8 + functional_tpu_vm + timeouts.Hours(2) + experimental.PyTorchTpuVmMixin,
     resnet50_tpu_vm + v3_8 + convergence_tpu_vm + timeouts.Hours(4) + experimental.PyTorchTpuVmMixin,
-    resnet50_tpu_vm + v4_8 + functional_tpu_vm + timeouts.Hours(4) + experimental.PyTorchTpuVmMixin,
   ],
 }

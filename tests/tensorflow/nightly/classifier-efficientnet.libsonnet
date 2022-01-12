@@ -179,5 +179,7 @@ local tpus = import 'templates/tpus.libsonnet';
     efficientnet + v3_32 + convergence + timeouts.Hours(24),
     efficientnet + v4_8 + functional + tpuVm,
     efficientnet + v4_32 + functional + tpuVm,
+    efficientnet + v4_8 + convergence + tpuVm,
+    efficientnet + v4_32 + convergence + tpuVm,
   ],
 }

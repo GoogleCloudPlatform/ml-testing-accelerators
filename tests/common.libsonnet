@@ -87,6 +87,7 @@ local metrics = import 'templates/metrics.libsonnet';
       } + if config.accelerator.type == 'gpu' then {
         priorityClassName: 'gpu-%(version)s' % config.accelerator,
       } else if config.accelerator.type == 'tpu' then {
+        // v4 TPUs share quota between devices and pods.
         priorityClassName: if config.accelerator.replicas == 1 && config.accelerator.version <= 3 then
           'tpu-device' else 'tpu-pod',
         containerMap+: {
