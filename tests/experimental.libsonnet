@@ -42,16 +42,20 @@ local volumes = import 'templates/volumes.libsonnet';
     tpuSettings+: {
       local tpuSettings = self,
 
-      softwareVersion: if config.accelerator.replicas == 1 then
-        'v2-nightly'
+      softwareVersion: if config.accelerator.version == 4 then
+        'v2-nightly-tpuv4'
       else
-        'v2-nightly-pod',
+        'v2-nightly',
 
       // Startup script in TPU VM metadata.
       tpuVmStartupScript: 'echo Running startup script',
 
       // Amount of time to sleep after TPU is READY.
-      tpuVmCreateSleepSeconds: 60,
+      tpuVmCreateSleepSeconds:
+        if config.accelerator.version <= 3 then
+          60
+        else
+          90,
 
       // Additional arguments for test Docker container.
       tpuVmDockerArgs: '',

@@ -26,8 +26,14 @@ local tpus = import 'templates/tpus.libsonnet';
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
+  local v4_8 = {
+    accelerator: tpus.v4_8,
+  },
   local v2_8 = {
     accelerator: tpus.v2_8,
+  },
+  local v4_32 = {
+    accelerator: tpus.v4_32,
   },
   local imagenet = common.runFlaxNightly {
     modelName:: 'imagenet',
@@ -36,5 +42,7 @@ local tpus = import 'templates/tpus.libsonnet';
   configs: [
     imagenet + functional + v2_8,
     imagenet + convergence + v3_8,
+    imagenet + functional + v4_8,
+    imagenet + functional + v4_32,
   ],
 }

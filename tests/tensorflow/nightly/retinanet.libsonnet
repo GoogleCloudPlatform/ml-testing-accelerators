@@ -134,6 +134,14 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
+  local v4_8 = tpu_common {
+    accelerator: tpus.v4_8,
+    paramsOverride+: {
+      train+: {
+        batch_size: 64,
+      },
+    },
+  },
   local v2_32 = tpu_common {
     accelerator: tpus.v2_32,
     paramsOverride+: {
@@ -144,6 +152,14 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
+    paramsOverride+: {
+      train+: {
+        batch_size: 256,
+      },
+    },
+  },
+  local v4_32 = tpu_common {
+    accelerator: tpus.v4_32,
     paramsOverride+: {
       train+: {
         batch_size: 256,
@@ -161,10 +177,14 @@ local tpus = import 'templates/tpus.libsonnet';
     retinanet + functional + v2_8,
     retinanet + functional + v2_8 + tpuVm,
     retinanet + functional + v3_8,
+    retinanet + functional + v4_8 + tpuVm,
+    retinanet + convergence + v4_8 + tpuVm,
     retinanet + convergence + v2_8,
     retinanet + convergence + v3_8,
     retinanet + functional + v2_32,
     retinanet + functional + v2_32 + tpuVm,
+    retinanet + functional + v4_32 + tpuVm,
+    retinanet + convergence + v4_32 + tpuVm,
     retinanet + functional + v3_32,
     retinanet + convergence + v2_32 + tpus.reserved + { schedule: '47 19 * * 1,3,5,6' },
     retinanet + convergence + v3_32,
