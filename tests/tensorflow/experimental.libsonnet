@@ -24,6 +24,7 @@ local mixins = import 'templates/mixins.libsonnet';
       } + if config.accelerator.replicas > 1 then {
         TPU_LOAD_LIBRARY: '0',
       } else {},
+      tpuVmModelGardenBranch: 'master',
 
       softwareVersion+: if config.accelerator.replicas > 1 then
         '-pod'
@@ -43,7 +44,7 @@ local mixins = import 'templates/mixins.libsonnet';
                 set -x
                 set -u
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                  'curl -L https://github.com/tensorflow/models/archive/master.tar.gz | tar zx'
+                  'curl -L https://github.com/tensorflow/models/archive/%(modelGardenBranch)s.tar.gz | tar zx'
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                   'mv models-master models'
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
@@ -67,6 +68,7 @@ local mixins = import 'templates/mixins.libsonnet';
                     for key in std.objectFields(config.tpuSettings.tpuVmEnvVars)
                   ],
                 ),
+                modelGardenBranch: config.tpuSettings.tpuVmModelGardenBranch,
               },
             ],
           },

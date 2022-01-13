@@ -31,6 +31,7 @@ local mixins = import 'templates/mixins.libsonnet';
   tpuVm:: experimental.TensorFlowTpuVmMixin {
     local config = self,
     tpuSettings+: {
+      tpuVmModelGardenBranch: 'r2.8.0',
       softwareVersion: if config.accelerator.replicas == 1 then
         'tpu-vm-tf-2.8.0'
       else
