@@ -22,6 +22,7 @@ local base = import 'base.libsonnet';
     type: 'tpu',
     version: error 'Must override `version`',
     size: error 'Must override `size`',
+    numCores: if tpu.version <= 3 then 8 else 4,
     replicas: tpu.size / 8,  // Each TPU replica has 8 cores
 
     PodTemplate(tpuSettings):: {
@@ -66,4 +67,6 @@ local base = import 'base.libsonnet';
   v3_8: self.TpuSpec { version: 3, size: 8 },
   v2_32: self.TpuSpec { version: 2, size: 32 },
   v3_32: self.TpuSpec { version: 3, size: 32 },
+  v4_8: self.TpuSpec { version: 4, size: 8 },
+  v4_32: self.TpuSpec { version: 4, size: 32 },
 }

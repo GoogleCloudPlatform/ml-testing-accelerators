@@ -170,6 +170,12 @@ local tpus = import 'templates/tpus.libsonnet';
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
   },
+  local v4_8 = tpu_common {
+    accelerator: tpus.v4_8,
+  },
+  local v4_32 = tpu_common {
+    accelerator: tpus.v4_32,
+  },
   local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
@@ -194,5 +200,7 @@ local tpus = import 'templates/tpus.libsonnet';
     resnet + v3_32 + functional + tpuVm,
     resnet + v2_32 + convergence + tpus.reserved + { schedule: '7 11 * * 0,2,4' },
     resnet + v3_32 + convergence,
+    resnet + v4_8 + functional + tpuVm,
+    resnet + v4_32 + functional + tpuVm,
   ],
 }

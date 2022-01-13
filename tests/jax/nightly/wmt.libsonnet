@@ -25,6 +25,12 @@ local tpus = import 'templates/tpus.libsonnet';
     extraConfig:: 'default.py',
     extraFlags:: '--config.reverse_translation=True  --config.per_device_batch_size=32',
   },
+  local v4_32 = {
+    accelerator: tpus.v4_32,
+  },
+  local v4_8 = {
+    accelerator: tpus.v4_8,
+  },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
@@ -37,6 +43,8 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   configs: [
     wmt + functional + v2_8,
+    wmt + functional + v4_8,
+    wmt + functional + v4_32,
     wmt + convergence + v3_8 + timeouts.Hours(20),
   ],
 }

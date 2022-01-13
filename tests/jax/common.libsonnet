@@ -55,7 +55,6 @@ local tpus = import 'templates/tpus.libsonnet';
     },
 
     tpuSettings+: {
-      softwareVersion: error 'Must define `tpuSettings.softwareVersion`',
       tpuVmCreateSleepSeconds: 60,
     },
 
@@ -176,6 +175,8 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   nightlyImage:: {
+    local config = self,
+
     tpuSettings+: {
       softwareVersion: 'v2-nightly',
     },
@@ -183,13 +184,17 @@ local tpus = import 'templates/tpus.libsonnet';
       testEnvWorkarounds: |||
         # b/200277707: upgrade numpy to fix torch import
         pip install --upgrade numpy
-      |||,
+      ||| + self.maybeInstallLibtpuV4,
+      maybeInstallLibtpuV4: if config.accelerator.type == 'tpu' && config.accelerator.version == 4 then |||
+        gsutil cp gs://cloud-tpu-tpuvm-v4-artifacts/wheels/libtpu/latest/libtpu_tpuv4-0.1.dev20211028-py3-none-any.whl .
+        pip install libtpu_tpuv4-0.1.dev20211028-py3-none-any.whl
+      ||| else '',
     },
   },
 
   alphaImage:: {
     tpuSettings+: {
-      softwareVersion: 'v2-alpha',
+      softwareVersion: std.strReplace(super.softwareVersion, 'nightly', 'alpha'),
     },
     scriptConfig+: {
       testEnvWorkarounds: |||

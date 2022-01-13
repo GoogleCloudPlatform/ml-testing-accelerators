@@ -17,6 +17,18 @@ local experimental = import '../experimental.libsonnet';
 {
   PyTorchTpuVmMixin:: experimental.BaseTpuVmMixin {
     local config = self,
+
+    // Don't need to mount datasets within Kubernetes for TPU VM.
+    volumeMap+: { datasets: null },
+
+    tpuSettings+: {
+      tpuVmPytorchSetup: |||
+        echo No PyTorch setup required.
+      |||,
+      tpuVmExtraSetup: |||
+        echo No extra setup required.
+      |||,
+    },
     podTemplate+:: {
       spec+: {
         containerMap+:: {
@@ -28,6 +40,8 @@ local experimental = import '../experimental.libsonnet';
                   ' ',
                   config.command,
                 ),
+              pytorchSetup: config.tpuSettings.tpuVmPytorchSetup,
+              extraSetup: config.tpuSettings.tpuVmExtraSetup,
             },
             args: null,
             // PyTorch tests are structured as bash scripts that run directly
@@ -45,7 +59,10 @@ local experimental = import '../experimental.libsonnet';
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) << 'TEST_SCRIPT_EOF'
                   export XRT_TPU_CONFIG='localservice;0;localhost:51011'
                   export LD_PRELOAD='/usr/lib/x86_64-linux-gnu/libtcmalloc.so.4'
-                  %(testCommand)s
+
+                %(pytorchSetup)s
+                %(extraSetup)s
+                %(testCommand)s
                 TEST_SCRIPT_EOF
                 exit_code=$?
                 bash /scripts/cleanup.sh
@@ -61,7 +78,6 @@ local experimental = import '../experimental.libsonnet';
   PyTorchTpuVmPodTest:: experimental.BaseTpuVmMixin {
     local config = self,
     tpuSettings+: {
-      softwareVersion: 'v2-nightly',
       tpuVmStartupScript: |||
         #! /bin/bash
         cd /usr/share
@@ -118,7 +134,6 @@ local experimental = import '../experimental.libsonnet';
   PyTorch1_9TpuVmPodTest:: experimental.BaseTpuVmMixin {
     local config = self,
     tpuSettings+: {
-      softwareVersion: 'v2-nightly',
       tpuVmStartupScript: |||
         sudo bash /var/scripts/docker-login.sh
         sudo docker rm libtpu || true
