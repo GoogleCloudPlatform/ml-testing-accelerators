@@ -18,6 +18,10 @@ local tpus = import 'templates/tpus.libsonnet';
   defaultCluster: 'us-central1',
   clusterAccelerators: {
     'us-central1': [],
+    'us-central2': [
+      tpus.v4_8,
+      tpus.v4_32,
+    ],
     'europe-west4': [
       tpus.v2_32,
       tpus.v3_32,
