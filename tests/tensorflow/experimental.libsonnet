@@ -43,13 +43,9 @@ local mixins = import 'templates/mixins.libsonnet';
                 set -x
                 set -u
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                  'curl -L https://github.com/tensorflow/models/archive/master.tar.gz | tar zx'
+                  'pip install -r /usr/share/tpu/models/official/requirements.txt'
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                  'mv models-master models'
-                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                  'pip install -r models/official/requirements.txt'
-                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                  'cd models; %(env)s '%(testCommand)s
+                  'cd /usr/share/tpu/models; %(env)s '%(testCommand)s
                 exit_code=$?
                 bash /scripts/cleanup.sh
                 exit $exit_code
