@@ -45,6 +45,4 @@ std.flattenArrays([
   retinanet.configs,
   shapemask.configs,
   transformer_translate.configs,
-  xlnet_imdb.configs,
-  xlnet_squad.configs,
 ])
