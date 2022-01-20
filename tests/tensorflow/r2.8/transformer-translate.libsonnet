@@ -132,6 +132,6 @@ local tpus = import 'templates/tpus.libsonnet';
     transformer + v2_32 + functional,
     transformer + v2_32 + functional + common.tpuVm,
     transformer + v3_32 + functional,
-    transformer + v3_32 + convergence,
+    transformer + v3_32 + convergence + timeouts.Hours(23),
   ],
 }
