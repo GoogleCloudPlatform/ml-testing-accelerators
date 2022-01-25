@@ -100,7 +100,7 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
     paramsOverride+: {
       train+: {
-        batch_size: 64,
+        batch_size: 32,
       },
     },
   },
