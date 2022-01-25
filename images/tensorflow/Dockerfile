@@ -25,7 +25,7 @@ ARG tensorflow_text_version=nightly
 
 # HACKs: Remove this once they are added to the Model Garden requirements
 RUN pip3 install tensorflow-recommenders --no-deps
-RUN if [ "${image_version}" = "nightly" -o "${tensorflow_text_version}" = "nightly" ]; then \
+RUN if [[ "${image_version}" == "nightly" || "${tensorflow_text_version}" == "nightly" || "${tensorflow_text_version}" == *"dev"* ]]; then \
     pip3 install tensorflow-text-nightly --no-deps; \
     else \
     pip3 install tensorflow-text==${tensorflow_text_version} --no-deps; \
