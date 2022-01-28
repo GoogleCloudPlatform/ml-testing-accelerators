@@ -131,7 +131,7 @@ local utils = import 'templates/utils.libsonnet';
     shapemask + functional + v2_8,
     shapemask + functional + v2_8 + common.tpuVm,
     shapemask + functional + v3_8,
-    shapemask + functional + v3_8 + common.tpuVm,
+    shapemask + convergence + v3_8 + common.tpuVm,
     shapemask + functional + v2_32,
     shapemask + functional + v2_32 + common.tpuVm,
     shapemask + functional + v3_32,
