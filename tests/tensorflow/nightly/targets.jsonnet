@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local bert_mnli = import 'bert-mnli.libsonnet';
-local bert_squad = import 'bert-squad.libsonnet';
 local classifier_efficientnet = import 'classifier-efficientnet.libsonnet';
 local classifier_resnet = import 'classifier-resnet.libsonnet';
 local classifier_resnetrs = import 'classifier-resnetrs.libsonnet';
@@ -30,13 +28,9 @@ local serving = import 'serving.libsonnet';
 local shapemask = import 'shapemask.libsonnet';
 local transformer_translate = import 'transformer-translate.libsonnet';
 local vision_imagenet = import 'vision-imagenet.libsonnet';
-local xlnet_imdb = import 'xlnet-imdb.libsonnet';
-local xlnet_squad = import 'xlnet-squad.libsonnet';
 
 // Add new models here
 std.flattenArrays([
-  bert_mnli.configs,
-  bert_squad.configs,
   classifier_resnet.configs,
   classifier_resnetrs.configs,
   classifier_efficientnet.configs,
@@ -53,6 +47,4 @@ std.flattenArrays([
   shapemask.configs,
   transformer_translate.configs,
   vision_imagenet.configs,
-  xlnet_imdb.configs,
-  xlnet_squad.configs,
 ])
