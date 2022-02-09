@@ -29,7 +29,6 @@ local volumes = import 'templates/volumes.libsonnet';
       },
     },
 
-    publisherImage: null,
     volumeMap+: {
       scripts: volumes.MemoryVolumeSpec {
         name: 'scripts',

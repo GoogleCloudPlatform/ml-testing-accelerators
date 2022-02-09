@@ -220,9 +220,6 @@ local volumes = import 'volumes.libsonnet';
 
     oneshotJob:: {
       local oneshotConfig = config {
-        // Don't publish PubSub message for oneshot jobs.
-        publisherImage: null,
-
         jobTemplate+:: {
           spec+: {
             // Don't retry oneshot jobs.
