@@ -1,6 +1,4 @@
-# Metrics V2
-
-This directory contains a WIP rewrite of the metrics handler. Contents are experimental and may not work as expected. For the current version of the metrics handler, see [metrics_handler/](../metrics_handler).
+# Metrics
 
 ## Setup
 
@@ -14,6 +12,7 @@ PUBSUB_TOPIC=...  # The name of the PubSub topic to write messages to.
 GCS_BUCKET=gs://...  # The GCS bucket that your models write to.
 CLUSTER_NAME=...  # The name of the cluster where your models are running.
 CLUSTER_LOCATION=...  # The location (GCP zone or region) of $CLUSTER_NAME.
+BIGQUERY_DATASET=... # The name of the BigQuery dataset to store metric data.
 ```
 ## Run tests
 
@@ -34,7 +33,11 @@ To build and push the Publisher image, run the following:
 bazel run --define project=$PROJECT publisher:image_push
 ```
 
-TODO: Write instructions for deploying to GKE.
+To deploy the event publisher to your GKE cluster, update [event-publisher.yaml](k8s/common/event-publisher.yaml) with your image URL from the above command, pubsub topic, output GCS bucket, then deploy it with `kubectl`:
+
+```bash
+kubectl apply -f k8s/common/event-publisher.yaml
+```
 
 ## Metrics Handler
 
@@ -43,5 +46,5 @@ TODO: Local testing instructions
 To build and deploy the handler Cloud Function, run the following:
 
 ```bash
-bazel run handler:deploy --name metrics-handler --topic test-completed --dataset metrics --project $(gcloud config get-value project)
+bazel run handler:deploy --name metrics-v2-handler --topic $PUBSUB_TOPIC --dataset $BIGQUERY_DATASET --project $PROJECT
 ```
