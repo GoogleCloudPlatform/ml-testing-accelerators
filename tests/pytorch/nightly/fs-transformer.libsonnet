@@ -49,7 +49,7 @@ local utils = import 'templates/utils.libsonnet';
         '--label-smoothing=0.1',
         '--update-freq=1',
         '--optimizer=adam',
-        "--adam-betas='(0.9,0.98)'",
+        "--adam-betas", "(0.9,0.98)",
         '--warmup-init-lr=1e-07',
         '--lr=0.0005',
         '--warmup-updates=4000',
