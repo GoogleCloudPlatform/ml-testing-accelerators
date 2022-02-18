@@ -136,7 +136,7 @@ local utils = import 'templates/utils.libsonnet';
   local functional_no_save = base_functional {
     local config = self,
     paramsOverride+:: {
-      scriptPath: '/usr/share/torch-xla-nightly/tpu-examples/deps/fairseq/train.py',
+      scriptPath: '/usr/share/torch-xla-1.11/tpu-examples/deps/fairseq/train.py',
       trainSubset: 'valid',
       validSubset: 'test',
       trainCommand+: [
@@ -187,7 +187,7 @@ local utils = import 'templates/utils.libsonnet';
   local tpuVm = common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExtraSetup: |||
-        git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
+        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.11 tpu-examples/
         export PATH=~/.local/bin:$PATH
         export XLA_USE_BF16=1
       |||,

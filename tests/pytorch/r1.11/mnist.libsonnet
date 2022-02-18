@@ -44,22 +44,8 @@ local utils = import 'templates/utils.libsonnet';
       --datadir=/datasets/mnist-data
   |||,
 
-  local mnist_gpu_py37_cuda_101 = common.PyTorchTest {
-    imageTag: 'nightly_3.7_cuda_10.1',
-    modelName: 'mnist-cuda-10-1',
-    volumeMap+: {
-      datasets: common.datasetsVolume,
-    },
+  // no longer support cuda 10.x
 
-  },
-  local mnist_gpu_py37_cuda_102 = common.PyTorchTest {
-    imageTag: 'nightly_3.7_cuda_10.2',
-    modelName: 'mnist-cuda-10-2',
-    volumeMap+: {
-      datasets: common.datasetsVolume,
-    },
-
-  },
   local mnist_gpu_py37_cuda_112 = common.PyTorchTest {
     imageTag: 'nightly_3.7_cuda_11.2',
     modelName: 'mnist-cuda-11-2',
@@ -117,10 +103,6 @@ local utils = import 'templates/utils.libsonnet';
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1),
     mnist + convergence + v3_8 + timeouts.Hours(1),
-    mnist_gpu_py37_cuda_101 + convergence + v100 + timeouts.Hours(6),
-    mnist_gpu_py37_cuda_101 + convergence + v100x4 + timeouts.Hours(6),
-    mnist_gpu_py37_cuda_102 + convergence + v100 + timeouts.Hours(6),
-    mnist_gpu_py37_cuda_102 + convergence + v100x4 + timeouts.Hours(6),
     mnist_gpu_py37_cuda_112 + convergence + v100 + timeouts.Hours(6),
     mnist_gpu_py37_cuda_112 + convergence + v100x4 + timeouts.Hours(6),
   ],

@@ -18,26 +18,25 @@ local mixins = import 'templates/mixins.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
-local version = 'nightly';
 {
   PyTorchTest:: common.PyTorchTest {
-    frameworkPrefix: 'pt-%s' % version,
+    frameworkPrefix: 'pt-r1.11',
     tpuSettings+: {
-      softwareVersion: 'pytorch-%s' % version,
+      softwareVersion: 'pytorch-1.11',
     },
-    imageTag: version,
+    imageTag: 'r1.11',
   },
   PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest {
-    frameworkPrefix: 'pt-%s' % version,
+    frameworkPrefix: 'pt-r1.11',
     tpuSettings+: {
-      softwareVersion: 'pytorch-%s' % version,
+      softwareVersion: 'pytorch-1.11',
     },
-    imageTag: version,
+    imageTag: 'r1.11',
   },
   PyTorchGkePodTest:: common.PyTorchGkePodTest {
-    frameworkPrefix: 'pt-%s' % version,
+    frameworkPrefix: 'pt-r1.11',
     tpuSettings+: {
-      softwareVersion: 'pytorch-%s' % version,
+      softwareVersion: 'pytorch-1.11',
     },
     imageTag: version,
   },
@@ -50,15 +49,19 @@ local version = 'nightly';
   Convergence:: mixins.Convergence,
   PyTorchTpuVmMixin:: experimental.PyTorchTpuVmMixin {
     tpuSettings+: {
+      softwareVersion: 'tpu-vm-pt-1.11',
       tpuVmPytorchSetup: |||
         sudo pip3 uninstall --yes torch torch_xla torchvision numpy
-        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-nightly-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-nightly-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-nightly-cp38-cp38-linux_x86_64.whl numpy
+        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-1.11-cp38-cp38-linux_x86_64.whl
+        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.11-cp38-cp38-linux_x86_64.whl
+        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-1.11-cp38-cp38-linux_x86_64.whl
+        sudo pip3 install numpy
         sudo pip3 install mkl mkl-include
         sudo apt-get -y update
         sudo apt-get install -y libomp5
-        git clone https://github.com/pytorch/pytorch.git
+        git clone https://github.com/pytorch/pytorch.git -b release/1.11
         cd pytorch
-        git clone https://github.com/pytorch/xla.git
+        git clone https://github.com/pytorch/xla.git -b r1.11
       |||,
     },
   },

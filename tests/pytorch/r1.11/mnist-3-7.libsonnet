@@ -19,7 +19,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
 {
   local mnist = common.PyTorchTest {
-    imageTag: 'nightly_3.7',
+    imageTag: 'r1.11_3.7',
     modelName: 'mnist-3-7',
     volumeMap+: {
       datasets: common.datasetsVolume,

@@ -20,7 +20,7 @@ local utils = import 'templates/utils.libsonnet';
 {
   local command_common = |||
     pip install onnx
-    git clone --recursive https://github.com/pytorch-tpu/examples.git
+    git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.11
     python examples/deps/dlrm/dlrm_tpu_runner.py \
       --arch-sparse-feature-size=64 \
       --arch-mlp-bot=512-512-64 \
@@ -155,7 +155,7 @@ local utils = import 'templates/utils.libsonnet';
       |||
         apt-get install -y bc
         pip install onnx
-        git clone --recursive https://github.com/pytorch-tpu/examples.git
+        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.11
         python examples/deps/dlrm/dlrm_tpu_runner.py \
           %(convergence_common)s
       ||| % convergence_common
