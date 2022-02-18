@@ -42,7 +42,7 @@ local utils = import 'templates/utils.libsonnet';
     modelName: 'resnet50-pod',
     command: [
       'python3',
-      '/usr/share/torch-xla-nightly/pytorch/xla/test/test_train_mp_imagenet.py',
+      '/usr/share/torch-xla-r1.11/pytorch/xla/test/test_train_mp_imagenet.py',
     ],
   },
   local functional = common.Functional {

@@ -108,7 +108,7 @@ local utils = import 'templates/utils.libsonnet';
     command: utils.scriptCommand(
       |||
         %(command_common)s
-        git clone --recursive https://github.com/pytorch-tpu/examples.git
+        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.11
         pip3 install --editable examples/deps/fairseq
         python3 \
           examples/deps/fairseq/train.py \

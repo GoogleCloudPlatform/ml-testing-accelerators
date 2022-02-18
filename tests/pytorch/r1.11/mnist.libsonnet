@@ -44,8 +44,6 @@ local utils = import 'templates/utils.libsonnet';
       --datadir=/datasets/mnist-data
   |||,
 
-  // no longer support cuda 10.x
-
   local mnist_gpu_py37_cuda_112 = common.PyTorchTest {
     imageTag: 'nightly_3.7_cuda_11.2',
     modelName: 'mnist-cuda-11-2',
