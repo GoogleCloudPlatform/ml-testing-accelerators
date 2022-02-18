@@ -136,7 +136,6 @@ local utils = import 'templates/utils.libsonnet';
   local functional_no_save = base_functional {
     local config = self,
     paramsOverride+:: {
-      scriptPath: '/usr/share/torch-xla-nightly/tpu-examples/deps/fairseq/train.py',
       trainSubset: 'valid',
       validSubset: 'test',
       trainCommand+: [
