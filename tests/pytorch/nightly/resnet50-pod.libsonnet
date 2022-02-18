@@ -32,7 +32,7 @@ local utils = import 'templates/utils.libsonnet';
         --num_epochs=90 --datadir=/datasets/imagenet --batch_size=128 --log_steps=200
   |||,
 
-  local resnet50_pod = common.PyTorchGkePodTest {
+  local resnet50_pod = common.PyTorchTest {
     modelName: 'resnet50-mp',
     command: utils.scriptCommand(
       dist_resnet_pod50
@@ -95,6 +95,6 @@ local utils = import 'templates/utils.libsonnet';
   },
   configs: [
     resnet50_pod_func + v3_32 + functional,
-    resnet50_pod + v3_32 + common.Convergence + experimental.PyTorchNightlyTpuVmPodTest,
+    resnet50_pod + v3_32 + common.Convergence + common.PyTorchTpuVmMixin,
   ],
 }
