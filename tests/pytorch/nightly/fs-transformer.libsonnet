@@ -30,7 +30,7 @@ local utils = import 'templates/utils.libsonnet';
       logSteps: 200,
       trainSubset: 'train',
       validSubset: 'valid',
-      inputShape: '256x64 512x32',
+      inputShape: ['256x64', '512x32'],
       trainCommand: [
         'python3',
         self.scriptPath,
@@ -62,8 +62,7 @@ local utils = import 'templates/utils.libsonnet';
         '--train-subset=%s' % config.paramsOverride.trainSubset,
         '--valid-subset=%s' % config.paramsOverride.validSubset,
         '--input_shapes',
-        config.paramsOverride.inputShape,
-      ],
+      ] + config.paramsOverride.inputShape,
     },
     cpu: '9.0',
     memory: '30Gi',
@@ -80,7 +79,7 @@ local utils = import 'templates/utils.libsonnet';
   local base_functional = common.Functional {
     paramsOverride+:: {
       logSteps: 10,
-      inputShape: '128x64',
+      inputShape: ['128x64'],
     },
   },
   local checkpoint_local = base_functional {
