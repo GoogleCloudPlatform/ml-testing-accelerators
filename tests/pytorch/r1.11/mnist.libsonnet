@@ -45,7 +45,7 @@ local utils = import 'templates/utils.libsonnet';
   |||,
 
   local mnist_gpu_py37_cuda_112 = common.PyTorchTest {
-    imageTag: 'nightly_3.7_cuda_11.2',
+    imageTag: 'r1.11_3.7_cuda_11.2',
     modelName: 'mnist-cuda-11-2',
     volumeMap+: {
       datasets: common.datasetsVolume,

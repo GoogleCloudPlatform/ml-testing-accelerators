@@ -102,7 +102,7 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local roberta_tpu_vm = common.PyTorchTest {
-    frameworkPrefix: 'pt-nightly',
+    frameworkPrefix: 'pt-r1.11',
     modelName: 'roberta-pre',
 
     command: utils.scriptCommand(
@@ -142,7 +142,7 @@ local utils = import 'templates/utils.libsonnet';
         wps=$(cat training_logs.txt | grep '| wps ' | tail -1 | grep -o -E ' wps [0-9]+' | sed 's/[^0-9]*//g')
         echo 'final words per second (wps) is' $wps
         test $wps -gt 19000
-      ||| % common.tpu_vm_nightly_install
+      ||| % common.tpu_vm_1_11_install
     ),
   },
   local v3_8 = {

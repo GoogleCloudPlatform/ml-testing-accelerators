@@ -49,7 +49,7 @@ local utils = import 'templates/utils.libsonnet';
         cd xla/test/cpp
         export TPUVM_MODE=1
         ./run_tests.sh
-      ||| % common.tpu_vm_nightly_install
+      ||| % common.tpu_vm_1_11_install
     ),
   },
 

@@ -38,7 +38,7 @@ local volumes = import 'templates/volumes.libsonnet';
     tpuSettings+: {
       softwareVersion: 'pytorch-1.11',
     },
-    imageTag: version,
+    imageTag: 'r1.11',
   },
   Functional:: mixins.Functional {
     schedule: '0 7 * * *',
@@ -71,5 +71,5 @@ local volumes = import 'templates/volumes.libsonnet';
   },
 
   // DEPRECATED: Use PyTorchTpuVmMixin instead
-  tpu_vm_nightly_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
+  tpu_vm_1_11_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
 }

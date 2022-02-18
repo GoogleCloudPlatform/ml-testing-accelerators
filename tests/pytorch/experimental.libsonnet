@@ -269,6 +269,75 @@ local experimental = import '../experimental.libsonnet';
     },
   },
 
+  PyTorch1_11TpuVmPodTest:: experimental.BaseTpuVmMixin {
+    local config = self,
+    tpuSettings+: {
+      softwareVersion: 'tpu-vm-pt-1.11',
+      tpuVmStartupScript: |||
+        sudo bash /var/scripts/docker-login.sh
+        sudo pip3 uninstall --yes torch torch_xla torchvision numpy
+        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-1.11-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.11-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-1.11-cp38-cp38-linux_x86_64.whl
+        sudo pip3 install mkl mkl-include numpy
+        sudo ln -s /usr/local/lib/libmkl_intel_lp64.so.1 /usr/local/lib/libmkl_intel_lp64.so
+        sudo ln -s /usr/local/lib/libmkl_intel_thread.so.1 /usr/local/lib/libmkl_intel_thread.so
+        sudo ln -s /usr/local/lib/libmkl_core.so.1 /usr/local/lib/libmkl_core.so
+        sudo apt-get -y update
+        sudo apt-get install -y libomp5 nfs-common
+        gcloud compute config-ssh
+        cd /usr/share
+        git clone https://github.com/pytorch/pytorch.git -b r1.11
+        cd pytorch
+        git clone https://github.com/pytorch/xla.git -b release/1.11
+        export LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libtcmalloc.so.4"
+        sudo mkdir /datasets
+        sudo mount 10.182.107.26:/pytorch_datasets /datasets
+        echo Done XLA startup script
+      |||,
+      tpuVmCreateSleepSeconds: 360,
+    },
+    podTemplate+:: {
+      spec+: {
+        containerMap+:: {
+          monitor: null,
+          train+: {
+            local scriptSettings = {
+              testCommand:
+                std.join(
+                  ' ',
+                  config.command,
+                ),
+            },
+            args: null,
+            // PyTorch tests are structured as bash scripts that run directly
+            // on the Cloud TPU VM instead of using docker images.
+            command: [
+              'bash',
+              '-c',
+              |||
+                set -x
+                set -u
+                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                  'ls'
+                scp -i scripts/id_rsa /scripts/tpu_name xl-ml-test@$(cat /scripts/tpu_ip):~
+                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) << 'TEST_SCRIPT_EOF'
+                  journalctl
+                  cat ~/tpu_name
+                  ls
+                  echo | gcloud compute config-ssh
+                  %(testCommand)s
+                TEST_SCRIPT_EOF
+                exit_code=$?
+                bash /scripts/cleanup.sh
+                exit $exit_code
+              ||| % scriptSettings,
+            ],
+          },
+        },
+      },
+    },
+  },
+
+
   PyTorchNightlyTpuVmPodTest:: experimental.BaseTpuVmMixin {
     local config = self,
     tpuSettings+: {

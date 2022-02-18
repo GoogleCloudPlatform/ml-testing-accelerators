@@ -95,6 +95,6 @@ local utils = import 'templates/utils.libsonnet';
   },
   configs: [
     resnet50_pod_func + v3_32 + functional,
-    resnet50_pod + v3_32 + common.Convergence + experimental.PyTorchNightlyTpuVmPodTest,
+    resnet50_pod + v3_32 + common.Convergence + experimental.PyTorch1_11TpuVmPodTest,
   ],
 }
