@@ -28,7 +28,7 @@ local utils = import 'templates/utils.libsonnet';
     cd /usr/share
     pip3 install tensorboardX google-cloud-storage
     python3 -m torch_xla.distributed.xla_dist --tpu=$TPU_NAME -- \
-        python3 /usr/share/pytorch/xla/test/test_train_mp_imagenet.py \
+        python3 /usr/share/torch-xla-r1.11/pytorch/xla/test/test_train_mp_imagenet.py \
         --num_epochs=90 --datadir=/datasets/imagenet --batch_size=128 --log_steps=200
   |||,
 
