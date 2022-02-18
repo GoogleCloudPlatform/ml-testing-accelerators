@@ -60,7 +60,7 @@ local utils = import 'templates/utils.libsonnet';
         '--log_steps=%d' % config.paramsOverride.logSteps,
         '--train-subset=%s' % config.paramsOverride.trainSubset,
         '--valid-subset=%s' % config.paramsOverride.validSubset,
-        '--input_shapes %s' % config.paramsOverride.inputShape,
+        '--input_shapes', config.paramsOverride.inputShape,
       ],
     },
     cpu: '9.0',
