@@ -18,6 +18,45 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
+  local dlrm = {
+    local config = self,
+
+    modelName: 'dlrm',
+    volumeMap+: {
+      datasets: common.datasetsVolume,
+    },
+    paramsOverride:: {
+      scriptPath: 'tpu-examples/deps/dlrm/dlrm_tpu_runner.py',
+      logSteps: 200,
+      trainCommand: [
+        'python3',
+        self.scriptPath,
+        '--arch-sparse-feature-size=64',
+        '--arch-mlp-bot=512-512-64',
+        '--arch-mlp-top=1024-1024-1024-1',
+        '--arch-interaction-op=dot',
+        '--lr-num-warmup-steps=10',
+        '--lr-decay-start-step=10',
+        '--num-batches=1000',
+        '--data-generation="random"',
+        '--numpy-rand-seed=72',
+        '--print-freq=100',
+        '--num-indices-per-lookup=100',
+        '--use-tpu',
+        '--metrics-debug',
+        '--num-indices-per-lookup-fixed',
+      ],
+    },
+    cpu: '9.0',
+    memory: '30Gi',
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap:: {},
+        },
+      },
+    },
+  },
   local command_common = |||
     pip install onnx
     git clone --recursive https://github.com/pytorch-tpu/examples.git
@@ -37,27 +76,7 @@ local utils = import 'templates/utils.libsonnet';
       --metrics-debug \
       --num-indices-per-lookup-fixed \
   |||,
-  local dlrm = common.PyTorchTest {
-    modelName: 'dlrm',
-
-    volumeMap+: {
-      datasets: common.datasetsVolume,
-    },
-    podTemplate+:: {
-      spec+: {
-        containerMap+: {
-          train+: {
-            resources+: {
-              requests: {
-                cpu: '9.0',
-                memory: '30Gi',
-              },
-            },
-          },
-        },
-      },
-    },
-  },
+  
   local dlrm_convergence = common.PyTorchTest {
     modelName: 'dlrm-convergence',
 
@@ -81,13 +100,20 @@ local utils = import 'templates/utils.libsonnet';
   },
   local one_core = common.Functional {
     modelName: 'dlrm-onecore',
+    paramsOverride+:: {
+      trainCommand+: [
+        '--mini-batch-size=256',
+        '--arch-embedding-size=1000000-1000000',
+        '--tpu-model-parallel-group-len=1',
+        '--tpu-cores=1',
+      ],
+    },
     command: utils.scriptCommand(
       |||
-        %(command_common)s  --mini-batch-size=256 \
-          --arch-embedding-size=1000000-1000000 \
-          --tpu-model-parallel-group-len 1 \
-          --tpu-cores=1
-      ||| % command_common
+        pip install onnx
+        git clone --recursive https://github.com/pytorch-tpu/examples.git
+        %s 
+      ||| % utils.toCommandString(self.paramsOverride.trainCommand),
     ),
   },
   local seq_fwd = common.Functional {
@@ -165,10 +191,10 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
   },
   configs: [
-    dlrm + v3_8 + one_core + timeouts.Hours(3),
-    dlrm + v3_8 + seq_fwd + timeouts.Hours(3),
-    dlrm + v3_8 + mp_fwd + timeouts.Hours(3),
-    dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
+    common.PyTorchTest + dlrm + v3_8 + one_core + timeouts.Hours(3),
+    #common.PyTorchTest + dlrm + v3_8 + seq_fwd + timeouts.Hours(3),
+    #common.PyTorchTest + dlrm + v3_8 + mp_fwd + timeouts.Hours(3),
+    #common.PyTorchTest + dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
     dlrm_convergence + v3_8 + criteo_kaggle + timeouts.Hours(6),
   ],
 }
