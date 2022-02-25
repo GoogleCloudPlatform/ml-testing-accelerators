@@ -25,7 +25,7 @@ local version = 'nightly';
     tpuSettings+: {
       softwareVersion: 'pytorch-%s' % version,
     },
-    imageTag: version,
+    imageTag: 'nightly_3.7',
   },
   PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest {
     frameworkPrefix: 'pt-%s' % version,
@@ -39,7 +39,7 @@ local version = 'nightly';
     tpuSettings+: {
       softwareVersion: 'pytorch-%s' % version,
     },
-    imageTag: version,
+    imageTag: 'nightly_3.7',
   },
   Functional:: mixins.Functional {
     schedule: '0 7 * * *',
