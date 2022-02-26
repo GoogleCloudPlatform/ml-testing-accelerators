@@ -36,7 +36,7 @@ local utils = import 'templates/utils.libsonnet';
           monitor: null,
           train+: {
             local scriptSettings = {
-              # Distribute command with xla_dist on pods
+              // Distribute command with xla_dist on pods
               testCommand: if config.accelerator.replicas == 1 then
                 utils.toCommandString(config.command)
               else
@@ -49,7 +49,7 @@ local utils = import 'templates/utils.libsonnet';
                     '--',
                   ] + config.command,
                 ),
-              # XRT_TPU_CONFIG set up by xla_dist on pods
+              // XRT_TPU_CONFIG set up by xla_dist on pods
               xrtTpuConfig: if config.accelerator.replicas == 1 then
                 "export XRT_TPU_CONFIG='localservice;0;localhost:51011'"
               else
