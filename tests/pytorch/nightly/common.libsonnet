@@ -18,7 +18,6 @@ local mixins = import 'templates/mixins.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
-local version = 'nightly';
 {
   local Nightly = {
     frameworkPrefix: 'pt-nightly',
