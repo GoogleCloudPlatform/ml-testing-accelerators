@@ -190,7 +190,7 @@ local utils = import 'templates/utils.libsonnet';
       tpuVmExtraSetup: |||
         git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
         echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
-        sudo echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
+        echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
       |||,
     },
   },
