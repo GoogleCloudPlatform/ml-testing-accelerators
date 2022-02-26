@@ -79,7 +79,6 @@ local utils = import 'templates/utils.libsonnet';
         containerMap+: {
           train+: {
             envMap+: {
-              XRT_TPU_CONFIG: null,
               GPU_NUM_DEVICES: '%d' % config.accelerator.count,
             },
           },
