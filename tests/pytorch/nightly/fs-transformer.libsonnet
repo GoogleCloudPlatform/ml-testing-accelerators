@@ -13,12 +13,13 @@
 // limitations under the License.
 
 local common = import 'common.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local transformer = {
+  local transformer = common.PyTorchTest {
     local config = self,
 
     modelName: 'fs-transformer',
@@ -188,8 +189,8 @@ local utils = import 'templates/utils.libsonnet';
     tpuSettings+: {
       tpuVmExtraSetup: |||
         git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
-        export PATH=~/.local/bin:$PATH
-        export XLA_USE_BF16=1
+        echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
+        echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
       |||,
     },
   },
@@ -201,11 +202,11 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_32,
   },
   configs: [
-    common.PyTorchXlaDistPodTest + transformer + v3_32 + functional_no_save + timeouts.Hours(1),
-    common.PyTorchTest + transformer + v3_8 + functional_no_save + timeouts.Hours(1),
-    common.PyTorchTest + transformer + v3_8 + convergence + timeouts.Hours(25),
-    common.PyTorchTest + transformer + v3_8 + convergence + timeouts.Hours(25) + tpuVm,
-    common.PyTorchTest + transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
-    common.PyTorchTest + transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
+    transformer + v3_8 + functional_no_save + timeouts.Hours(1),
+    transformer + v3_8 + convergence + timeouts.Hours(25),
+    transformer + v3_8 + convergence + timeouts.Hours(25) + tpuVm,
+    transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
+    transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
+    transformer + v3_32 + functional_no_save + timeouts.Hours(1) + tpuVm + mixins.Experimental,
   ],
 }

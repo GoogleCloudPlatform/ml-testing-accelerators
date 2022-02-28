@@ -13,6 +13,7 @@
 // limitations under the License.
 
 local experimental = import '../experimental.libsonnet';
+local utils = import 'templates/utils.libsonnet';
 
 {
   PyTorchTpuVmMixin:: experimental.BaseTpuVmMixin {
@@ -35,11 +36,24 @@ local experimental = import '../experimental.libsonnet';
           monitor: null,
           train+: {
             local scriptSettings = {
-              testCommand:
-                std.join(
-                  ' ',
-                  config.command,
+              // Distribute command with xla_dist on pods
+              testCommand: if config.accelerator.replicas == 1 then
+                utils.toCommandString(config.command)
+              else
+                utils.toCommandString(
+                  [
+                    'python3',
+                    '-m',
+                    'torch_xla.distributed.xla_dist',
+                    '--tpu=tpu-$(POD_UID)',
+                    '--',
+                  ] + config.command,
                 ),
+              // XRT_TPU_CONFIG set up by xla_dist on pods
+              xrtTpuConfig: if config.accelerator.replicas == 1 then
+                "export XRT_TPU_CONFIG='localservice;0;localhost:51011'"
+              else
+                '',
               pytorchSetup: config.tpuSettings.tpuVmPytorchSetup,
               extraSetup: config.tpuSettings.tpuVmExtraSetup,
             },
@@ -52,18 +66,28 @@ local experimental = import '../experimental.libsonnet';
               |||
                 set -x
                 set -u
-                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                  'sudo apt-get -y update && sudo apt-get -y install nfs-common git google-perftools'
-                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                  'sudo mkdir /datasets && sudo mount $(PYTORCH_DATA_LOCATION) /datasets'
-                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) << 'TEST_SCRIPT_EOF'
-                  export XRT_TPU_CONFIG='localservice;0;localhost:51011'
-                  export LD_PRELOAD='/usr/lib/x86_64-linux-gnu/libtcmalloc.so.4'
 
+                cat > workersetup.sh << TEST_SCRIPT_EOF
+                sudo apt-get -y update
+                sudo apt-get -y install nfs-common
+                sudo mkdir /datasets && sudo mount $(PYTORCH_DATA_LOCATION) /datasets
+
+                yes '' | gcloud compute config-ssh
+
+                cd
                 %(pytorchSetup)s
+
+                cd
                 %(extraSetup)s
+                TEST_SCRIPT_EOF
+                gcloud alpha compute tpus tpu-vm ssh xl-ml-test@$(cat /scripts/tpu_name) --zone=$(cat /scripts/zone) --ssh-key-file=/scripts/id_rsa --strict-host-key-checking=no --internal-ip --worker=all --command "$(cat workersetup.sh)"
+
+                cat > testscript.sh << 'TEST_SCRIPT_EOF'
+                %(xrtTpuConfig)s
                 %(testCommand)s
                 TEST_SCRIPT_EOF
+                gcloud alpha compute tpus tpu-vm ssh xl-ml-test@$(cat /scripts/tpu_name) --zone=$(cat /scripts/zone) --ssh-key-file=/scripts/id_rsa --strict-host-key-checking=no --internal-ip --worker=0 --command "$(cat testscript.sh)"
+
                 exit_code=$?
                 bash /scripts/cleanup.sh
                 exit $exit_code
@@ -74,7 +98,6 @@ local experimental = import '../experimental.libsonnet';
       },
     },
   },
-
   PyTorchTpuVmPodTest:: experimental.BaseTpuVmMixin {
     local config = self,
     tpuSettings+: {
@@ -207,7 +230,7 @@ local experimental = import '../experimental.libsonnet';
         sudo bash /var/scripts/docker-login.sh
         sudo pip3 uninstall --yes torch torch_xla torchvision numpy
         sudo pip3 install https://storage.googleapis.com/cloud-tpu-tpuvm-artifacts/wheels/libtpu-nightly/libtpu_nightly-0.1.dev20211013-py3-none-any.whl
-        sudo pip3 install torch==1.10.0 
+        sudo pip3 install torch==1.10.0
         sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.10-cp38-cp38-linux_x86_64.whl
         sudo pip3 install torchvision==0.11.1
         sudo pip3 install mkl mkl-include numpy
