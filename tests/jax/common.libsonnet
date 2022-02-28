@@ -19,26 +19,35 @@ local tpus = import 'templates/tpus.libsonnet';
 
 {
   JaxTest:: common.CloudAcceleratorTest + experimental.BaseTpuVmMixin {
-    metricCollectionConfig+: {
-      metric_to_aggregation_strategies+: {
-        examples_per_second: ['average'],
-      },
-      tags_to_ignore: ['_hparams_/session_start_info'],
-    },
     local config = self,
 
     frameworkPrefix: 'jax',
     image: 'google/cloud-sdk',
     accelerator: tpus.v2_8,
 
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          exclude_tags: ['_hparams_/session_start_info'],
+          merge_runs: true,
+        },
+        // Remove default duration assertion.
+        literals+: {
+          assertions+: {
+            duration: null,
+          },
+        },
+      },
+    },
+
     jaxlibVersion:: error 'Add jaxlib version mixin',
-    libtpuVersion:: error 'Include libtpu version mixin',
     scriptConfig:: {
       maybeBuildJaxlib: error 'Must define `maybeBuildJaxlib`',
       installLocalJax: error 'Must define `installLocalJax`',
       installLatestJax: error 'Must define `installLatestJax`',
-      maybeInstallTF: error 'Must define `maybeInstallTF`',
+      testEnvWorkarounds: error 'Must define `testEnvWorkarounds`',
       printDiagnostics: |||
+        python3 -c 'import jax; print("jax version:", jax.__version__)'
         python3 -c 'import jaxlib; print("jaxlib version:", jaxlib.__version__)'
         python3 -c 'import jax; print("libtpu version:",
           jax.lib.xla_bridge.get_backend().platform_version)'
@@ -46,7 +55,6 @@ local tpus = import 'templates/tpus.libsonnet';
     },
 
     tpuSettings+: {
-      softwareVersion: error 'Must define `tpuSettings.softwareVersion`',
       tpuVmCreateSleepSeconds: 60,
     },
 
@@ -127,6 +135,9 @@ local tpus = import 'templates/tpus.libsonnet';
   jaxlibHead:: {
     jaxlibVersion:: 'head',
     scriptConfig+: {
+      // Install jax without jaxlib or libtpu deps
+      installLocalJax: 'pip install .',
+      installLatestJax: 'pip install jax',
       maybeBuildJaxlib: |||
         echo "Building jaxlib from source at TF head"
         echo "Checking out TF..."
@@ -138,10 +149,12 @@ local tpus = import 'templates/tpus.libsonnet';
         echo "Building jaxlib..."
         cd ~/jax
         python3 build/build.py --enable_tpu --bazel_options="--override_repository=org_tensorflow=$HOME/tensorflow"
-        # jaxlib should already be installed, so we can use --no-deps
-        # to avoid reinstalling all dependencies
-        pip install dist/*.whl --no-deps --force-reinstall
+        pip install dist/*.whl
         python3 -c 'import jaxlib; print("jaxlib version:", jaxlib.__version__)'
+
+        echo "Installing latest libtpu-nightly..."
+        pip install libtpu-nightly \
+          -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
       |||,
     },
   },
@@ -149,63 +162,45 @@ local tpus = import 'templates/tpus.libsonnet';
   jaxlibLatest:: {
     jaxlibVersion:: 'latest',
     scriptConfig+: {
-      maybeBuildJaxlib: '',
-    },
-  },
-
-  libtpuNightly:: {
-    libtpuVersion: 'nightly',
-    tpuSettings+: {
-      softwareVersion: 'v2-nightly',
-    },
-    scriptConfig+: {
-      // Don't use [tpu] extra so we use system libtpu.so
-      installLocalJax: 'pip install . jaxlib',
-      installLatestJax: 'pip install jax jaxlib',
-      maybeInstallTF: '',
-    },
-  },
-
-  libtpuAlpha:: {
-    libtpuVersion: 'alpha',
-    tpuSettings+: {
-      softwareVersion: 'v2-alpha',
-    },
-    scriptConfig+: {
       installLocalJax: |||
         pip install .[tpu] \
           -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
       |||,
       installLatestJax: |||
-        pip install jax[tpu] \
+        pip install "jax[tpu]>=0.2.16" \
           -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
       |||,
-      // b/192016388
-      maybeInstallTF: 'pip install tensorflow',
+      maybeBuildJaxlib: '',
     },
   },
-  Functional:: mixins.Functional {
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 4.0,
-          },
-        },
-      },
+
+  nightlyImage:: {
+    local config = self,
+
+    tpuSettings+: {
+      softwareVersion: 'v2-nightly',
+    },
+    scriptConfig+: {
+      testEnvWorkarounds: |||
+        # b/200277707: upgrade numpy to fix torch import
+        pip install --upgrade numpy
+      ||| + self.maybeInstallLibtpuV4,
+      maybeInstallLibtpuV4: if config.accelerator.type == 'tpu' && config.accelerator.version == 4 then |||
+        gsutil cp gs://cloud-tpu-tpuvm-v4-artifacts/wheels/libtpu/latest/libtpu_tpuv4-0.1.dev20211028-py3-none-any.whl .
+        pip install libtpu_tpuv4-0.1.dev20211028-py3-none-any.whl
+      ||| else '',
     },
   },
-  Convergence:: mixins.Convergence {
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 4.0,
-          },
-        },
-      },
+
+  alphaImage:: {
+    tpuSettings+: {
+      softwareVersion: std.strReplace(super.softwareVersion, 'nightly', 'alpha'),
+    },
+    scriptConfig+: {
+      testEnvWorkarounds: |||
+        # b/192016388: fix host_callback_to_tf_test.py
+        pip install tensorflow
+      |||,
     },
   },
 }

@@ -32,26 +32,6 @@ local utils = import 'templates/utils.libsonnet';
     --num_epochs=2 \
     --datadir=/datasets/imagenet-mini \
   |||,
-  local resnet50_gpu_py37_cuda_101 = common.PyTorchTest {
-    imageTag: 'nightly_3.7_cuda_10.1',
-    modelName: 'resnet50-mp-cuda-10-1',
-    volumeMap+: {
-      datasets: common.datasetsVolume,
-    },
-    cpu: '7.0',
-    memory: '40Gi',
-    schedule: '0 20 * * *',
-  },
-  local resnet50_gpu_py37_cuda_102 = common.PyTorchTest {
-    imageTag: 'nightly_3.7_cuda_10.2',
-    modelName: 'resnet50-mp-cuda-10-2',
-    volumeMap+: {
-      datasets: common.datasetsVolume,
-    },
-    cpu: '7.0',
-    memory: '40Gi',
-    schedule: '0 18 * * *',
-  },
   local resnet50_gpu_py37_cuda_112 = common.PyTorchTest {
     imageTag: 'nightly_3.7_cuda_11.2',
     modelName: 'resnet50-mp-cuda-11-2',
@@ -60,7 +40,7 @@ local utils = import 'templates/utils.libsonnet';
     },
     cpu: '7.0',
     memory: '40Gi',
-    schedule: '0 16 * * *',
+
   },
   local resnet50_MP = common.PyTorchTest {
     modelName: 'resnet50-mp',
@@ -103,13 +83,21 @@ local utils = import 'templates/utils.libsonnet';
       '--num_epochs=90',
       '--datadir=/datasets/imagenet',
     ],
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        'Accuracy/test_final': {
-          success_threshold: {
-            fixed_value: 75.0,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'Accuracy/test': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 75.0,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'greater',
         },
       },
     },
@@ -164,23 +152,35 @@ local utils = import 'templates/utils.libsonnet';
       num_epochs: 5,
       datadir: '/datasets/imagenet',
     },
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        'Accuracy/test_final': {
-          success_threshold: {
-            fixed_value: 30.0,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'Accuracy/test': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 30.0,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
+            aten_ops_sum: {
+              FINAL: {
+                wait_for_n_data_points: 0,
+                inclusive_bounds: true,
+                fixed_value: {
+                  comparison: 'LESS',
+                  value: 40.0,
+                },
+              },
+            },
           },
-          comparison: 'greater',
-        },
-        aten_ops_sum_final: {
-          success_threshold: {
-            fixed_value: 40.0,
-          },
-          comparison: 'less_or_equal',
         },
       },
     },
-    schedule: '0 20 * * *',
+
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
@@ -211,12 +211,6 @@ local utils = import 'templates/utils.libsonnet';
   configs: [
     resnet50_MP + v3_8 + convergence + timeouts.Hours(26) + mixins.PreemptibleTpu,
     resnet50_MP + v3_8 + functional + timeouts.Hours(2),
-    resnet50_gpu_py37_cuda_101 + common.Functional + v100 + timeouts.Hours(2),
-    resnet50_gpu_py37_cuda_101 + common.Functional + v100_amp + timeouts.Hours(2) + { modelName: 'resnet50-cuda-10-1-amp' },
-    resnet50_gpu_py37_cuda_101 + common.Functional + v100x4 + timeouts.Hours(1),
-    resnet50_gpu_py37_cuda_102 + common.Functional + v100 + timeouts.Hours(2),
-    resnet50_gpu_py37_cuda_102 + common.Functional + v100_amp + timeouts.Hours(2) + { modelName: 'resnet50-cuda-10-2-amp' },
-    resnet50_gpu_py37_cuda_102 + common.Functional + v100x4 + timeouts.Hours(1),
     resnet50_gpu_py37_cuda_112 + common.Functional + v100 + timeouts.Hours(2),
     resnet50_gpu_py37_cuda_112 + common.Functional + v100x4 + timeouts.Hours(1),
     resnet50_tpu_vm + v3_8 + functional_tpu_vm + timeouts.Hours(2) + experimental.PyTorchTpuVmMixin,

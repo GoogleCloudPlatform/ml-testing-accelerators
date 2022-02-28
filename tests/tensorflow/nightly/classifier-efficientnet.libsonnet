@@ -43,7 +43,7 @@ local tpus = import 'templates/tpus.libsonnet';
     },
     command: [
       'python3',
-      'official/vision/image_classification/classifier_trainer.py',
+      'official/legacy/image_classification/classifier_trainer.py',
       '--data_dir=$(IMAGENET_DIR)',
       '--model_type=efficientnet',
       '--dataset=imagenet',
@@ -88,13 +88,21 @@ local tpus = import 'templates/tpus.libsonnet';
         epochs_between_evals: 10,
       },
     },
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        'validation/epoch_accuracy_final': {
-          success_threshold: {
-            fixed_value: 0.76,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'validation/epoch_accuracy': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 0.76,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'greater',
         },
       },
     },
@@ -109,7 +117,7 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
     command+: [
-      '--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-gpu.yaml',
+      '--config_file=official/legacy/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-gpu.yaml',
     ],
   },
   local k80x8 = gpu_common {
@@ -129,7 +137,7 @@ local tpus = import 'templates/tpus.libsonnet';
   local tpu_common = {
     command+: [
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
-      '--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-tpu.yaml',
+      '--config_file=official/legacy/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-tpu.yaml',
     ],
   },
   local v2_8 = tpu_common {
@@ -143,6 +151,12 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
+  },
+  local v4_8 = tpu_common {
+    accelerator: tpus.v4_8,
+  },
+  local v4_32 = tpu_common {
+    accelerator: tpus.v4_32,
   },
   local tpuVm = experimental.TensorFlowTpuVmMixin,
 
@@ -163,5 +177,9 @@ local tpus = import 'templates/tpus.libsonnet';
     efficientnet + v3_32 + functional,
     efficientnet + v2_32 + convergence + timeouts.Hours(10) + tpus.reserved + { schedule: '0 7 * * 1,3,5,6' },
     efficientnet + v3_32 + convergence + timeouts.Hours(24),
+    efficientnet + v4_8 + functional + tpuVm,
+    efficientnet + v4_32 + functional + tpuVm,
+    efficientnet + v4_8 + convergence + tpuVm,
+    efficientnet + v4_32 + convergence + tpuVm,
   ],
 }

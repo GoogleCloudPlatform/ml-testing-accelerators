@@ -19,14 +19,40 @@ local metrics = import 'templates/metrics.libsonnet';
   CloudAcceleratorTest:: base.BaseTest {
     local config = self,
 
-    publisherImage: 'gcr.io/xl-ml-test/publisher:stable',
-
     tpuSettings+: {
       requireTpuAvailableLabel: true,
     },
 
-    metricConfig:
-      metrics.CompatMetrics(config.metricCollectionConfig, config.regressionTestConfig),
+    metricConfig: metrics.MetricCollectionConfigHelper {
+      sourceMap:: {
+        tensorboard: metrics.TensorBoardSourceHelper {
+          exclude_tags: [
+
+          ],
+          include_tags: [
+            {
+              strategies: [
+                'FINAL',
+              ],
+              tag_pattern: '*',
+            },
+          ],
+          merge_runs: false,
+        },
+        literals: {
+          assertions: {
+            duration: {
+              inclusive_bounds: false,
+              std_devs_from_mean: {
+                comparison: 'LESS',
+                std_devs: 5,
+              },
+              wait_for_n_data_points: 10,
+            },
+          },
+        },
+      },
+    },
 
     // Add experimental TPU health monitor to Job.
     podTemplate+:: {
@@ -61,7 +87,8 @@ local metrics = import 'templates/metrics.libsonnet';
       } + if config.accelerator.type == 'gpu' then {
         priorityClassName: 'gpu-%(version)s' % config.accelerator,
       } else if config.accelerator.type == 'tpu' then {
-        priorityClassName: if config.accelerator.replicas == 1 then
+        // v4 TPUs share quota between devices and pods.
+        priorityClassName: if config.accelerator.replicas == 1 && config.accelerator.version <= 3 then
           'tpu-device' else 'tpu-pod',
         containerMap+: {
           train+: {

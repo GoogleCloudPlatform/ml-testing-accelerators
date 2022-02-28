@@ -139,7 +139,7 @@ local tpus = import 'templates/tpus.libsonnet';
     transformer + v3_8 + functional,
     transformer + v2_8 + convergence,
     transformer + v3_8 + convergence,
-    transformer + v2_32 + functional,
+    transformer + v2_32 + functional + common.RunNightly,
     transformer + v2_32 + functional + tpuVm,
     transformer + v3_32 + functional,
     transformer + v2_32 + convergence + tpus.reserved + { schedule: '10 20 * * 0,2,4' },

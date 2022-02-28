@@ -44,7 +44,7 @@ local tpus = import 'templates/tpus.libsonnet';
     },
     command: [
       'python3',
-      'official/vision/detection/main.py',
+      'official/legacy/detection/main.py',
       '--model=mask_rcnn',
       '--params_override=%s' % (std.manifestYamlDoc(self.paramsOverride) + '\n'),
       '--model_dir=$(MODEL_DIR)',
@@ -176,6 +176,24 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
+  local v4_8 = tpu_common {
+    accelerator: tpus.v4_8,
+    paramsOverride+: {
+      train+: {
+        batch_size: 16,
+      },
+    },
+
+  },
+  local v4_32 = tpu_common {
+    accelerator: tpus.v4_32,
+    paramsOverride+: {
+      train+: {
+        batch_size: 64,
+      },
+    },
+
+  },
   local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
@@ -188,11 +206,15 @@ local tpus = import 'templates/tpus.libsonnet';
     maskrcnn + functional + v3_8,
     maskrcnn + convergence + v2_8,
     maskrcnn + convergence + v3_8,
-    maskrcnn + functional + v2_32,
+    maskrcnn + functional + v2_32 + common.RunNightly,
     maskrcnn + functional + v3_32,
     maskrcnn + convergence + v2_32 + tpus.reserved + { schedule: '0 22 * * 0,2,4' },
     maskrcnn + convergence + v3_32,
     maskrcnn + functional + v2_8 + tpuVm + { paramsOverride+: { train+: { batch_size: 16 } } },
     maskrcnn + functional + v2_32 + tpuVm + { paramsOverride+: { train+: { batch_size: 64 } } },
+    maskrcnn + functional + v4_8 + tpuVm,
+    maskrcnn + functional + v4_32 + tpuVm,
+    maskrcnn + convergence + v4_8 + tpuVm,
+    maskrcnn + convergence + v4_32 + tpuVm,
   ],
 }

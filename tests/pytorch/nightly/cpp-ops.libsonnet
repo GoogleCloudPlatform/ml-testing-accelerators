@@ -25,7 +25,14 @@ local utils = import 'templates/utils.libsonnet';
       'bash',
       'pytorch/xla/test/cpp/run_tests.sh',
     ],
-    regressionTestConfig: null,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap:: {},
+        },
+        literals: {},
+      },
+    },
   },
   local v2_8 = {
     accelerator: tpus.v2_8,
@@ -35,7 +42,7 @@ local utils = import 'templates/utils.libsonnet';
   },
   local cpp_ops_tpu_vm = common.PyTorchTest {
     modelName: 'cpp-ops',
-    schedule: '0 0 * * *',
+
     command: utils.scriptCommand(
       |||
         %(command_common)s

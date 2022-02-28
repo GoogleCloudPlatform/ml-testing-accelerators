@@ -29,6 +29,7 @@ data:
   TRANSFORMER_DIR: gs://xl-ml-test-europe-west4/data/transformer
   TF1_BERT_DIR: gs://xl-ml-test-europe-west4/data/old-bert
   T2T_TRANSFORMER_DIR: gs://xl-ml-test-europe-west4/data/old-transformer
+  TF_NLP_BERT_DIR: gs://cloud-tpu-checkpoints/bert/tf_nlp_bert
   LITS_DIR: gs://xl-ml-test-europe-west4/data/liver-seg
   SHAPEMASK_DIR: gs://xl-ml-test-europe-west4/data/shapemask
   PERFZERO_DATA_DIR: gs://xl-ml-test-europe-west4/data

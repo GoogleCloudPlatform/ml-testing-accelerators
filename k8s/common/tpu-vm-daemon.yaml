@@ -86,6 +86,13 @@ spec:
             --data '[{"op": "replace", "path": "/status/capacity/tpu.googleapis.com~1v3", "value": "2048"}]' \
             https://$KUBERNETES_SERVICE_HOST:443/api/v1/nodes/$NODE_NAME/status
 
+          curl -X PATCH \
+            --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt \
+            --header "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" \
+            --header "Content-Type: application/json-patch+json" \
+            --data '[{"op": "replace", "path": "/status/capacity/tpu.googleapis.com~1v4", "value": "2048"}]' \
+            https://$KUBERNETES_SERVICE_HOST:443/api/v1/nodes/$NODE_NAME/status
+
           tail -f /dev/null
         env:
         - name: NODE_NAME

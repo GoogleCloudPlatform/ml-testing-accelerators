@@ -20,6 +20,8 @@ local r2_3 = import 'r2.3/targets.jsonnet';
 local r2_4 = import 'r2.4/targets.jsonnet';
 local r2_5 = import 'r2.5/targets.jsonnet';
 local r2_6 = import 'r2.6/targets.jsonnet';
+local r2_7 = import 'r2.7/targets.jsonnet';
+local r2_8 = import 'r2.8/targets.jsonnet';
 
 // Add new versions here
 std.flattenArrays([
@@ -31,4 +33,6 @@ std.flattenArrays([
   r2_4,
   r2_5,
   r2_6,
+  r2_7,
+  r2_8,
 ])

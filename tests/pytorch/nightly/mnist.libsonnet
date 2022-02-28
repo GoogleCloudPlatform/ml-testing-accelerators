@@ -37,46 +37,22 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
 
-  local gpu_command_base = |||
-    unset XRT_TPU_CONFIG
-    export GPU_NUM_DEVICES=%(num_gpus)s
-    python3 pytorch/xla/test/test_train_mp_mnist.py \
-      --datadir=/datasets/mnist-data
-  |||,
-
-  local mnist_gpu_py37_cuda_101 = common.PyTorchTest {
-    imageTag: 'nightly_3.7_cuda_10.1',
-    modelName: 'mnist-cuda-10-1',
-    volumeMap+: {
-      datasets: common.datasetsVolume,
-    },
-    schedule: '0 19 * * *',
-  },
-  local mnist_gpu_py37_cuda_102 = common.PyTorchTest {
-    imageTag: 'nightly_3.7_cuda_10.2',
-    modelName: 'mnist-cuda-10-2',
-    volumeMap+: {
-      datasets: common.datasetsVolume,
-    },
-    schedule: '0 21 * * *',
-  },
-  local mnist_gpu_py37_cuda_112 = common.PyTorchTest {
-    imageTag: 'nightly_3.7_cuda_11.2',
-    modelName: 'mnist-cuda-11-2',
-    volumeMap+: {
-      datasets: common.datasetsVolume,
-    },
-    schedule: '0 23 * * *',
-  },
-
   local convergence = common.Convergence {
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        'Accuracy/test_final': {
-          success_threshold: {
-            fixed_value: 98.0,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'Accuracy/test': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 98.0,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'greater',
         },
       },
     },
@@ -84,36 +60,42 @@ local utils = import 'templates/utils.libsonnet';
 
   local v2_8 = {
     accelerator: tpus.v2_8,
-    schedule: '10 17 * * *',
+
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
-    schedule: '4 17 * * *',
+
   },
   local v3_32 = {
     accelerator: tpus.v3_32,
-    schedule: '13 17 * * *',
+
   },
-  local v100 = {
+  local gpu = {
+    local config = self,
+    imageTag+: '_cuda_11.2',
+
+    podTemplate+:: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            envMap+: {
+              GPU_NUM_DEVICES: '%d' % config.accelerator.count,
+            },
+          },
+        },
+      },
+    },
+  },
+  local v100 = gpu {
     accelerator: gpus.teslaV100,
-    command: utils.scriptCommand(
-      gpu_command_base % 1
-    ),
   },
-  local v100x4 = v100 {
+  local v100x4 = gpu {
     accelerator: gpus.teslaV100 { count: 4 },
-    command: utils.scriptCommand(
-      gpu_command_base % 4
-    ),
   },
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1),
     mnist + convergence + v3_8 + timeouts.Hours(1),
-    mnist_gpu_py37_cuda_101 + convergence + v100 + timeouts.Hours(6),
-    mnist_gpu_py37_cuda_101 + convergence + v100x4 + timeouts.Hours(6),
-    mnist_gpu_py37_cuda_102 + convergence + v100 + timeouts.Hours(6),
-    mnist_gpu_py37_cuda_102 + convergence + v100x4 + timeouts.Hours(6),
-    mnist_gpu_py37_cuda_112 + convergence + v100 + timeouts.Hours(6),
-    mnist_gpu_py37_cuda_112 + convergence + v100x4 + timeouts.Hours(6),
+    mnist + convergence + v100 + timeouts.Hours(6),
+    mnist + convergence + v100x4 + timeouts.Hours(6),
   ],
 }

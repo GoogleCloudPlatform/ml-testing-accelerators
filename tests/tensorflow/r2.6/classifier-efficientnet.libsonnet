@@ -87,13 +87,21 @@ local tpus = import 'templates/tpus.libsonnet';
         epochs_between_evals: 10,
       },
     },
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        'validation/epoch_accuracy_final': {
-          success_threshold: {
-            fixed_value: 0.76,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'validation/epoch_accuracy': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 0.76,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'greater',
         },
       },
     },
@@ -149,8 +157,6 @@ local tpus = import 'templates/tpus.libsonnet';
     efficientnet + v2_8 + functional + common.tpuVm,
     efficientnet + v3_8 + functional,
     efficientnet + v3_8 + hbm + mixins.Unsuspended,
-    efficientnet + v2_8 + convergence + timeouts.Hours(45) + { schedule: '0 8 * * 2,5' },
-    efficientnet + v3_8 + convergence + timeouts.Hours(45) + { schedule: '0 8 * * 2,5' },
     efficientnet + v2_32 + functional,
     efficientnet + v2_32 + functional + common.tpuVm,
     efficientnet + v3_32 + functional,

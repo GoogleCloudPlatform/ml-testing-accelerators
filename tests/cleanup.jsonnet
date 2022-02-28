@@ -24,7 +24,7 @@ local clusterTests = utils.splitByCluster(
 );
 local clusterTestNames = {
   [cluster]: [
-    test.testName
+    'cronjob.batch/' + test.testName
     for test in clusterTests[cluster]
     if test.schedule != null
   ]
@@ -59,7 +59,7 @@ local cleaners = {
                       %s
                       EOF
 
-                      delete_list=$(kubectl get cronjob --namespace=automated -l benchmarkId -o name | grep -v -f tests.txt)
+                      delete_list=$(kubectl get cronjob --namespace=automated -l benchmarkId -o name | grep -vx -f tests.txt)
                       if [[ "$delete_list" ]]; then
                         kubectl delete $delete_list;
                       fi

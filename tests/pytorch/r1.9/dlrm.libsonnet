@@ -40,7 +40,7 @@ local utils = import 'templates/utils.libsonnet';
   |||,
   local dlrm = common.PyTorchTest {
     modelName: 'dlrm',
-    schedule: '0 21 * * *',
+
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
@@ -61,7 +61,7 @@ local utils = import 'templates/utils.libsonnet';
   },
   local dlrm_convergence = common.PyTorchTest {
     modelName: 'dlrm-pre',
-    schedule: '0 21 * * *',
+
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
@@ -165,7 +165,7 @@ local utils = import 'templates/utils.libsonnet';
   local criteo_kaggle_tpu_vm = common.PyTorchTest {
     frameworkPrefix: 'pt-r1.9',
     modelName: 'dlrm-pre',
-    schedule: '30 20 * * *',
+
     command: utils.scriptCommand(
       |||
         %(command_common)s

@@ -13,53 +13,48 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
+local experimental = import '../experimental.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
+local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
 {
-  PyTorchTest:: common.PyTorchTest {
+  local Nightly = {
     frameworkPrefix: 'pt-nightly',
     tpuSettings+: {
       softwareVersion: 'pytorch-nightly',
     },
-    imageTag: 'nightly',
+    imageTag: 'nightly_3.7',
   },
-  PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest {
-    frameworkPrefix: 'pt-nightly',
-    tpuSettings+: {
-      softwareVersion: 'pytorch-nightly',
-    },
-    imageTag: 'nightly',
-  },
-  PyTorchGkePodTest:: common.PyTorchGkePodTest {
-    frameworkPrefix: 'pt-nightly',
-    tpuSettings+: {
-      softwareVersion: 'pytorch-nightly',
-    },
-    imageTag: 'nightly',
-  },
+  PyTorchTest:: common.PyTorchTest + Nightly,
+  PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest + Nightly,
+  PyTorchGkePodTest:: common.PyTorchGkePodTest + Nightly,
   Functional:: mixins.Functional {
-    schedule: '0 18 * * *',
+    schedule: '0 7 * * *',
     tpuSettings+: {
       preemptible: false,
     },
   },
-  Convergence:: mixins.Convergence {
-    // Run at 22:00 PST on Monday and Thursday.
-    schedule: '0 6 * * 1,3,6',
+  Convergence:: mixins.Convergence,
+  PyTorchTpuVmMixin:: experimental.PyTorchTpuVmMixin {
+    tpuSettings+: {
+      tpuVmPytorchSetup: |||
+        sudo pip3 uninstall --yes torch torch_xla torchvision numpy
+        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-nightly-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-nightly-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-nightly-cp38-cp38-linux_x86_64.whl numpy
+        sudo pip3 install mkl mkl-include
+        sudo apt-get -y update
+        sudo apt-get install -y libomp5
+        git clone https://github.com/pytorch/pytorch.git
+        cd pytorch
+        git clone https://github.com/pytorch/xla.git
+      |||,
+    },
   },
   datasetsVolume: volumes.PersistentVolumeSpec {
     name: 'pytorch-datasets-claim',
     mountPath: '/datasets',
   },
-  tpu_vm_nightly_install: |||
-    sudo pip3 uninstall --yes torch torch_xla torchvision numpy
-    sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-nightly-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-nightly-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-nightly-cp38-cp38-linux_x86_64.whl numpy
-    sudo pip3 install mkl mkl-include
-    sudo apt-get -y update
-    sudo apt-get install -y libomp5
-    git clone https://github.com/pytorch/pytorch.git
-    cd pytorch
-    git clone https://github.com/pytorch/xla.git
-  |||,
+
+  // DEPRECATED: Use PyTorchTpuVmMixin instead
+  tpu_vm_nightly_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
 }

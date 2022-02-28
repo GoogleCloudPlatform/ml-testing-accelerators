@@ -45,7 +45,7 @@ local tpus = import 'templates/tpus.libsonnet';
     },
     command: [
       'python3',
-      'official/vision/detection/main.py',
+      'official/legacy/detection/main.py',
       '--params_override=%s' % (std.manifestYamlDoc(self.paramsOverride) + '\n'),
       '--model_dir=$(MODEL_DIR)',
     ],
@@ -102,11 +102,6 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
     accelerator: gpus.teslaV100,
-
-    // TODO: remove this when this model is fixed.
-    regressionTestConfig: {
-      alert_for_failed_jobs: false,
-    },
   },
   local v100x4 = v100 {
     accelerator: gpus.teslaV100 { count: 4 },
@@ -139,6 +134,14 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
+  local v4_8 = tpu_common {
+    accelerator: tpus.v4_8,
+    paramsOverride+: {
+      train+: {
+        batch_size: 64,
+      },
+    },
+  },
   local v2_32 = tpu_common {
     accelerator: tpus.v2_32,
     paramsOverride+: {
@@ -149,6 +152,14 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
+    paramsOverride+: {
+      train+: {
+        batch_size: 256,
+      },
+    },
+  },
+  local v4_32 = tpu_common {
+    accelerator: tpus.v4_32,
     paramsOverride+: {
       train+: {
         batch_size: 256,
@@ -166,10 +177,14 @@ local tpus = import 'templates/tpus.libsonnet';
     retinanet + functional + v2_8,
     retinanet + functional + v2_8 + tpuVm,
     retinanet + functional + v3_8,
+    retinanet + functional + v4_8 + tpuVm,
+    retinanet + convergence + v4_8 + tpuVm,
     retinanet + convergence + v2_8,
     retinanet + convergence + v3_8,
     retinanet + functional + v2_32,
     retinanet + functional + v2_32 + tpuVm,
+    retinanet + functional + v4_32 + tpuVm,
+    retinanet + convergence + v4_32 + tpuVm,
     retinanet + functional + v3_32,
     retinanet + convergence + v2_32 + tpus.reserved + { schedule: '47 19 * * 1,3,5,6' },
     retinanet + convergence + v3_32,

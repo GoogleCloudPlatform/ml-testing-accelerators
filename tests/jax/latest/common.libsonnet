@@ -16,7 +16,7 @@ local common = import '../common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 {
-  runFlaxLatest:: common.JaxTest + common.jaxlibLatest + common.libtpuAlpha {
+  runFlaxLatest:: common.JaxTest + common.jaxlibLatest + common.alphaImage {
     local config = self,
 
     frameworkPrefix: 'flax-latest',
@@ -60,7 +60,7 @@ local tpus = import 'templates/tpus.libsonnet';
              extraFlags: config.extraFlags,
            }),
   },
-  PodFlaxLatest:: common.JaxPodTest + common.jaxlibLatest + common.libtpuAlpha {
+  PodFlaxLatest:: common.JaxPodTest + common.jaxlibLatest + common.alphaImage {
     local config = self,
     frameworkPrefix: 'flax-latest',
     extraDeps:: '',

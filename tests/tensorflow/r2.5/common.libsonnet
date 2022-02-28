@@ -24,47 +24,46 @@ local mixins = import 'templates/mixins.libsonnet';
       softwareVersion: '2.5.0',
     },
     imageTag: 'r2.5.0',
-
-    metricCollectionConfig+: {
-      metric_to_aggregation_strategies+: {
-        examples_per_second: ['average'],
-      },
-      use_run_name_prefix: true,
-    },
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 2.0,
-          },
-        },
-      },
-    },
   },
-  // Running functional tests at 10PM PST Sat.
+  // Don't run tests by default since the release is stable.
   Functional:: mixins.Functional + mixins.Suspended {
-    schedule: '0 6 * * 6',
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 4.0,
+    schedule: null,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            examples_per_second: {
+              AVERAGE: {
+                inclusive_bounds: true,
+                std_devs_from_mean: {
+                  comparison: 'GREATER',
+                  std_devs: 4.0,
+                },
+                wait_for_n_data_points: 0,
+              },
+            },
           },
         },
       },
     },
   },
-  // Running convergence tests at Midnight PST Sat.
+  // Don't run tests by default since the release is stable.
   Convergence:: mixins.Convergence {
-    schedule: '0 8 * * 6',
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        examples_per_second_average: {
-          comparison: 'greater_or_equal',
-          success_threshold: {
-            stddevs_from_mean: 2.0,
+    schedule: null,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            examples_per_second: {
+              AVERAGE: {
+                inclusive_bounds: true,
+                std_devs_from_mean: {
+                  comparison: 'GREATER',
+                  std_devs: 2.0,
+                },
+                wait_for_n_data_points: 0,
+              },
+            },
           },
         },
       },

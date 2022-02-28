@@ -34,13 +34,21 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   local convergence = common.Convergence {
-    regressionTestConfig+: {
-      metric_success_conditions+: {
-        'Accuracy/test_final': {
-          success_threshold: {
-            fixed_value: 98.0,
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'Accuracy/test': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 98.0,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
           },
-          comparison: 'greater',
         },
       },
     },
@@ -66,15 +74,15 @@ local utils = import 'templates/utils.libsonnet';
   },
   local v2_8 = {
     accelerator: tpus.v2_8,
-    schedule: '0 23 * * *',
+
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
-    schedule: '2 23 * * *',
+
   },
   local v3_32 = {
     accelerator: tpus.v3_32,
-    schedule: '12 17 * * *',
+
   },
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1),

@@ -16,7 +16,7 @@ local common = import '../common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 {
-  runFlaxNightly:: common.JaxTest + common.jaxlibHead + common.libtpuNightly {
+  runFlaxNightly:: common.JaxTest + common.jaxlibHead + common.nightlyImage {
     local config = self,
 
     frameworkPrefix: 'flax-nightly',

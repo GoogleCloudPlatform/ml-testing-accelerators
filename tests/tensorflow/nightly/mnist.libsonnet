@@ -23,7 +23,7 @@ local tpus = import 'templates/tpus.libsonnet';
     modelName: 'mnist',
     command: [
       'python3',
-      'official/vision/image_classification/mnist_main.py',
+      'official/legacy/image_classification/mnist_main.py',
       '--data_dir=%s' % self.flags.dataDir,
       '--model_dir=%s' % self.flags.modelDir,
     ],
@@ -77,6 +77,12 @@ local tpus = import 'templates/tpus.libsonnet';
       '--batch_size=4096',
     ],
   },
+  local v4_8 = {
+    accelerator: tpus.v4_8,
+  },
+  local v4_32 = {
+    accelerator: tpus.v4_32,
+  },
 
   local tpuVm = experimental.TensorFlowTpuVmMixin {
     command+: [
@@ -97,6 +103,7 @@ local tpus = import 'templates/tpus.libsonnet';
     mnist + v2_8 + convergence + tpuVm,
     mnist + v3_8 + functional,
     mnist + v3_8 + convergence,
+    mnist + v4_8 + convergence + tpuVm,
     mnist + v2_32 + convergence + tpuVm,
   ],
 }
