@@ -21,15 +21,12 @@ local utils = import 'templates/utils.libsonnet';
       |||
         cd /
         git clone https://github.com/pytorch/xla.git
-
         export COLAB_TPU_ADDR=${KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS#grpc://}
         export TPU_NAME=${TPU_NAME#*/}
-
         notebook_path='/xla/contrib/colab/%(notebook)s'
         # HACK: Remove usage of google.colab.patches.cv2_imshow
         sed -i '/cv2/d' $notebook_path
         jupyter nbconvert --to notebook --inplace --execute "${notebook_path}"
-
         gsutil cp "${notebook_path}" "$(MODEL_DIR)/%(notebook)s"
       ||| % config.colabSettings
     ),

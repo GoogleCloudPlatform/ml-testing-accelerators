@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,25 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local colab = import 'colab.libsonnet';
 local cppOperations = import 'cpp-ops.libsonnet';
 local dlrm = import 'dlrm.libsonnet';
 local fairseqTransformer = import 'fs-transformer.libsonnet';
-local hfglue = import 'hf-glue.libsonnet';
+local huggingfaceGlue = import 'hf-glue.libsonnet';
+local huggingfaceLanguageModeling = import 'hf-lm.libsonnet';
+local mnist_3_7 = import 'mnist-3-7.libsonnet';
 local mnist = import 'mnist.libsonnet';
 local pythonOperations = import 'python-ops.libsonnet';
-local resnet50 = import 'resnet50-mp.libsonnet';
+local resnet50_mp = import 'resnet50-mp.libsonnet';
+local resnet50_pod = import 'resnet50-pod.libsonnet';
 local fairseqRobertaPretrain = import 'roberta-pre.libsonnet';
+local wav2vec2 = import 'wav2vec2.libsonnet';
 
 // Add new models here
 std.flattenArrays([
   cppOperations.configs,
-  colab.configs,
   dlrm.configs,
-  fairseqTransformer.configs,
-  hfglue.configs,
-  mnist.configs,
-  pythonOperations.configs,
-  resnet50.configs,
   fairseqRobertaPretrain.configs,
+  fairseqTransformer.configs,
+  huggingfaceGlue.configs,
+  huggingfaceLanguageModeling.configs,
+  mnist.configs,
+  mnist_3_7.configs,
+  pythonOperations.configs,
+  resnet50_mp.configs,
+  resnet50_pod.configs,
+  wav2vec2.configs,
 ])

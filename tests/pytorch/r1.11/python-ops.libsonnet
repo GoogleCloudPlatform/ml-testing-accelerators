@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,13 +15,14 @@
 local common = import 'common.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
 
 {
   local operations = common.PyTorchTest {
-    modelName: 'cpp-ops',
+    modelName: 'python-ops',
     command: [
       'bash',
-      'pytorch/xla/test/cpp/run_tests.sh',
+      'pytorch/xla/test/run_tests.sh',
     ],
     metricConfig+: {
       sourceMap+:: {
