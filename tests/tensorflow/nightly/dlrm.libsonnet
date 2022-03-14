@@ -213,6 +213,29 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
+
+  local v4_8 = tpu_common {
+    accelerator: tpus.v4_8,
+    paramsOverride+:: {
+      task+: {
+        model+: {
+          bottom_mlp: [512, 256, 32],
+          embedding_dim: 64,
+        },
+      },
+    },
+  },
+  local v4_32 = tpu_common {
+    accelerator: tpus.v4_32,
+    paramsOverride+:: {
+      task+: {
+        model+: {
+          bottom_mlp: [512, 256, 128],
+          embedding_dim: 128,
+        },
+      },
+    },
+  },
   local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
@@ -229,5 +252,12 @@ local tpus = import 'templates/tpus.libsonnet';
     dlrm + convergence + v100,
     dlrm + convergence + cross_interaction + v100,
     dlrm + convergence + v100x4,
+    dlrm + functional + v2_8 + tpuVm,
+    dlrm + functional + cross_interaction + v2_8 + tpuVm,
+    dlrm + convergence + v3_8 + tpuVm,
+    dlrm + convergence + v2_32 + tpuVm,
+    dlrm + functional + v3_32 + tpuVm,
+    dlrm + functional + v4_8 + tpuVm,
+    dlrm + functional + cross_interaction + v4_32 + tpuVm,
   ],
 }
