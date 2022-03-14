@@ -13,13 +13,12 @@
 // limitations under the License.
 
 local common = import 'common.libsonnet';
-local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local transformer = common.PyTorchTest {
+  local transformer = {
     local config = self,
 
     modelName: 'fs-transformer',
@@ -27,11 +26,11 @@ local utils = import 'templates/utils.libsonnet';
       datasets: common.datasetsVolume,
     },
     paramsOverride:: {
-      scriptPath: '/usr/share/torch-xla-1.11/tpu-examples/deps/fairseq/train.py',
+      scriptPath: 'tpu-examples/deps/fairseq/train.py',
       logSteps: 200,
       trainSubset: 'train',
       validSubset: 'valid',
-      inputShape: ['256x64', '512x32'],
+      inputShape: '256x64 512x32',
       trainCommand: [
         'python3',
         self.scriptPath,
@@ -50,8 +49,7 @@ local utils = import 'templates/utils.libsonnet';
         '--label-smoothing=0.1',
         '--update-freq=1',
         '--optimizer=adam',
-        '--adam-betas',
-        '(0.9,0.98)',
+        "--adam-betas='(0.9,0.98)'",
         '--warmup-init-lr=1e-07',
         '--lr=0.0005',
         '--warmup-updates=4000',
@@ -62,8 +60,8 @@ local utils = import 'templates/utils.libsonnet';
         '--log_steps=%d' % config.paramsOverride.logSteps,
         '--train-subset=%s' % config.paramsOverride.trainSubset,
         '--valid-subset=%s' % config.paramsOverride.validSubset,
-        '--input_shapes',
-      ] + config.paramsOverride.inputShape,
+        '--input_shapes %s' % config.paramsOverride.inputShape,
+      ],
     },
     cpu: '9.0',
     memory: '30Gi',
@@ -80,7 +78,7 @@ local utils = import 'templates/utils.libsonnet';
   local base_functional = common.Functional {
     paramsOverride+:: {
       logSteps: 10,
-      inputShape: ['128x64'],
+      inputShape: '128x64',
     },
   },
   local checkpoint_local = base_functional {
@@ -138,6 +136,7 @@ local utils = import 'templates/utils.libsonnet';
   local functional_no_save = base_functional {
     local config = self,
     paramsOverride+:: {
+      scriptPath: '/usr/share/torch-xla-1.11/tpu-examples/deps/fairseq/train.py',
       trainSubset: 'valid',
       validSubset: 'test',
       trainCommand+: [
@@ -189,8 +188,8 @@ local utils = import 'templates/utils.libsonnet';
     tpuSettings+: {
       tpuVmExtraSetup: |||
         git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.11 tpu-examples/
-        echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
-        echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
+        export PATH=~/.local/bin:$PATH
+        export XLA_USE_BF16=1
       |||,
     },
   },
@@ -202,11 +201,11 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_32,
   },
   configs: [
-    transformer + v3_8 + functional_no_save + timeouts.Hours(1),
-    transformer + v3_8 + convergence + timeouts.Hours(25),
-    transformer + v3_8 + convergence + timeouts.Hours(25) + tpuVm,
-    transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
-    transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
-    transformer + v3_32 + functional_no_save + timeouts.Hours(1) + tpuVm + mixins.Experimental,
+    common.PyTorchXlaDistPodTest + transformer + v3_32 + functional_no_save + timeouts.Hours(1),
+    common.PyTorchTest + transformer + v3_8 + functional_no_save + timeouts.Hours(1),
+    common.PyTorchTest + transformer + v3_8 + convergence + timeouts.Hours(25),
+    common.PyTorchTest + transformer + v3_8 + convergence + timeouts.Hours(25) + tpuVm,
+    common.PyTorchTest + transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
+    common.PyTorchTest + transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
   ],
 }
