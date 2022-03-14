@@ -27,7 +27,7 @@ local utils = import 'templates/utils.libsonnet';
       datasets: common.datasetsVolume,
     },
     paramsOverride:: {
-      scriptPath: '/usr/share/torch-xla-1.11/tpu-examples/deps/fairseq/train.py',
+      scriptPath: 'tpu-examples/deps/fairseq/train.py',
       logSteps: 200,
       trainSubset: 'train',
       validSubset: 'valid',
