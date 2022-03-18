@@ -45,6 +45,8 @@ local mixins = import 'templates/mixins.libsonnet';
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                   'pip install -r /usr/share/tpu/models/official/requirements.txt'
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                  'pip install tensorflow-recommenders --no-deps'
+                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                   'cd /usr/share/tpu/models; %(env)s '%(testCommand)s
                 exit_code=$?
                 bash /scripts/cleanup.sh
