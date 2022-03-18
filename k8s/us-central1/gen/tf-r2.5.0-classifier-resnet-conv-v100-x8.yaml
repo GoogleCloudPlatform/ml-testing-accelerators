@@ -1,0 +1,172 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "labels":
+    "accelerator": "v100-x8"
+    "benchmarkId": "tf-r2.5.0-classifier-resnet-conv-v100-x8"
+    "frameworkVersion": "tf-r2.5.0"
+    "mode": "conv"
+    "model": "classifier-resnet"
+  "name": "tf-r2.5.0-classifier-resnet-conv-v100-x8"
+  "namespace": "automated"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "metadata":
+      "annotations":
+        "ml-testing-accelerators/gcs-subdir": "tf-r2.5.0/classifier-resnet/conv/v100-x8"
+        "ml-testing-accelerators/metric-config": |
+          {
+            "sources": [
+              {
+                "literals": {
+                  "assertions": {
+                    "duration": {
+                      "inclusive_bounds": false,
+                      "std_devs_from_mean": {
+                        "comparison": "LESS",
+                        "std_devs": 5
+                      },
+                      "wait_for_n_data_points": 10
+                    }
+                  }
+                }
+              },
+              {
+                "tensorboard": {
+                  "aggregate_assertions": [
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "GREATER",
+                          "std_devs": 4
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "AVERAGE",
+                      "tag": "examples_per_second"
+                    },
+                    {
+                      "assertion": {
+                        "fixed_value": {
+                          "comparison": "GREATER",
+                          "value": 0.76
+                        },
+                        "inclusive_bounds": false,
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "FINAL",
+                      "tag": "validation/epoch_accuracy"
+                    }
+                  ],
+                  "exclude_tags": [
+          
+                  ],
+                  "include_tags": [
+                    {
+                      "strategies": [
+                        "FINAL"
+                      ],
+                      "tag_pattern": "*"
+                    }
+                  ],
+                  "merge_runs": false
+                }
+              }
+            ]
+          }
+      "labels":
+        "accelerator": "v100-x8"
+        "benchmarkId": "tf-r2.5.0-classifier-resnet-conv-v100-x8"
+        "frameworkVersion": "tf-r2.5.0"
+        "mode": "conv"
+        "model": "classifier-resnet"
+    "spec":
+      "activeDeadlineSeconds": 129600
+      "backoffLimit": 1
+      "template":
+        "spec":
+          "containers":
+          - "args":
+            - "python3"
+            - "official/vision/image_classification/classifier_trainer.py"
+            - "--data_dir=$(IMAGENET_DIR)"
+            - "--model_type=resnet"
+            - "--dataset=imagenet"
+            - "--mode=train_and_eval"
+            - "--model_dir=$(MODEL_DIR)"
+            - |
+              --params_override="evaluation":
+                "epochs_between_evals": 1
+              "runtime":
+                "num_gpus": 8
+              "train":
+                "epochs": 90
+              "train_dataset":
+                "builder": "records"
+              "validation_dataset":
+                "builder": "records"
+            - "--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/gpu.yaml"
+            "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "$(OUTPUT_BUCKET)/tf-r2.5.0/classifier-resnet/conv/v100-x8/$(JOB_NAME)"
+            - "name": "TF_ENABLE_LEGACY_FILESYSTEM"
+              "value": "1"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
+            "image": "gcr.io/xl-ml-test/tensorflow:r2.5.0"
+            "imagePullPolicy": "Always"
+            "name": "train"
+            "resources":
+              "limits":
+                "nvidia.com/gpu": 8
+              "requests":
+                "cpu": 2
+                "memory": "20G"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
+          "initContainers": []
+          "nodeSelector":
+            "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
+          "priorityClassName": "gpu-v100"
+          "restartPolicy": "Never"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+  "schedule": "0 8 * * 0,3,5"
+  "successfulJobsHistoryLimit": 1

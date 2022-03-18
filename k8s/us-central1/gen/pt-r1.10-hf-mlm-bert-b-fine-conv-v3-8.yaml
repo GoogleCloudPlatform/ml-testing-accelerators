@@ -1,0 +1,218 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "labels":
+    "accelerator": "v3-8"
+    "benchmarkId": "pt-r1.10-hf-mlm-bert-b-fine-conv-v3-8"
+    "frameworkVersion": "pt-r1.10"
+    "mode": "conv"
+    "model": "hf-mlm-bert-b-fine"
+  "name": "pt-r1.10-hf-mlm-bert-b-fine-conv-v3-8"
+  "namespace": "automated"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "metadata":
+      "annotations":
+        "ml-testing-accelerators/gcs-subdir": "pt-r1.10/hf-mlm-bert-b-fine/conv/v3-8"
+        "ml-testing-accelerators/metric-config": |
+          {
+            "sources": [
+              {
+                "literals": {
+                  "assertions": {
+                    "duration": {
+                      "inclusive_bounds": false,
+                      "std_devs_from_mean": {
+                        "comparison": "LESS",
+                        "std_devs": 5
+                      },
+                      "wait_for_n_data_points": 10
+                    }
+                  }
+                }
+              },
+              {
+                "tensorboard": {
+                  "aggregate_assertions": [
+                    {
+                      "assertion": {
+                        "inclusive_bounds": false,
+                        "std_devs_from_mean": {
+                          "comparison": "LESS",
+                          "std_devs": 5
+                        },
+                        "wait_for_n_data_points": 10
+                      },
+                      "strategy": "FINAL",
+                      "tag": "ExecuteTime__Percentile_99_sec"
+                    },
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "LESS",
+                          "std_devs": 0
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "FINAL",
+                      "tag": "aten_ops_sum"
+                    },
+                    {
+                      "assertion": {
+                        "fixed_value": {
+                          "comparison": "LESS",
+                          "value": 2.8
+                        },
+                        "inclusive_bounds": false,
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "FINAL",
+                      "tag": "eval/loss"
+                    }
+                  ],
+                  "exclude_tags": [
+                    "LearningRate"
+                  ],
+                  "include_tags": [
+                    {
+                      "strategies": [
+                        "FINAL"
+                      ],
+                      "tag_pattern": "*"
+                    }
+                  ],
+                  "merge_runs": true
+                }
+              }
+            ]
+          }
+      "labels":
+        "accelerator": "v3-8"
+        "benchmarkId": "pt-r1.10-hf-mlm-bert-b-fine-conv-v3-8"
+        "frameworkVersion": "pt-r1.10"
+        "mode": "conv"
+        "model": "hf-mlm-bert-b-fine"
+    "spec":
+      "activeDeadlineSeconds": 18000
+      "backoffLimit": 1
+      "template":
+        "metadata":
+          "annotations":
+            "reserved.cloud-tpus.google.com": "false"
+            "tf-version.cloud-tpus.google.com": "pytorch-1.10"
+        "spec":
+          "containers":
+          - "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            "image": "gcr.io/xl-ml-test/health-monitor:stable"
+            "imagePullPolicy": "Always"
+            "name": "monitor"
+          - "args":
+            - "/bin/bash"
+            - "-c"
+            - |
+              set -u
+              set -e
+              set -x
+              
+              git clone https://github.com/huggingface/transformers.git
+              cd transformers && pip install .
+              git log -1
+              pip install datasets sklearn
+              python examples/pytorch/xla_spawn.py \
+                --num_cores 8 \
+                examples/pytorch/language-modeling/run_mlm.py \
+                --logging_dir ./tensorboard-metrics \
+                --cache_dir ./cache_dir \
+                --dataset_name wikitext \
+                --dataset_config_name wikitext-2-raw-v1 \
+                --do_train \
+                --do_eval \
+                --overwrite_output_dir \
+                --output_dir language-modeling \
+                --logging_steps 30 \
+                --save_steps 3000 \
+                --overwrite_cache \
+                --tpu_metrics_debug \
+               --model_type=bert \
+              --model_name_or_path bert-base-cased \
+              --num_train_epochs 3 \
+              --per_device_train_batch_size 16 \
+              --per_device_eval_batch_size 16
+              gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
+              
+              
+            "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "$(OUTPUT_BUCKET)/pt-r1.10/hf-mlm-bert-b-fine/conv/v3-8/$(JOB_NAME)"
+            - "name": "XLA_USE_BF16"
+              "value": "0"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
+            - "configMapRef":
+                "name": "pytorch-nfs-ip"
+            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.10"
+            "imagePullPolicy": "Always"
+            "name": "train"
+            "resources":
+              "limits":
+                "cloud-tpus.google.com/v3": 8
+                "tpu.googleapis.com/v3": 8
+              "requests":
+                "cpu": "12.0"
+                "memory": "80Gi"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
+          "initContainers": []
+          "nodeSelector":
+            "tpu-available": "true"
+          "priorityClassName": "tpu-device"
+          "restartPolicy": "Never"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+  "schedule": "0 7 * * 1,3,5"
+  "successfulJobsHistoryLimit": 1

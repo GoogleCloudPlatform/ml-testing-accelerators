@@ -1,0 +1,225 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "labels":
+    "accelerator": "v3-8"
+    "benchmarkId": "pt-r1.10-fs-checkpoint-local-func-v3-8"
+    "frameworkVersion": "pt-r1.10"
+    "mode": "func"
+    "model": "fs-checkpoint-local"
+  "name": "pt-r1.10-fs-checkpoint-local-func-v3-8"
+  "namespace": "automated"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "metadata":
+      "annotations":
+        "ml-testing-accelerators/gcs-subdir": "pt-r1.10/fs-checkpoint-local/func/v3-8"
+        "ml-testing-accelerators/metric-config": |
+          {
+            "sources": [
+              {
+                "literals": {
+                  "assertions": {
+                    "duration": {
+                      "inclusive_bounds": false,
+                      "std_devs_from_mean": {
+                        "comparison": "LESS",
+                        "std_devs": 5
+                      },
+                      "wait_for_n_data_points": 10
+                    }
+                  }
+                }
+              },
+              {
+                "tensorboard": {
+                  "aggregate_assertions": [
+          
+                  ],
+                  "exclude_tags": [
+                    "LearningRate"
+                  ],
+                  "include_tags": [
+                    {
+                      "strategies": [
+                        "FINAL"
+                      ],
+                      "tag_pattern": "*"
+                    }
+                  ],
+                  "merge_runs": true
+                }
+              }
+            ]
+          }
+      "labels":
+        "accelerator": "v3-8"
+        "benchmarkId": "pt-r1.10-fs-checkpoint-local-func-v3-8"
+        "frameworkVersion": "pt-r1.10"
+        "mode": "func"
+        "model": "fs-checkpoint-local"
+    "spec":
+      "activeDeadlineSeconds": 7200
+      "backoffLimit": 1
+      "template":
+        "metadata":
+          "annotations":
+            "reserved.cloud-tpus.google.com": "false"
+            "tf-version.cloud-tpus.google.com": "pytorch-1.10"
+        "spec":
+          "containers":
+          - "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            "image": "gcr.io/xl-ml-test/health-monitor:stable"
+            "imagePullPolicy": "Always"
+            "name": "monitor"
+          - "args":
+            - "/bin/bash"
+            - "-c"
+            - |
+              set -u
+              set -e
+              set -x
+              
+              python3 tpu-examples/deps/fairseq/train.py \
+                /datasets/wmt18_en_de_bpej32k \
+              --metrics_debug \
+              --arch=transformer_vaswani_wmt_en_de_big \
+              --max-target-positions=64 \
+              --attention-dropout=0.1 \
+              --no-progress-bar \
+              --criterion=label_smoothed_cross_entropy \
+              --source-lang=en \
+              --lr-scheduler=inverse_sqrt  \
+              --min-lr=1e-09 \
+              --skip-invalid-size-inputs-valid-test \
+              --target-lang=de \
+              --label-smoothing=0.1 \
+              --update-freq=1 \
+              --optimizer=adam \
+              --adam-betas='(0.9,0.98)' \
+              --warmup-init-lr=1e-07 \
+              --lr=0.0005 \
+              --warmup-updates=4000 \
+              --share-all-embeddings \
+              --dropout=0.3 \
+              --weight-decay=0.0 \
+              --num_cores=8 \
+                --log_steps=10 \
+                  --train-subset=test \
+                  --valid-subset=valid \
+                  --save-interval=1 \
+                  --input_shapes=128x64 \
+                --max-epoch=1 \
+                --save-dir=/tmp/checkpoints
+              python3 tpu-examples/deps/fairseq/train.py \
+                /datasets/wmt18_en_de_bpej32k \
+              --metrics_debug \
+              --arch=transformer_vaswani_wmt_en_de_big \
+              --max-target-positions=64 \
+              --attention-dropout=0.1 \
+              --no-progress-bar \
+              --criterion=label_smoothed_cross_entropy \
+              --source-lang=en \
+              --lr-scheduler=inverse_sqrt  \
+              --min-lr=1e-09 \
+              --skip-invalid-size-inputs-valid-test \
+              --target-lang=de \
+              --label-smoothing=0.1 \
+              --update-freq=1 \
+              --optimizer=adam \
+              --adam-betas='(0.9,0.98)' \
+              --warmup-init-lr=1e-07 \
+              --lr=0.0005 \
+              --warmup-updates=4000 \
+              --share-all-embeddings \
+              --dropout=0.3 \
+              --weight-decay=0.0 \
+              --num_cores=8 \
+                --log_steps=10 \
+                  --train-subset=test \
+                  --valid-subset=valid \
+                  --save-interval=1 \
+                  --input_shapes=128x64 \
+                --max-epoch=2 \
+                --save-dir=/tmp/checkpoints
+              
+            "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "$(OUTPUT_BUCKET)/pt-r1.10/fs-checkpoint-local/func/v3-8/$(JOB_NAME)"
+            - "name": "XLA_USE_BF16"
+              "value": "0"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
+            - "configMapRef":
+                "name": "pytorch-nfs-ip"
+            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.10"
+            "imagePullPolicy": "Always"
+            "name": "train"
+            "resources":
+              "limits":
+                "cloud-tpus.google.com/v3": 8
+                "tpu.googleapis.com/v3": 8
+              "requests":
+                "cpu": "9.0"
+                "memory": "30Gi"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
+            - "mountPath": "/datasets"
+              "name": "pytorch-datasets-claim"
+              "readOnly": true
+          "initContainers": []
+          "nodeSelector":
+            "tpu-available": "true"
+          "priorityClassName": "tpu-device"
+          "restartPolicy": "Never"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+          - "name": "pytorch-datasets-claim"
+            "persistentVolumeClaim":
+              "claimName": "pytorch-datasets-claim"
+  "schedule": "0 7 * * *"
+  "successfulJobsHistoryLimit": 1

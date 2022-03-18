@@ -1,0 +1,179 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "labels":
+    "accelerator": "v100-x1"
+    "benchmarkId": "pt-r1.10-resnet50-cuda-10-1-amp-func-v100-x1"
+    "frameworkVersion": "pt-r1.10"
+    "mode": "func"
+    "model": "resnet50-cuda-10-1-amp"
+  "name": "pt-r1.10-resnet50-cuda-10-1-amp-func-v100-x1"
+  "namespace": "automated"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "metadata":
+      "annotations":
+        "ml-testing-accelerators/gcs-subdir": "pt-r1.10/resnet50-cuda-10-1-amp/func/v100-x1"
+        "ml-testing-accelerators/metric-config": |
+          {
+            "sources": [
+              {
+                "literals": {
+                  "assertions": {
+                    "duration": {
+                      "inclusive_bounds": false,
+                      "std_devs_from_mean": {
+                        "comparison": "LESS",
+                        "std_devs": 5
+                      },
+                      "wait_for_n_data_points": 10
+                    }
+                  }
+                }
+              },
+              {
+                "tensorboard": {
+                  "aggregate_assertions": [
+                    {
+                      "assertion": {
+                        "inclusive_bounds": false,
+                        "std_devs_from_mean": {
+                          "comparison": "LESS",
+                          "std_devs": 5
+                        },
+                        "wait_for_n_data_points": 10
+                      },
+                      "strategy": "FINAL",
+                      "tag": "ExecuteTime__Percentile_99_sec"
+                    },
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "LESS",
+                          "std_devs": 0
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "FINAL",
+                      "tag": "aten_ops_sum"
+                    }
+                  ],
+                  "exclude_tags": [
+                    "LearningRate"
+                  ],
+                  "include_tags": [
+                    {
+                      "strategies": [
+                        "FINAL"
+                      ],
+                      "tag_pattern": "*"
+                    }
+                  ],
+                  "merge_runs": true
+                }
+              }
+            ]
+          }
+      "labels":
+        "accelerator": "v100-x1"
+        "benchmarkId": "pt-r1.10-resnet50-cuda-10-1-amp-func-v100-x1"
+        "frameworkVersion": "pt-r1.10"
+        "mode": "func"
+        "model": "resnet50-cuda-10-1-amp"
+    "spec":
+      "activeDeadlineSeconds": 7200
+      "backoffLimit": 1
+      "template":
+        "spec":
+          "containers":
+          - "args":
+            - "/bin/bash"
+            - "-c"
+            - |
+              set -u
+              set -e
+              set -x
+              
+              unset XRT_TPU_CONFIG
+              export GPU_NUM_DEVICES=1
+              python3 pytorch/xla/test/test_train_mp_imagenet.py \
+              --model=resnet50 \
+              --batch_size=128 \
+              --log_steps=100 \
+              --num_workers=2 \
+              --num_epochs=2 \
+              --datadir=/datasets/imagenet-mini \
+               --amp
+              
+            "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "$(OUTPUT_BUCKET)/pt-r1.10/resnet50-cuda-10-1-amp/func/v100-x1/$(JOB_NAME)"
+            - "name": "XLA_USE_BF16"
+              "value": "0"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
+            - "configMapRef":
+                "name": "pytorch-nfs-ip"
+            "image": "gcr.io/xl-ml-test/pytorch-xla:r1.10_3.7_cuda_10.1"
+            "imagePullPolicy": "Always"
+            "name": "train"
+            "resources":
+              "limits":
+                "nvidia.com/gpu": 1
+              "requests":
+                "cpu": "7.0"
+                "memory": "40Gi"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
+            - "mountPath": "/datasets"
+              "name": "pytorch-datasets-claim"
+              "readOnly": true
+          "initContainers": []
+          "nodeSelector":
+            "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
+          "priorityClassName": "gpu-v100"
+          "restartPolicy": "Never"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+          - "name": "pytorch-datasets-claim"
+            "persistentVolumeClaim":
+              "claimName": "pytorch-datasets-claim"
+  "schedule": "0 7 * * *"
+  "successfulJobsHistoryLimit": 1

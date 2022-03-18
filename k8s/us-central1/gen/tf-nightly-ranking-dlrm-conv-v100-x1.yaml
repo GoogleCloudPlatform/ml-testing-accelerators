@@ -1,0 +1,211 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"apiVersion": "batch/v1beta1"
+"kind": "CronJob"
+"metadata":
+  "labels":
+    "accelerator": "v100-x1"
+    "benchmarkId": "tf-nightly-ranking-dlrm-conv-v100-x1"
+    "frameworkVersion": "tf-nightly"
+    "mode": "conv"
+    "model": "ranking-dlrm"
+  "name": "tf-nightly-ranking-dlrm-conv-v100-x1"
+  "namespace": "automated"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "metadata":
+      "annotations":
+        "ml-testing-accelerators/gcs-subdir": "tf-nightly/ranking-dlrm/conv/v100-x1"
+        "ml-testing-accelerators/metric-config": |
+          {
+            "sources": [
+              {
+                "literals": {
+                  "assertions": {
+                    "duration": {
+                      "inclusive_bounds": false,
+                      "std_devs_from_mean": {
+                        "comparison": "LESS",
+                        "std_devs": 5
+                      },
+                      "wait_for_n_data_points": 10
+                    }
+                  }
+                }
+              },
+              {
+                "tensorboard": {
+                  "aggregate_assertions": [
+                    {
+                      "assertion": {
+                        "inclusive_bounds": true,
+                        "std_devs_from_mean": {
+                          "comparison": "GREATER",
+                          "std_devs": 2
+                        },
+                        "wait_for_n_data_points": 0
+                      },
+                      "strategy": "AVERAGE",
+                      "tag": "examples_per_second"
+                    }
+                  ],
+                  "exclude_tags": [
+          
+                  ],
+                  "include_tags": [
+                    {
+                      "strategies": [
+                        "FINAL"
+                      ],
+                      "tag_pattern": "*"
+                    }
+                  ],
+                  "merge_runs": false
+                }
+              }
+            ]
+          }
+      "labels":
+        "accelerator": "v100-x1"
+        "benchmarkId": "tf-nightly-ranking-dlrm-conv-v100-x1"
+        "frameworkVersion": "tf-nightly"
+        "mode": "conv"
+        "model": "ranking-dlrm"
+    "spec":
+      "activeDeadlineSeconds": 36000
+      "backoffLimit": 1
+      "template":
+        "spec":
+          "containers":
+          - "args":
+            - "python3"
+            - "official/recommendation/ranking/train.py"
+            - |
+              --params_override="runtime":
+                "distribution_strategy": "mirrored"
+                "num_gpus": 1
+              "task":
+                "model":
+                  "bottom_mlp":
+                  - 512
+                  - 256
+                  - 8
+                  "embedding_dim": 8
+                  "interaction": "dot"
+                  "num_dense_features": 13
+                  "top_mlp":
+                  - 1024
+                  - 1024
+                  - 512
+                  - 256
+                  - 1
+                  "vocab_sizes":
+                  - 39884406
+                  - 39043
+                  - 17289
+                  - 7420
+                  - 20263
+                  - 3
+                  - 7120
+                  - 1543
+                  - 63
+                  - 38532951
+                  - 2953546
+                  - 403346
+                  - 10
+                  - 2208
+                  - 11938
+                  - 155
+                  - 4
+                  - 976
+                  - 14
+                  - 39979771
+                  - 25641295
+                  - 39664984
+                  - 585935
+                  - 12972
+                  - 108
+                  - 36
+                "train_data":
+                  "global_batch_size": 16384
+                  "input_path": "$(CRITEO_DATA_DIR)/train/*"
+                "validation_data":
+                  "global_batch_size": 16384
+                  "input_path": "$(CRITEO_DATA_DIR)/eval/*"
+              "trainer":
+                "checkpoint_interval": 270000
+                "optimizer_config":
+                  "embedding_optimizer": "SGD"
+                  "lr_config":
+                    "decay_exp": 1.6000000000000001
+                    "decay_start_steps": 150000
+                    "decay_steps": 136054
+                    "learning_rate": 30
+                    "warmup_steps": 8000
+                "train_steps": 256054
+                "use_orbit": true
+                "validation_interval": 90000
+                "validation_steps": 5440
+            - "--model_dir=$(MODEL_DIR)"
+            - "--mode=train_and_eval"
+            "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "$(OUTPUT_BUCKET)/tf-nightly/ranking-dlrm/conv/v100-x1/$(JOB_NAME)"
+            - "name": "TF_ENABLE_LEGACY_FILESYSTEM"
+              "value": "1"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
+            "image": "gcr.io/xl-ml-test/tensorflow:nightly"
+            "imagePullPolicy": "Always"
+            "name": "train"
+            "resources":
+              "limits":
+                "nvidia.com/gpu": 1
+              "requests":
+                "cpu": 2
+                "memory": "20G"
+            "volumeMounts":
+            - "mountPath": "/dev/shm"
+              "name": "dshm"
+              "readOnly": false
+          "initContainers": []
+          "nodeSelector":
+            "cloud.google.com/gke-accelerator": "nvidia-tesla-v100"
+          "priorityClassName": "gpu-v100"
+          "restartPolicy": "Never"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "dshm"
+  "schedule": "0 6 * * 0,5"
+  "successfulJobsHistoryLimit": 1
