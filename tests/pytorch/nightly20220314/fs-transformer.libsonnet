@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ local utils = import 'templates/utils.libsonnet';
       datasets: common.datasetsVolume,
     },
     paramsOverride:: {
-      scriptPath: '/usr/share/torch-xla-1.11/tpu-examples/deps/fairseq/train.py',
+      scriptPath: 'tpu-examples/deps/fairseq/train.py',
       logSteps: 200,
       trainSubset: 'train',
       validSubset: 'valid',
@@ -188,7 +188,7 @@ local utils = import 'templates/utils.libsonnet';
   local tpuVm = common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExtraSetup: |||
-        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.11 tpu-examples/
+        git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
         echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
         echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
       |||,
@@ -202,10 +202,11 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_32,
   },
   configs: [
-    transformer + v3_8 + functional_no_save + timeouts.Hours(1),
-    transformer + v3_8 + convergence + timeouts.Hours(25),
+    //transformer + v3_8 + functional_no_save + timeouts.Hours(1),
+    //transformer + v3_8 + convergence + timeouts.Hours(25),
     transformer + v3_8 + convergence + timeouts.Hours(25) + tpuVm,
-    transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
-    transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
+    //transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
+    //transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
+    transformer + v3_32 + functional_no_save + timeouts.Hours(1) + tpuVm + mixins.Experimental,
   ],
 }

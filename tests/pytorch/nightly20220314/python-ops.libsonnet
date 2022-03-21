@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   configs: [
-    operations + v2_8 + common.Functional + timeouts.Hours(4),
-    operations + v3_8 + common.Functional + timeouts.Hours(4),
+    //operations + v2_8 + common.Functional + timeouts.Hours(4),
+    //operations + v3_8 + common.Functional + timeouts.Hours(4),
   ],
 }

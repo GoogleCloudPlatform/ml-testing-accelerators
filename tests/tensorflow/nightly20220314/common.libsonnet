@@ -24,7 +24,7 @@ local mixins = import 'templates/mixins.libsonnet';
     tpuSettings+: {
       softwareVersion: 'nightly',
     },
-    imageTag: 'nightly20220316',
+    imageTag: 'nightly20220314',
   },
   TfVisionTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
     scriptConfig+: {

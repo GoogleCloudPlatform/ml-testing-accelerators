@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ local utils = import 'templates/utils.libsonnet';
         cd xla/test/cpp
         export TPUVM_MODE=1
         ./run_tests.sh
-      ||| % common.tpu_vm_1_11_install
+      ||| % common.tpu_vm_nightly_install
     ),
   },
 

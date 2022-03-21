@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,9 +32,8 @@ local utils = import 'templates/utils.libsonnet';
     --num_epochs=2 \
     --datadir=/datasets/imagenet-mini \
   |||,
-
   local resnet50_gpu_py37_cuda_112 = common.PyTorchTest {
-    imageTag: 'r1.11_3.7_cuda_11.2',
+    imageTag: 'nightly_3.7_cuda_11.2',
     modelName: 'resnet50-mp-cuda-11-2',
     volumeMap+: {
       datasets: common.datasetsVolume,
@@ -104,7 +103,7 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local resnet50_tpu_vm = common.PyTorchTest {
-    frameworkPrefix: 'pt-r1.11',
+    frameworkPrefix: 'pt-nightly',
     modelName: 'resnet50-mp',
     paramsOverride: {
       num_epochs: error 'Must set `num_epochs`',
@@ -142,14 +141,14 @@ local utils = import 'templates/utils.libsonnet';
   },
   local functional_tpu_vm = common.Functional {
     paramsOverride: {
-      setup_commands: common.tpu_vm_1_11_install,
+      setup_commands: common.tpu_vm_nightly_install,
       num_epochs: 2,
       datadir: '/datasets/imagenet-mini',
     },
   },
   local convergence_tpu_vm = common.Convergence {
     paramsOverride: {
-      setup_commands: common.tpu_vm_1_11_install,
+      setup_commands: common.tpu_vm_nightly_install,
       num_epochs: 5,
       datadir: '/datasets/imagenet',
     },
@@ -210,9 +209,11 @@ local utils = import 'templates/utils.libsonnet';
     ),
   },
   configs: [
-    resnet50_MP + v3_8 + convergence + timeouts.Hours(26) + mixins.PreemptibleTpu,
-    resnet50_MP + v3_8 + functional + timeouts.Hours(2),
-    resnet50_gpu_py37_cuda_112 + common.Functional + v100 + timeouts.Hours(2),
-    resnet50_gpu_py37_cuda_112 + common.Functional + v100x4 + timeouts.Hours(1),
+    //resnet50_MP + v3_8 + convergence + timeouts.Hours(26) + mixins.PreemptibleTpu,
+    //resnet50_MP + v3_8 + functional + timeouts.Hours(2),
+    //resnet50_gpu_py37_cuda_112 + common.Functional + v100 + timeouts.Hours(2),
+    //resnet50_gpu_py37_cuda_112 + common.Functional + v100x4 + timeouts.Hours(1),
+    resnet50_tpu_vm + v3_8 + functional_tpu_vm + timeouts.Hours(2) + experimental.PyTorchTpuVmMixin,
+    resnet50_tpu_vm + v3_8 + convergence_tpu_vm + timeouts.Hours(4) + experimental.PyTorchTpuVmMixin,
   ],
 }

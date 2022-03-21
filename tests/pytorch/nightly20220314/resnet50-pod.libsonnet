@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,11 +28,11 @@ local utils = import 'templates/utils.libsonnet';
     cd /usr/share
     pip3 install tensorboardX google-cloud-storage
     python3 -m torch_xla.distributed.xla_dist --tpu=$TPU_NAME -- \
-        python3 /usr/share/torch-xla-r1.11/pytorch/xla/test/test_train_mp_imagenet.py \
+        python3 /usr/share/pytorch/xla/test/test_train_mp_imagenet.py \
         --num_epochs=90 --datadir=/datasets/imagenet --batch_size=128 --log_steps=200
   |||,
 
-  local resnet50_pod = common.PyTorchGkePodTest {
+  local resnet50_pod = common.PyTorchTest {
     modelName: 'resnet50-mp',
     command: utils.scriptCommand(
       dist_resnet_pod50
@@ -42,7 +42,7 @@ local utils = import 'templates/utils.libsonnet';
     modelName: 'resnet50-pod',
     command: [
       'python3',
-      '/usr/share/torch-xla-r1.11/pytorch/xla/test/test_train_mp_imagenet.py',
+      '/usr/share/torch-xla-nightly/pytorch/xla/test/test_train_mp_imagenet.py',
     ],
   },
   local functional = common.Functional {
@@ -94,7 +94,7 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_32,
   },
   configs: [
-    resnet50_pod_func + v3_32 + functional,
-    resnet50_pod + v3_32 + common.Convergence + experimental.PyTorch1_11TpuVmPodTest,
+    //resnet50_pod_func + v3_32 + functional,
+    resnet50_pod + v3_32 + common.Convergence + common.PyTorchTpuVmMixin,
   ],
 }

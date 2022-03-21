@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -184,10 +184,10 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
   },
   configs: [
-    hf_glue + v3_8 + bert_base_cased + timeouts.Hours(2),
-    hf_glue + v2_8 + bert_base_cased + timeouts.Hours(2),
-    hf_glue + v3_8 + xlnet_large_cased + timeouts.Hours(5),
-    hf_glue + v3_8 + roberta_large + timeouts.Hours(4),
-    hf_glue + v3_8 + distilbert_base_uncased + timeouts.Hours(2),
+    //hf_glue + v3_8 + bert_base_cased + timeouts.Hours(2),
+    //hf_glue + v2_8 + bert_base_cased + timeouts.Hours(2),
+    //hf_glue + v3_8 + xlnet_large_cased + timeouts.Hours(5),
+    //hf_glue + v3_8 + roberta_large + timeouts.Hours(4),
+    //hf_glue + v3_8 + distilbert_base_uncased + timeouts.Hours(2),
   ],
 }

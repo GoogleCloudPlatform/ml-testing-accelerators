@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,27 +19,16 @@ local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
 {
-  PyTorchTest:: common.PyTorchTest {
-    frameworkPrefix: 'pt-r1.11',
+  local Nightly = {
+    frameworkPrefix: 'tf-nightly',
     tpuSettings+: {
-      softwareVersion: 'pytorch-1.11',
+      softwareVersion: 'nightly',
     },
-    imageTag: 'nightly20220316',
+    imageTag: 'nightly20220314',
   },
-  PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest {
-    frameworkPrefix: 'pt-r1.11',
-    tpuSettings+: {
-      softwareVersion: 'pytorch-1.11',
-    },
-    imageTag: 'v2-nightly20220314-pod',
-  },
-  PyTorchGkePodTest:: common.PyTorchGkePodTest {
-    frameworkPrefix: 'pt-r1.11',
-    tpuSettings+: {
-      softwareVersion: 'pytorch-1.11',
-    },
-    imageTag: 'r1.11',
-  },
+  PyTorchTest:: common.PyTorchTest + Nightly,
+  PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest + Nightly,
+  PyTorchGkePodTest:: common.PyTorchGkePodTest + Nightly,
   Functional:: mixins.Functional {
     schedule: '0 7 * * *',
     tpuSettings+: {
@@ -49,19 +38,15 @@ local volumes = import 'templates/volumes.libsonnet';
   Convergence:: mixins.Convergence,
   PyTorchTpuVmMixin:: experimental.PyTorchTpuVmMixin {
     tpuSettings+: {
-      softwareVersion: 'tpu-vm-pt-1.11',
       tpuVmPytorchSetup: |||
         sudo pip3 uninstall --yes torch torch_xla torchvision numpy
-        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-1.11-cp38-cp38-linux_x86_64.whl
-        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.11-cp38-cp38-linux_x86_64.whl
-        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-1.11-cp38-cp38-linux_x86_64.whl
-        sudo pip3 install numpy
+        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-nightly-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-nightly-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-nightly-cp38-cp38-linux_x86_64.whl numpy
         sudo pip3 install mkl mkl-include
         sudo apt-get -y update
         sudo apt-get install -y libomp5
-        git clone https://github.com/pytorch/pytorch.git -b release/1.11
+        git clone https://github.com/pytorch/pytorch.git
         cd pytorch
-        git clone https://github.com/pytorch/xla.git -b r1.11
+        git clone https://github.com/pytorch/xla.git
       |||,
     },
   },
@@ -71,5 +56,5 @@ local volumes = import 'templates/volumes.libsonnet';
   },
 
   // DEPRECATED: Use PyTorchTpuVmMixin instead
-  tpu_vm_1_11_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
+  tpu_vm_nightly_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
 }

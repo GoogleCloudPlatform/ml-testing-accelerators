@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ local dlrm = import 'dlrm.libsonnet';
 local fairseqTransformer = import 'fs-transformer.libsonnet';
 local huggingfaceGlue = import 'hf-glue.libsonnet';
 local huggingfaceLanguageModeling = import 'hf-lm.libsonnet';
-local mnist_3_7 = import 'mnist-3-7.libsonnet';
 local mnist = import 'mnist.libsonnet';
 local pythonOperations = import 'python-ops.libsonnet';
 local resnet50_mp = import 'resnet50-mp.libsonnet';
@@ -34,7 +33,6 @@ std.flattenArrays([
   huggingfaceGlue.configs,
   huggingfaceLanguageModeling.configs,
   mnist.configs,
-  mnist_3_7.configs,
   pythonOperations.configs,
   resnet50_mp.configs,
   resnet50_pod.configs,

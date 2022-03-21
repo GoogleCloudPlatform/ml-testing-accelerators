@@ -68,14 +68,14 @@ local utils = import 'templates/utils.libsonnet';
     for accelerator in [v2_8, v3_8, v2_32, v3_32]
   ],
   local convergenceTests = [
-    resnet + v2_8 + convergence,
-    resnet + v3_8 + convergence,
-    resnet + v2_32 + convergence,
-    resnet + v3_32 + convergence,
-    resnet_rs + v2_8 + convergence + timeouts.Hours(24),
-    resnet_rs + v3_8 + convergence + timeouts.Hours(24),
-    resnet_rs + v2_32 + convergence + timeouts.Hours(15),
-    resnet_rs + v3_32 + convergence + timeouts.Hours(15),
+    //resnet + v2_8 + convergence,
+    //resnet + v3_8 + convergence,
+    //resnet + v2_32 + convergence,
+    //resnet + v3_32 + convergence,
+    //resnet_rs + v2_8 + convergence + timeouts.Hours(24),
+    //resnet_rs + v3_8 + convergence + timeouts.Hours(24),
+    //resnet_rs + v2_32 + convergence + timeouts.Hours(15),
+    //resnet_rs + v3_32 + convergence + timeouts.Hours(15),
   ],
   configs: functionalTests + convergenceTests,
 }

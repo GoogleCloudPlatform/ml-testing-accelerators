@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ local utils = import 'templates/utils.libsonnet';
 {
   local command_common = |||
     pip install onnx
-    git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.11
+    git clone --recursive https://github.com/pytorch-tpu/examples.git
     python examples/deps/dlrm/dlrm_tpu_runner.py \
       --arch-sparse-feature-size=64 \
       --arch-mlp-bot=512-512-64 \
@@ -155,7 +155,7 @@ local utils = import 'templates/utils.libsonnet';
       |||
         apt-get install -y bc
         pip install onnx
-        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.11
+        git clone --recursive https://github.com/pytorch-tpu/examples.git
         python examples/deps/dlrm/dlrm_tpu_runner.py \
           %(convergence_common)s
       ||| % convergence_common
@@ -165,10 +165,10 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
   },
   configs: [
-    dlrm + v3_8 + one_core + timeouts.Hours(3),
-    dlrm + v3_8 + seq_fwd + timeouts.Hours(3),
-    dlrm + v3_8 + mp_fwd + timeouts.Hours(3),
-    dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
-    dlrm_convergence + v3_8 + criteo_kaggle + timeouts.Hours(6),
+    //dlrm + v3_8 + one_core + timeouts.Hours(3),
+    //dlrm + v3_8 + seq_fwd + timeouts.Hours(3),
+    //dlrm + v3_8 + mp_fwd + timeouts.Hours(3),
+    //dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
+    //dlrm_convergence + v3_8 + criteo_kaggle + timeouts.Hours(6),
   ],
 }

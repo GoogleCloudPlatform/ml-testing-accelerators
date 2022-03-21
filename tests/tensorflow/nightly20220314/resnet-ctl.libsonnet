@@ -71,13 +71,13 @@ local tpus = import 'templates/tpus.libsonnet';
   local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   configs: [
-    resnet + v2_8 + functional,
+    //resnet + v2_8 + functional,
     resnet + v2_8 + functional + tpuVm,
-    resnet + v3_8 + functional,
-    resnet + v2_8 + convergence + timeouts.Hours(16),
-    resnet + v3_8 + convergence,
+    //resnet + v3_8 + functional,
+    //resnet + v2_8 + convergence + timeouts.Hours(16),
+    //resnet + v3_8 + convergence,
     resnet + v2_32 + functional + tpuVm,
-    resnet + v3_32 + functional,
-    resnet + v3_32 + convergence,
+    //resnet + v3_32 + functional,
+    //resnet + v3_32 + convergence,
   ],
 }

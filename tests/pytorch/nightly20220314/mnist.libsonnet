@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,23 +13,28 @@
 // limitations under the License.
 
 local common = import 'common.libsonnet';
+local gpus = import 'templates/gpus.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
 
 {
   local mnist = common.PyTorchTest {
-    imageTag: 'r1.11_3.7',
-    modelName: 'mnist-3-7',
+    modelName: 'mnist',
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
     command: [
       'python3',
       'pytorch/xla/test/test_train_mp_mnist.py',
-      '--logdir=$(MODEL_DIR)',
-      '--datadir=/datasets/mnist-data',
+      '--logdir=%s' % self.flags.modelDir,
+      '%s' % self.flags.dataset,
     ],
+    flags:: {
+      modelDir: '$(MODEL_DIR)',
+      dataset: '--datadir=/datasets/mnist-data',
+    },
   },
 
   local convergence = common.Convergence {
@@ -55,12 +60,42 @@ local tpus = import 'templates/tpus.libsonnet';
 
   local v2_8 = {
     accelerator: tpus.v2_8,
+
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
+
+  },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+
+  },
+  local gpu = {
+    local config = self,
+    imageTag+: '_cuda_11.2',
+
+    podTemplate+:: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            envMap+: {
+              GPU_NUM_DEVICES: '%d' % config.accelerator.count,
+            },
+          },
+        },
+      },
+    },
+  },
+  local v100 = gpu {
+    accelerator: gpus.teslaV100,
+  },
+  local v100x4 = gpu {
+    accelerator: gpus.teslaV100 { count: 4 },
   },
   configs: [
-    mnist + v2_8 + convergence + timeouts.Hours(1),
-    mnist + v3_8 + convergence + timeouts.Hours(1),
+    //mnist + convergence + v2_8 + timeouts.Hours(1),
+    //mnist + convergence + v3_8 + timeouts.Hours(1),
+    //mnist + convergence + v100 + timeouts.Hours(6),
+    //mnist + convergence + v100x4 + timeouts.Hours(6),
   ],
 }

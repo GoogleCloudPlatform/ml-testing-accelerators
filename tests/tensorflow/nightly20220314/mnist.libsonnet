@@ -96,12 +96,12 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
-    mnist + v100 + functional,
-    mnist + v2_8 + functional,
-    mnist + v2_8 + convergence,
+    //mnist + v100 + functional,
+    //mnist + v2_8 + functional,
+    //mnist + v2_8 + convergence,
     mnist + v2_8 + convergence + tpuVm,
-    mnist + v3_8 + functional,
-    mnist + v3_8 + convergence,
+    //mnist + v3_8 + functional,
+    //mnist + v3_8 + convergence,
     mnist + v4_8 + convergence + tpuVm,
     mnist + v2_32 + convergence + tpuVm,
   ],

@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -102,13 +102,13 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local roberta_tpu_vm = common.PyTorchTest {
-    frameworkPrefix: 'pt-r1.11',
+    frameworkPrefix: 'pt-nightly',
     modelName: 'roberta-pre',
 
     command: utils.scriptCommand(
       |||
         %(command_common)s
-        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.11
+        git clone --recursive https://github.com/pytorch-tpu/examples.git
         pip3 install --editable examples/deps/fairseq
         python3 \
           examples/deps/fairseq/train.py \
@@ -142,7 +142,7 @@ local utils = import 'templates/utils.libsonnet';
         wps=$(cat training_logs.txt | grep '| wps ' | tail -1 | grep -o -E ' wps [0-9]+' | sed 's/[^0-9]*//g')
         echo 'final words per second (wps) is' $wps
         test $wps -gt 19000
-      ||| % common.tpu_vm_1_11_install
+      ||| % common.tpu_vm_nightly_install
     ),
   },
   local v3_8 = {
@@ -152,8 +152,9 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_32,
   },
   configs: [
-    common.PyTorchGkePodTest + roberta + v3_32 + functional + timeouts.Hours(1),
-    common.PyTorchTest + roberta + v3_8 + functional + timeouts.Hours(1),
-    common.PyTorchTest + roberta + v3_8 + convergence + timeouts.Hours(2),
+    //common.PyTorchGkePodTest + roberta + v3_32 + functional + timeouts.Hours(1),
+    //common.PyTorchTest + roberta + v3_8 + functional + timeouts.Hours(1),
+    //common.PyTorchTest + roberta + v3_8 + convergence + timeouts.Hours(2),
+    roberta_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(6) + experimental.PyTorchTpuVmMixin,
   ],
 }
