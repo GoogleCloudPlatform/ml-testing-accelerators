@@ -12,12 +12,20 @@
           - "args":
             - |
               cat > tests.txt <<EOF
+              cronjob.batch/flax-20220314-imagenet-conv-v3-8-1vm
+              cronjob.batch/flax-20220314-imagenet-func-v2-8-1vm
+              cronjob.batch/flax-20220314-mnist-conv-v3-8-1vm
+              cronjob.batch/flax-20220314-mnist-func-v2-8-1vm
+              cronjob.batch/flax-20220314-wmt-conv-v3-8-1vm
+              cronjob.batch/flax-20220314-wmt-func-v2-8-1vm
               cronjob.batch/flax-latest-imagenet-conv-v3-8-1vm
               cronjob.batch/flax-latest-imagenet-func-v2-8-1vm
               cronjob.batch/flax-latest-vit-conv-v3-8-1vm
               cronjob.batch/flax-latest-vit-func-v2-8-1vm
               cronjob.batch/flax-latest-wmt-conv-v3-8-1vm
               cronjob.batch/flax-latest-wmt-func-v2-8-1vm
+              cronjob.batch/flax-n20220314-vit-conv-v3-8-1vm
+              cronjob.batch/flax-n20220314-vit-func-v2-8-1vm
               cronjob.batch/flax-nightly-imagenet-conv-v3-8-1vm
               cronjob.batch/flax-nightly-imagenet-func-v2-8-1vm
               cronjob.batch/flax-nightly-mnist-conv-v3-8-1vm
@@ -30,6 +38,12 @@
               cronjob.batch/jax-head-v2-alpha-func-v2-8-1vm
               cronjob.batch/jax-head-v2-nightly-func-v2-8-1vm
               cronjob.batch/jax-latest-v2-alpha-func-v2-8-1vm
+              cronjob.batch/pt-20220314-cpp-ops-func-v2-8
+              cronjob.batch/pt-20220314-cpp-ops-func-v3-8
+              cronjob.batch/pt-20220314-fs-transformer-conv-v3-8-1vm
+              cronjob.batch/pt-20220314-resnet50-mp-conv-v3-8-1vm
+              cronjob.batch/pt-20220314-resnet50-mp-func-v3-8-1vm
+              cronjob.batch/pt-20220314-roberta-pre-conv-v3-8-1vm
               cronjob.batch/pt-nightly-cpp-ops-func-v2-8
               cronjob.batch/pt-nightly-cpp-ops-func-v3-8
               cronjob.batch/pt-nightly-dlrm-convergence-conv-v3-8
@@ -163,6 +177,17 @@
               cronjob.batch/pt-r1.11-roberta-pre-func-v3-8
               cronjob.batch/pt-r1.11-w2v2-conv-v3-8
               cronjob.batch/pt-r1.11-w2v2-func-v3-8
+              cronjob.batch/tf-20220314-classifier-resnet-func-v3-8-1vm
+              cronjob.batch/tf-20220314-mnist-conv-v2-8-1vm
+              cronjob.batch/tf-20220314-nlp-bert-mnli-conv-v2-8
+              cronjob.batch/tf-20220314-nlp-bert-mnli-conv-v3-8
+              cronjob.batch/tf-20220314-nlp-bert-mnli-func-v3-8
+              cronjob.batch/tf-20220314-nlp-wmt-transformer-conv-v2-8
+              cronjob.batch/tf-20220314-nlp-wmt-transformer-conv-v3-8
+              cronjob.batch/tf-20220314-nlp-wmt-transformer-func-v3-8
+              cronjob.batch/tf-20220314-ranking-dlrm-conv-v3-8-1vm
+              cronjob.batch/tf-20220314-vision-resnet-func-v3-8
+              cronjob.batch/tf-20220314-vision-resnetrs-func-v3-8
               cronjob.batch/tf-nightly-classifier-efficientnet-conv-v2-8
               cronjob.batch/tf-nightly-classifier-efficientnet-conv-v3-8
               cronjob.batch/tf-nightly-classifier-efficientnet-func-v3-8

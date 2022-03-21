@@ -102,7 +102,7 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local roberta_tpu_vm = common.PyTorchTest {
-    frameworkPrefix: 'pt-nightly',
+    frameworkPrefix: 'pt-20220314',
     modelName: 'roberta-pre',
 
     command: utils.scriptCommand(

@@ -20,9 +20,9 @@ local volumes = import 'templates/volumes.libsonnet';
 
 {
   local Nightly = {
-    frameworkPrefix: 'tf-nightly',
+    frameworkPrefix: 'pt-20220314',
     tpuSettings+: {
-      softwareVersion: 'nightly',
+      softwareVersion: 'nightly20220314',
     },
     imageTag: 'nightly20220314',
   },
@@ -40,7 +40,7 @@ local volumes = import 'templates/volumes.libsonnet';
     tpuSettings+: {
       tpuVmPytorchSetup: |||
         sudo pip3 uninstall --yes torch torch_xla torchvision numpy
-        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-nightly-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-nightly-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-nightly-cp38-cp38-linux_x86_64.whl numpy
+        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-1.11-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.11-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-1.11-cp38-cp38-linux_x86_64.whl numpy
         sudo pip3 install mkl mkl-include
         sudo apt-get -y update
         sudo apt-get install -y libomp5

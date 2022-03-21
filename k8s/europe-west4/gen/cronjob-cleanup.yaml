@@ -17,6 +17,7 @@
               cronjob.batch/jax-pod-head-v2-alpha-func-v2-32-1vm
               cronjob.batch/jax-pod-head-v2-nightly-func-v2-32-1vm
               cronjob.batch/jax-pod-latest-v2-alpha-func-v2-32-1vm
+              cronjob.batch/pt-20220314-resnet50-mp-conv-v3-32-1vm
               cronjob.batch/pt-nightly-resnet50-mp-conv-v3-32-1vm
               cronjob.batch/pt-nightly-resnet50-pod-func-v3-32
               cronjob.batch/pt-nightly-roberta-pre-func-v3-32
@@ -27,6 +28,13 @@
               cronjob.batch/pt-r1.11-resnet50-mp-conv-v3-32-1vm
               cronjob.batch/pt-r1.11-resnet50-pod-func-v3-32
               cronjob.batch/pt-r1.11-roberta-pre-func-v3-32
+              cronjob.batch/tf-20220314-classifier-resnet-func-v2-32-1vm
+              cronjob.batch/tf-20220314-mnist-conv-v2-32-1vm
+              cronjob.batch/tf-20220314-nlp-bert-mnli-conv-v2-32
+              cronjob.batch/tf-20220314-nlp-bert-mnli-conv-v3-32
+              cronjob.batch/tf-20220314-nlp-wmt-transformer-conv-v2-32
+              cronjob.batch/tf-20220314-nlp-wmt-transformer-conv-v3-32
+              cronjob.batch/tf-20220314-ranking-dlrm-conv-v2-32-1vm
               cronjob.batch/tf-nightly-classifier-efficientnet-conv-v2-32
               cronjob.batch/tf-nightly-classifier-efficientnet-conv-v3-32
               cronjob.batch/tf-nightly-classifier-resnet-conv-v2-32

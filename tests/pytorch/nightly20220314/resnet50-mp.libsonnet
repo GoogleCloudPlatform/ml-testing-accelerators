@@ -33,7 +33,7 @@ local utils = import 'templates/utils.libsonnet';
     --datadir=/datasets/imagenet-mini \
   |||,
   local resnet50_gpu_py37_cuda_112 = common.PyTorchTest {
-    imageTag: 'nightly_3.7_cuda_11.2',
+    imageTag: 'nightly_20220314_3.7_cuda_11.2',
     modelName: 'resnet50-mp-cuda-11-2',
     volumeMap+: {
       datasets: common.datasetsVolume,
@@ -103,7 +103,7 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local resnet50_tpu_vm = common.PyTorchTest {
-    frameworkPrefix: 'pt-nightly',
+    frameworkPrefix: 'pt-20220314',
     modelName: 'resnet50-mp',
     paramsOverride: {
       num_epochs: error 'Must set `num_epochs`',
