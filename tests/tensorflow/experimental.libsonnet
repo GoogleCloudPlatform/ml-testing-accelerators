@@ -43,7 +43,7 @@ local mixins = import 'templates/mixins.libsonnet';
                 set -x
                 set -u
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                  'pip install -r /usr/share/tpu/models/official/requirements.txt tensorflow-recommenders' 
+                  'pip install -r /usr/share/tpu/models/official/requirements.txt tensorflow-recommenders keras-nightly==2.9.0.dev2022031407 --force-reinstall' 
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                   'cd /usr/share/tpu/models; %(env)s '%(testCommand)s
                 exit_code=$?
