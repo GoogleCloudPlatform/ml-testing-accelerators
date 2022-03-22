@@ -102,7 +102,7 @@
               set -x
               set -u
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'pip install -r /usr/share/tpu/models/official/requirements.txt'
+                'pip install -r /usr/share/tpu/models/official/requirements.txt tensorflow-recommenders' 
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'cd /usr/share/tpu/models; PYTHONPATH=${PWD} TPU_LOAD_LIBRARY=0 ''"python3" "official/legacy/image_classification/classifier_trainer.py" "--data_dir=$(IMAGENET_DIR)" "--model_type=efficientnet" "--dataset=imagenet" "--mode=train_and_eval" "--model_dir=$(MODEL_DIR)" "--params_override=\"evaluation\":
                 \"epochs_between_evals\": 1

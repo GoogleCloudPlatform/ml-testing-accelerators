@@ -111,7 +111,7 @@ local tpus = import 'templates/tpus.libsonnet';
   local v3_32 = {
     accelerator: tpus.v3_32,
   },
-  local tpuVm = experimental.TensorFlowTpuVmMixin,
+  local tpuVm = common.tpuVm,
 
   configs: [
     //ncf + k80 + functional + ctl,

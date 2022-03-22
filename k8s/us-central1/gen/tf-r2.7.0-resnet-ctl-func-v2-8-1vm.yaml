@@ -102,7 +102,7 @@
               set -x
               set -u
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'pip install -r /usr/share/tpu/models/official/requirements.txt'
+                'pip install -r /usr/share/tpu/models/official/requirements.txt tensorflow-recommenders' 
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'cd /usr/share/tpu/models; PYTHONPATH=${PWD} ''"python3" "official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py" "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)" "--distribution_strategy=tpu" "--use_synthetic_data=false" "--dtype=fp32" "--enable_eager=true" "--enable_tensorboard=true" "--log_steps=50" "--single_l2_loss_op=true" "--use_tf_function=true" "--data_dir=$(IMAGENET_DIR)" "--model_dir=$(MODEL_DIR)" "--batch_size=1024" "--train_epochs=1" "--epochs_between_evals=1"'
               exit_code=$?

@@ -91,7 +91,7 @@
         "metadata":
           "annotations":
             "reserved.cloud-tpus.google.com": "false"
-            "tf-version.cloud-tpus.google.com": "v2-nightly-pod"
+            "tf-version.cloud-tpus.google.com": "v2-nightly20220314-pod"
         "spec":
           "containers":
           - "args": null
@@ -102,7 +102,7 @@
               set -x
               set -u
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'pip install -r /usr/share/tpu/models/official/requirements.txt'
+                'pip install -r /usr/share/tpu/models/official/requirements.txt tensorflow-recommenders' 
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'cd /usr/share/tpu/models; PYTHONPATH=${PWD} TPU_LOAD_LIBRARY=0 ''"python3" "official/recommendation/ranking/train.py" "--params_override=\"runtime\":
                 \"distribution_strategy\": \"tpu\"
@@ -249,7 +249,7 @@
                 set +e
                 gcloud alpha compute tpus tpu-vm create ${tpu_name} \
                   --accelerator-type='v2-32' \
-                  --version='v2-nightly-pod'  \
+                  --version='v2-nightly20220314-pod'  \
                   --metadata-from-file='ssh-keys=ssh-keys.txt,startup-script=startup-script.txt' \
                   --labels='test-name=tf-20220314-ranking-dlrm-conv-v2-32-1vm' \
                   --zone=${zone}

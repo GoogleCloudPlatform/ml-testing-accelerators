@@ -123,7 +123,7 @@ local tpus = import 'templates/tpus.libsonnet';
       '--batch_size=24576',
     ],
   },
-  local tpuVm = experimental.TensorFlowTpuVmMixin,
+  local tpuVm = common.tpuVm,
 
   configs: [
     //transformer + v2_8 + functional,

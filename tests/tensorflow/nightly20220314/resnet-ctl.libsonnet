@@ -68,7 +68,7 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: tpus.v3_32,
     command+: ['--batch_size=8192'],
   },
-  local tpuVm = experimental.TensorFlowTpuVmMixin,
+  local tpuVm = common.tpuVm,
 
   configs: [
     //resnet + v2_8 + functional,

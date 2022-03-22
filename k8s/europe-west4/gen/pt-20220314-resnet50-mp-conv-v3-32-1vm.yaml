@@ -103,7 +103,7 @@
         "metadata":
           "annotations":
             "reserved.cloud-tpus.google.com": "false"
-            "tf-version.cloud-tpus.google.com": "v2-nightly"
+            "tf-version.cloud-tpus.google.com": "nightly20220314"
         "spec":
           "containers":
           - "args": null
@@ -246,7 +246,7 @@
                 set +e
                 gcloud alpha compute tpus tpu-vm create ${tpu_name} \
                   --accelerator-type='v3-32' \
-                  --version='v2-nightly'  \
+                  --version='nightly20220314'  \
                   --metadata-from-file='ssh-keys=ssh-keys.txt,startup-script=startup-script.txt' \
                   --labels='test-name=pt-20220314-resnet50-mp-conv-v3-32-1vm' \
                   --zone=${zone}

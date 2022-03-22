@@ -102,7 +102,7 @@
               set -x
               set -u
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'pip install -r /usr/share/tpu/models/official/requirements.txt'
+                'pip install -r /usr/share/tpu/models/official/requirements.txt tensorflow-recommenders' 
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'cd /usr/share/tpu/models; PYTHONPATH=${PWD} TPU_LOAD_LIBRARY=0 ''"/bin/bash" "-c" "set -u
               set -e

@@ -15,6 +15,7 @@
 local common = import '../common.libsonnet';
 local metrics = import 'templates/metrics.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
+local experimental = import '../experimental.libsonnet';
 
 {
   ModelGardenTest:: common.ModelGardenTest {
@@ -25,6 +26,16 @@ local mixins = import 'templates/mixins.libsonnet';
       softwareVersion: 'nightly20220314',
     },
     imageTag: 'nightly20220314',
+  },
+  // Setting the version for TPU VM.
+  tpuVm:: experimental.TensorFlowTpuVmMixin {
+    local config = self,
+    tpuSettings+: {
+      softwareVersion: if config.accelerator.replicas == 1 then
+        'v2-nightly20220314'
+      else
+        'v2-nightly20220314-pod',
+    },
   },
   TfVisionTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
     scriptConfig+: {

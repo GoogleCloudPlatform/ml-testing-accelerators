@@ -102,7 +102,7 @@
               set -x
               set -u
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'pip install -r /usr/share/tpu/models/official/requirements.txt'
+                'pip install -r /usr/share/tpu/models/official/requirements.txt tensorflow-recommenders' 
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'cd /usr/share/tpu/models; PYTHONPATH=${PWD} ''"python3" "official/legacy/image_classification/mnist_main.py" "--data_dir=/tmp/mnist" "--model_dir=$(LOCAL_OUTPUT_DIR)" "--train_epochs=10" "--epochs_between_evals=10" "--download" "--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)"'
               exit_code=$?

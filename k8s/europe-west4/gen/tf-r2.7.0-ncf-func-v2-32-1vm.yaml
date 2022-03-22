@@ -102,7 +102,7 @@
               set -x
               set -u
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                'pip install -r /usr/share/tpu/models/official/requirements.txt'
+                'pip install -r /usr/share/tpu/models/official/requirements.txt tensorflow-recommenders' 
               ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                 'cd /usr/share/tpu/models; PYTHONPATH=${PWD} TPU_LOAD_LIBRARY=0 ''"python3" "official/recommendation/ncf_keras_main.py" "--train_dataset_path=$(NCF_DIR)/tpu_data_dir/training_cycle_*/*" "--eval_dataset_path=$(NCF_DIR)/tpu_data_dir/eval_data/*" "--input_meta_data_path=$(NCF_DIR)/tpu_data_dir/metadata" "--data_dir=$(NCF_DIR)/movielens_data" "--batch_size=99000" "--learning_rate=3e-5" "--dataset=ml-20m" "--eval_batch_size=160000" "--learning_rate=0.00382059" "--beta1=0.783529" "--beta2=0.909003" "--epsilon=1.45439e-07" "--num_factors=64" "--hr_threshold=0.635" "--layers=256,256,128,64" "--use_synthetic_data=false" "--model_dir=$(MODEL_DIR)" "--train_epochs=1" "--ml_perf=true" "--keras_use_ctl=true"'
               exit_code=$?
