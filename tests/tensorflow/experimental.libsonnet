@@ -36,14 +36,16 @@ local mixins = import 'templates/mixins.libsonnet';
         containerMap+:: {
           train+: {
             args: null,
-            command: [
+	    command: [
               'bash',
               '-c',
               |||
                 set -x
                 set -u
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                  'pip install -r /usr/share/tpu/models/official/requirements.txt tensorflow-recommenders keras-nightly==2.9.0.dev2022031407 --force-reinstall' 
+                  'pip install -r /usr/share/tpu/models/official/requirements.txt'
+                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                  'pip install tensorflow-recommenders --no-deps'
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                   'cd /usr/share/tpu/models; %(env)s '%(testCommand)s
                 exit_code=$?

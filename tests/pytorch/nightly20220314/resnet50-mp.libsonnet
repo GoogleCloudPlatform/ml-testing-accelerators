@@ -213,7 +213,7 @@ local utils = import 'templates/utils.libsonnet';
     //resnet50_MP + v3_8 + functional + timeouts.Hours(2),
     //resnet50_gpu_py37_cuda_112 + common.Functional + v100 + timeouts.Hours(2),
     //resnet50_gpu_py37_cuda_112 + common.Functional + v100x4 + timeouts.Hours(1),
-    resnet50_tpu_vm + v3_8 + functional_tpu_vm + timeouts.Hours(2) + experimental.PyTorchTpuVmMixin,
-    resnet50_tpu_vm + v3_8 + convergence_tpu_vm + timeouts.Hours(4) + experimental.PyTorchTpuVmMixin,
+    resnet50_tpu_vm + v3_8 + functional_tpu_vm + timeouts.Hours(2) + common.PyTorchTpuVmMixin,
+    resnet50_tpu_vm + v3_8 + convergence_tpu_vm + timeouts.Hours(4) + common.PyTorchTpuVmMixin,
   ],
 }

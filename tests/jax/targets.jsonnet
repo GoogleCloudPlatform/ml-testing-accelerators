@@ -14,13 +14,11 @@
 
 local compilationCacheTest = import 'compilation-cache.libsonnet';
 local latest = import 'latest/targets.jsonnet';
-local nightly20220314 = import 'nightly20220314/targets.jsonnet';
 local nightly = import 'nightly/targets.jsonnet';
 local podTest = import 'pod-test.libsonnet';
 local unitTests = import 'unit-tests.libsonnet';
 
 std.flattenArrays([
-  nightly20220314,
   unitTests.configs,
   podTest.configs,
   compilationCacheTest.configs,
