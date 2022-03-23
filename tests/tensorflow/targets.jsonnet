@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local nightly20220314 = import 'nightly20220314/targets.jsonnet';
 local nightly = import 'nightly/targets.jsonnet';
 local r1_15 = import 'r1.15/targets.jsonnet';
 local r2_1 = import 'r2.1/targets.jsonnet';
@@ -25,6 +26,7 @@ local r2_8 = import 'r2.8/targets.jsonnet';
 
 // Add new versions here
 std.flattenArrays([
+  nightly20220314,
   nightly,
   r1_15,
   r2_1,
