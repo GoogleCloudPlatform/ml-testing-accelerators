@@ -37,7 +37,7 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   Convergence:: mixins.Convergence,
   PyTorchTpuVmMixin:: experimental.PyTorchTpuVmMixin {
-    tpuSettings+: { 
+    tpuSettings+: {
       softwareVersion: 'v2-nightly20220314',
       tpuVmPytorchSetup: |||
         sudo pip3 uninstall --yes torch torch_xla torchvision numpy

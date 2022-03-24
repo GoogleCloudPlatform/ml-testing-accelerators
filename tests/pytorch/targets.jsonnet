@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local nightly20220314 = import 'nightly20220314/targets.jsonnet';
 local nightly = import 'nightly/targets.jsonnet';
+local nightly20220314 = import 'nightly20220314/targets.jsonnet';
 local r1_10 = import 'r1.10/targets.jsonnet';
 local r1_11 = import 'r1.11/targets.jsonnet';
 // Add new versions here

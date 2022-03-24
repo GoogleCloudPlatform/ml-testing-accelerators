@@ -36,7 +36,7 @@ local mixins = import 'templates/mixins.libsonnet';
         containerMap+:: {
           train+: {
             args: null,
-	    command: [
+            command: [
               'bash',
               '-c',
               |||
