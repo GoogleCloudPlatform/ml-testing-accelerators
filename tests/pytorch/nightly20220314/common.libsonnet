@@ -22,9 +22,9 @@ local volumes = import 'templates/volumes.libsonnet';
   local Nightly = {
     frameworkPrefix: 'pt-20220314',
     tpuSettings+: {
-      softwareVersion: 'nightly20220314',
+      softwareVersion: 'v2-nightly20220314',
     },
-    imageTag: 'nightly20220314',
+    imageTag: 'v2-nightly20220314',
   },
   PyTorchTest:: common.PyTorchTest + Nightly,
   PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest + Nightly,
@@ -37,7 +37,7 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   Convergence:: mixins.Convergence,
   PyTorchTpuVmMixin:: experimental.PyTorchTpuVmMixin {
-    tpuSettings+: { 
+    tpuSettings+: {
       softwareVersion: 'v2-nightly20220314',
       tpuVmPytorchSetup: |||
         sudo pip3 uninstall --yes torch torch_xla torchvision numpy

@@ -13,9 +13,9 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
+local experimental = import '../experimental.libsonnet';
 local metrics = import 'templates/metrics.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
-local experimental = import '../experimental.libsonnet';
 
 {
   ModelGardenTest:: common.ModelGardenTest {
@@ -23,9 +23,9 @@ local experimental = import '../experimental.libsonnet';
 
     frameworkPrefix: 'tf-20220314',
     tpuSettings+: {
-      softwareVersion: 'nightly20220314',
+      softwareVersion: 'v2-nightly20220314',
     },
-    imageTag: 'nightly20220314',
+    imageTag: 'v2-nightly20220314',
   },
   // Setting the version for TPU VM.
   tpuVm:: experimental.TensorFlowTpuVmMixin {

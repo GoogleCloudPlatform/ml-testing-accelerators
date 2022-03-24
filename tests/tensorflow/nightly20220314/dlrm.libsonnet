@@ -257,7 +257,7 @@ local tpus = import 'templates/tpus.libsonnet';
     dlrm + convergence + v3_8 + tpuVm,
     dlrm + convergence + v2_32 + tpuVm,
     dlrm + functional + v3_32 + tpuVm,
-    dlrm + functional + v4_8 + tpuVm,
-    dlrm + functional + cross_interaction + v4_32 + tpuVm,
+    //dlrm + functional + v4_8 + tpuVm,
+    //dlrm + functional + cross_interaction + v4_32 + tpuVm,
   ],
 }
