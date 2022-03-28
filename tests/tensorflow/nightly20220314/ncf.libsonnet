@@ -126,6 +126,7 @@ local tpus = import 'templates/tpus.libsonnet';
     //ncf + v3_8 + convergence + ctl,
     //ncf + v3_32 + functional + ctl,
     ncf + v2_8 + functional + ctl + tpuVm,
+    ncf + v3_8 + functional + ctl + tpuVm,
     ncf + v2_32 + functional + ctl + tpuVm,
   ],
 }

@@ -128,7 +128,7 @@ local tpus = import 'templates/tpus.libsonnet';
   configs: [
     //transformer + v2_8 + functional,
     transformer + v2_8 + functional + tpuVm,
-    //transformer + v3_8 + functional,
+    transformer + v3_8 + functional + tpuVm,
     //transformer + v2_8 + convergence,
     //transformer + v3_8 + convergence,
     //transformer + v2_32 + functional + common.RunNightly,
