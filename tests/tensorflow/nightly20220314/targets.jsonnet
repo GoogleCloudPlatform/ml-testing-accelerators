@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local bert_mnli = import 'bert-mnli.libsonnet';
 local classifier_efficientnet = import 'classifier-efficientnet.libsonnet';
 local classifier_resnet = import 'classifier-resnet.libsonnet';
 local dlrm = import 'dlrm.libsonnet';
@@ -25,6 +26,7 @@ local transformer_translate = import 'transformer-translate.libsonnet';
 
 // Add new models here
 std.flattenArrays([
+  bert_mnli.configs,
   classifier_resnet.configs,
   classifier_efficientnet.configs,
   dlrm.configs,

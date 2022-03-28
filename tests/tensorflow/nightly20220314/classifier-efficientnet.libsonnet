@@ -163,7 +163,7 @@ local tpus = import 'templates/tpus.libsonnet';
   configs: [
     //efficientnet + v2_8 + functional,
     efficientnet + v2_8 + functional + tpuVm,
-    //efficientnet + v3_8 + functional,
+    efficientnet + v3_8 + functional + tpuVm,
     //efficientnet + v3_8 + hbm + mixins.Unsuspended,
     //efficientnet + v2_8 + convergence + timeouts.Hours(45),
     //efficientnet + v3_8 + convergence + timeouts.Hours(45),

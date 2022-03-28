@@ -205,6 +205,7 @@ local tpus = import 'templates/tpus.libsonnet';
     //maskrcnn + functional + v3_32,
     //maskrcnn + convergence + v3_32,
     maskrcnn + functional + v2_8 + tpuVm + { paramsOverride+: { train+: { batch_size: 16 } } },
+    maskrcnn + functional + v3_8 + tpuVm + { paramsOverride+: { train+: { batch_size: 16 } } },
     maskrcnn + functional + v2_32 + tpuVm + { paramsOverride+: { train+: { batch_size: 64 } } },
     //maskrcnn + functional + v4_8 + tpuVm,
     //maskrcnn + functional + v4_32 + tpuVm,

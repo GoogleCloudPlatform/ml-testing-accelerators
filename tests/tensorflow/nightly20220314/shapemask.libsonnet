@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
@@ -128,13 +127,13 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
 
-  local tpuVm = common.tpuVm,
   configs: [
     //shapemask + functional + v2_8,
-    shapemask + functional + v2_8 + tpuVm,
+    shapemask + functional + v2_8 + common.tpuVm,
     //shapemask + functional + v3_8,
+    shapemask + convergence + v3_8 + common.tpuVm,
     //shapemask + functional + v2_32,
-    shapemask + functional + v2_32 + tpuVm,
+    shapemask + functional + v2_32 + common.tpuVm,
     //shapemask + functional + v3_32,
     //shapemask + convergence + v3_32,
     //shapemask + convergence + v3_8,

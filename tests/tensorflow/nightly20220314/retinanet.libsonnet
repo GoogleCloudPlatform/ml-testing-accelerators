@@ -171,9 +171,9 @@ local tpus = import 'templates/tpus.libsonnet';
   configs: [
     //retinanet + functional + v2_8,
     retinanet + functional + v2_8 + tpuVm,
-    //retinanet + functional + v3_8,
-    retinanet + functional + v4_8 + tpuVm,
-    retinanet + convergence + v4_8 + tpuVm,
+    retinanet + functional + v3_8 + tpuVm,
+    //retinanet + functional + v4_8 + tpuVm,
+    //retinanet + convergence + v4_8 + tpuVm,
     //retinanet + convergence + v2_8,
     //retinanet + convergence + v3_8,
     //retinanet + functional + v2_32,
