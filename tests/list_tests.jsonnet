@@ -14,8 +14,8 @@
 
 local all_tests = import 'all_tests.jsonnet';
 
-local contains(str, substr) = std.findSubstr(substr, str) != [];
-
 function(filter) std.lines([
-  testName for testName in std.objectFields(all_tests) if std.member(testName, filter)
+  testName
+  for testName in std.objectFields(all_tests)
+  if std.member(testName, filter)
 ])
