@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -102,13 +102,13 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local roberta_tpu_vm = common.PyTorchTest {
-    frameworkPrefix: 'pt-r1.9',
-    modelName: 'roberta-convergence',
+    frameworkPrefix: 'pt-r1.11',
+    modelName: 'roberta-pre',
 
     command: utils.scriptCommand(
       |||
         %(command_common)s
-        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.9
+        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.11
         pip3 install --editable examples/deps/fairseq
         python3 \
           examples/deps/fairseq/train.py \
@@ -142,10 +142,9 @@ local utils = import 'templates/utils.libsonnet';
         wps=$(cat training_logs.txt | grep '| wps ' | tail -1 | grep -o -E ' wps [0-9]+' | sed 's/[^0-9]*//g')
         echo 'final words per second (wps) is' $wps
         test $wps -gt 19000
-      ||| % common.tpu_vm_1_9_install
+      ||| % common.tpu_vm_1_11_install
     ),
   },
-
   local v3_8 = {
     accelerator: tpus.v3_8,
   },

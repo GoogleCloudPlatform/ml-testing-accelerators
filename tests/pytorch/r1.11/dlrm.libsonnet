@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
@@ -21,7 +20,7 @@ local utils = import 'templates/utils.libsonnet';
 {
   local command_common = |||
     pip install onnx
-    git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.9
+    git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.11
     python examples/deps/dlrm/dlrm_tpu_runner.py \
       --arch-sparse-feature-size=64 \
       --arch-mlp-bot=512-512-64 \
@@ -60,7 +59,7 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local dlrm_convergence = common.PyTorchTest {
-    modelName: 'dlrm-pre',
+    modelName: 'dlrm-convergence',
 
     volumeMap+: {
       datasets: common.datasetsVolume,
@@ -156,24 +155,10 @@ local utils = import 'templates/utils.libsonnet';
       |||
         apt-get install -y bc
         pip install onnx
-        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.9
+        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.11
         python examples/deps/dlrm/dlrm_tpu_runner.py \
           %(convergence_common)s
       ||| % convergence_common
-    ),
-  },
-  local criteo_kaggle_tpu_vm = common.PyTorchTest {
-    frameworkPrefix: 'pt-r1.9',
-    modelName: 'dlrm-pre',
-
-    command: utils.scriptCommand(
-      |||
-        %(command_common)s
-        pip3 install onnx tqdm sklearn
-        git clone --recursive https://github.com/pytorch-tpu/examples.git -b r1.9
-        python3 examples/deps/dlrm/dlrm_tpu_runner.py \
-          %(convergence_common)s
-      ||| % [common.tpu_vm_1_9_install, convergence_common]
     ),
   },
   local v3_8 = {
@@ -185,6 +170,5 @@ local utils = import 'templates/utils.libsonnet';
     dlrm + v3_8 + mp_fwd + timeouts.Hours(3),
     dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
     dlrm_convergence + v3_8 + criteo_kaggle + timeouts.Hours(6),
-    criteo_kaggle_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(6) + experimental.PyTorchTpuVmMixin,
   ],
 }

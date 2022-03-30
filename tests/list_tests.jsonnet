@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,4 +14,8 @@
 
 local all_tests = import 'all_tests.jsonnet';
 
-std.trace('%s' % [std.manifestYamlDoc(all_tests)], all_tests)
+function(filter) std.lines([
+  testName
+  for testName in std.objectFields(all_tests)
+  if std.member(testName, filter)
+])

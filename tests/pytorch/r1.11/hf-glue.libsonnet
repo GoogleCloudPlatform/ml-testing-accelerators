@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ local utils = import 'templates/utils.libsonnet';
     git clone https://github.com/huggingface/transformers.git
     cd transformers && pip install .
     git log -1
-    pip install datasets
+    pip install datasets sklearn
     python examples/pytorch/xla_spawn.py \
       --num_cores 8 \
       examples/pytorch/text-classification/run_glue.py \
