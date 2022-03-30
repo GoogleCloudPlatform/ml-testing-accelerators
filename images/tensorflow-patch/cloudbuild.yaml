@@ -20,6 +20,8 @@ steps:
   args:
   - '--dockerfile=images/tensorflow-patch/Dockerfile'
   - '--build-arg=tensorflow_minor_version=$_TF_MINOR_VERSION'
+  - '--build-arg=python_version=$_PY_VERSION'
+  - '--build-arg=extra_packages=$_EXTRA_PIP_PACKAGES'
   - '--destination=gcr.io/$PROJECT_ID/tensorflow-patch:$_TF_PATCH_VERSION'
   - '--cache=$_USE_DOCKER_CACHE'
   - '--cache-ttl=24h'
@@ -28,8 +30,8 @@ steps:
   waitFor: ['-']
   entrypoint: 'go'
   args: [
-    'get',
-    'github.com/google/go-jsonnet/cmd/jsonnet',
+    'install',
+    'github.com/google/go-jsonnet/cmd/jsonnet@latest',
   ]
 - name: 'google/cloud-sdk'
   id: create-dirs
@@ -85,4 +87,6 @@ substitutions:
   _USE_DOCKER_CACHE: 'true'
   _TF_PATCH_VERSION: 'r2.4.1'
   _TF_MINOR_VERSION: 'r2.4'
+  _PY_VERSION: '3.7'
+  _EXTRA_PIP_PACKAGES: ''
   _ARTIFACT_STORAGE_PATH: 'gs://your-gcs-bucket/tf-patch-build'
