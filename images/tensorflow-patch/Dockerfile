@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM python:3.6
+ARG python_version=3.7
+FROM python:$python_version
 
 RUN apt update && apt install -y python3-dev
 
@@ -35,6 +36,9 @@ RUN ./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_p
 RUN ls /tmp/tensorflow_pkg
 
 RUN pip install /tmp/tensorflow_pkg/*.whl
+
+ARG extra_packages=''
+RUN if [[ -z "$extra_packages" ]] ; then echo "No extra packages to install." ; else pip3 install $extra_packages ; fi
 
 # Model Garden does not create new branches for patch releases.
 WORKDIR /
