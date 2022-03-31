@@ -41,11 +41,12 @@ local tpus = import 'templates/tpus.libsonnet';
     rm .bash_logout
 
     pip install --upgrade pip
+    pip install --upgrade clu %(extraDeps)s
+
     %(installLatestJax)s
     %(maybeBuildJaxlib)s
     %(printDiagnostics)s
 
-    pip install --upgrade clu %(extraDeps)s
 
     num_devices=`python3 -c "import jax; print(jax.device_count())"`
     if [ "$num_devices" = "1" ]; then
@@ -65,7 +66,7 @@ local tpus = import 'templates/tpus.libsonnet';
       %(extraFlags)s
   |||,
 
-  local vit = common.JaxTest + common.jaxlibLatest + common.alphaImage {
+  local vit = common.JaxTest + common.jaxlibLatest + common.tpuVmBaseImage {
     local config = self,
     frameworkPrefix: 'flax-latest',
     modelName:: 'vit',

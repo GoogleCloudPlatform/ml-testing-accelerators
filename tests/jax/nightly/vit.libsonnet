@@ -30,7 +30,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   // TODO: move shared code into a common file
-  local vit = common.JaxTest + common.jaxlibHead + common.nightlyImage {
+  local vit = common.JaxTest + common.jaxlibHead + common.tpuVmBaseImage {
     local config = self,
     frameworkPrefix: 'flax-nightly',
     modelName:: 'vit',
