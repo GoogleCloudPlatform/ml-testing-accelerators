@@ -190,7 +190,6 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
   },
   configs: [
-    hf_lm + v3_8 + roberta_base_pre + timeouts.Hours(4),
     hf_lm + v2_8 + roberta_base_pre + timeouts.Hours(5),
     hf_lm + v3_8 + roberta_base_fine + timeouts.Hours(3),
     hf_lm + v3_8 + bert_base_pre + timeouts.Hours(6),

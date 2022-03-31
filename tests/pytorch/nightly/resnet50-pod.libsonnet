@@ -87,14 +87,11 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local v3_8 = {
-    accelerator: tpus.v3_8,
-  },
   local v3_32 = {
     accelerator: tpus.v3_32,
   },
   configs: [
-    resnet50_pod_func + v3_32 + functional,
+    resnet50_pod_func + v3_32 + functional + mixins.Experimental,
     resnet50_pod + v3_32 + common.Convergence + common.PyTorchTpuVmMixin,
   ],
 }
