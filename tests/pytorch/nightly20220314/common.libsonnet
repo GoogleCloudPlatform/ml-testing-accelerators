@@ -22,13 +22,10 @@ local volumes = import 'templates/volumes.libsonnet';
   local Nightly = {
     frameworkPrefix: 'pt-20220314',
     tpuSettings+: {
-      softwareVersion: 'v2-nightly20220314',
+      softwareVersion: 'tpu-vm-base',
     },
-    imageTag: 'v2-nightly20220314',
   },
   PyTorchTest:: common.PyTorchTest + Nightly,
-  PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest + Nightly,
-  PyTorchGkePodTest:: common.PyTorchGkePodTest + Nightly,
   Functional:: mixins.Functional {
     schedule: '0 7 * * *',
     tpuSettings+: {
@@ -38,17 +35,12 @@ local volumes = import 'templates/volumes.libsonnet';
   Convergence:: mixins.Convergence,
   PyTorchTpuVmMixin:: experimental.PyTorchTpuVmMixin {
     tpuSettings+: {
-      softwareVersion: 'v2-nightly20220314',
+      softwareVersion: 'tpu-vm-base',
       tpuVmPytorchSetup: |||
-        sudo pip3 uninstall --yes torch torch_xla torchvision numpy
-        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-1.11-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.11-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-1.11-cp38-cp38-linux_x86_64.whl numpy
-        sudo pip3 install tensorflow-recommenders --no-deps
-        sudo pip3 install mkl mkl-include
-        sudo apt-get -y update
-        sudo apt-get install -y libomp5
-        git clone https://github.com/pytorch/pytorch.git
-        cd pytorch
-        git clone https://github.com/pytorch/xla.git
+        sudo pip install numpy
+        sudo pip install torch_xla[tpuvm] -f https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.11-cp38-cp38-linux_x86_64.whl
+        sudo pip install torch==1.11.0
+        sudo pip install tensorflow-recommenders --no-deps
       |||,
     },
   },
@@ -58,5 +50,5 @@ local volumes = import 'templates/volumes.libsonnet';
   },
 
   // DEPRECATED: Use PyTorchTpuVmMixin instead
-  tpu_vm_nightly_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
+  tpu_vm_latest_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
 }
