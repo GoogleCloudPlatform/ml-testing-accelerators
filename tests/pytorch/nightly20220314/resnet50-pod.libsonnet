@@ -21,6 +21,7 @@ local utils = import 'templates/utils.libsonnet';
 
 {
   local dist_resnet_pod50 = |||
+    %s
     unset XRT_TPU_CONFIG
     export TPU_NAME=$(basename $(curl -s 'http://metadata.google.internal/computeMetadata/v1/instance/attributes/agent-node-name' -H 'Metadata-Flavor: Google'))
     echo $TPU_NAME
