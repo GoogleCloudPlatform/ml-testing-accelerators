@@ -47,14 +47,13 @@ local volumes = import 'templates/volumes.libsonnet';
     imageTag: 'r1.10',
   },
   Functional:: mixins.Functional {
-    schedule: '0 7 * * *',
+    schedule: null,
     tpuSettings+: {
       preemptible: false,
     },
   },
   Convergence:: mixins.Convergence {
-    // Run 3 times/week.
-    schedule: '0 7 * * 1,3,5',
+    schedule: null,
   },
   datasetsVolume: volumes.PersistentVolumeSpec {
     name: 'pytorch-datasets-claim',
