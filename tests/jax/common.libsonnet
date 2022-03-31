@@ -136,7 +136,15 @@ local tpus = import 'templates/tpus.libsonnet';
     jaxlibVersion:: 'head',
     scriptConfig+: {
       // Install jax without jaxlib or libtpu deps
-      installLocalJax: 'pip install .',
+      installLocalJax: |||
+        echo "Checking out and installing JAX..."
+        git clone https://github.com/google/jax.git
+        cd jax
+        echo "jax git hash: $(git rev-parse HEAD)"
+        pip install -r build/test-requirements.txt
+
+        pip install .
+      |||,
       installLatestJax: 'pip install jax',
       maybeBuildJaxlib: |||
         echo "Building jaxlib from source at TF head"
@@ -163,6 +171,12 @@ local tpus = import 'templates/tpus.libsonnet';
     jaxlibVersion:: 'latest',
     scriptConfig+: {
       installLocalJax: |||
+        echo "Checking out and installing JAX..."
+        git clone https://github.com/google/jax.git
+        cd jax
+        echo "jax git hash: $(git rev-parse HEAD)"
+        pip install -r build/test-requirements.txt
+
         pip install .[tpu] \
           -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
       |||,
@@ -174,33 +188,21 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  nightlyImage:: {
+  tpuVmBaseImage:: {
     local config = self,
 
     tpuSettings+: {
-      softwareVersion: 'v2-nightly',
-    },
-    scriptConfig+: {
-      testEnvWorkarounds: |||
-        # b/200277707: upgrade numpy to fix torch import
-        pip install --upgrade numpy
-      ||| + self.maybeInstallLibtpuV4,
-      maybeInstallLibtpuV4: if config.accelerator.type == 'tpu' && config.accelerator.version == 4 then |||
-        gsutil cp gs://cloud-tpu-tpuvm-v4-artifacts/wheels/libtpu/latest/libtpu_tpuv4-0.1.dev20211028-py3-none-any.whl .
-        pip install libtpu_tpuv4-0.1.dev20211028-py3-none-any.whl
-      ||| else '',
-    },
-  },
-
-  alphaImage:: {
-    tpuSettings+: {
-      softwareVersion: std.strReplace(super.softwareVersion, 'nightly', 'alpha'),
+      softwareVersion: 'tpu-vm-base',
     },
     scriptConfig+: {
       testEnvWorkarounds: |||
         # b/192016388: fix host_callback_to_tf_test.py
         pip install tensorflow
-      |||,
+      ||| + self.maybeInstallLibtpuV4,
+      maybeInstallLibtpuV4: if config.accelerator.type == 'tpu' && config.accelerator.version == 4 then |||
+        gsutil cp gs://cloud-tpu-tpuvm-v4-artifacts/wheels/libtpu/latest/libtpu_tpuv4-0.1.dev20211028-py3-none-any.whl .
+        pip install libtpu_tpuv4-0.1.dev20211028-py3-none-any.whl
+      ||| else '',
     },
   },
 }

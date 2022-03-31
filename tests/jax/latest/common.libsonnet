@@ -16,7 +16,7 @@ local common = import '../common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 {
-  runFlaxLatest:: common.JaxTest + common.jaxlibLatest + common.alphaImage {
+  runFlaxLatest:: common.JaxTest + common.jaxlibLatest + common.tpuVmBaseImage {
     local config = self,
 
     frameworkPrefix: 'flax-latest',
@@ -32,11 +32,12 @@ local tpus = import 'templates/tpus.libsonnet';
       rm .bash_logout
 
       pip install --upgrade pip
+      pip install --upgrade clu %(extraDeps)s
+
       %(installLatestJax)s
       %(maybeBuildJaxlib)s
       %(printDiagnostics)s
 
-      pip install --upgrade clu %(extraDeps)s
 
       num_devices=`python3 -c "import jax; print(jax.device_count())"`
       if [ "$num_devices" = "1" ]; then
@@ -60,7 +61,7 @@ local tpus = import 'templates/tpus.libsonnet';
              extraFlags: config.extraFlags,
            }),
   },
-  PodFlaxLatest:: common.JaxPodTest + common.jaxlibLatest + common.alphaImage {
+  PodFlaxLatest:: common.JaxPodTest + common.jaxlibLatest + common.tpuVmBaseImage {
     local config = self,
     frameworkPrefix: 'flax-latest',
     extraDeps:: '',
@@ -73,10 +74,12 @@ local tpus = import 'templates/tpus.libsonnet';
       # .bash_logout sometimes causes a spurious bad exit code, remove it.
       rm .bash_logout
       pip install --upgrade pip
+      pip install --upgrade clu %(extraDeps)s
+
       %(installLatestJax)s
       %(maybeBuildJaxlib)s
       %(printDiagnostics)s
-      pip install --upgrade clu %(extraDeps)s
+
       git clone https://github.com/google/flax
       cd flax
       pip install -e .

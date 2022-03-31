@@ -16,7 +16,7 @@ local common = import '../common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 {
-  runFlaxNightly:: common.JaxTest + common.jaxlibHead + common.nightlyImage {
+  runFlaxNightly:: common.JaxTest + common.jaxlibHead + common.tpuVmBaseImage {
     local config = self,
 
     frameworkPrefix: 'flax-nightly',
@@ -34,10 +34,6 @@ local tpus = import 'templates/tpus.libsonnet';
       pip install --upgrade pip
       pip install --upgrade clu %(extraDeps)s
 
-      echo "Checking out and installing JAX..."
-      git clone https://github.com/google/jax.git
-      cd jax
-      echo "jax git hash: $(git rev-parse HEAD)"
       %(installLocalJax)s
       %(maybeBuildJaxlib)s
       %(printDiagnostics)s
