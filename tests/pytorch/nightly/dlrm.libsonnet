@@ -13,6 +13,7 @@
 // limitations under the License.
 
 local common = import 'common.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
@@ -165,9 +166,9 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
   },
   configs: [
-    // dlrm + v3_8 + one_core + timeouts.Hours(3),
-    // dlrm + v3_8 + seq_fwd + timeouts.Hours(3),
-    // dlrm + v3_8 + mp_fwd + timeouts.Hours(3),
+    dlrm + v3_8 + one_core + timeouts.Hours(3) + mixins.Experimental,
+    dlrm + v3_8 + seq_fwd + timeouts.Hours(3) + mixins.Experimental,
+    dlrm + v3_8 + mp_fwd + timeouts.Hours(3) + mixins.Experimental,
     dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
     dlrm_convergence + v3_8 + criteo_kaggle + timeouts.Hours(6),
   ],
