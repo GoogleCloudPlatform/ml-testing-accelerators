@@ -110,4 +110,4 @@ local utils = import 'templates/utils.libsonnet';
   configs: [
     resnet50_tpu_vm + v3_8 + functional_tpu_vm + timeouts.Hours(2) + common.PyTorchTpuVmMixin,
   ],
-}f
+}
