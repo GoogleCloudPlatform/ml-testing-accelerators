@@ -152,9 +152,7 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_32,
   },
   configs: [
-    common.PyTorchGkePodTest + roberta + v3_32 + functional + timeouts.Hours(1),
     common.PyTorchTest + roberta + v3_8 + functional + timeouts.Hours(1),
-    common.PyTorchTest + roberta + v3_8 + convergence + timeouts.Hours(2),
     roberta_tpu_vm + v3_8 + common.Convergence + timeouts.Hours(6) + experimental.PyTorchTpuVmMixin,
   ],
 }

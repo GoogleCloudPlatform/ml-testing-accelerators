@@ -184,7 +184,6 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
   },
   configs: [
-    hf_glue + v3_8 + bert_base_cased + timeouts.Hours(2),
     hf_glue + v2_8 + bert_base_cased + timeouts.Hours(2),
     hf_glue + v3_8 + xlnet_large_cased + timeouts.Hours(5),
     hf_glue + v3_8 + roberta_large + timeouts.Hours(4),
