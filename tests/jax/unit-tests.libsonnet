@@ -30,11 +30,6 @@ local mixins = import 'templates/mixins.libsonnet';
       # Via https://jax.readthedocs.io/en/latest/developer.html#building-jaxlib-from-source
       pip install numpy six wheel
 
-      echo "Checking out and installing JAX..."
-      git clone https://github.com/google/jax.git
-      cd jax
-      echo "jax git hash: $(git rev-parse HEAD)"
-      pip install -r build/test-requirements.txt
       %(installLocalJax)s
       %(maybeBuildJaxlib)s
       %(printDiagnostics)s
