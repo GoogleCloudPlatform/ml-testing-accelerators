@@ -137,8 +137,6 @@ local tpus = import 'templates/tpus.libsonnet';
     scriptConfig+: {
       // Install jax without jaxlib or libtpu deps
       installLocalJax: |||
-        echo "Checking out and installing JAX..."
-        git clone https://github.com/google/jax.git
         cd jax
         echo "jax git hash: $(git rev-parse HEAD)"
         pip install -r build/test-requirements.txt
@@ -171,8 +169,6 @@ local tpus = import 'templates/tpus.libsonnet';
     jaxlibVersion:: 'latest',
     scriptConfig+: {
       installLocalJax: |||
-        echo "Checking out and installing JAX..."
-        git clone https://github.com/google/jax.git
         cd jax
         echo "jax git hash: $(git rev-parse HEAD)"
         pip install -r build/test-requirements.txt
