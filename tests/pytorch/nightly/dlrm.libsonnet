@@ -50,7 +50,7 @@ local utils = import 'templates/utils.libsonnet';
         '--metrics-debug',
         '--num-indices-per-lookup-fixed',
         '--mini-batch-size=%d' % config.paramsOverride.miniBatchSize,
-        '--arch-embedding-size=%d' % config.paramsOverride.archEmbeddingSize,
+        '--arch-embedding-size=%s' % config.paramsOverride.archEmbeddingSize,
         '--tpu-model-parallel-group-len=%d' % config.paramsOverride.tpuModelParallelGroupLen,
         '--tpu-cores=%d' % config.paramsOverride.tpuCores,
       ],
