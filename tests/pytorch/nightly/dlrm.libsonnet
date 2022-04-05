@@ -29,12 +29,12 @@ local utils = import 'templates/utils.libsonnet';
     paramsOverride:: {
       scriptPath: 'tpu-examples/deps/dlrm/dlrm_tpu_runner.py',
       miniBatchSize: 256,
-      archEmbeddingSize: 1000000-1000000,
+      archEmbeddingSize: '1000000-1000000',
       tpuModelParallelGroupLen: 1,
       tpuCores: 1,
       ArchSparseFeatureSize: 64,
-      ArchMlpBot: "512-512-64",
-      ArchAlpTop: "1024-1024-1024-1",
+      ArchMlpBot: '512-512-64',
+      ArchAlpTop: '1024-1024-1024-1',
       NumIndicesPerLookup: 100,
       trainCommand: [
         'python3',
@@ -91,7 +91,7 @@ local utils = import 'templates/utils.libsonnet';
     modelName: 'dlrm-onecore',
     paramsOverride+:: {
       miniBatchSize: 256,
-      archEmbeddingSize: 1000000-1000000,
+      archEmbeddingSize: '1000000-1000000',
       tpuModelParallelGroupLen: 1,
       tpuCores: 1,
     },
@@ -107,7 +107,7 @@ local utils = import 'templates/utils.libsonnet';
     modelName: 'dlrm-seq-fwd',
     paramsOverride+:: {
       miniBatchSize: 2048,
-      archEmbeddingSize: 1000000-1000000,
+      archEmbeddingSize: '1000000-1000000',
       tpuModelParallelGroupLen: 1,
       tpuCores: 8,
     },
@@ -123,7 +123,7 @@ local utils = import 'templates/utils.libsonnet';
     modelName: 'dlrm-mp-fwd',
     paramsOverride+:: {
       miniBatchSize: 2048,
-      archEmbeddingSize: 1000000-1000000-1000000-1000000-1000000-1000000-1000000-1000000,
+      archEmbeddingSize: '1000000-1000000-1000000-1000000-1000000-1000000-1000000-1000000',
       tpuModelParallelGroupLen: 8,
       tpuCores: 8,
     },
@@ -139,7 +139,7 @@ local utils = import 'templates/utils.libsonnet';
     modelName: 'dlrm-mpdp-fwd',
     paramsOverride+:: {
       miniBatchSize: 2048,
-      archEmbeddingSize: 1000000-1000000-1000000-1000000-1000000-1000000-1000000-1000000,
+      archEmbeddingSize: '1000000-1000000-1000000-1000000-1000000-1000000-1000000-1000000',
       tpuModelParallelGroupLen: 4,
       tpuCores: 8,
     },
@@ -158,8 +158,8 @@ local utils = import 'templates/utils.libsonnet';
       miniBatchSize: 128,
       tpuModelParallelGroupLen: 8,
       ArchSparseFeatureSize: 16,
-      ArchMlpBot: "13-512-256-64-16",
-      ArchAlpTop: "512-256-1",
+      ArchMlpBot: '13-512-256-64-16',
+      ArchAlpTop: '512-256-1',
       NumIndicesPerLookup: 1,
       trainCommand+: [
         '--raw-data-file=/datasets/criteo-kaggle-mm/train.txt',
