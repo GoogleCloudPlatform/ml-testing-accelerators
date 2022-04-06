@@ -43,7 +43,7 @@ local utils = import 'templates/utils.libsonnet';
         '--lr-num-warmup-steps=10',
         '--lr-decay-start-step=10',
         '--num-batches=1000',
-        '--data-generation="random"',
+        '--data-generation=random',
         '--numpy-rand-seed=72',
         '--print-freq=100',
         '--use-tpu',
