@@ -65,7 +65,6 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  
   local dlrm_convergence = common.PyTorchTest {
     modelName: 'dlrm-convergence',
 
@@ -184,7 +183,6 @@ local utils = import 'templates/utils.libsonnet';
         apt-get install -y bc
         pip install onnx
         git clone --recursive https://github.com/pytorch-tpu/examples.git
-        
         %s 
         --raw-data-file=/datasets/criteo-kaggle-mm/train.txt \
         --processed-data-file=/datasets/criteo-kaggle-mm/kaggleAdDisplayChallenge_processed.npz \
