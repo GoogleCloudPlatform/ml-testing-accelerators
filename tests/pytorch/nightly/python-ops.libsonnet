@@ -41,7 +41,7 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   configs: [
-    operations + v2_8 + common.Functional + timeouts.Hours(6),
-    operations + v3_8 + common.Functional + timeouts.Hours(6),
+    operations + v2_8 + common.Functional + timeouts.Hours(12),
+    operations + v3_8 + common.Functional + timeouts.Hours(12),
   ],
 }
