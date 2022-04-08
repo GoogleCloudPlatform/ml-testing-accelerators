@@ -177,7 +177,8 @@ local tpus = import 'templates/tpus.libsonnet';
         echo "jax git hash: $(git rev-parse HEAD)"
         pip install -r build/test-requirements.txt
 
-        pip install .[tpu] \
+        # Replace "jax[tpu]>=0.2.16" with '.[tpu]' after GA.
+        pip install "jax[tpu]>=0.2.16" \
           -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
       |||,
       installLatestJax: |||
