@@ -196,7 +196,7 @@ local tpus = import 'templates/tpus.libsonnet';
       task+: {
         model+: {
           bottom_mlp: [512, 256, 32],
-          embedding_dim: 32,
+          embedding_dim: 16,
         },
       },
     },
