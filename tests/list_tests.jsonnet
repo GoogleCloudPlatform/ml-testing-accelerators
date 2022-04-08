@@ -14,8 +14,8 @@
 
 local all_tests = import 'all_tests.jsonnet';
 
-function(filter) std.lines([
+function(filter=null) std.lines([
   testName
   for testName in std.objectFields(all_tests)
-  if std.member(testName, filter)
+  if filter == null || std.member(testName, filter)
 ])
