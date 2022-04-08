@@ -62,10 +62,16 @@ local utils = import 'templates/utils.libsonnet';
   local v3_32 = {
     accelerator: tpus.v3_32,
   },
+  local v4_8 = {
+    accelerator: tpus.v4_8,
+  },
+  local v4_32 = {
+    accelerator: tpus.v4_32,
+  },
   local functionalTests = [
     benchmark + accelerator + functional
     for benchmark in [resnet, resnet_rs]
-    for accelerator in [v2_8, v3_8, v2_32, v3_32]
+    for accelerator in [v2_8, v3_8, v2_32, v3_32,v4_8,v4_32]
   ],
   local convergenceTests = [
     resnet + v2_8 + convergence,
