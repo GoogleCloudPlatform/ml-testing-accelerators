@@ -40,6 +40,7 @@ local volumes = import 'templates/volumes.libsonnet';
         sudo pip install numpy
         sudo pip install torch_xla[tpuvm] -f https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.11-cp38-cp38-linux_x86_64.whl
         sudo pip install torch==1.11.0
+        sudo pip install torchvision==0.12.0
         sudo pip install tensorflow-recommenders --no-deps
       |||,
     },
