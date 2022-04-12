@@ -31,6 +31,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local v3_32 = {
     accelerator: tpus.v3_32,
+    extraFlags:: '--config.batch_size=$((32*256))'
   },
   local imagenet = common.runFlaxLatest {
     modelName:: 'imagenet',
