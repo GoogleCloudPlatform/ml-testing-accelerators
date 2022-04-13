@@ -19,7 +19,7 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local dlrm = {
+  local dlrm = common.PyTorchTest {
     local config = self,
 
     modelName: 'dlrm',
@@ -32,10 +32,10 @@ local utils = import 'templates/utils.libsonnet';
       archEmbeddingSize: '1000000-1000000',
       tpuModelParallelGroupLen: 1,
       tpuCores: 1,
-      ArchSparseFeatureSize: 64,
-      ArchMlpBot: '512-512-64',
-      ArchAlpTop: '1024-1024-1024-1',
-      NumIndicesPerLookup: 100,
+      archSparseFeatureSize: 64,
+      archMlpBot: '512-512-64',
+      archAlpTop: '1024-1024-1024-1',
+      numIndicesPerLookup: 100,
       trainCommand: [
         'python3',
         self.scriptPath,
@@ -57,13 +57,6 @@ local utils = import 'templates/utils.libsonnet';
     },
     cpu: '9.0',
     memory: '30Gi',
-    metricConfig+: {
-      sourceMap+:: {
-        tensorboard+: {
-          aggregateAssertionsMap:: {},
-        },
-      },
-    },
   },
   local dlrm_convergence = common.PyTorchTest {
     modelName: 'dlrm-convergence',
@@ -156,10 +149,10 @@ local utils = import 'templates/utils.libsonnet';
       tpuCores: 8,
       miniBatchSize: 128,
       tpuModelParallelGroupLen: 8,
-      ArchSparseFeatureSize: 16,
-      ArchMlpBot: '13-512-256-64-16',
-      ArchAlpTop: '512-256-1',
-      NumIndicesPerLookup: 1,
+      archSparseFeatureSize: 16,
+      archMlpBot: '13-512-256-64-16',
+      archAlpTop: '512-256-1',
+      aumIndicesPerLookup: 1,
       trainCommand+: [
         '--raw-data-file=/datasets/criteo-kaggle-mm/train.txt',
         '--processed-data-file=/datasets/criteo-kaggle-mm/kaggleAdDisplayChallenge_processed.npz',
@@ -184,9 +177,6 @@ local utils = import 'templates/utils.libsonnet';
         pip install onnx
         git clone --recursive https://github.com/pytorch-tpu/examples.git
         %s 
-        --raw-data-file=/datasets/criteo-kaggle-mm/train.txt \
-        --processed-data-file=/datasets/criteo-kaggle-mm/kaggleAdDisplayChallenge_processed.npz \
-        --memory-map \
         |& tee dlrm_logs.txt
         acc=`grep Testing dlrm_logs.txt | tail -1 | grep -oP 'best \K[+-]?([0-9]*[.])?[0-9]+'`
         echo 'Accuracy is' $acc
@@ -200,10 +190,10 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
   },
   configs: [
-    common.PyTorchTest + dlrm + v3_8 + one_core + timeouts.Hours(3),
-    common.PyTorchTest + dlrm + v3_8 + seq_fwd + timeouts.Hours(3),
-    common.PyTorchTest + dlrm + v3_8 + mp_fwd + timeouts.Hours(3),
-    common.PyTorchTest + dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
-    common.PyTorchTest + dlrm + v3_8 + criteo_kaggle + timeouts.Hours(6),
+    dlrm + v3_8 + one_core + timeouts.Hours(3) + mixins.Experimental,
+    dlrm + v3_8 + seq_fwd + timeouts.Hours(3) + mixins.Experimental,
+    dlrm + v3_8 + mp_fwd + timeouts.Hours(3) + mixins.Experimental,
+    dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
+    dlrm + v3_8 + criteo_kaggle + timeouts.Hours(6),
   ],
 }
