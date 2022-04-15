@@ -158,8 +158,8 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: utils.scriptCommand(
       |||
+        export XLA_USE_BF16=1
         pip install --editable tpu-examples/deps/fairseq
-	export XLA_USE_BF16=1
         %s 2>&1 | tee training_logs.txt
         bleu=`fairseq-generate \
           /datasets/wmt18_en_de_bpej32k \
