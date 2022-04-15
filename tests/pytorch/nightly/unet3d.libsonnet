@@ -24,10 +24,10 @@ local utils = import 'templates/utils.libsonnet';
     pip3 install tqdm
 
     python3 unet3d_test/image_segmentation/pytorch/main.py --data_dir /datasets/kits19 \
-    --epochs 4000 \
-    --evaluate_every 300 \
-    --start_eval_at 300 \
-    --quality_threshold 0.5 \
+    --epochs 501 \
+    --evaluate_every 250 \
+    --start_eval_at 250 \
+    --quality_threshold 0.2 \
     --batch_size 1 \
     --optimizer sgd \
     --ga_steps 1 \
@@ -57,7 +57,7 @@ local utils = import 'templates/utils.libsonnet';
           tail -1 | grep -oP '"value": \K[+-]?([0-9]*[.])?[0-9]+'
         )
         echo 'Final UNet3D model accuracy is' $acc
-        test $(echo $acc'>'0.5 | bc -l) -eq 1  # assert model accuracy is higher than 0.5
+        test $(echo $acc'>'0.2 | bc -l) -eq 1  # assert model accuracy is higher than 0.2
       ||| % command_common
     ),
   },
