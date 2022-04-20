@@ -21,7 +21,7 @@ local mixins = import 'templates/mixins.libsonnet';
   ModelGardenTest:: common.ModelGardenTest {
     local config = self,
 
-    frameworkPrefix: 'tf-nightly20220314',
+    frameworkPrefix: 'tf-stable-20220314',
     tpuSettings+: {
       softwareVersion: 'v2-tf-stable',
     },
