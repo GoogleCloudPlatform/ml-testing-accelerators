@@ -21,20 +21,20 @@ local mixins = import 'templates/mixins.libsonnet';
   ModelGardenTest:: common.ModelGardenTest {
     local config = self,
 
-    frameworkPrefix: 'tf-20220314',
+    frameworkPrefix: 'tf-stable',
     tpuSettings+: {
-      softwareVersion: 'v2-nightly20220314',
+      softwareVersion: 'v2-tf-stable',
     },
-    imageTag: 'v2-nightly20220314',
+    imageTag: 'v2-tf-stable',
   },
   // Setting the version for TPU VM.
   tpuVm:: experimental.TensorFlowTpuVmMixin {
     local config = self,
     tpuSettings+: {
       softwareVersion: if config.accelerator.replicas == 1 then
-        'v2-nightly20220314'
+        'v2-tf-stable'
       else
-        'v2-nightly20220314-pod',
+        'v2-tf-stable-pod',
     },
   },
   TfVisionTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
