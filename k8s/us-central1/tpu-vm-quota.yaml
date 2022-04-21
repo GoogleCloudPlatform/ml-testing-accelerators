@@ -71,7 +71,7 @@ subjects:
   name: tpu-vm-quota-patcher
   namespace: automated
 ---
-apiVersion: batch/v1beta1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: tpu-daytime-limits
@@ -101,7 +101,7 @@ spec:
                 }
               }'
 ---
-apiVersion: batch/v1beta1
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: tpu-off-hours-limits

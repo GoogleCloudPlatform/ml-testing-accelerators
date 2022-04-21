@@ -237,7 +237,7 @@ local volumes = import 'volumes.libsonnet';
     },
 
     cronJob:: {
-      apiVersion: 'batch/v1beta1',
+      apiVersion: 'batch/v1',
       kind: 'CronJob',
       metadata: {
         name: config.testName,
