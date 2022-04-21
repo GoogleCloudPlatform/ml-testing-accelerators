@@ -33,7 +33,7 @@ jobs:
         scripts/gen-tests.sh
     
     - name: Git Commit/Push Changes
-      uses: actions-x/commit@v2
+      uses: actions-x/commit@v5
       with:
         branch: gen
         files: k8s/
