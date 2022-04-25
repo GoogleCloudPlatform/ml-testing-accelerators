@@ -18,4 +18,4 @@ done
 
 set -x
 
-jsonnet -J . -S tests/list_tests.jsonnet --tla-str filter=$filter
+jsonnet -J . -S tests/list_tests.jsonnet ${filter:+--tla-str filter=$filter}
