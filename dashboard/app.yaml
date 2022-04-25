@@ -33,7 +33,7 @@ resources:
 env_variables:
   REDISHOST: '10.25.27.107'
   REDISPORT: '6379'
-  TEST_NAME_PREFIXES: 'pt-nightly,pt-r1.11,pt-r1.10,tf-nightly,tf-r1.15.5,%-1vm,tf-r2.6.3,tf-r2.7.1,tf-r2.8.0,jax,flax,tf-20220314,pt-20220314'
+  TEST_NAME_PREFIXES: 'pt-nightly,pt-r1.11,pt-r1.10,tf-nightly,tf-r1.15.5,%-1vm,tf-r2.6.3,tf-r2.7.1,tf-r2.8.0,tf-r2.9.0,jax,flax,tf-20220314,pt-20220314'
   JOB_HISTORY_TABLE_NAME: 'xl-ml-test.metrics_handler_dataset.job_history'
   METRIC_HISTORY_TABLE_NAME: 'xl-ml-test.metrics_handler_dataset.metric_history'
 
