@@ -101,7 +101,6 @@ local tpus = import 'templates/tpus.libsonnet';
     mnist + v2_8 + convergence + common.tpuVm,
     mnist + v3_8 + functional,
     mnist + v3_8 + convergence,
-    mnist + v4_8 + convergence + common.tpuVm,
     mnist + v2_32 + convergence + common.tpuVm,
   ],
 }

@@ -84,8 +84,5 @@ local utils = import 'templates/utils.libsonnet';
     resnet_rs + v2_32 + convergence + timeouts.Hours(15),
     resnet_rs + v3_32 + convergence + timeouts.Hours(15),
   ],
-  configs: functionalTests + convergenceTests + [
-    resnet + v4_8 + functional + common.tpuVm,
-    resnet + v4_32 + functional + common.tpuVm,
-  ],
+  configs: functionalTests + convergenceTests,
 }
