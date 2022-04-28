@@ -13,7 +13,7 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
-local metrics = import 'templates/metrics.libsonnet';
+local experimental = import '../experimental.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 
 {
@@ -46,13 +46,10 @@ local mixins = import 'templates/mixins.libsonnet';
       runnerPath: 'official/nlp/train.py',
     },
   },
-  local functional_schedule = '0 7 * * *',
+  // Running functional tests at 9PM PST daily.
+  local functional_schedule = '0 5 * * *',
   Functional:: mixins.Functional {
-    schedule:
-      if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' || self.accelerator.name == 'v4-8' then
-        functional_schedule
-      else
-        null,
+    schedule: functional_schedule,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -76,7 +73,9 @@ local mixins = import 'templates/mixins.libsonnet';
   RunNightly:: {
     schedule: functional_schedule,
   },
+  // Running functional tests at Midnight PST Daily.
   Convergence:: mixins.Convergence {
+    schedule: '0 8 * * *',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -95,14 +94,6 @@ local mixins = import 'templates/mixins.libsonnet';
           },
         },
       },
-    },
-  },
-  ServingTest:: common.ServingTest {
-    local config = self,
-    image: 'gcr.io/xl-ml-test/allencwang-load-test',
-    frameworkPrefix: 'tf-r2.9.0',
-    servingConfig+: {
-      modelServerImage: 'gcr.io/xl-ml-test/allencwang-tf-serving-tpu:latest',
     },
   },
 }

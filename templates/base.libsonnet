@@ -34,7 +34,7 @@ local volumes = import 'volumes.libsonnet';
     // Timeout deadline for test, in seconds.
     timeout: error 'Must specify `timeout`',
     // Schedule for CronJob in UTC
-    schedule: error 'Must specify `schedule`',
+    schedule: error '%s must specify `schedule`' % fullTestName,
 
     // Setting for TPU tests -- these can be ignored for GPU tests.
     tpuSettings: {
