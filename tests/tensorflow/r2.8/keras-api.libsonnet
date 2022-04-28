@@ -37,6 +37,7 @@ local utils = import 'templates/utils.libsonnet';
   local API = {
     mode: 'api',
     timeout: timeouts.one_hour,
+    schedule: null,
     tpuSettings+: {
       preemptible: true,
     },
