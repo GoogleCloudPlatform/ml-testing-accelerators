@@ -173,7 +173,7 @@ local tpus = import 'templates/tpus.libsonnet';
     retinanet + convergence + v2_8,
     retinanet + convergence + v3_8,
     retinanet + functional + v2_32,
-    retinanet + functional + v2_32 + common.tpuVm,
+    retinanet + functional + v2_32 + commong.tpuVm,
     retinanet + functional + v3_32,
     retinanet + convergence + v3_32,
   ],

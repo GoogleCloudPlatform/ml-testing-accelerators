@@ -13,7 +13,7 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
-local experimental = import '../experimental.libsonnet';
+local metrics = import 'templates/metrics.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 
 {
@@ -36,7 +36,16 @@ local mixins = import 'templates/mixins.libsonnet';
         'tpu-vm-tf-2.9.0-pod',
     },
   },
-
+  TfVisionTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
+    scriptConfig+: {
+      runnerPath: 'official/vision/beta/train.py',
+    },
+  },
+  TfNlpTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
+    scriptConfig+: {
+      runnerPath: 'official/nlp/train.py',
+    },
+  },
   // Running functional tests at 9PM PST daily.
   local functional_schedule = '0 5 * * *',
   Functional:: mixins.Functional {
