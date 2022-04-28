@@ -189,7 +189,7 @@ local tpus = import 'templates/tpus.libsonnet';
     resnet + v2_32 + functional,
     resnet + v2_32 + functional + common.tpuVm,
     resnet + v3_32 + functional,
-    resnet + v3_32 + functional + tpuVm,
+    resnet + v3_32 + functional + common.tpuVm,
     resnet + v3_32 + convergence,
   ],
 }
