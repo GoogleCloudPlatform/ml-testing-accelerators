@@ -83,7 +83,7 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: tpus.v4_32,
   },
 
-  local tpuVm =  common.tpuVm {
+  local tpuVm = common.tpuVm {
     command+: [
       '--download',
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
