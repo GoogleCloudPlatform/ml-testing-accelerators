@@ -23,7 +23,7 @@ local utils = import 'templates/utils.libsonnet';
     modelName: 'bert-mnli',
     command: [
       'python3',
-      'official/nlp/bert/run_classifier.py',
+      'official/legacy/bert/run_classifier.py',
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
       '--steps_per_loop=1000',
       '--input_meta_data_path=$(BERT_CLASSIFICATION_DIR)/mnli_meta_data',
