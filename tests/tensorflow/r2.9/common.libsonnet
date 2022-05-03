@@ -15,6 +15,7 @@
 local common = import '../common.libsonnet';
 local metrics = import 'templates/metrics.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
+local experimental = import '../experimental.libsonnet';
 
 {
   ModelGardenTest:: common.ModelGardenTest {
