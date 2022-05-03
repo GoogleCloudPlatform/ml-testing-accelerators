@@ -23,7 +23,7 @@ local tpus = import 'templates/tpus.libsonnet';
     modelName: 'bert-squad',
     command: [
       'python3',
-      'official/nlp/bert/run_squad.py',
+      'official/legacy/bert/run_squad.py',
       '--input_meta_data_path=gs://xl-ml-test-us-central1/data/squad/squad_v1.1_meta_data.json',
       '--train_data_path=gs://xl-ml-test-us-central1/data/squad/squad_v1.1_train.tfrecord',
       '--predict_file=gs://xl-ml-test-us-central1/data/squad/dev-v1.1.json',
