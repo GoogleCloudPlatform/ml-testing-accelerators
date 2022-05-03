@@ -41,7 +41,7 @@ local tpus = import 'templates/tpus.libsonnet';
     },
     command: [
       'python3',
-      'official/vision/detection/main.py',
+      'official/legacy/detection/main.py',
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
       '--strategy_type=tpu',
       '--model=mask_rcnn',

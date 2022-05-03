@@ -39,7 +39,7 @@ local mixins = import 'templates/mixins.libsonnet';
   },
   TfVisionTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
     scriptConfig+: {
-      runnerPath: 'official/vision/beta/train.py',
+      runnerPath: 'official/vision/train.py',
     },
   },
   TfNlpTest:: self.ModelGardenTest + common.TfNlpVisionMixin {

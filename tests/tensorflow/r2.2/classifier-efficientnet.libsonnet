@@ -35,8 +35,8 @@ local tpus = import 'templates/tpus.libsonnet';
     },
     command: [
       'python3',
-      'official/vision/image_classification/classifier_trainer.py',
-      '--config_file=official/vision/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-tpu.yaml',
+      'official/legacy/image_classification/classifier_trainer.py',
+      '--config_file=official/legacy/image_classification/configs/examples/efficientnet/imagenet/efficientnet-b0-tpu.yaml',
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
       '--data_dir=$(IMAGENET_DIR)',
       '--model_type=efficientnet',

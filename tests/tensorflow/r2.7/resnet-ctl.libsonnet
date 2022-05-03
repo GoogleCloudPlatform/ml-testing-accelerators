@@ -22,7 +22,7 @@ local tpus = import 'templates/tpus.libsonnet';
     modelName: 'resnet-ctl',
     command: [
       'python3',
-      'official/vision/image_classification/resnet/resnet_ctl_imagenet_main.py',
+      'official/legacy/image_classification/resnet/resnet_ctl_imagenet_main.py',
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
       '--distribution_strategy=tpu',
       '--use_synthetic_data=false',

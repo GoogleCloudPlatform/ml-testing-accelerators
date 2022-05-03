@@ -25,7 +25,7 @@ local utils = import 'templates/utils.libsonnet';
     isTPUPod:: error 'Must set `isTPUPod`',
     command: utils.scriptCommand(
       |||
-        export PATH=$PATH:/root/google-cloud-sdk/bin
+        export PATH=$PATH:/root/google-cloud-sdk/bin:/usr/bin/git
         gcloud source repos clone tf2-api-tests --project=xl-ml-test
         cd tf2-api-tests
         pip3 install behave
