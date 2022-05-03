@@ -26,7 +26,6 @@ local nlp_mnli = import 'nlp-mnli.libsonnet';
 local nlp_wmt = import 'nlp-wmt.libsonnet';
 local resnet_ctl = import 'resnet-ctl.libsonnet';
 local retinanet = import 'retinanet.libsonnet';
-local serving = import 'serving.libsonnet';
 local shapemask = import 'shapemask.libsonnet';
 local transformer_translate = import 'transformer-translate.libsonnet';
 local vision_imagenet = import 'vision-imagenet.libsonnet';
@@ -39,7 +38,6 @@ std.flattenArrays([
   classifier_resnetrs.configs,
   classifier_efficientnet.configs,
   dlrm.configs,
-  serving.configs,
   keras_api.configs,
   mnist.configs,
   maskrcnn.configs,

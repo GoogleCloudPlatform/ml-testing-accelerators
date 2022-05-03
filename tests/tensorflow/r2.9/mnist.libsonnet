@@ -83,7 +83,7 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: tpus.v4_32,
   },
 
-  local tpuVm = experimental.TensorFlowTpuVmMixin {
+  local tpuVm = common.tpuVm {
     command+: [
       '--download',
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
@@ -98,9 +98,9 @@ local tpus = import 'templates/tpus.libsonnet';
     mnist + v100 + functional,
     mnist + v2_8 + functional,
     mnist + v2_8 + convergence,
-    mnist + v2_8 + convergence + common.tpuVm,
+    mnist + v2_8 + convergence + tpuVm,
     mnist + v3_8 + functional,
     mnist + v3_8 + convergence,
-    mnist + v2_32 + convergence + common.tpuVm,
+    mnist + v2_32 + convergence + tpuVm,
   ],
 }
