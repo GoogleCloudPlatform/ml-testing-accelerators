@@ -69,7 +69,7 @@ local utils = import 'templates/utils.libsonnet';
     local config = self,
     imageTag+: '_cuda_11.2',
     command+: [
-      '--metrics_debug=false'
+      '--metrics_debug=false',
     ],
 
     podTemplate+:: {
