@@ -22,7 +22,7 @@ local tpus = import 'templates/tpus.libsonnet';
     modelName: 'mnist',
     command: [
       'python3',
-      'official/legacy/image_classification/mnist_main.py',
+      'official/vision/image_classification/mnist_main.py',
       '--data_dir=$(MNIST_DIR)',
       '--model_dir=$(MODEL_DIR)',
     ],

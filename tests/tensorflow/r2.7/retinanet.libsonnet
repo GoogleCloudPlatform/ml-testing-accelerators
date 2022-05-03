@@ -44,7 +44,7 @@ local tpus = import 'templates/tpus.libsonnet';
     },
     command: [
       'python3',
-      'official/legacy/detection/main.py',
+      'official/vision/detection/main.py',
       '--params_override=%s' % (std.manifestYamlDoc(self.paramsOverride) + '\n'),
       '--model_dir=$(MODEL_DIR)',
     ],

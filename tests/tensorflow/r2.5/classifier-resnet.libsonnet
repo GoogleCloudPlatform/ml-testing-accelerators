@@ -37,7 +37,7 @@ local tpus = import 'templates/tpus.libsonnet';
     },
     command: [
       'python3',
-      'official/legacy/image_classification/classifier_trainer.py',
+      'official/vision/image_classification/classifier_trainer.py',
       '--data_dir=$(IMAGENET_DIR)',
       '--model_type=resnet',
       '--dataset=imagenet',
@@ -104,7 +104,7 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
     command+: [
-      '--config_file=official/legacy/image_classification/configs/examples/resnet/imagenet/gpu.yaml',
+      '--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/gpu.yaml',
     ],
   },
   local k80 = gpu_common {
@@ -141,7 +141,7 @@ local tpus = import 'templates/tpus.libsonnet';
   local tpu_common = {
     command+: [
       '--tpu=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)',
-      '--config_file=official/legacy/image_classification/configs/examples/resnet/imagenet/tpu.yaml',
+      '--config_file=official/vision/image_classification/configs/examples/resnet/imagenet/tpu.yaml',
     ],
   },
   local v2_8 = tpu_common {
