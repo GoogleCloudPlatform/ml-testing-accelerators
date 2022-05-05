@@ -100,8 +100,6 @@ local tpus = import 'templates/tpus.libsonnet';
 
   local tpuVm = common.PyTorchTpuVmMixin {
     tpuVmExtraSetup+: |||
-      export TPU_NAME=$(basename $(curl -s 'http://metadata.google.internal/computeMetadata/v1/instance/attributes/agent-node-name' -H 'Metadata-Flavor: Google'))
-      echo TPU name: ${TPU_NAME}
       pip install tensorboardX google-cloud-storage
     |||,
   },
