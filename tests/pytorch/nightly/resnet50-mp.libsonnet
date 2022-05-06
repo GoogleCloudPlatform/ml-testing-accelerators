@@ -99,9 +99,11 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   local tpuVm = common.PyTorchTpuVmMixin {
-    tpuVmExtraSetup+: |||
-      pip install tensorboardX google-cloud-storage
-    |||,
+    tpuSettings+: {
+      tpuVmExtraSetup: |||
+        pip install tensorboardX google-cloud-storage
+      |||,
+    },
   },
 
   configs: [
