@@ -54,5 +54,7 @@ local mixins = import 'templates/mixins.libsonnet';
   configs: [
     runUnitTests + common.jaxlibHead + common.tpuVmBaseImage,
     runUnitTests + common.jaxlibLatest + common.tpuVmBaseImage,
+    runUnitTests + common.jaxlibHead + common.tpuVmV4Base,
+    runUnitTests + common.jaxlibLatest + common.tpuVmV4Base,
   ],
 }
