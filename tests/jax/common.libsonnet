@@ -205,4 +205,18 @@ local tpus = import 'templates/tpus.libsonnet';
       ||| else '',
     },
   },
+
+  tpuVmV4Base:: {
+    local config = self,
+    accelerator: tpus.v4_8,
+
+    tpuSettings+: {
+      softwareVersion: 'tpu-vm-v4-base',
+    },
+    scriptConfig+: {
+      testEnvWorkarounds: |||
+        pip install tensorflow
+      |||,
+    },
+  },
 }
