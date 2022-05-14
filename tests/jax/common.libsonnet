@@ -147,17 +147,10 @@ local tpus = import 'templates/tpus.libsonnet';
       |||,
       installLatestJax: 'pip install jax',
       maybeBuildJaxlib: |||
-        echo "Building jaxlib from source at TF head"
-        echo "Checking out TF..."
-        cd ~/
-        git clone https://github.com/tensorflow/tensorflow.git
-        cd tensorflow
-        echo "TensorFlow git hash: $(git rev-parse HEAD)"
-
-        echo "Building jaxlib..."
-        cd ~/jax
-        python3 build/build.py --enable_tpu --bazel_options="--override_repository=org_tensorflow=$HOME/tensorflow"
-        pip install dist/*.whl
+        echo "Installing latest jaxlib-nightly..."
+        pip install jaxlib-nightly \
+          -f https://storage.googleapis.com/jax-releases/jaxlib_nightly_releases.html
+        pip list | grep jaxlib
         python3 -c 'import jaxlib; print("jaxlib version:", jaxlib.__version__)'
 
         echo "Installing latest libtpu-nightly..."
