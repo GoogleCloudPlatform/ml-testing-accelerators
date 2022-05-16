@@ -23,12 +23,16 @@ local tpus = import 'templates/tpus.libsonnet';
     command: [
       'python3',
       'pytorch/xla/test/test_train_mp_imagenet.py',
-      '--logdir=$(MODEL_DIR)',
       '--model=resnet50',
       '--num_workers=8',
       '--batch_size=128',
       '--log_steps=200',
-    ],
+    ] + if self.flags.modelDir != null  then [
+      '--logdir=%s' % self.flags.modelDir,
+    ] else [ ],
+    flags:: {
+      modelDir: '$(MODEL_DIR)',
+    },
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
@@ -81,6 +85,14 @@ local tpus = import 'templates/tpus.libsonnet';
 
     cpu: '7.0',
     memory: '40Gi',
+
+    # Disable XLA metrics report on GPU
+    command+: [
+      '--nometrics_debug',
+    ],
+    flags+: {
+      modelDir: null,
+    },
 
     podTemplate+:: {
       spec+: {
