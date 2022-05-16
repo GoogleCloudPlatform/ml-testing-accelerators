@@ -24,7 +24,7 @@ local utils = import 'templates/utils.libsonnet';
     scriptConfig+: {
       experiment: 'bert/sentence_prediction_text',
       configFiles: [
-        'official/legacy/configs/experiments/glue_mnli_text.yaml',
+        'official/nlp/configs/experiments/glue_mnli_text.yaml',
       ],
       paramsOverride+: {
         task+: {
