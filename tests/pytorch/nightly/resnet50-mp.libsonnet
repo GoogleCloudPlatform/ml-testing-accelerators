@@ -27,9 +27,9 @@ local tpus = import 'templates/tpus.libsonnet';
       '--num_workers=8',
       '--batch_size=128',
       '--log_steps=200',
-    ] + if self.flags.modelDir != null  then [
+    ] + if self.flags.modelDir != null then [
       '--logdir=%s' % self.flags.modelDir,
-    ] else [ ],
+    ] else [],
     flags:: {
       modelDir: '$(MODEL_DIR)',
     },
@@ -86,7 +86,7 @@ local tpus = import 'templates/tpus.libsonnet';
     cpu: '7.0',
     memory: '40Gi',
 
-    # Disable XLA metrics report on GPU
+    // Disable XLA metrics report on GPU
     command+: [
       '--nometrics_debug',
     ],

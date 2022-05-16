@@ -29,9 +29,9 @@ local utils = import 'templates/utils.libsonnet';
       'python3',
       'pytorch/xla/test/test_train_mp_mnist.py',
       '--datadir=/datasets/mnist-data',
-    ] + if self.flags.modelDir != null  then [
+    ] + if self.flags.modelDir != null then [
       '--logdir=%s' % self.flags.modelDir,
-    ] else [ ],
+    ] else [],
     flags:: {
       modelDir: '$(MODEL_DIR)',
     },
@@ -69,7 +69,7 @@ local utils = import 'templates/utils.libsonnet';
     local config = self,
     imageTag+: '_cuda_11.2',
 
-    # Disable XLA metrics report on GPU
+    // Disable XLA metrics report on GPU
     command+: [
       '--nometrics_debug',
     ],
