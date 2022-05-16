@@ -87,8 +87,18 @@ local utils = import 'templates/utils.libsonnet';
   local v100x4 = gpu {
     accelerator: gpus.teslaV100 { count: 4 },
   },
+
+  local tpuVm = common.PyTorchTpuVmMixin {
+    tpuSettings+: {
+      tpuVmExtraSetup: |||
+        pip install tensorboardX google-cloud-storage
+      |||,
+    },
+  },
+
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1),
+    mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
     mnist + convergence + v100x4 + timeouts.Hours(6),
   ],
 }
