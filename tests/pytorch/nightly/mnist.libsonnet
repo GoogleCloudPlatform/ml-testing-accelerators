@@ -28,12 +28,12 @@ local utils = import 'templates/utils.libsonnet';
     command: [
       'python3',
       'pytorch/xla/test/test_train_mp_mnist.py',
+      '--datadir=/datasets/mnist-data',
+    ] + if self.flags.modelDir != null then [
       '--logdir=%s' % self.flags.modelDir,
-      '%s' % self.flags.dataset,
-    ],
+    ] else [],
     flags:: {
       modelDir: '$(MODEL_DIR)',
-      dataset: '--datadir=/datasets/mnist-data',
     },
   },
 
@@ -68,9 +68,14 @@ local utils = import 'templates/utils.libsonnet';
   local gpu = {
     local config = self,
     imageTag+: '_cuda_11.2',
+
+    // Disable XLA metrics report on GPU
     command+: [
-      '--metrics_debug=false',
+      '--nometrics_debug',
     ],
+    flags+: {
+      modelDir: null,
+    },
 
     podTemplate+:: {
       spec+: {
