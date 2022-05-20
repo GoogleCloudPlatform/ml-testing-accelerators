@@ -26,14 +26,8 @@ local utils = import 'templates/utils.libsonnet';
       evalFilePattern: '$(COCO_DIR)/val*',
     },
   },
-  local retinanet = common.TfVisionTest + imagenet {
-    modelName: 'vision-retinanet',
-    scriptConfig+: {
-      experiment: 'retinanet_resnetfpn_coco',
-    },
-  },
   local retinanet_rs = common.TfVisionTest + imagenet {
-    modelName: 'vision-retinanetrs',
+    modelName: 'vision-retinanet',
     scriptConfig+: {
       experiment: 'retinanet_resnetfpn_coco',
       configFiles: ['official/vision/configs/experiments/retinanet/resnet50fpn_coco_tfds_tpu.yaml'],
