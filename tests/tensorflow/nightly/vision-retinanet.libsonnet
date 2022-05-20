@@ -36,7 +36,13 @@ local utils = import 'templates/utils.libsonnet';
     scriptConfig+: {
       paramsOverride+: {
         task: {
-          annotation_file: '$(COCO_DIR)/instances_val2017.json'
+          annotation_file: '$(COCO_DIR)/instances_val2017.json',
+	  train_data: {
+            input_path: '$(COCO_DIR)/train*'
+          },
+	  validation_data: {
+            input_path: '$(COCO_DIR)/val*'
+          },
         },
         trainer: {
           train_steps: 200,
