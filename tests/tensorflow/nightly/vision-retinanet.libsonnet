@@ -30,17 +30,18 @@ local utils = import 'templates/utils.libsonnet';
     modelName: 'vision-retinanet',
     scriptConfig+: {
       experiment: 'retinanet_resnetfpn_coco',
-      configFiles: ['official/vision/configs/experiments/retinanet/resnet50fpn_coco_tfds_tpu.yaml'],
     },
   },
   local functional = common.Functional {
     scriptConfig+: {
       paramsOverride+: {
+        task: {
+          annotation_file: '$(COCO_DIR)/instances_val2017.json'
+        },
         trainer: {
           train_steps: 200,
           validation_interval: 200,
           validation_steps: 100
-
         },
       },
     },
