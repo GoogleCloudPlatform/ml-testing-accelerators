@@ -26,7 +26,7 @@ local utils = import 'templates/utils.libsonnet';
       evalFilePattern: '$(COCO_DIR)/val*',
     },
   },
-  local retinanet_rs = common.TfVisionTest + imagenet {
+  local retinanet = common.TfVisionTest + imagenet {
     modelName: 'vision-retinanet',
     scriptConfig+: {
       experiment: 'retinanet_resnetfpn_coco',
@@ -68,18 +68,14 @@ local utils = import 'templates/utils.libsonnet';
 
   local functionalTests = [
     benchmark + accelerator + functional
-    for benchmark in [retinanet, retinanet_rs]
+    for benchmark in [retinanet]
     for accelerator in [v2_8, v3_8, v2_32, v3_32]
   ],
   local convergenceTests = [
-    retinanet + v2_8 + convergence,
-    retinanet + v3_8 + convergence,
-    retinanet + v2_32 + convergence,
-    retinanet + v3_32 + convergence,
-    retinanet_rs + v2_8 + convergence + timeouts.Hours(24),
-    retinanet_rs + v3_8 + convergence + timeouts.Hours(24),
-    retinanet_rs + v2_32 + convergence + timeouts.Hours(15),
-    retinanet_rs + v3_32 + convergence + timeouts.Hours(15),
+    retinanet + v2_8 + convergence + timeouts.Hours(24),
+    retinanet + v3_8 + convergence + timeouts.Hours(24),
+    retinanet + v2_32 + convergence + timeouts.Hours(15),
+    retinanet + v3_32 + convergence + timeouts.Hours(15),
   ],
   configs: functionalTests + convergenceTests + [
     retinanet + v4_8 + functional + tpuVm,
