@@ -20,16 +20,15 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local imagenet = {
-    scriptConfig+: {
-      trainFilePattern: '$(COCO_DIR)/train*',
-      evalFilePattern: '$(COCO_DIR)/val*',
-    },
-  },
-  local retinanet = common.TfVisionTest + imagenet {
+  local retinanet = common.TfVisionTest + {
     modelName: 'vision-retinanet',
     scriptConfig+: {
       experiment: 'retinanet_resnetfpn_coco',
+    },
+    PreemptibleTpu:: {
+      tpuSettings+: {
+        preemptible: false,
+      },
     },
   },
   local functional = common.Functional {
@@ -52,6 +51,28 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  local functional_v2_8 = common.Functional {
+    scriptConfig+: {
+      paramsOverride+: {
+        task: {
+          annotation_file: '$(COCO_DIR)/instances_val2017.json',
+          train_data: {
+	    global_batch_size: 64,
+            input_path: '$(COCO_DIR)/train*'
+          },
+          validation_data: {
+            input_path: '$(COCO_DIR)/val*'
+          },
+        },
+        trainer: {
+          train_steps: 200,
+          validation_interval: 200,
+          validation_steps: 100
+        },
+      },
+    },
+  },
+
   local convergence = common.Convergence,
   local v2_8 = {
     accelerator: tpus.v2_8,
@@ -76,7 +97,7 @@ local utils = import 'templates/utils.libsonnet';
   local functionalTests = [
     benchmark + accelerator + functional
     for benchmark in [retinanet]
-    for accelerator in [v2_8, v3_8, v2_32, v3_32]
+    for accelerator in [v3_8, v2_32, v3_32]
   ],
   local convergenceTests = [
     retinanet + v2_8 + convergence + timeouts.Hours(24),
@@ -85,6 +106,7 @@ local utils = import 'templates/utils.libsonnet';
     retinanet + v3_32 + convergence + timeouts.Hours(15),
   ],
   configs: functionalTests + convergenceTests + [
+    retinanet + v2_8 + functional_v2_8,
     retinanet + v4_8 + functional + tpuVm,
     retinanet + v4_32 + functional + tpuVm,
   ],
