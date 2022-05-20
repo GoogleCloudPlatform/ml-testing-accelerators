@@ -20,7 +20,7 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local retinanet = common.TfVisionTest + {
+  local retinanet = common.TfVisionTest {
     modelName: 'vision-retinanet',
     scriptConfig+: {
       experiment: 'retinanet_resnetfpn_coco',
@@ -36,11 +36,11 @@ local utils = import 'templates/utils.libsonnet';
       paramsOverride+: {
         task: {
           annotation_file: '$(COCO_DIR)/instances_val2017.json',
-	  train_data: {
-            input_path: '$(COCO_DIR)/train*',
+	   train_data: {
+             input_path: '$(COCO_DIR)/train*',
           },
-	  validation_data: {
-            input_path: '$(COCO_DIR)/val*',
+	   validation_data: {
+             input_path: '$(COCO_DIR)/val*',
           },
         },
         trainer: {
@@ -57,8 +57,8 @@ local utils = import 'templates/utils.libsonnet';
         task: {
           annotation_file: '$(COCO_DIR)/instances_val2017.json',
           train_data: {
-	    global_batch_size: 64,
-            input_path: '$(COCO_DIR)/train*',
+	     global_batch_size: 64,
+             input_path: '$(COCO_DIR)/train*',
           },
           validation_data: {
             input_path: '$(COCO_DIR)/val*',
