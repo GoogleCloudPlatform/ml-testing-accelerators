@@ -37,16 +37,16 @@ local utils = import 'templates/utils.libsonnet';
         task: {
           annotation_file: '$(COCO_DIR)/instances_val2017.json',
 	  train_data: {
-            input_path: '$(COCO_DIR)/train*'
+            input_path: '$(COCO_DIR)/train*',
           },
 	  validation_data: {
-            input_path: '$(COCO_DIR)/val*'
+            input_path: '$(COCO_DIR)/val*',
           },
         },
         trainer: {
           train_steps: 200,
           validation_interval: 200,
-          validation_steps: 100
+          validation_steps: 100,
         },
       },
     },
@@ -58,16 +58,16 @@ local utils = import 'templates/utils.libsonnet';
           annotation_file: '$(COCO_DIR)/instances_val2017.json',
           train_data: {
 	    global_batch_size: 64,
-            input_path: '$(COCO_DIR)/train*'
+            input_path: '$(COCO_DIR)/train*',
           },
           validation_data: {
-            input_path: '$(COCO_DIR)/val*'
+            input_path: '$(COCO_DIR)/val*',
           },
         },
         trainer: {
           train_steps: 200,
           validation_interval: 200,
-          validation_steps: 100
+          validation_steps: 100,
         },
       },
     },
