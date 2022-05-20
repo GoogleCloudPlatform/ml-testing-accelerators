@@ -26,6 +26,7 @@ local serving = import 'serving.libsonnet';
 local shapemask = import 'shapemask.libsonnet';
 local transformer_translate = import 'transformer-translate.libsonnet';
 local vision_imagenet = import 'vision-imagenet.libsonnet';
+local vision_retinanet = import 'vision-retinanet.libsonnet';
 
 // Add new models here
 std.flattenArrays([
@@ -43,4 +44,5 @@ std.flattenArrays([
   shapemask.configs,
   transformer_translate.configs,
   vision_imagenet.configs,
+  vision_retinanet.configs,
 ])
