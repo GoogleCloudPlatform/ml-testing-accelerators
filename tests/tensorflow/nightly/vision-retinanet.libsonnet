@@ -20,30 +20,27 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local retinanet = common.TfVisionTest {
+  local coco = {
+    scriptConfig+: {
+      trainFilePattern: '$(COCO_DIR)/train*',
+      evalFilePattern: '$(COCO_DIR)/val*',
+    },
+  },
+  local retinanet = common.TfVisionTest + coco {
     modelName: 'vision-retinanet',
     scriptConfig+: {
       experiment: 'retinanet_resnetfpn_coco',
-    },
-    PreemptibleTpu:: {
-      tpuSettings+: {
-        preemptible: false,
+      paramsOverride+: {
+        task+: {
+          annotation_file: '$(COCO_DIR)/instances_val2017.json',
+        },
       },
     },
   },
   local functional = common.Functional {
     scriptConfig+: {
       paramsOverride+: {
-        task: {
-          annotation_file: '$(COCO_DIR)/instances_val2017.json',
-	   train_data: {
-             input_path: '$(COCO_DIR)/train*',
-          },
-	   validation_data: {
-             input_path: '$(COCO_DIR)/val*',
-          },
-        },
-        trainer: {
+        trainer+: {
           train_steps: 200,
           validation_interval: 200,
           validation_steps: 100,
@@ -51,45 +48,43 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local functional_v2_8 = common.Functional {
-    scriptConfig+: {
-      paramsOverride+: {
-        task: {
-          annotation_file: '$(COCO_DIR)/instances_val2017.json',
-          train_data: {
-	     global_batch_size: 64,
-             input_path: '$(COCO_DIR)/train*',
-          },
-          validation_data: {
-            input_path: '$(COCO_DIR)/val*',
-          },
-        },
-        trainer: {
-          train_steps: 200,
-          validation_interval: 200,
-          validation_steps: 100,
-        },
-      },
-    },
-  },
-
   local convergence = common.Convergence,
   local v2_8 = {
     accelerator: tpus.v2_8,
+    scriptConfig+: {
+      paramsOverride+: {
+        task+: {
+          train_data+: {
+            global_batch_size: 64,
+          },
+        },
+      },
+    },
+  },
+  local val_32 = {
+    scriptConfig+: {
+      paramsOverride+: {
+        task+: {
+          validation_data+: {
+            global_batch_size: 32,
+          },
+        },
+      },
+    },
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
-  local v2_32 = {
+  local v2_32 = val_32 {
     accelerator: tpus.v2_32,
   },
-  local v3_32 = {
+  local v3_32 = val_32 {
     accelerator: tpus.v3_32,
   },
   local v4_8 = {
     accelerator: tpus.v4_8,
   },
-  local v4_32 = {
+  local v4_32 = val_32 {
     accelerator: tpus.v4_32,
   },
   local tpuVm = experimental.TensorFlowTpuVmMixin,
@@ -97,7 +92,7 @@ local utils = import 'templates/utils.libsonnet';
   local functionalTests = [
     benchmark + accelerator + functional
     for benchmark in [retinanet]
-    for accelerator in [v3_8, v2_32, v3_32]
+    for accelerator in [v2_8, v3_8, v2_32, v3_32]
   ],
   local convergenceTests = [
     retinanet + v2_8 + convergence + timeouts.Hours(24),
@@ -106,7 +101,6 @@ local utils = import 'templates/utils.libsonnet';
     retinanet + v3_32 + convergence + timeouts.Hours(15),
   ],
   configs: functionalTests + convergenceTests + [
-    retinanet + v2_8 + functional_v2_8,
     retinanet + v4_8 + functional + tpuVm,
     retinanet + v4_32 + functional + tpuVm,
   ],
