@@ -28,12 +28,12 @@ local utils = import 'templates/utils.libsonnet';
     command: [
       'python3',
       'pytorch/xla/test/test_train_mp_mnist.py',
+      '--datadir=/datasets/mnist-data',
+    ] + if self.flags.modelDir != null then [
       '--logdir=%s' % self.flags.modelDir,
-      '%s' % self.flags.dataset,
-    ],
+    ] else [],
     flags:: {
       modelDir: '$(MODEL_DIR)',
-      dataset: '--datadir=/datasets/mnist-data',
     },
   },
 
@@ -69,6 +69,14 @@ local utils = import 'templates/utils.libsonnet';
     local config = self,
     imageTag+: '_cuda_11.2',
 
+    // Disable XLA metrics report on GPU
+    command+: [
+      '--nometrics_debug',
+    ],
+    flags+: {
+      modelDir: null,
+    },
+
     podTemplate+:: {
       spec+: {
         containerMap+: {
@@ -84,8 +92,18 @@ local utils = import 'templates/utils.libsonnet';
   local v100x4 = gpu {
     accelerator: gpus.teslaV100 { count: 4 },
   },
+
+  local tpuVm = common.PyTorchTpuVmMixin {
+    tpuSettings+: {
+      tpuVmExtraSetup: |||
+        pip install tensorboardX google-cloud-storage
+      |||,
+    },
+  },
+
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1),
+    mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
     mnist + convergence + v100x4 + timeouts.Hours(6),
   ],
 }

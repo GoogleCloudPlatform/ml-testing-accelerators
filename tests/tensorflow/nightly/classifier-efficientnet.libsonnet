@@ -175,7 +175,7 @@ local tpus = import 'templates/tpus.libsonnet';
     efficientnet + v2_32 + functional,
     efficientnet + v2_32 + functional + tpuVm,
     efficientnet + v3_32 + functional,
-    efficientnet + v2_32 + convergence + timeouts.Hours(10) + tpus.reserved + { schedule: '0 7 * * 1,3,5,6' },
+    efficientnet + v2_32 + convergence + timeouts.Hours(24) + tpus.reserved + { schedule: '0 7 * * 1,3,5,6' },
     efficientnet + v3_32 + convergence + timeouts.Hours(24),
     efficientnet + v4_8 + functional + tpuVm,
     efficientnet + v4_32 + functional + tpuVm,

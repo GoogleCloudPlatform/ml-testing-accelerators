@@ -23,5 +23,4 @@ std.flattenArrays([
   podTest.configs,
   compilationCacheTest.configs,
   latest,
-  nightly,
 ])

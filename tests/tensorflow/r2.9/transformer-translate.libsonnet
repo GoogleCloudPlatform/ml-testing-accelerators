@@ -23,7 +23,7 @@ local tpus = import 'templates/tpus.libsonnet';
     modelName: 'transformer-translate',
     command: [
       'python3',
-      'official/nlp/transformer/transformer_main.py',
+      'official/legacy/transformer/transformer_main.py',
       '--param_set=big',
       '--max_length=64',
       '--data_dir=$(TRANSFORMER_DIR)',
