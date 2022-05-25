@@ -13,6 +13,7 @@
 // limitations under the License.
 
 local common = import 'common.libsonnet';
+local experimental = import '../experimental.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
@@ -100,10 +101,23 @@ local utils = import 'templates/utils.libsonnet';
       |||,
     },
   },
+  local pjrt = tpuVm + experimental.PjRt {
+    modelName+: '-pjrt',
+    command: [
+      'pytorch/xla/test/pjrt/run_all_chips.sh',
+      'python3',
+      'pytorch/xla/test/pjrt/test_train_pjrt_mnist.py',
+    ] + super.command[2:],
+    // TODO: re-enable TensorBoard summaries when they don't cause a crash
+    flags+:: {
+      modelDir: null,
+    },
+  },
 
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1),
     mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
+    mnist + convergence + v2_8 + timeouts.Hours(1) + pjrt,
     mnist + convergence + v100x4 + timeouts.Hours(6),
   ],
 }

@@ -29,6 +29,14 @@ local utils = import 'templates/utils.libsonnet';
       tpuVmExtraSetup: |||
         echo No extra setup required.
       |||,
+      // XRT_TPU_CONFIG set up by xla_dist on pods
+      tpuVmExports:
+        if config.accelerator.replicas == 1 then
+          |||
+            export XRT_TPU_CONFIG='localservice;0;localhost:51011'
+          |||
+        else
+          '',
     },
     podTemplate+:: {
       spec+: {
@@ -49,13 +57,9 @@ local utils = import 'templates/utils.libsonnet';
                     '--',
                   ] + config.command,
                 ),
-              // XRT_TPU_CONFIG set up by xla_dist on pods
-              xrtTpuConfig: if config.accelerator.replicas == 1 then
-                "export XRT_TPU_CONFIG='localservice;0;localhost:51011'"
-              else
-                '',
               pytorchSetup: config.tpuSettings.tpuVmPytorchSetup,
               extraSetup: config.tpuSettings.tpuVmExtraSetup,
+              exports: config.tpuSettings.tpuVmExports,
             },
             args: null,
             // PyTorch tests are structured as bash scripts that run directly
@@ -83,7 +87,7 @@ local utils = import 'templates/utils.libsonnet';
                 gcloud alpha compute tpus tpu-vm ssh xl-ml-test@$(cat /scripts/tpu_name) --zone=$(cat /scripts/zone) --ssh-key-file=/scripts/id_rsa --strict-host-key-checking=no --internal-ip --worker=all --command "$(cat workersetup.sh)"
 
                 cat > testscript.sh << 'TEST_SCRIPT_EOF'
-                %(xrtTpuConfig)s
+                %(exports)s
                 %(testCommand)s
                 TEST_SCRIPT_EOF
                 gcloud alpha compute tpus tpu-vm ssh xl-ml-test@$(cat /scripts/tpu_name) --zone=$(cat /scripts/zone) --ssh-key-file=/scripts/id_rsa --strict-host-key-checking=no --internal-ip --worker=0 --command "$(cat testscript.sh)"
@@ -98,6 +102,15 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  PjRt:: {
+    tpuSettings+: {
+      tpuVmExports: |||
+        export PJRT_DEVICE=TPU
+      |||,
+    },
+  },
+
+  // *TpuVmPodTest is deprecated. Use PyTorchTpuVmMixin instead
   PyTorchTpuVmPodTest:: experimental.BaseTpuVmMixin {
     local config = self,
     tpuSettings+: {
@@ -291,7 +304,6 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-
   PyTorch1_11TpuVmPodTest:: experimental.BaseTpuVmMixin {
     local config = self,
     tpuSettings+: {
