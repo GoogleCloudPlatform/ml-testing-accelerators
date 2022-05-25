@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import 'common.libsonnet';
 local experimental = import '../experimental.libsonnet';
+local common = import 'common.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
@@ -45,7 +45,7 @@ local tpus = import 'templates/tpus.libsonnet';
   local fake_data = common.Functional {
     mode: 'fake',
     command+: [
-      '--fake_data'
+      '--fake_data',
     ],
   },
   local functional = common.Functional {
@@ -117,6 +117,12 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: gpus.teslaV100 { count: 4 },
   },
 
+  local nosummaries = {
+    flags+:: {
+      modelDir: null,
+    },
+  },
+
   local tpuVm = common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExtraSetup: |||
@@ -131,17 +137,13 @@ local tpus = import 'templates/tpus.libsonnet';
       'python3',
       'pytorch/xla/test/pjrt/test_train_pjrt_imagenet.py',
     ] + super.command[2:],
-    // TODO: re-enable TensorBoard summaries when they don't cause a crash
-    flags+:: {
-      modelDir: null,
-    },
   },
 
   configs: [
     resnet50 + functional + v100x4 + timeouts.Hours(1),
     resnet50 + functional + v3_8 + timeouts.Hours(2) + tpuVm,
-    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm,
-    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt,
+    resnet50 + fake_data + nosummaries + v3_8 + timeouts.Hours(2) + tpuVm,
+    resnet50 + fake_data + nosummaries + v3_8 + timeouts.Hours(2) + pjrt,
     resnet50 + convergence + v3_8 + timeouts.Hours(24) + tpuVm,
     resnet50 + functional + v3_32 + timeouts.Hours(1) + tpuVm,
     resnet50 + convergence + v3_32 + timeouts.Hours(12) + tpuVm,
