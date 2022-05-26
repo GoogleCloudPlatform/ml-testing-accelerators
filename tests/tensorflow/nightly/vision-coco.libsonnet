@@ -26,6 +26,18 @@ local utils = import 'templates/utils.libsonnet';
       evalFilePattern: '$(COCO_DIR)/val*',
     },
   },
+  local tpu_common = {
+    local config = self,
+    scriptConfig+: {
+      paramsOverride+: {
+        task+: {
+          validation_data+: {
+            global_batch_size: 8*config.accelerator.replicas,
+          },
+        },
+      },
+    },
+  },
   local retinanet = common.TfVisionTest + coco {
     modelName: 'vision-retinanet',
     scriptConfig+: {
@@ -33,9 +45,6 @@ local utils = import 'templates/utils.libsonnet';
       paramsOverride+: {
         task+: {
           annotation_file: '$(COCO_DIR)/instances_val2017.json',
-	  validation_data+: {
-            global_batch_size: config.accelerator.replicas,
-          },
         },
       },
     },
@@ -64,19 +73,19 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local v3_8 = {
+  local v3_8 = tpu_common{
     accelerator: tpus.v3_8,
   },
-  local v2_32 = {
+  local v2_32 = tpu_common{
     accelerator: tpus.v2_32,
   },
-  local v3_32 = {
+  local v3_32 = tpu_common{
     accelerator: tpus.v3_32,
   },
-  local v4_8 = {
+  local v4_8 = tpu_common{
     accelerator: tpus.v4_8,
   },
-  local v4_32 = {
+  local v4_32 = tpu_common{
     accelerator: tpus.v4_32,
   },
   local tpuVm = experimental.TensorFlowTpuVmMixin,
