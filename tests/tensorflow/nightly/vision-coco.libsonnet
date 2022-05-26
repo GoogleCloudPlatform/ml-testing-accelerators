@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,6 +33,9 @@ local utils = import 'templates/utils.libsonnet';
       paramsOverride+: {
         task+: {
           annotation_file: '$(COCO_DIR)/instances_val2017.json',
+	  validation_data+: {
+            global_batch_size: config.accelerator.replicas,
+          },
         },
       },
     },
@@ -61,30 +64,19 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local val_32 = {
-    scriptConfig+: {
-      paramsOverride+: {
-        task+: {
-          validation_data+: {
-            global_batch_size: 32,
-          },
-        },
-      },
-    },
-  },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
-  local v2_32 = val_32 {
+  local v2_32 = {
     accelerator: tpus.v2_32,
   },
-  local v3_32 = val_32 {
+  local v3_32 = {
     accelerator: tpus.v3_32,
   },
   local v4_8 = {
     accelerator: tpus.v4_8,
   },
-  local v4_32 = val_32 {
+  local v4_32 = {
     accelerator: tpus.v4_32,
   },
   local tpuVm = experimental.TensorFlowTpuVmMixin,
