@@ -32,7 +32,7 @@ local utils = import 'templates/utils.libsonnet';
       paramsOverride+: {
         task+: {
           validation_data+: {
-            global_batch_size: 8*config.accelerator.replicas,
+            global_batch_size: 8 * config.accelerator.replicas,
           },
         },
       },
@@ -84,19 +84,19 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local v3_8 = tpu_common{
+  local v3_8 = tpu_common {
     accelerator: tpus.v3_8,
   },
-  local v2_32 = tpu_common{
+  local v2_32 = tpu_common {
     accelerator: tpus.v2_32,
   },
-  local v3_32 = tpu_common{
+  local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
   },
-  local v4_8 = tpu_common{
+  local v4_8 = tpu_common {
     accelerator: tpus.v4_8,
   },
-  local v4_32 = tpu_common{
+  local v4_32 = tpu_common {
     accelerator: tpus.v4_32,
   },
   local tpuVm = experimental.TensorFlowTpuVmMixin,

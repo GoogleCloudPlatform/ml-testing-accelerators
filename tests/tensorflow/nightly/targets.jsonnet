@@ -25,6 +25,7 @@ local retinanet = import 'retinanet.libsonnet';
 local serving = import 'serving.libsonnet';
 local shapemask = import 'shapemask.libsonnet';
 local transformer_translate = import 'transformer-translate.libsonnet';
+local vision_coco = import 'vision-coco.libsonnet';
 local vision_imagenet = import 'vision-imagenet.libsonnet';
 local vision_coco = import 'vision-coco.libsonnet';
 
