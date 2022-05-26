@@ -46,8 +46,8 @@ local mixins = import 'templates/mixins.libsonnet';
       runnerPath: 'official/nlp/train.py',
     },
   },
-  // Running functional tests at 1PM PST daily.
-  local functional_schedule = '0 20 * * *',
+  // Running functional tests at 2 PM PST daily.
+  local functional_schedule = '0 21 * * *',
   Functional:: mixins.Functional {
     schedule: functional_schedule,
     metricConfig+: {
