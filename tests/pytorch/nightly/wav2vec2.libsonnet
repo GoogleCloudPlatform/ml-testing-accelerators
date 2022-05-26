@@ -38,8 +38,8 @@ local utils = import 'templates/utils.libsonnet';
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    cpu: '40.0',
-    memory: '300Gi',
+    cpu: '9.0',
+    memory: '30Gi',
   },
   local func = common.Functional {
     command: utils.scriptCommand(
