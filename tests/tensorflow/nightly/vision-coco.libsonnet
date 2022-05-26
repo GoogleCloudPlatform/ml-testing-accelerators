@@ -49,6 +49,17 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  local maskrcnn = common.TfVisionTest + coco {
+    modelName: 'vision-maskrcnn',
+    scriptConfig+: {
+      experiment: 'maskrcnn_resnetfpn_coco',
+      paramsOverride+: {
+        task+: {
+          annotation_file: '$(COCO_DIR)/instances_val2017.json',
+        },
+      },
+    },
+  },
   local functional = common.Functional {
     scriptConfig+: {
       paramsOverride+: {
@@ -92,7 +103,7 @@ local utils = import 'templates/utils.libsonnet';
 
   local functionalTests = [
     benchmark + accelerator + functional
-    for benchmark in [retinanet]
+    for benchmark in [retinanet, maskrcnn]
     for accelerator in [v2_8, v3_8, v2_32, v3_32]
   ],
   local convergenceTests = [
@@ -100,9 +111,15 @@ local utils = import 'templates/utils.libsonnet';
     retinanet + v3_8 + convergence + timeouts.Hours(24),
     retinanet + v2_32 + convergence + timeouts.Hours(15),
     retinanet + v3_32 + convergence + timeouts.Hours(15),
+    maskrcnn + v2_8 + convergence + timeouts.Hours(24),
+    maskrcnn + v3_8 + convergence + timeouts.Hours(24),
+    maskrcnn + v2_32 + convergence + timeouts.Hours(15),
+    maskrcnn + v3_32 + convergence + timeouts.Hours(15),
   ],
   configs: functionalTests + convergenceTests + [
     retinanet + v4_8 + functional + tpuVm,
     retinanet + v4_32 + functional + tpuVm,
+    maskrcnn + v4_8 + functional + tpuVm,
+    maskrcnn + v4_32 + functional + tpuVm,
   ],
 }
