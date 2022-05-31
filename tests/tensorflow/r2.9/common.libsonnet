@@ -33,7 +33,7 @@ local mixins = import 'templates/mixins.libsonnet';
       softwareVersion: if config.accelerator.version == 4 && config.accelerator.replicas == 1 then
         'tpu-vm-tf-2.9.1-v4'
       else if config.accelerator.version == 4 && config.accelerator.replicas > 1 then
-        'tpu-vm-tf-2.9.1-pod-v4',
+        'tpu-vm-tf-2.9.1-pod-v4'
       else if config.accelerator.replicas == 1 then
         'tpu-vm-tf-2.9.1'
       else
