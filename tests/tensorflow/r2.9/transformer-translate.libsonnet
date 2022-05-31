@@ -110,6 +110,12 @@ local tpus = import 'templates/tpus.libsonnet';
       '--batch_size=6144',
     ],
   },
+  local v4_8 = tpu_common {
+    accelerator: tpus.v4_8,
+    command+: [
+      '--batch_size=6144',
+    ],
+  },
   local v2_32 = tpu_common {
     accelerator: tpus.v2_32,
     command+: [
@@ -118,6 +124,12 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
+    command+: [
+      '--batch_size=24576',
+    ],
+  },
+  local v4_32 = tpu_common {
+    accelerator: tpus.v4_32,
     command+: [
       '--batch_size=24576',
     ],
@@ -132,5 +144,7 @@ local tpus = import 'templates/tpus.libsonnet';
     transformer + v2_32 + functional + common.tpuVm,
     transformer + v3_32 + functional,
     transformer + v3_32 + convergence,
+    transformer + v4_8 + functional + common.tpuVm,
+    transformer + v4_32 + functional + common.tpuVm,
   ],
 }
