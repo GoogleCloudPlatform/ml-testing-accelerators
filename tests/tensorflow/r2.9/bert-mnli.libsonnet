@@ -82,6 +82,13 @@ local utils = import 'templates/utils.libsonnet';
       '--eval_batch_size=64',
     ],
   },
+  local v4_8 = {
+    accelerator: tpus.v4_8,
+    command+: [
+      '--train_batch_size=64',
+      '--eval_batch_size=64',
+    ],
+  },
   local v2_32 = {
     accelerator: tpus.v2_32,
     command+: [
@@ -96,6 +103,13 @@ local utils = import 'templates/utils.libsonnet';
       '--eval_batch_size=256',
     ],
   },
+  local v4_32 = {
+    accelerator: tpus.v4_32,
+    command+: [
+      '--train_batch_size=256',
+      '--eval_batch_size=256',
+    ],
+  },
 
   configs: [
     bert + v2_8 + functional,
@@ -104,9 +118,11 @@ local utils = import 'templates/utils.libsonnet';
     bert + v3_8 + functional + common.tpuVm,
     bert + v2_8 + convergence + timeouts.Hours(4),
     bert + v3_8 + convergence + timeouts.Hours(3),
+    bert + v4_8 + functional + common.tpuVm,
     bert + v2_32 + functional + common.tpuVm,
     bert + v3_32 + functional,
     bert + v3_32 + functional + common.tpuVm,
     bert + v3_32 + convergence,
+    bert + v4_32 + functional + common.tpuVm,
   ],
 }
