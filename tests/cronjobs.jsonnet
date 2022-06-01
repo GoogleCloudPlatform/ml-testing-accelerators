@@ -37,7 +37,7 @@ local copyrightHeader = |||
 local cronJobs = utils.cronJobOutput(
   all_tests,
   clusters.defaultCluster,
-  clusters.clusterAccelerators,
+  clusters.acceleratorClusters,
 );
 
 // Outputs {filename: yaml_string} for each target
