@@ -24,6 +24,11 @@ local utils = import 'templates/utils.libsonnet';
     scriptConfig+: {
       trainFilePattern: '$(COCO_DIR)/train*',
       evalFilePattern: '$(COCO_DIR)/val*',
+      paramsOverride+: {
+        task+: {
+          annotation_file: '$(COCO_DIR)/instances_val2017.json',
+        },
+      },
     },
   },
   local tpu_common = {
@@ -42,20 +47,15 @@ local utils = import 'templates/utils.libsonnet';
     modelName: 'vision-retinanet',
     scriptConfig+: {
       experiment: 'retinanet_resnetfpn_coco',
-      paramsOverride+: {
-        task+: {
-          annotation_file: '$(COCO_DIR)/instances_val2017.json',
-        },
-      },
     },
   },
   local maskrcnn = common.TfVisionTest + coco {
     modelName: 'vision-maskrcnn',
     scriptConfig+: {
       experiment: 'maskrcnn_resnetfpn_coco',
-      paramsOverride+: {
-        task+: {
-          annotation_file: '$(COCO_DIR)/instances_val2017.json',
+      paramsOverride: {
+        trainer: {
+          train_steps: 400,
         },
       },
     },
@@ -86,6 +86,15 @@ local utils = import 'templates/utils.libsonnet';
   },
   local v3_8 = tpu_common {
     accelerator: tpus.v3_8,
+    scriptConfig+: {
+      paramsOverride+: {
+        task+: {
+          train_data+: {
+            global_batch_size: 64,
+          },
+        },
+      },
+    },
   },
   local v2_32 = tpu_common {
     accelerator: tpus.v2_32,
