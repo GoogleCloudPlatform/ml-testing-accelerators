@@ -47,7 +47,7 @@
       else
         defaultCluster
     );
-    local clusters = std.set(std.objectFields(acceleratorClusters) + [defaultCluster]);
+    local clusters = std.set(std.objectValues(acceleratorClusters) + [defaultCluster]);
     {
       [cluster]: [test for test in tests if getCluster(test) == cluster]
       for cluster in clusters
