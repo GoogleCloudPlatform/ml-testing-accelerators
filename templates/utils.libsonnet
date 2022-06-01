@@ -39,23 +39,15 @@
   //   tests: array of tests
   //   defaultCluster: default cluster to use if accelerator is not in
   //     clusterAccelerators
-  //   clusterAccelerators: object of the form {cluster: acceleratorName}
-  splitByCluster(tests, defaultCluster, clusterAccelerators={}):
-    local acceleratorCluster = std.foldl(
-      function(result, cluster) result + {
-        [accelerator.name]: cluster
-        for accelerator in clusterAccelerators[cluster]
-      },
-      std.objectFields(clusterAccelerators),
-      {},
-    );
+  //   acceleratorClusters: object of the form {acceleratorName: cluster}
+  splitByCluster(tests, defaultCluster, acceleratorClusters={}):
     local getCluster(test) = (
       if std.objectHas(acceleratorCluster, test.accelerator.name) then
         acceleratorCluster[test.accelerator.name]
       else
         defaultCluster
     );
-    local clusters = std.set(std.objectFields(clusterAccelerators) + [defaultCluster]);
+    local clusters = std.set(std.objectFields(acceleratorClusters) + [defaultCluster]);
     {
       [cluster]: [test for test in tests if getCluster(test) == cluster]
       for cluster in clusters
@@ -67,12 +59,12 @@
   //   tests: object of the form {"test_name": test}
   //   defaultCluster: default cluster to use if accelerator is not in
   //     clusterAccelerators
-  //   clusterAccelerators: object of the form {"cluster": acceleratorName}
+  //   acceleratorClusters: object of the form {acceleratorName: cluster}
   //
   // Use with jsonnet -S -m output_dir/ ...
-  cronJobOutput(tests, defaultCluster, clusterAccelerators={}):
+  cronJobOutput(tests, defaultCluster, acceleratorClusters={}):
     local clusterTests = self.splitByCluster(
-      std.filter(function(test) test.schedule != null, std.objectValues(tests)), defaultCluster, clusterAccelerators
+      std.filter(function(test) test.schedule != null, std.objectValues(tests)), defaultCluster, acceleratorClusters
     );
     std.foldl(
       function(result, clusterName) result + {
