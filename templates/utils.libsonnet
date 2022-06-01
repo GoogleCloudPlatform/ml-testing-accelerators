@@ -42,8 +42,8 @@
   //   acceleratorClusters: object of the form {acceleratorName: cluster}
   splitByCluster(tests, defaultCluster, acceleratorClusters={}):
     local getCluster(test) = (
-      if std.objectHas(acceleratorCluster, test.accelerator.name) then
-        acceleratorCluster[test.accelerator.name]
+      if std.objectHas(acceleratorClusters, test.accelerator.name) then
+        acceleratorClusters[test.accelerator.name]
       else
         defaultCluster
     );
