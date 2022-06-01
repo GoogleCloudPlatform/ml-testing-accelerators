@@ -36,5 +36,5 @@ local tpus = import 'templates/tpus.libsonnet';
     },
     std.objectFields(clusters.clusterAccelerators),
     {},
-  )
+  ),
 }
