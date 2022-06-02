@@ -144,7 +144,7 @@ local tpus = import 'templates/tpus.libsonnet';
     transformer + v2_32 + functional + common.tpuVm,
     transformer + v3_32 + functional,
     transformer + v3_32 + convergence,
-    transformer + v4_8 + functional + common.tpuVm,
-    transformer + v4_32 + functional + common.tpuVm,
+    transformer + v4_8 + convergence + common.tpuVm,
+    transformer + v4_32 + convergence + common.tpuVm,
   ],
 }

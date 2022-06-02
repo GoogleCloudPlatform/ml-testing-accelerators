@@ -118,11 +118,11 @@ local utils = import 'templates/utils.libsonnet';
     bert + v3_8 + functional + common.tpuVm,
     bert + v2_8 + convergence + timeouts.Hours(4),
     bert + v3_8 + convergence + timeouts.Hours(3),
-    bert + v4_8 + functional + common.tpuVm,
+    bert + v4_8 + convergence + common.tpuVm,
     bert + v2_32 + functional + common.tpuVm,
     bert + v3_32 + functional,
     bert + v3_32 + functional + common.tpuVm,
     bert + v3_32 + convergence,
-    bert + v4_32 + functional + common.tpuVm,
+    bert + v4_32 + convergence + common.tpuVm,
   ],
 }
