@@ -37,6 +37,11 @@ local utils = import 'templates/utils.libsonnet';
           |||
         else
           '',
+      tpuVmCreateSleepSeconds:
+        if config.accelerator.replicas == 1 then
+          super.tpuVmCreateSleepSeconds
+        else
+          180
     },
     podTemplate+:: {
       spec+: {
