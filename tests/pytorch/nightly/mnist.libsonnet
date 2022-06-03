@@ -104,7 +104,6 @@ local utils = import 'templates/utils.libsonnet';
   local pjrt = tpuVm + experimental.PjRt {
     modelName+: '-pjrt',
     command: [
-      'pytorch/xla/test/pjrt/run_all_chips.sh',
       'python3',
       'pytorch/xla/test/pjrt/test_train_pjrt_mnist.py',
     ] + super.command[2:],

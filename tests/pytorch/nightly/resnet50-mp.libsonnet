@@ -25,8 +25,6 @@ local tpus = import 'templates/tpus.libsonnet';
       'python3',
       'pytorch/xla/test/test_train_mp_imagenet.py',
       '--model=resnet50',
-      '--num_workers=8',
-      '--batch_size=128',
       '--log_steps=200',
     ] + if self.flags.modelDir != null then [
       '--logdir=%s' % self.flags.modelDir,
@@ -85,6 +83,11 @@ local tpus = import 'templates/tpus.libsonnet';
   local v3_32 = {
     accelerator: tpus.v3_32,
   },
+  local v4_8 = {
+    accelerator: tpus.v4_8,
+    // Keep same global batch size as v3
+    command+: ['--batch_size=256'],
+  },
 
   local gpu = {
     local config = self,
@@ -133,7 +136,6 @@ local tpus = import 'templates/tpus.libsonnet';
   local pjrt = tpuVm + experimental.PjRt {
     modelName: 'resnet50-pjrt',
     command: [
-      'pytorch/xla/test/pjrt/run_all_chips.sh',
       'python3',
       'pytorch/xla/test/pjrt/test_train_pjrt_imagenet.py',
     ] + super.command[2:],
@@ -148,5 +150,8 @@ local tpus = import 'templates/tpus.libsonnet';
     resnet50 + convergence + nosummaries + v3_8 + timeouts.Hours(24) + pjrt,
     resnet50 + functional + v3_32 + timeouts.Hours(1) + tpuVm,
     resnet50 + convergence + v3_32 + timeouts.Hours(12) + tpuVm,
+    resnet50 + fake_data + nosummaries + v4_8 + timeouts.Hours(2) + pjrt,
+    resnet50 + convergence + nosummaries + v4_8 + timeouts.Hours(24) + tpuVm,
+    resnet50 + convergence + nosummaries + v4_8 + timeouts.Hours(24) + pjrt,
   ],
 }

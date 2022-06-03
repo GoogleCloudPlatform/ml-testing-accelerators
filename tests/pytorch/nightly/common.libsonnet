@@ -37,8 +37,13 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   Convergence:: mixins.Convergence,
   PyTorchTpuVmMixin:: experimental.PyTorchTpuVmMixin {
+    local config = self,
+
     tpuSettings+: {
-      softwareVersion: 'tpu-vm-base',
+      softwareVersion: if config.accelerator.version < 4 then
+          'tpu-vm-base'
+        else
+          'tpu-vm-v4-base',
       tpuVmPytorchSetup: |||
         sudo pip3 uninstall --yes torch torch_xla torchvision libtpu-nightly numpy
         sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-nightly-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-nightly-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-nightly-cp38-cp38-linux_x86_64.whl numpy
