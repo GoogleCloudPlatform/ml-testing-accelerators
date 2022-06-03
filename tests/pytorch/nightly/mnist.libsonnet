@@ -62,9 +62,8 @@ local utils = import 'templates/utils.libsonnet';
   local v2_8 = {
     accelerator: tpus.v2_8,
   },
-  local v3_32 = {
-    accelerator: tpus.v3_32,
-
+  local v4_8 = {
+    accelerator: tpus.v4_8,
   },
   local gpu = {
     local config = self,
@@ -117,6 +116,7 @@ local utils = import 'templates/utils.libsonnet';
     mnist + convergence + v2_8 + timeouts.Hours(1),
     mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
     mnist + convergence + v2_8 + timeouts.Hours(1) + pjrt,
+    mnist + convergence + v4_8 + timeouts.Hours(1) + pjrt,
     mnist + convergence + v100x4 + timeouts.Hours(6),
   ],
 }
