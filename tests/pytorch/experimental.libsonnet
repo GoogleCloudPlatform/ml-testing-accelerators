@@ -41,7 +41,7 @@ local utils = import 'templates/utils.libsonnet';
         if config.accelerator.replicas == 1 then
           super.tpuVmCreateSleepSeconds
         else
-          180
+          180,
     },
     podTemplate+:: {
       spec+: {
