@@ -53,18 +53,13 @@ local utils = import 'templates/utils.libsonnet';
     modelName: 'vision-maskrcnn',
     scriptConfig+: {
       experiment: 'maskrcnn_resnetfpn_coco',
-      paramsOverride: {
-        trainer: {
-          train_steps: 400,
-        },
-      },
     },
   },
   local functional = common.Functional {
     scriptConfig+: {
       paramsOverride+: {
         trainer+: {
-          train_steps: 200,
+          train_steps: 400,
           validation_interval: 200,
           validation_steps: 100,
         },
@@ -74,7 +69,7 @@ local utils = import 'templates/utils.libsonnet';
   local convergence = common.Convergence,
   local v2_8 = {
     accelerator: tpus.v2_8,
-    scriptConfig+: {
+    scriptConfig+: {a
       paramsOverride+: {
         task+: {
           train_data+: {
@@ -86,15 +81,6 @@ local utils = import 'templates/utils.libsonnet';
   },
   local v3_8 = tpu_common {
     accelerator: tpus.v3_8,
-    scriptConfig+: {
-      paramsOverride+: {
-        task+: {
-          train_data+: {
-            global_batch_size: 64,
-          },
-        },
-      },
-    },
   },
   local v2_32 = tpu_common {
     accelerator: tpus.v2_32,
