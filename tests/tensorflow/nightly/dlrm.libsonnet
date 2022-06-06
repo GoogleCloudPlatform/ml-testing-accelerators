@@ -219,7 +219,7 @@ local tpus = import 'templates/tpus.libsonnet';
     paramsOverride+:: {
       task+: {
         model+: {
-          bottom_mlp: [512, 256, 32],
+          bottom_mlp: [512, 256, 64],
           embedding_dim: 64,
         },
       },
