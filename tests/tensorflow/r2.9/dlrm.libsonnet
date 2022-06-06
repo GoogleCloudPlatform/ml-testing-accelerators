@@ -218,7 +218,7 @@ local tpus = import 'templates/tpus.libsonnet';
     paramsOverride+:: {
       task+: {
         model+: {
-          bottom_mlp: [512, 256, 32],
+          bottom_mlp: [512, 256, 64],
           embedding_dim: 64,
         },
       },
@@ -255,5 +255,7 @@ local tpus = import 'templates/tpus.libsonnet';
     dlrm + convergence + v3_8 + common.tpuVm,
     dlrm + convergence + v2_32 + common.tpuVm,
     dlrm + functional + v3_32 + common.tpuVm,
+    dlrm + functional + v4_8 + common.tpuVm,
+    dlrm + functional + cross_interaction + v4_32 + common.tpuVm,
   ],
 }
