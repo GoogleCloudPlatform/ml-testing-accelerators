@@ -44,6 +44,7 @@ local volumes = import 'templates/volumes.libsonnet';
         sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-1.12-cp38-cp38-linux_x86_64.whl
         sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.12-cp38-cp38-linux_x86_64.whl
         sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-1.12-cp38-cp38-linux_x86_64.whl
+        sudo pip3 install https://storage.googleapis.com/cloud-tpu-tpuvm-artifacts/wheels/libtpu-nightly/libtpu_nightly-0.1.dev20220518-py3-none-any.whl
         sudo pip3 install numpy
         sudo pip3 install mkl mkl-include cloud-tpu-client
         sudo apt-get -y update
@@ -52,7 +53,7 @@ local volumes = import 'templates/volumes.libsonnet';
         # pytorch/xla anyway
         mkdir pytorch
         cd pytorch
-        git clone https://github.com/pytorch/xla.git -b r1.11
+        git clone https://github.com/pytorch/xla.git -b r1.12
       |||,
     },
   },
