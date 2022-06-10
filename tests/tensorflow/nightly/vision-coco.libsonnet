@@ -69,7 +69,7 @@ local utils = import 'templates/utils.libsonnet';
   local convergence = common.Convergence,
   local v2_8 = {
     accelerator: tpus.v2_8,
-    scriptConfig+: {a
+    scriptConfig+: {
       paramsOverride+: {
         task+: {
           train_data+: {
