@@ -40,7 +40,7 @@ local mixins = import 'templates/mixins.libsonnet';
 
   // Running functional tests at 10PM PST Sat.
   Functional:: mixins.Functional {
-    schedule: '0 6 * * 6',
+    schedule: null,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
