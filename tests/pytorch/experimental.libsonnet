@@ -34,9 +34,15 @@ local utils = import 'templates/utils.libsonnet';
         if config.accelerator.replicas == 1 then
           |||
             export XRT_TPU_CONFIG='localservice;0;localhost:51011'
-          |||
+            export TPU_NUM_DEVICES=%d
+          ||| % config.accelerator.numCores
         else
           '',
+      tpuVmCreateSleepSeconds:
+        if config.accelerator.replicas == 1 then
+          super.tpuVmCreateSleepSeconds
+        else
+          180,
     },
     podTemplate+:: {
       spec+: {

@@ -20,7 +20,7 @@ local all_tests = import 'all_tests.jsonnet';
 local clusterTests = utils.splitByCluster(
   std.objectValues(all_tests),
   clusters.defaultCluster,
-  clusters.clusterAccelerators,
+  clusters.acceleratorClusters,
 );
 local clusterTestNames = {
   [cluster]: [

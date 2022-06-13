@@ -19,16 +19,16 @@ local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
 {
-  local Nightly = {
-    frameworkPrefix: 'pt-nightly',
+  local r1_12 = {
+    frameworkPrefix: 'pt-r1.12',
     tpuSettings+: {
-      softwareVersion: 'pytorch-nightly',
+      softwareVersion: 'pytorch-1.12',
     },
-    imageTag: 'nightly_3.7',
+    imageTag: 'r1.12',
   },
-  PyTorchTest:: common.PyTorchTest + Nightly,
-  PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest + Nightly,
-  PyTorchGkePodTest:: common.PyTorchGkePodTest + Nightly,
+  PyTorchTest:: common.PyTorchTest + r1_12,
+  PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest + r1_12,
+  PyTorchGkePodTest:: common.PyTorchGkePodTest + r1_12,
   Functional:: mixins.Functional {
     schedule: '0 7 * * *',
     tpuSettings+: {
@@ -37,18 +37,15 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   Convergence:: mixins.Convergence,
   PyTorchTpuVmMixin:: experimental.PyTorchTpuVmMixin {
-    local config = self,
-
     tpuSettings+: {
-      softwareVersion: if config.accelerator.version < 4 then
-        'tpu-vm-base'
-      else
-        'tpu-vm-v4-base',
+      softwareVersion: 'tpu-vm-base',
       tpuVmPytorchSetup: |||
-        sudo pip3 uninstall --yes torch torch_xla torchvision libtpu-nightly numpy
-        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-nightly-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-nightly-cp38-cp38-linux_x86_64.whl https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-nightly-cp38-cp38-linux_x86_64.whl numpy
-        # Install corresponding libtpu-nightly
-        sudo pip3 install torch_xla[tpuvm]
+        sudo pip3 uninstall --yes torch torch_xla torchvision numpy
+        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-1.12-cp38-cp38-linux_x86_64.whl
+        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.12-cp38-cp38-linux_x86_64.whl
+        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-1.12-cp38-cp38-linux_x86_64.whl
+        sudo pip3 install https://storage.googleapis.com/cloud-tpu-tpuvm-artifacts/wheels/libtpu-nightly/libtpu_nightly-0.1.dev20220518-py3-none-any.whl
+        sudo pip3 install numpy
         sudo pip3 install mkl mkl-include cloud-tpu-client
         sudo apt-get -y update
         sudo apt-get install -y libomp5
@@ -56,7 +53,7 @@ local volumes = import 'templates/volumes.libsonnet';
         # pytorch/xla anyway
         mkdir pytorch
         cd pytorch
-        git clone https://github.com/pytorch/xla.git
+        git clone https://github.com/pytorch/xla.git -b r1.12
       |||,
     },
   },
@@ -66,5 +63,5 @@ local volumes = import 'templates/volumes.libsonnet';
   },
 
   // DEPRECATED: Use PyTorchTpuVmMixin instead
-  tpu_vm_nightly_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
+  tpu_vm_1_12_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
 }

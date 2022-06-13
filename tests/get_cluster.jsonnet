@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local nightly = import 'nightly/targets.jsonnet';
-local r1_10 = import 'r1.10/targets.jsonnet';
-local r1_11 = import 'r1.11/targets.jsonnet';
-local r1_12 = import 'r1.12/targets.jsonnet';
-// Add new versions here
-std.flattenArrays([
-  nightly,
-  r1_10,
-  r1_11,
-  r1_12,
-])
+local all_tests = import 'all_tests.jsonnet';
+local clusters = import 'clusters.jsonnet';
+
+function(test)
+  local accelerator = all_tests[test].accelerator;
+
+  if std.objectHas(clusters.acceleratorClusters, accelerator.name) then
+    clusters.acceleratorClusters[accelerator.name]
+  else
+    clusters.defaultCluster

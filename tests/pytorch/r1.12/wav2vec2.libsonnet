@@ -19,7 +19,6 @@ local utils = import 'templates/utils.libsonnet';
 
 {
   local command_common = |||
-    pip install https://storage.googleapis.com/tpu-pytorch/wheels/torchaudio-nightly-cp37-cp37m-linux_x86_64.whl
     pip install omegaconf hydra-core soundfile
     sudo apt-get install -y libsndfile-dev
     git clone --recursive https://github.com/pytorch/fairseq.git

@@ -15,48 +15,30 @@
 local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
+local utils = import 'templates/utils.libsonnet';
 
 {
-  local resnet50 = common.PyTorchTest {
-    modelName: 'resnet50-mp',
+  local mnist = common.PyTorchTest {
+    modelName: 'mnist',
+    volumeMap+: {
+      datasets: common.datasetsVolume,
+    },
     command: [
       'python3',
-      'pytorch/xla/test/test_train_mp_imagenet.py',
-      '--model=resnet50',
-      '--log_steps=200',
+      'pytorch/xla/test/test_train_mp_mnist.py',
+      '--datadir=/datasets/mnist-data',
     ] + if self.flags.modelDir != null then [
       '--logdir=%s' % self.flags.modelDir,
     ] else [],
     flags:: {
       modelDir: '$(MODEL_DIR)',
     },
-    volumeMap+: {
-      datasets: common.datasetsVolume,
-    },
-
-    cpu: '90.0',
-    memory: '400Gi',
   },
 
-  local fake_data = common.Functional {
-    mode: 'fake',
-    command+: [
-      '--fake_data',
-    ],
-  },
-  local functional = common.Functional {
-    command+: [
-      '--num_epochs=2',
-      '--datadir=/datasets/imagenet-mini',
-    ],
-  },
   local convergence = common.Convergence {
-    command+: [
-      '--num_epochs=90',
-      '--datadir=/datasets/imagenet',
-    ],
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -65,7 +47,7 @@ local tpus = import 'templates/tpus.libsonnet';
               FINAL: {
                 fixed_value: {
                   comparison: 'GREATER',
-                  value: 75.0,
+                  value: 98.0,
                 },
                 inclusive_bounds: false,
                 wait_for_n_data_points: 0,
@@ -77,24 +59,16 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  local v3_8 = {
-    accelerator: tpus.v3_8,
+  local v2_8 = {
+    accelerator: tpus.v2_8,
   },
   local v3_32 = {
     accelerator: tpus.v3_32,
-  },
-  local v4_8 = {
-    accelerator: tpus.v4_8,
-    // Keep same global batch size as v3
-    command+: ['--batch_size=256'],
-  },
 
+  },
   local gpu = {
     local config = self,
     imageTag+: '_cuda_11.2',
-
-    cpu: '7.0',
-    memory: '40Gi',
 
     // Disable XLA metrics report on GPU
     command+: [
@@ -120,12 +94,6 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: gpus.teslaV100 { count: 4 },
   },
 
-  local nosummaries = {
-    flags+:: {
-      modelDir: null,
-    },
-  },
-
   local tpuVm = common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExtraSetup: |||
@@ -133,25 +101,10 @@ local tpus = import 'templates/tpus.libsonnet';
       |||,
     },
   },
-  local pjrt = tpuVm + experimental.PjRt {
-    modelName: 'resnet50-pjrt',
-    command: [
-      'python3',
-      'pytorch/xla/test/pjrt/test_train_pjrt_imagenet.py',
-    ] + super.command[2:],
-  },
 
   configs: [
-    resnet50 + functional + v100x4 + timeouts.Hours(1),
-    resnet50 + functional + v3_8 + timeouts.Hours(2) + tpuVm,
-    resnet50 + fake_data + nosummaries + v3_8 + timeouts.Hours(2) + tpuVm,
-    resnet50 + fake_data + nosummaries + v3_8 + timeouts.Hours(2) + pjrt,
-    resnet50 + convergence + nosummaries + v3_8 + timeouts.Hours(24) + tpuVm,
-    resnet50 + convergence + nosummaries + v3_8 + timeouts.Hours(24) + pjrt,
-    resnet50 + functional + v3_32 + timeouts.Hours(1) + tpuVm,
-    resnet50 + convergence + v3_32 + timeouts.Hours(12) + tpuVm,
-    resnet50 + fake_data + nosummaries + v4_8 + timeouts.Hours(2) + pjrt,
-    resnet50 + convergence + nosummaries + v4_8 + timeouts.Hours(24) + tpuVm,
-    resnet50 + convergence + nosummaries + v4_8 + timeouts.Hours(24) + pjrt,
+    mnist + convergence + v2_8 + timeouts.Hours(1),
+    mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
+    mnist + convergence + v100x4 + timeouts.Hours(6),
   ],
 }
