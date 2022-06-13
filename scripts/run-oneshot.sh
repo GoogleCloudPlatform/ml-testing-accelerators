@@ -24,7 +24,7 @@ validate()
     exit
   fi
 
-  region=$(jsonnet -J . -S tests/get_region.jsonnet --tla-str test=$test_name)
+  region=$(jsonnet -J . -S tests/get_cluster.jsonnet --tla-str test=$test_name)
 
   echo "Args:"
   echo "Test name:   " $test_name
