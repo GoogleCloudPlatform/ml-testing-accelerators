@@ -41,7 +41,7 @@ local volumes = import 'templates/volumes.libsonnet';
     imageTag: 'r1.11',
   },
   Functional:: mixins.Functional {
-    schedule: '0 7 * * 6',
+    schedule: null,
     tpuSettings+: {
       preemptible: false,
     },
