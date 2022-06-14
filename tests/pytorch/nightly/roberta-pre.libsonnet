@@ -78,21 +78,8 @@ local utils = import 'templates/utils.libsonnet';
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    podTemplate+:: {
-      spec+: {
-        containerMap+: {
-          train+: {
-            resources+: {
-              requests: {
-                cpu: '9.0',
-                memory: '30Gi',
-                'ephemeral-storage': '10Gi',
-              },
-            },
-          },
-        },
-      },
-    },
+    cpu: '9.0',
+    memory: '30Gi',
   },
   local functional = common.Functional {
     metricConfig+: {
