@@ -1,10 +1,7 @@
 #!/bin/bash
-accelerator=
 dryrun=
-filename=
-testtype=
+region=
 test_name=
-patch=
 
 help()
 {
@@ -14,55 +11,24 @@ help()
   echo "- run the test"
   echo
   echo "Syntax: ./scripts/run-oneshot.sh [-a|d|f|h|t]"
-  echo "-a | --accelerator   The accelerator type, e.g. v2-8, v3-8, 8xv100, etc."
   echo "-d | --dryrun        Dryrun. If set, then the test does not run and only prints commands."
-  echo "-f | --file          The filepath for the test."
+  echo "-t | --test          The name of the test, e.g. `tf-nightly-classifier-resnet-func-v4-8-1vm`."
   echo "-h | --help          Print this help."
-  echo "-t | --type          Test type, e.g. [func|conv|functional|convergence]."
-  echo "-p | --patch         Patch number, if applicable."
 }
 
 validate()
 {
-  if [ -z "$accelerator" ]
+  if [ -z "$test_name" ]
   then
-    echo "Accelerator must be provided."
-    exit
-  fi
-  if [ -z "$filename" ]
-  then
-    echo "File name must be provided."
-    exit
-  fi
-  if [ -z "$testtype" ]
-  then
-    echo "Test type must be provided."
+    echo "Test name must be provided."
     exit
   fi
 
-  case $testtype in
-    "functional" | "func" )  testtype="func"
-                             ;;
-    "convergence" | "conv" ) testtype="conv"
-                             ;;
-  esac
-
-  region=
-  case $accelerator in
-    # Pods are in europe-west4. Add in more cases here
-    # as necessary.
-    "v2-32" | "v3-32" ) region="europe-west4"
-                        ;;
-    * )                 region="us-central1"
-                        ;;
-  esac
+  region=$(jsonnet -J . -S tests/get_cluster.jsonnet --tla-str test=$test_name)
 
   echo "Args:"
-  echo "Accelerator: " $accelerator
-  echo "Filename:    " $filename
-  echo "Type:        " $testtype
+  echo "Test name:   " $test_name
   echo "Region:      " $region
-  echo
   echo
 }
 
@@ -99,16 +65,21 @@ run()
   p=`echo $PWD | sed s/scripts//`
   cd $p
 
-  set_test_name
-
   set -e
   set -x
   cd -
 
+  if [ $region == "us-central2" ]
+  then
+    CLUSTER="xl-ml-test-$region"
+  else
+    CLUSTER="oneshots-$region"
+  fi
+
   which jsonnet &> /dev/null
   if [ -z "$dryrun" ]
   then
-    gcloud container clusters get-credentials oneshots-$region --region $region --project xl-ml-test
+    gcloud container clusters get-credentials $CLUSTER --region $region --project xl-ml-test
     temp_file=$(mktemp)
     jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$test_name > $temp_file
 
@@ -119,30 +90,21 @@ run()
     kubectl wait --for=condition=ready --timeout=10m $pod_name
     kubectl logs -f $pod_name --container=train
   else
-    echo "gcloud container clusters get-credentials oneshots-$region --region $region --project xl-ml-test"
+    echo "gcloud container clusters get-credentials $CLUSTER --region $region --project xl-ml-test"
     jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$test_name
   fi
 }
 
 while [ "$1" != "" ]; do
   case $1 in
-    -a | --accelerator )    shift
-                            accelerator="$1"
-                            ;;
     -d | --dryrun )         shift
                             dryrun=1
-                            ;;
-    -f | --file )           shift
-                            filename="$1"
                             ;;
     -h | --help )           help
                             exit
                             ;;
-    -t | --type)            shift
-                            testtype="$1"
-                            ;;
-    -p | --patch)           shift
-                            patch="$1"
+    -t | --test)            shift
+                            test_name="$1"
                             ;;
     * )                     echo "Invalid option: $1"
                             help
