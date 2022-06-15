@@ -38,7 +38,7 @@ local utils = import 'templates/utils.libsonnet';
         '--sample-break-mode=complete',
         '--tokens-per-sample=512',
         '--optimizer=adam',
-        '--adam-betas=',
+        '--adam-betas',
         '(0.9,0.98)',
         '--adam-eps=1e-6',
         '--clip-norm=0.0',
