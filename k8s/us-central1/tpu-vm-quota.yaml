@@ -18,8 +18,8 @@ metadata:
   name: tpu-device-limit
 spec:
   hard:
-    requests.tpu.googleapis.com/v2: 16
-    requests.tpu.googleapis.com/v3: 16
+    requests.tpu.googleapis.com/v2: 32
+    requests.tpu.googleapis.com/v3: 32
   scopeSelector:
     matchExpressions:
     - scopeName: PriorityClass
@@ -95,8 +95,8 @@ spec:
               kubectl patch quota tpu-device-limit -p '{
                 "spec": {
                   "hard": {
-                    "requests.tpu.googleapis.com/v2": "16",
-                    "requests.tpu.googleapis.com/v3": "16"
+                    "requests.tpu.googleapis.com/v2": "32",
+                    "requests.tpu.googleapis.com/v3": "32"
                   }
                 }
               }'
