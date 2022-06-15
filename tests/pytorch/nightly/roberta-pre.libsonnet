@@ -80,7 +80,6 @@ local utils = import 'templates/utils.libsonnet';
     },
     cpu: '9.0',
     memory: '30Gi',
-    'ephemeral-storage': '10Gi',
   },
   local functional = common.Functional {
     metricConfig+: {
