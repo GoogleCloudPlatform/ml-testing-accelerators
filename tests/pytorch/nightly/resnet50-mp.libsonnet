@@ -65,7 +65,7 @@ local tpus = import 'templates/tpus.libsonnet';
               FINAL: {
                 fixed_value: {
                   comparison: 'GREATER',
-                  value: 75.0,
+                  value: 74.0,
                 },
                 inclusive_bounds: false,
                 wait_for_n_data_points: 0,
