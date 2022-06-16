@@ -24,10 +24,6 @@ local mixins = import 'templates/mixins.libsonnet';
       set -u
       set -e
 
-      echo "Checking out and installing JAX..."
-      git clone https://github.com/google/jax.git
-      cd jax
-      echo "jax git hash: $(git rev-parse HEAD)"
       %(installLocalJax)s
       %(maybeBuildJaxlib)s
       %(printDiagnostics)s
@@ -48,8 +44,7 @@ local mixins = import 'templates/mixins.libsonnet';
   },
 
   configs: [
-    podTest + common.jaxlibHead + common.nightlyImage,
-    podTest + common.jaxlibHead + common.alphaImage,
-    podTest + common.jaxlibLatest + common.alphaImage,
+    podTest + common.jaxlibHead + common.tpuVmBaseImage,
+    podTest + common.jaxlibLatest + common.tpuVmBaseImage,
   ],
 }

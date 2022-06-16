@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
@@ -28,12 +29,12 @@ local utils = import 'templates/utils.libsonnet';
     command: [
       'python3',
       'pytorch/xla/test/test_train_mp_mnist.py',
+      '--datadir=/datasets/mnist-data',
+    ] + if self.flags.modelDir != null then [
       '--logdir=%s' % self.flags.modelDir,
-      '%s' % self.flags.dataset,
-    ],
+    ] else [],
     flags:: {
       modelDir: '$(MODEL_DIR)',
-      dataset: '--datadir=/datasets/mnist-data',
     },
   },
 
@@ -60,19 +61,21 @@ local utils = import 'templates/utils.libsonnet';
 
   local v2_8 = {
     accelerator: tpus.v2_8,
-
   },
-  local v3_8 = {
-    accelerator: tpus.v3_8,
-
-  },
-  local v3_32 = {
-    accelerator: tpus.v3_32,
-
+  local v4_8 = {
+    accelerator: tpus.v4_8,
   },
   local gpu = {
     local config = self,
     imageTag+: '_cuda_11.2',
+
+    // Disable XLA metrics report on GPU
+    command+: [
+      '--nometrics_debug',
+    ],
+    flags+: {
+      modelDir: null,
+    },
 
     podTemplate+:: {
       spec+: {
@@ -86,16 +89,34 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local v100 = gpu {
-    accelerator: gpus.teslaV100,
-  },
   local v100x4 = gpu {
     accelerator: gpus.teslaV100 { count: 4 },
   },
+
+  local tpuVm = common.PyTorchTpuVmMixin {
+    tpuSettings+: {
+      tpuVmExtraSetup: |||
+        pip install tensorboardX google-cloud-storage
+      |||,
+    },
+  },
+  local pjrt = tpuVm + experimental.PjRt {
+    modelName+: '-pjrt',
+    command: [
+      'python3',
+      'pytorch/xla/test/pjrt/test_train_pjrt_mnist.py',
+    ] + super.command[2:],
+    // TODO: re-enable TensorBoard summaries when they don't cause a crash
+    flags+:: {
+      modelDir: null,
+    },
+  },
+
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1),
-    mnist + convergence + v3_8 + timeouts.Hours(1),
-    mnist + convergence + v100 + timeouts.Hours(6),
+    mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
+    mnist + convergence + v2_8 + timeouts.Hours(1) + pjrt,
+    mnist + convergence + v4_8 + timeouts.Hours(1) + pjrt,
     mnist + convergence + v100x4 + timeouts.Hours(6),
   ],
 }

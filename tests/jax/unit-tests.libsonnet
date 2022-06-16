@@ -30,11 +30,6 @@ local mixins = import 'templates/mixins.libsonnet';
       # Via https://jax.readthedocs.io/en/latest/developer.html#building-jaxlib-from-source
       pip install numpy six wheel
 
-      echo "Checking out and installing JAX..."
-      git clone https://github.com/google/jax.git
-      cd jax
-      echo "jax git hash: $(git rev-parse HEAD)"
-      pip install -r build/test-requirements.txt
       %(installLocalJax)s
       %(maybeBuildJaxlib)s
       %(printDiagnostics)s
@@ -57,8 +52,9 @@ local mixins = import 'templates/mixins.libsonnet';
   },
 
   configs: [
-    runUnitTests + common.jaxlibHead + common.nightlyImage,
-    runUnitTests + common.jaxlibHead + common.alphaImage,
-    runUnitTests + common.jaxlibLatest + common.alphaImage,
+    runUnitTests + common.jaxlibHead + common.tpuVmBaseImage,
+    runUnitTests + common.jaxlibLatest + common.tpuVmBaseImage,
+    runUnitTests + common.jaxlibHead + common.tpuVmV4Base,
+    runUnitTests + common.jaxlibLatest + common.tpuVmV4Base,
   ],
 }

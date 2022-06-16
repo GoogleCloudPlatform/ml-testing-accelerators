@@ -36,7 +36,7 @@ local utils = import 'templates/utils.libsonnet';
     modelName: 'vision-resnetrs',
     scriptConfig+: {
       experiment: 'resnet_rs_imagenet',
-      configFiles: ['official/vision/beta/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml'],
+      configFiles: ['official/vision/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml'],
     },
   },
   local functional = common.Functional {
@@ -62,6 +62,14 @@ local utils = import 'templates/utils.libsonnet';
   local v3_32 = {
     accelerator: tpus.v3_32,
   },
+  local v4_8 = {
+    accelerator: tpus.v4_8,
+  },
+  local v4_32 = {
+    accelerator: tpus.v4_32,
+  },
+  local tpuVm = experimental.TensorFlowTpuVmMixin,
+
   local functionalTests = [
     benchmark + accelerator + functional
     for benchmark in [resnet, resnet_rs]
@@ -77,5 +85,8 @@ local utils = import 'templates/utils.libsonnet';
     resnet_rs + v2_32 + convergence + timeouts.Hours(15),
     resnet_rs + v3_32 + convergence + timeouts.Hours(15),
   ],
-  configs: functionalTests + convergenceTests,
+  configs: functionalTests + convergenceTests + [
+    resnet + v4_8 + functional + tpuVm,
+    resnet + v4_32 + functional + tpuVm,
+  ],
 }

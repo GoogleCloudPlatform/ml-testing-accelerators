@@ -4,12 +4,6 @@
 
 See [our developing doc](../doc/developing) for build pre-requisites.
 
-To run a single test, first [connect to a cluster](https://console.cloud.google.com/kubernetes/list) and then run the following:
-
-```bash
-scripts/run-oneshot.sh --accelerator v2-8 --file tests/tensorflow/nightly/mnist.libsonnet --type functional
-```
-
 To build all of the templates and output Kubernetes resources, run the following:
 
 ```bash
@@ -19,6 +13,60 @@ scripts/gen-tests.sh
 This command will output Kubernetes `CronJob` resources into [`k8s/`](../k8s) directory.
 
 Note: Googlers and contributors working out of this repository don't need to manually deploy generated Kubernetes resources with `kubectl`, since we have triggers set up to do that automatically.
+
+
+## Listing All Existing Tests
+
+To list all of the correctly configured tests, you can run
+
+```bash
+$ ./scripts/list-tests.sh
++ jsonnet -J . -S tests/list_tests.jsonnet
+flax-latest-imagenet-conv-v3-32-1vm
+flax-latest-imagenet-conv-v3-8-1vm
+flax-latest-imagenet-func-v2-8-1vm
+flax-latest-imagenet-func-v3-32-1vm
+flax-latest-vit-conv-v3-8-1vm
+flax-latest-vit-func-v2-8-1vm
+...
+```
+
+This can be helpful for checking that your newly added test is configured
+correctly, or to extract the correct name to run a one shot test.
+
+
+## Running a One Shot Test
+
+To manually run one shot tests, first [connect to a cluster](https://console.cloud.google.com/kubernetes/list) and then run the following:
+
+```bash
+export TEST_NAME=tf-nightly-mnist-func-v2-8
+jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$TEST_NAME | kubectl create -f -
+```
+
+For convenience, the steps of connecting to a cluster and running a one shot
+test have been combined into a single script as follows:
+
+```bash
+export TEST_NAME=tf-nightly-mnist-func-v2-8
+./scripts/run-oneshot.sh -t $TEST_NAME
+```
+
+Other flags:
+- `-d | --dryrun` if set, then the test does not run but only prints commands.
+- `-h | --help`   prints the help screen.
+
+
+## Running Multiple One Shot Tests
+
+In case you want to run multiple tests, you might find it convenient to combine the above scripts as follows:
+
+```bash
+./scripts/list-tests.sh | grep "tf" | grep "nightly" | grep "mnist" while read -r test; do ./scripts/run-oneshot.sh -t $test; done
+```
+
+Please be mindful of the resources in the project before running this.
+
 
 ## Creating a New Test
 

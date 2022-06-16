@@ -136,20 +136,21 @@ local tpus = import 'templates/tpus.libsonnet';
     jaxlibVersion:: 'head',
     scriptConfig+: {
       // Install jax without jaxlib or libtpu deps
-      installLocalJax: 'pip install .',
+      installLocalJax: |||
+        echo "Checking out and installing JAX..."
+        git clone https://github.com/google/jax.git
+        cd jax
+        echo "jax git hash: $(git rev-parse HEAD)"
+        pip install -r build/test-requirements.txt
+
+        pip install .
+      |||,
       installLatestJax: 'pip install jax',
       maybeBuildJaxlib: |||
-        echo "Building jaxlib from source at TF head"
-        echo "Checking out TF..."
-        cd ~/
-        git clone https://github.com/tensorflow/tensorflow.git
-        cd tensorflow
-        echo "TensorFlow git hash: $(git rev-parse HEAD)"
-
-        echo "Building jaxlib..."
-        cd ~/jax
-        python3 build/build.py --enable_tpu --bazel_options="--override_repository=org_tensorflow=$HOME/tensorflow"
-        pip install dist/*.whl
+        echo "Installing latest jaxlib-nightly..."
+        pip install jaxlib-nightly \
+          -f https://storage.googleapis.com/jax-releases/jaxlib_nightly_releases.html
+        pip list | grep jaxlib
         python3 -c 'import jaxlib; print("jaxlib version:", jaxlib.__version__)'
 
         echo "Installing latest libtpu-nightly..."
@@ -163,27 +164,33 @@ local tpus = import 'templates/tpus.libsonnet';
     jaxlibVersion:: 'latest',
     scriptConfig+: {
       installLocalJax: |||
+        echo "Checking out and installing JAX..."
+        git clone https://github.com/google/jax.git
+        cd jax
+        echo "jax git hash: $(git rev-parse HEAD)"
+        pip install -r build/test-requirements.txt
+
         pip install .[tpu] \
           -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
       |||,
       installLatestJax: |||
-        pip install "jax[tpu]>=0.2.16" \
+        pip install jax[tpu] \
           -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
       |||,
       maybeBuildJaxlib: '',
     },
   },
 
-  nightlyImage:: {
+  tpuVmBaseImage:: {
     local config = self,
 
     tpuSettings+: {
-      softwareVersion: 'v2-nightly',
+      softwareVersion: 'tpu-vm-base',
     },
     scriptConfig+: {
       testEnvWorkarounds: |||
-        # b/200277707: upgrade numpy to fix torch import
-        pip install --upgrade numpy
+        # b/192016388: fix host_callback_to_tf_test.py
+        pip install tensorflow
       ||| + self.maybeInstallLibtpuV4,
       maybeInstallLibtpuV4: if config.accelerator.type == 'tpu' && config.accelerator.version == 4 then |||
         gsutil cp gs://cloud-tpu-tpuvm-v4-artifacts/wheels/libtpu/latest/libtpu_tpuv4-0.1.dev20211028-py3-none-any.whl .
@@ -192,13 +199,15 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  alphaImage:: {
+  tpuVmV4Base:: {
+    local config = self,
+    accelerator: tpus.v4_8,
+
     tpuSettings+: {
-      softwareVersion: std.strReplace(super.softwareVersion, 'nightly', 'alpha'),
+      softwareVersion: 'tpu-vm-v4-base',
     },
     scriptConfig+: {
       testEnvWorkarounds: |||
-        # b/192016388: fix host_callback_to_tf_test.py
         pip install tensorflow
       |||,
     },

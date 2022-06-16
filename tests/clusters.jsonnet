@@ -15,6 +15,8 @@
 local tpus = import 'templates/tpus.libsonnet';
 
 {
+  local clusters = self,
+
   defaultCluster: 'us-central1',
   clusterAccelerators: {
     'us-central1': [],
@@ -27,4 +29,12 @@ local tpus = import 'templates/tpus.libsonnet';
       tpus.v3_32,
     ],
   },
+  acceleratorClusters:: std.foldl(
+    function(result, cluster) result + {
+      [accelerator.name]: cluster
+      for accelerator in clusters.clusterAccelerators[cluster]
+    },
+    std.objectFields(clusters.clusterAccelerators),
+    {},
+  ),
 }

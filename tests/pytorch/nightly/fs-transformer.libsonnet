@@ -158,7 +158,8 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: utils.scriptCommand(
       |||
-        pip install --editable tpu-examples/deps/fairseq
+        export XLA_USE_BF16=1
+        sudo pip install --editable tpu-examples/deps/fairseq
         %s 2>&1 | tee training_logs.txt
         bleu=`fairseq-generate \
           /datasets/wmt18_en_de_bpej32k \
@@ -203,10 +204,9 @@ local utils = import 'templates/utils.libsonnet';
   },
   configs: [
     transformer + v3_8 + functional_no_save + timeouts.Hours(1),
-    transformer + v3_8 + convergence + timeouts.Hours(25),
     transformer + v3_8 + convergence + timeouts.Hours(25) + tpuVm,
     transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
     transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
-    transformer + v3_32 + functional_no_save + timeouts.Hours(1) + tpuVm + mixins.Experimental,
+    transformer + v3_32 + functional_no_save + timeouts.Hours(1) + tpuVm,
   ],
 }
