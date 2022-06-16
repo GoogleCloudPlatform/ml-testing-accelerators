@@ -68,7 +68,7 @@ local tpus = import 'templates/tpus.libsonnet';
                 fixed_value: {
                   comparison: 'GREATER',
                   // Larger global batch size gives lower final accuracy
-                  value: if self.accelerator.replicas == 1 then 75 else 74,
+                  value: if config.accelerator.replicas == 1 then 75 else 74,
                 },
                 inclusive_bounds: false,
                 wait_for_n_data_points: 0,
