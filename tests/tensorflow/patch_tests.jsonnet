@@ -64,7 +64,7 @@ function(
       test.accelerator.type == 'tpu'
   ];
   local clusterTests = utils.splitByCluster(
-    tests, clusters.defaultCluster, clusters.clusterAccelerators,
+    tests, clusters.defaultCluster, clusters.acceleratorClusters,
   );
   std.foldl(
     function(result, clusterName) result + {
