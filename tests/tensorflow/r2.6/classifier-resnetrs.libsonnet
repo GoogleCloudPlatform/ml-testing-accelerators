@@ -37,11 +37,11 @@ local tpus = import 'templates/tpus.libsonnet';
     },
     command: [
       'python3',
-      'official/vision/beta/train.py',
+      'official/vision/train.py',
       '--experiment=resnet_rs_imagenet',
       '--mode=train_and_eval',
       '--model_dir=$(MODEL_DIR)',
-      '--config_file=official/vision/beta/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml',
+      '--config_file=official/vision/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml',
       '--params_override=%s' % std.manifestYamlDoc(self.paramsOverride) + '\n',
     ],
   },
