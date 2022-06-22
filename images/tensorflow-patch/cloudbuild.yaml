@@ -22,6 +22,7 @@ steps:
   - '--build-arg=tensorflow_minor_version=$_TF_MINOR_VERSION'
   - '--build-arg=python_version=$_PY_VERSION'
   - '--build-arg=extra_packages=$_EXTRA_PIP_PACKAGES'
+  - '--build-arg=extra_build_packages=$_EXTRA_BUILD_PIP_PACKAGES'
   - '--destination=gcr.io/$PROJECT_ID/tensorflow-patch:$_TF_PATCH_VERSION'
   - '--cache=$_USE_DOCKER_CACHE'
   - '--cache-ttl=24h'
@@ -89,4 +90,5 @@ substitutions:
   _TF_MINOR_VERSION: 'r2.4'
   _PY_VERSION: '3.7'
   _EXTRA_PIP_PACKAGES: ''
+  _EXTRA_BUILD_PIP_PACKAGES: ''
   _ARTIFACT_STORAGE_PATH: 'gs://your-gcs-bucket/tf-patch-build'

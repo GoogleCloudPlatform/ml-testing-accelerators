@@ -29,6 +29,10 @@ WORKDIR /tensorflow
 
 RUN ./configure
 
+# Override pip packages in the container for building tensorflow (if required)
+ARG extra_build_packages=''
+RUN if [[ -z "$extra_build_packages" ]] ; then echo "No extra packages to install before building TF." ; else pip3 install $extra_build_packages ; fi
+
 # Using more than 16 jobs on Cloud Build causes OOM.
 ARG bazel_build_jobs=16
 RUN bazel build --config=opt --jobs=$bazel_build_jobs //tensorflow/tools/pip_package:build_pip_package
