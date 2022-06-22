@@ -3,7 +3,7 @@ google-auth==1.24.0
 google-cloud-bigquery==2.5.0
 google-cloud-secret-manager==2.1.0
 jinja2==2.11.3
-numpy==1.21.0
+numpy==1.22.0
 protobuf==3.15.0
 sendgrid==6.4.8
 tensorboard==2.5.0
