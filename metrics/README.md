@@ -7,7 +7,7 @@ These packages require Python >= 3.8. Your local pip packages may conflict with 
 The instructions in this document may require the following environment variables to be set:
 
 ```bash
-PROJECT=...  # GCP project ID. Optional if you are using application default credentials.
+PROJECT=...  # GCP project ID.
 PUBSUB_TOPIC=...  # The name of the PubSub topic to write messages to.
 GCS_BUCKET=gs://...  # The GCS bucket that your models write to.
 CLUSTER_NAME=...  # The name of the cluster where your models are running.
@@ -41,10 +41,8 @@ kubectl apply -f k8s/common/event-publisher.yaml
 
 ## Metrics Handler
 
-TODO: Local testing instructions
-
-To build and deploy the handler Cloud Function, run the following:
+To build and deploy the handler Cloud Functions, run the following:
 
 ```bash
-bazel run handler:deploy --name metrics-v2-handler --topic $PUBSUB_TOPIC --dataset $BIGQUERY_DATASET --project $PROJECT
+bazel run handler:deploy -- --name metrics-v2-handler --topic $PUBSUB_TOPIC --dataset $BIGQUERY_DATASET --project $PROJECT
 ```

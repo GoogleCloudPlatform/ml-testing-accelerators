@@ -51,6 +51,8 @@ py_library(
   name = "bigquery_client",
   srcs = ["bigquery_client.py"],
   deps = [
+    ":utils",
+    "//:metrics_pb2",
     requirement("absl-py"),
     requirement("google-cloud-bigquery"),
   ]
