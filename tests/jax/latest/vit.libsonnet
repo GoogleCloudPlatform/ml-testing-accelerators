@@ -41,22 +41,26 @@ local tpus = import 'templates/tpus.libsonnet';
     rm .bash_logout
 
     pip install --upgrade pip
-    pip install --upgrade clu %(extraDeps)s
 
-    %(installLatestJax)s
-    %(maybeBuildJaxlib)s
+    git clone https://github.com/google-research/vision_transformer.git
+    cd vision_transformer
+    pip install -r vit_jax/requirements-tpu.txt
+
+    cd ..
+    git clone https://github.com/google/flaxformer.git
+    cd flaxformer
+    pip3 install '.[testing]'
+    cd ../vision_transformer
+
     %(printDiagnostics)s
 
+    python3 -c 'import flax; print("flax version:", flax.__version__)'
 
     num_devices=`python3 -c "import jax; print(jax.device_count())"`
     if [ "$num_devices" = "1" ]; then
       echo "No TPU devices detected"
       exit 1
     fi
-
-    git clone https://github.com/google-research/vision_transformer.git
-    cd vision_transformer
-    pip install -r vit_jax/requirements.txt
 
     export GCS_BUCKET=$(MODEL_DIR)
     export TFDS_DATA_DIR=$(TFDS_DIR)
