@@ -23,6 +23,9 @@ local metrics = import 'templates/metrics.libsonnet';
       requireTpuAvailableLabel: true,
     },
 
+    configMaps+: ['gcs-buckets'],
+    outputBucket: '$(OUTPUT_BUCKET)', // Comes from `gcs-buckets` config map.
+
     metricConfig: metrics.MetricCollectionConfigHelper {
       sourceMap:: {
         tensorboard: metrics.TensorBoardSourceHelper {
