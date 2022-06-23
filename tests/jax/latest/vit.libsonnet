@@ -44,17 +44,14 @@ local tpus = import 'templates/tpus.libsonnet';
 
     git clone https://github.com/google-research/vision_transformer.git
     cd vision_transformer
-    pip install -r vit_jax/requirements.txt
+    pip install -r vit_jax/requirements-tpu.txt
+
     cd ..
     git clone https://github.com/google/flaxformer.git
     cd flaxformer
     pip3 install '.[testing]'
-    cd ../vision_transformer    
+    cd ../vision_transformer
 
-    pip install --upgrade jaxlib jax flax clu %(extraDeps)s
-
-    %(installLatestJax)s
-    %(maybeBuildJaxlib)s
     %(printDiagnostics)s
 
     python3 -c 'import flax; print("flax version:", flax.__version__)'
