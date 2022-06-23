@@ -24,7 +24,7 @@ local metrics = import 'templates/metrics.libsonnet';
     },
 
     configMaps+: ['gcs-buckets'],
-    outputBucket: '$(OUTPUT_BUCKET)', // Comes from `gcs-buckets` config map.
+    outputBucket: '$(OUTPUT_BUCKET)',  // Comes from `gcs-buckets` config map.
 
     metricConfig: metrics.MetricCollectionConfigHelper {
       sourceMap:: {

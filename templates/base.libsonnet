@@ -178,7 +178,7 @@ local volumes = import 'volumes.libsonnet';
             }),
           } + if config.entrypoint != null then
             { command: config.entrypoint }
-          else { },
+          else {},
         },
         containers: [
           { name: name } + pod.containerMap[name]
