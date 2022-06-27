@@ -80,7 +80,7 @@ local utils = import 'templates/utils.libsonnet';
     resnet + v3_8 + convergence,
     resnet + v2_32 + convergence,
     resnet + v3_32 + convergence,
-    resnet_rs + v2_8 + convergence + timeouts.Hours(24),
+    resnet_rs + v2_8 + convergence + timeouts.Hours(26),
     resnet_rs + v3_8 + convergence + timeouts.Hours(24),
     resnet_rs + v2_32 + convergence + timeouts.Hours(15),
     resnet_rs + v3_32 + convergence + timeouts.Hours(15),
