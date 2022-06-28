@@ -25,6 +25,10 @@ local volumes = import 'volumes.libsonnet';
     // HACK: for format strings
     acceleratorName:: config.accelerator.name,
     mode: error 'Must set `mode`',
+
+    // `entrypoint` in Docker sense. Corresponds to container `command`.
+    entrypoint: null,
+    // `command` in Docker sense. Corresponds to container `args`.
     command: error 'Must specify model `command`',
 
     // Image in main `train` container.
@@ -56,10 +60,14 @@ local volumes = import 'volumes.libsonnet';
     // If null, defer to namespace default.
     cpu: null,
     memory: null,
+
     // Map of names to VolumeSpecs.
     volumeMap: {},
     // List of ConfigMaps to pull environment variables from.
-    configMaps: ['gcs-buckets'],
+    configMaps: [],
+    // GCS location to store test output. Can be a Kubernetes env var if set in
+    // a config map.
+    outputBucket: error 'Must set `outputBucket`',
 
     // Settings for metric collection and assertions. Should evaluate to
     // MetricCollectionConfig from metrics/metrics.proto. See
@@ -123,7 +131,7 @@ local volumes = import 'volumes.libsonnet';
           },
           {
             name: 'MODEL_DIR',
-            value: '$(OUTPUT_BUCKET)/%s/$(JOB_NAME)' % gcsSubdir,
+            value: '%s/%s/$(JOB_NAME)' % [config.outputBucket, gcsSubdir],
           },
         ],
 
@@ -140,7 +148,7 @@ local volumes = import 'volumes.libsonnet';
 
             image: '%(image)s:%(imageTag)s' % config,
             imagePullPolicy: 'Always',
-            // Use Docker image's entrypoint wrapper
+            // Use Docker image's entrypoint wrapper unless `entrypoint` is set.
             args: config.command,
 
             envFrom: [
@@ -168,7 +176,9 @@ local volumes = import 'volumes.libsonnet';
                 memory: config.memory,
               },
             }),
-          },
+          } + if config.entrypoint != null then
+            { command: config.entrypoint }
+          else {},
         },
         containers: [
           { name: name } + pod.containerMap[name]
@@ -237,7 +247,7 @@ local volumes = import 'volumes.libsonnet';
     },
 
     cronJob:: {
-      apiVersion: 'batch/v1beta1',
+      apiVersion: 'batch/v1',
       kind: 'CronJob',
       metadata: {
         name: config.testName,

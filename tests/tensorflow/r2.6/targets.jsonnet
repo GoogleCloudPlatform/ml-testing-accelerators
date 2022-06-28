@@ -29,8 +29,6 @@ local resnet_ctl = import 'resnet-ctl.libsonnet';
 local retinanet = import 'retinanet.libsonnet';
 local shapemask = import 'shapemask.libsonnet';
 local transformer_translate = import 'transformer-translate.libsonnet';
-local xlnet_imdb = import 'xlnet-imdb.libsonnet';
-local xlnet_squad = import 'xlnet-squad.libsonnet';
 
 // Add new models here
 std.flattenArrays([
@@ -50,6 +48,4 @@ std.flattenArrays([
   retinanet.configs,
   shapemask.configs,
   transformer_translate.configs,
-  xlnet_imdb.configs,
-  xlnet_squad.configs,
 ])
