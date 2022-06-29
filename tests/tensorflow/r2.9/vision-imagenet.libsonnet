@@ -52,6 +52,18 @@ local utils = import 'templates/utils.libsonnet';
   local convergence = common.Convergence,
   local v2_8 = {
     accelerator: tpus.v2_8,
+    scriptConfig+: {
+      paramsOverride+: {
+        task+: {
+          train_data+: {
+            global_batch_size: 1024,
+          },
+          validation_data+: {
+            global_batch_size: 1024,
+          },
+        },
+      },
+    },
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
