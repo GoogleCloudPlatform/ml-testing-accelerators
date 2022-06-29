@@ -13,10 +13,8 @@
 // limitations under the License.
 
 local common = import 'common.libsonnet';
-local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
-local utils = import 'templates/utils.libsonnet';
 
 {
   local transformer = common.TfNlpTest {
@@ -40,18 +38,64 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local convergence = common.Convergence,
+  local convergence = common.Convergence {
+    local config = self,
+    scriptConfig+: {
+      paramsOverride+: {
+        trainer+: {
+          train_steps: 200000 / config.accelerator.replicas,
+        },
+      },
+    },
+  },
+
   local v2_8 = {
     accelerator: tpus.v2_8,
+    scriptConfig+: {
+      paramsOverride+: {
+        task+: {
+          train_data+: {
+            global_batch_size: 6144,
+          },
+        },
+      },
+    },
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
+    scriptConfig+: {
+      paramsOverride+: {
+        task+: {
+          train_data+: {
+            global_batch_size: 6144,
+          },
+        },
+      },
+    },
   },
   local v2_32 = {
     accelerator: tpus.v2_32,
+    scriptConfig+: {
+      paramsOverride+: {
+        task+: {
+          train_data+: {
+            global_batch_size: 24576,
+          },
+        },
+      },
+    },
   },
   local v3_32 = {
     accelerator: tpus.v3_32,
+    scriptConfig+: {
+      paramsOverride+: {
+        task+: {
+          train_data+: {
+            global_batch_size: 24576,
+          },
+        },
+      },
+    },
   },
   configs: [
     transformer + accelerator + functional
