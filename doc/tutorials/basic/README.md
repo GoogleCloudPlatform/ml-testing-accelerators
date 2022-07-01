@@ -130,10 +130,11 @@ spec:
           pip install tf-models-official==2.9.1
 
           # Run whatever is in `command` here
-          $*
-        args:
+          ${@:0}
+      - args:
         - "python3"
-        - "official/vision/image_classification/mnist_main.py"
+        - "-m"
+        - "official.legacy.image_classification.mnist_main"
         - "--data_dir=/tmp/mnist"
         - "--download"
         - "--num_gpus=0"
@@ -201,7 +202,8 @@ local mnist = base.BaseTest {
   [...]
   command: [
     'python3',
-    'official/vision/image_classification/mnist_main.py',
+    '-m',
+    'official.legacy.image_classification.mnist_main',
     '--data_dir=/tmp/mnist',
     '--num_gpus=1',
     '--train_epochs=1',
@@ -253,7 +255,8 @@ local mnist = base.BaseTest {
   [...]
   command: [
     'python3',
-    'official/vision/image_classification/mnist_main.py',
+    '-m',
+    'official.legacy.image_classification.mnist_main',
     '--distribution_strategy=tpu',
     '--data_dir=$(MNIST_DIR)',
     '--train_epochs=1',
