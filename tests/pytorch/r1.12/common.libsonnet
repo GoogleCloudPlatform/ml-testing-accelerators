@@ -30,12 +30,14 @@ local volumes = import 'templates/volumes.libsonnet';
   PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest + r1_12,
   PyTorchGkePodTest:: common.PyTorchGkePodTest + r1_12,
   Functional:: mixins.Functional {
-    schedule: '0 7 * * *',
+    schedule: '0 7 * * 1',
     tpuSettings+: {
       preemptible: false,
     },
   },
-  Convergence:: mixins.Convergence,
+  Convergence:: mixins.Convergence {
+    schedule: null,
+  },
   PyTorchTpuVmMixin:: experimental.PyTorchTpuVmMixin {
     tpuSettings+: {
       softwareVersion: 'tpu-vm-base',
