@@ -7,7 +7,7 @@
 1. A copy of this repository.
 1. Dependencies from [developing.md](/doc/developing.md).
 1. A GKE cluster with GPUs and (optionally) Cloud TPUs. Accelerator availability depends on GCE zone. All of the accelerators used in this tutorial are available in `us-central1-b`.
-  - Example commands:
+  - Example commands to run on your local machine or [Cloud Shell](https://cloud.google.com/shell):
     ```bash
     gcloud container clusters create tutorial-cluster \
       --zone us-central1-b \
@@ -49,7 +49,9 @@ $ export GCS_BUCKET=gs://...
 
 ## Creating a simple test without accelerators
 
-We'll start by creating a simple test that runs the example MNIST model from the TensorFlow Model garden on CPU. See the file `mnist-cpu.jsonnet`:
+We'll start by creating a simple test that runs the example MNIST model from the TensorFlow Model garden on CPU. The workflow first pulls a Docker image containing TensorFlow, then specifies the setup and test commands in JSonnet, which tell the GKE cluster what commands to run in the TensorFlow container. In practice, the test command would be some test script in your repository. From there, the results of your runs can be viewed through `kubectl` or [Cloud Logging](https://cloud.google.com/logging).
+
+See the file `mnist-cpu.jsonnet`:
 
 ```jsonnet
 local base = import 'templates/base.libsonnet';
@@ -93,7 +95,11 @@ local mnist = base.BaseTest {
 std.manifestYamlDoc(mnist.oneshotJob, quote_keys=false)
 ```
 
-This templated test will build a Kubernetes `Job` resource that will run the model on the [official TensorFlow Docker image](https://hub.docker.com/r/tensorflow/tensorflow/) on CPUs. The input data will be downloaded locally as needed, and the output TensorBoard metrics and checkpoint will be written to your Google Cloud Storage bucket. Those metrics will be used in the [next tutorial](../automated). We will take a closer look at how each template field affects the output once we build it. From the root of this repository, you can build this file with `jsonnet`:
+This templated test will build a Kubernetes `Job` resource that will run the model on the [official TensorFlow Docker image](https://hub.docker.com/r/tensorflow/tensorflow/) on CPUs. The input data will be downloaded locally as needed, and the output TensorBoard metrics and checkpoint will be written to your Google Cloud Storage bucket. Those metrics will be used in the [next tutorial](../automated).
+
+Note the commands in `entrypoint` and `command`, which correspond to Docker's `ENTRYPOINT` and `COMMAND`, respectively. In this example, we install the TF official models with `pip` in the `entrypoint` and run the model in `command`. If we built a custom Docker image for this test, we could have preinstalled `tf-models-official` and skipped `entrypoint`, but, in some cases, you may need to perform additional setup at runtime (e.g. cloning a pending change). In general, you should run any necessary setup steps in the `entrypoint` and your test command in `command`.
+
+We will take a closer look at how each template field affects the output once we build it. From the root of this repository, you can build this file with `jsonnet`:
 
 ```bash
 $ jsonnet --jpath . --string --ext-str gcs-bucket=$GCS_BUCKET doc/tutorials/basic/mnist-cpu.jsonnet
@@ -296,8 +302,8 @@ $ jsonnet --jpath . --string --ext-str gcs-bucket=$GCS_BUCKET doc/tutorials/basi
 
 ## Next steps
 
-- Build your own Docker container to test your own code. Learn how to [build container images with Cloud Build](https://cloud.google.com/build/docs/building/build-containers).
+- Build your own Docker container with your project's dependencies preinstalled to reduce time spent in the `entrypoint` script. Learn how to [build container images with Cloud Build](https://cloud.google.com/build/docs/building/build-containers).
 - The above example downloads the MNIST dataset every time it runs. That's workable for a small dataset like MNIST, but that's not practical for large datasets. Learn more about storage options in [`../storage.md`](../storage.md).
-- Try triggering test jobs from your project's CI pipeline.
+- Try triggering test jobs from your project's CI pipeline. See [Cloud Build's GitHub documention](https://cloud.google.com/build/docs/automating-builds/build-repos-from-github) for more details.
 - Learn how to automate tests and monitor regressions in the [next tutorial](../automated).
 - Explore our other documents in [docs/](/docs/).
