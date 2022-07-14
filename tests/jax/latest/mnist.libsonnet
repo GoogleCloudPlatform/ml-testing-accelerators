@@ -21,7 +21,7 @@ local tpus = import 'templates/tpus.libsonnet';
     extraConfig:: 'default.py',
   },
   local convergence = mixins.Convergence {
-    extraConfig:: 'tpu.py',
+    extraConfig:: 'default.py',
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
