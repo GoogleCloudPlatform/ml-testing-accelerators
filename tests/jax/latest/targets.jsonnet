@@ -13,6 +13,7 @@
 // limitations under the License,
 
 local imagenet = import 'imagenet.libsonnet';
+local mnist = import 'mnist.libsonnet';
 local vit = import 'vit.libsonnet';
 local wmt = import 'wmt.libsonnet';
 
@@ -21,4 +22,5 @@ std.flattenArrays([
   imagenet.configs,
   wmt.configs,
   vit.configs,
+  mnist.configs,
 ])
