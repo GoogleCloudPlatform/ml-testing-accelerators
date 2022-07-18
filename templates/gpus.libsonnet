@@ -46,4 +46,5 @@ local base = import 'base.libsonnet';
   teslaK80: self.GPUSpec { version: 'k80' },
   teslaV100: self.GPUSpec { version: 'v100' },
   teslaA100: self.GPUSpec { version: 'a100' },
+  teslaT4: self.GPUSpec { version: 't4' },
 }
