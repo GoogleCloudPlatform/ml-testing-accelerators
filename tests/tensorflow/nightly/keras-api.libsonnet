@@ -109,7 +109,6 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   configs: [
-    keras_test + v2_8 + connection,
     keras_test + v2_8 + connection + common.tpuVm,
     keras_test + v2_8 + custom_layers + common.tpuVm,
     keras_test + v2_8 + custom_training_loop + common.tpuVm,
