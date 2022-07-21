@@ -26,7 +26,6 @@ local mixins = import 'templates/mixins.libsonnet';
     },
     imageTag: 'nightly',
   },
-
   TfVisionTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
     scriptConfig+: {
       runnerPath: 'official/vision/train.py',
