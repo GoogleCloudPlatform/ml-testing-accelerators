@@ -1,4 +1,1 @@
-# TODO: Remove once this issue is resolved:
-# https://github.com/bazelbuild/rules_docker/issues/1716
-common --incompatible_restrict_string_escapes=false
 test --define=project=test-project
