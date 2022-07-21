@@ -13,7 +13,6 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
-local experimental = import '../experimental.libsonnet';
 local metrics = import 'templates/metrics.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 
@@ -27,20 +26,7 @@ local mixins = import 'templates/mixins.libsonnet';
     },
     imageTag: 'nightly',
   },
-  // Setting the version for TPU VM.
-  tpuVm:: experimental.TensorFlowTpuVmMixin {
-    local config = self,
-    tpuSettings+: {
-      softwareVersion: if config.accelerator.version == 4 && config.accelerator.replicas == 1 then
-        'tpu-vm-tf-2.9.1-v4'
-      else if config.accelerator.version == 4 && config.accelerator.replicas > 1 then
-        'tpu-vm-tf-2.9.1-pod-v4'
-      else if config.accelerator.replicas == 1 then
-        'tpu-vm-tf-2.9.1'
-      else
-        'tpu-vm-tf-2.9.1-pod',
-    },
-  },
+
   TfVisionTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
     scriptConfig+: {
       runnerPath: 'official/vision/train.py',
