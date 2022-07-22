@@ -75,6 +75,11 @@ local utils = import 'templates/utils.libsonnet';
     testFeature:: 'preprocessing_layers',
   },
 
+  local upsample = API {
+    mode: 'upsample',
+    testFeature:: 'upsample',
+  },
+
   local save_load_io_device_local = API {
     mode: 'save-load-localhost',
     testFeature:: 'save_and_load_io_device_local_drive',
@@ -118,6 +123,7 @@ local utils = import 'templates/utils.libsonnet';
     keras_test + v2_8 + custom_training_loop + tpuVm,
     keras_test + v2_8 + feature_column + timeouts.Hours(2) + tpuVm,
     keras_test + v2_8 + preprocessing_layers,
+    keras_test + v2_8 + upsample + tpuVm,
     keras_test + v2_8 + rnn + tpuVm,
     keras_test + v2_8 + save_and_load + timeouts.Hours(2) + tpuVm,
     keras_test + v2_8 + save_load_io_device_local + timeouts.Hours(2) + tpuVm,
