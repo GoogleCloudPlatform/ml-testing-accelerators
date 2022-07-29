@@ -29,7 +29,7 @@ local utils = import 'templates/utils.libsonnet';
         cd ~
         export PATH=$PATH:/root/google-cloud-sdk/bin
         export PATH=$PATH:/home/xl-ml-test/.local/bin
-        export TPU_NAME=local
+        export TPU_NAME=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)
         gcloud source repos clone tf2-api-tests --project=xl-ml-test
         cd tf2-api-tests
         pip3 install behave
