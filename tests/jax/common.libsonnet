@@ -67,29 +67,8 @@ local tpus = import 'templates/tpus.libsonnet';
       |||
         set -x
         set -u
-        ssh -i scripts/id_rsa -o StrictHostKeyChecking=no \
-            xl-ml-test@$(cat /scripts/tpu_ip) << 'TEST_SCRIPT_EOF'
-          %s
-        TEST_SCRIPT_EOF
-        exit_code=$?
-        bash /scripts/cleanup.sh
-        exit $exit_code
-      ||| % config.testScript,
-    ],
-  },
 
-  JaxPodTest:: self.JaxTest {
-    local config = self,
-
-    accelerator: tpus.v2_32,
-
-    // Execute testScript on every host in the pod slice.
-    command: [
-      'bash',
-      '-c',
-      |||
-        set -u
-        cat > testsetup.sh << TEST_SCRIPT_EOF
+        cat > testsetup.sh << 'TEST_SCRIPT_EOF'
         %s
         TEST_SCRIPT_EOF
 
@@ -106,6 +85,10 @@ local tpus = import 'templates/tpus.libsonnet';
         exit $exit_code
       ||| % config.testScript,
     ],
+  },
+
+  JaxPodTest:: self.JaxTest {
+    local config = self,
   },
 
   jaxlibHead:: {
