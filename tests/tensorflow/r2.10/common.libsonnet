@@ -13,8 +13,8 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
-local metrics = import 'templates/metrics.libsonnet';
 local experimental = import '../experimental.libsonnet';
+local metrics = import 'templates/metrics.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 
 {
@@ -49,7 +49,7 @@ local mixins = import 'templates/mixins.libsonnet';
   TfNlpTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
     scriptConfig+: {
       runnerPath: 'official/nlp/train.py',
-},
+    },
   },
   local functional_schedule = '0 7 * * *',
   Functional:: mixins.Functional {
