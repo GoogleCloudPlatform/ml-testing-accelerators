@@ -50,6 +50,6 @@ local tpus = import 'templates/tpus.libsonnet';
 
   configs: [
     podTest + common.jaxlibHead + common.tpuVmBaseImage + v2_32,
-    podTest + common.jaxlibLatest + common.tpuVmBaseImage +v2_32,
+    podTest + common.jaxlibLatest + common.tpuVmBaseImage + v2_32,
   ],
 }
