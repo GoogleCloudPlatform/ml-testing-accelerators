@@ -61,7 +61,7 @@ local tpus = import 'templates/tpus.libsonnet';
              extraFlags: config.extraFlags,
            }),
   },
-  PodFlaxLatest:: common.JaxPodTest + common.jaxlibLatest + common.tpuVmBaseImage {
+  PodFlaxLatest:: common.JaxTest + common.jaxlibLatest + common.tpuVmBaseImage {
     local config = self,
     frameworkPrefix: 'flax-latest',
     extraDeps:: '',

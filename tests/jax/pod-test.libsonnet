@@ -17,7 +17,7 @@ local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  local podTest = common.JaxPodTest + mixins.Functional {
+  local podTest = common.JaxTest + mixins.Functional {
     modelName: 'pod-%s-%s' % [self.jaxlibVersion, self.tpuSettings.softwareVersion],
 
     testScript:: |||

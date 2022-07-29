@@ -87,10 +87,6 @@ local tpus = import 'templates/tpus.libsonnet';
     ],
   },
 
-  JaxPodTest:: self.JaxTest {
-    local config = self,
-  },
-
   jaxlibHead:: {
     jaxlibVersion:: 'head',
     scriptConfig+: {
