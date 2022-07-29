@@ -89,43 +89,19 @@ local tpus = import 'templates/tpus.libsonnet';
       '-c',
       |||
         set -u
-        # Asynchronously run testScript on each host via ssh, log each host's
-        # output, and collect process IDs.
-        pids=()
-        for tpu_ip in $(cat /scripts/all_tpu_ips)
-        do
-          echo "Starting test script on TPU host $tpu_ip..."
-          ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$tpu_ip \
-              > /tmp/$tpu_ip.log 2>&1 <<'TEST_SCRIPT_EOF' &
-            %s
+        cat > testsetup.sh << TEST_SCRIPT_EOF
+        %s
         TEST_SCRIPT_EOF
-          pids+=( $! )
-          echo "pid: ${pids[-1]}"
-        done
 
-        # Wait for each host's ssh process to complete and collect exit codes.
-        # We'll return an error if any process failed.
-        exit_code=0
-        for pid in ${pids[@]}
-        do
-          echo "Waiting for pid $pid to complete..."
-          wait $pid
-          pid_exit_code=$?
-          echo "exit code: $pid_exit_code"
-          if [ "$pid_exit_code" -ne "0" ]
-          then
-            exit_code=$pid_exit_code
-          fi
-        done
+        gcloud alpha compute tpus tpu-vm ssh xl-ml-test@$(cat /scripts/tpu_name) \
+        --zone=$(cat /scripts/zone) \
+        --ssh-key-file=/scripts/id_rsa \
+        --strict-host-key-checking=no \
+        --internal-ip \
+        --worker=all \
+        --command "$(cat testsetup.sh)"
 
-        # Output each host's log so it shows up in the GKE logs.
-        for tpu_ip in $(cat /scripts/all_tpu_ips)
-        do
-          echo "========== output for TPU host $tpu_ip =========="
-          cat /tmp/$tpu_ip.log
-          echo "========== end of output for TPU host $tpu_ip =========="
-        done
-
+        exit_code=$?
         bash /scripts/cleanup.sh
         exit $exit_code
       ||| % config.testScript,
