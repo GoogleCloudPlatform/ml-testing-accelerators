@@ -36,7 +36,7 @@ local tpus = import 'templates/tpus.libsonnet';
   local mnist = common.runFlaxLatest {
     modelName:: 'mnist',
   },
-  local mnist_pod = common.PodFlaxLatest {
+  local mnist_pod = common.runFlaxLatest {
     modelName:: 'mnist',
   },
   configs: [
