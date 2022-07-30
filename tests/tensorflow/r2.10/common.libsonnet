@@ -25,7 +25,7 @@ local mixins = import 'templates/mixins.libsonnet';
     tpuSettings+: {
       softwareVersion: '2.10.0',
     },
-    imageTag: 'r.2.10.0',
+    imageTag: 'r2.10.0',
   },
   // Setting the version for TPU VM.
   tpuVm:: experimental.TensorFlowTpuVmMixin {
