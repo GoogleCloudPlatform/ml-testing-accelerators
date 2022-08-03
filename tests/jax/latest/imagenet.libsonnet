@@ -36,7 +36,7 @@ local tpus = import 'templates/tpus.libsonnet';
   local imagenet = common.runFlaxLatest {
     modelName:: 'imagenet',
   },
-  local imagenet_pod = common.PodFlaxLatest {
+  local imagenet_pod = common.runFlaxLatest {
     modelName:: 'imagenet',
   },
   configs: [
