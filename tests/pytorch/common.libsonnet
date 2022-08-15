@@ -20,6 +20,8 @@ local volumes = import 'templates/volumes.libsonnet';
   local PyTorchBaseTest = common.CloudAcceleratorTest {
     configMaps+: ['pytorch-nfs-ip'],
 
+    image: 'gcr.io/tpu-pytorch/xla',
+
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -56,7 +58,20 @@ local volumes = import 'templates/volumes.libsonnet';
   PyTorchTest:: PyTorchBaseTest {
     local config = self,
 
-    image: 'gcr.io/xl-ml-test/pytorch-xla',
+    entrypoint: [
+      'bash',
+      '-xcue',
+      |||
+        if [[ ! -z "$KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS" ]]; then
+          # Trim grpc:// prefix
+          export XRT_TPU_CONFIG="tpu_worker;0;${KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS:7}"
+        fi
+
+        # Run whatever is in `command` here
+        docker-entrypoint.sh "${@}"
+      |||
+    ],
+
     volumeMap+: {
       dshm: volumes.MemoryVolumeSpec {
         name: 'dshm',
@@ -79,10 +94,10 @@ local volumes = import 'templates/volumes.libsonnet';
       },
     },
   },
+  // Deprecated: prefer PyTorchXlaDistPodTest
   PyTorchGkePodTest:: PyTorchBaseTest {
     local config = self,
 
-    image: 'gcr.io/xl-ml-test/pytorch-xla',
     // Resources for created workers.
     workerCpu: '4',
     workerMemory: '4Gi',
@@ -133,7 +148,6 @@ local volumes = import 'templates/volumes.libsonnet';
   PyTorchXlaDistPodTest:: PyTorchBaseTest {
     local config = self,
 
-    image: 'gcr.io/xl-ml-test/pytorch-pods',
     instanceType: 'n1-standard-8',
     condaEnv: 'torch-xla-nightly',
     xlaDistFlags: '',
@@ -145,6 +159,7 @@ local volumes = import 'templates/volumes.libsonnet';
           spec+: {
             containerMap+: {
               train+: {
+                image: 'gcr.io/xl-ml-test/pytorch-pods:nightly',
                 envMap+: {
                   MACHINE_TYPE: config.instanceType,
                   ACCELERATOR_TYPE: config.acceleratorName,
