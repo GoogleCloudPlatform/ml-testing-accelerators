@@ -92,10 +92,7 @@ local tpus = import 'templates/tpus.libsonnet';
     command+: ['--batch_size=256'],
   },
 
-  local gpu = {
-    local config = self,
-    imageTag+: '_cuda_11.2',
-
+  local gpu = common.GpuMixin {
     cpu: '7.0',
     memory: '40Gi',
 
@@ -105,18 +102,6 @@ local tpus = import 'templates/tpus.libsonnet';
     ],
     flags+: {
       modelDir: null,
-    },
-
-    podTemplate+:: {
-      spec+: {
-        containerMap+: {
-          train+: {
-            envMap+: {
-              GPU_NUM_DEVICES: '%d' % config.accelerator.count,
-            },
-          },
-        },
-      },
     },
   },
   local v100x4 = gpu {
