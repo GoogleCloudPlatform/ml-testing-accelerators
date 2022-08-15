@@ -64,6 +64,22 @@ local volumes = import 'templates/volumes.libsonnet';
     name: 'pytorch-datasets-claim',
     mountPath: '/datasets',
   },
+  GpuMixin:: {
+    local config = self,
+    imageTag+: '_cuda_11.2',
+
+    podTemplate+:: {
+      spec+: {
+        containerMap+: {
+          train+: {
+            envMap+: {
+              GPU_NUM_DEVICES: '%d' % config.accelerator.count,
+            },
+          },
+        },
+      },
+    },
+  },
 
   // DEPRECATED: Use PyTorchTpuVmMixin instead
   tpu_vm_nightly_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,

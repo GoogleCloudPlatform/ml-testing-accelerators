@@ -65,28 +65,13 @@ local utils = import 'templates/utils.libsonnet';
   local v4_8 = {
     accelerator: tpus.v4_8,
   },
-  local gpu = {
-    local config = self,
-    imageTag+: '_cuda_11.2',
-
+  local gpu = common.GpuMixin {
     // Disable XLA metrics report on GPU
     command+: [
       '--nometrics_debug',
     ],
     flags+: {
       modelDir: null,
-    },
-
-    podTemplate+:: {
-      spec+: {
-        containerMap+: {
-          train+: {
-            envMap+: {
-              GPU_NUM_DEVICES: '%d' % config.accelerator.count,
-            },
-          },
-        },
-      },
     },
   },
   local v100x4 = gpu {
