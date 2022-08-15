@@ -69,7 +69,7 @@ local volumes = import 'templates/volumes.libsonnet';
 
         # Run whatever is in `command` here
         docker-entrypoint.sh "${@}"
-      |||
+      |||,
     ],
 
     volumeMap+: {
