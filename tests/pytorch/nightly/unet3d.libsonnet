@@ -19,11 +19,17 @@ local utils = import 'templates/utils.libsonnet';
 
 {
   local command_common = |||
-    git clone https://github.com/thisisalbertliang/training.git -b test-grid-integration unet3d_test
+    git clone https://github.com/pytorch-tpu/training.git unet3d_test 
     pip3 install -r unet3d_test/image_segmentation/pytorch/requirements.txt
     pip3 install tqdm
 
-    python3 unet3d_test/image_segmentation/pytorch/main.py --data_dir /datasets/kits19 \
+    git clone https://github.com/neheller/kits19
+    cd kits19
+    pip3 install -r requirements.txt
+    python3 -m starter_code.get_imaging
+    cd ~
+
+    python3 unet3d_test/image_segmentation/pytorch/main.py --data_dir /kits19 \
     --epochs 501 \
     --evaluate_every 250 \
     --start_eval_at 250 \

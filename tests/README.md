@@ -44,6 +44,8 @@ export TEST_NAME=tf-nightly-mnist-func-v2-8
 jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$TEST_NAME | kubectl create -f -
 ```
 
+The above command will generate a job id such as `job.batch/pt-nightly-unet3d-conv-v3-8-1vm-gz8ww`. To find the detail of the test, search in [GoogleCloud->Kubernetes->workload in the project `xl-ml-test`](https://console.cloud.google.com/kubernetes/workload/overview?mods=allow_workbench_image_override&project=xl-ml-test) with the job id `pt-nightly-unet3d-conv-v3-8-1vm-gz8ww`.
+
 For convenience, the steps of connecting to a cluster and running a one shot
 test have been combined into a single script as follows:
 
