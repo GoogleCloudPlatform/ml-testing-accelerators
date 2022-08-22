@@ -17,7 +17,7 @@ local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  local hf_vit_common = common.JaxTest + common.jaxlibLatest + common.huggingFace {
+  local hf_vit_common = common.JaxTest + common.huggingFace {
     local config = self,
     frameworkPrefix: 'flax-latest',
     modelName:: 'hf-vit',
