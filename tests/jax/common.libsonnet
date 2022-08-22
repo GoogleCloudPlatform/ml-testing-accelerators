@@ -167,4 +167,34 @@ local tpus = import 'templates/tpus.libsonnet';
       |||,
     },
   },
+
+  huggingFace:: {
+    scriptConfig+: {
+      installPackages: |||
+        set -x
+        set -u
+        set -e
+
+        # .bash_logout sometimes causes a spurious bad exit code, remove it.
+        rm .bash_logout
+
+        pip install --upgrade pip
+        git clone https://github.com/huggingface/transformers.git
+        cd transformers && pip install .
+        pip install -r examples/flax/_tests_requirements.txt
+        pip install --upgrade huggingface-hub urllib3 zipp
+
+        pip install tensorflow
+        pip install jax[tpu] -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+      |||,
+      verifySetup: |||
+        python3 -c 'import flax; print("flax version:", flax.__version__)'
+        num_devices=`python3 -c "import jax; print(jax.device_count())"`
+        if [ "$num_devices" = "1" ]; then
+          echo "No TPU devices detected"
+          exit 1
+        fi
+      |||,
+    },
+  },
 }

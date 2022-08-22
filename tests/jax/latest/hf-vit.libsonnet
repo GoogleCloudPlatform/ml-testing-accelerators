@@ -17,35 +17,15 @@ local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  local hf_vit_common = common.JaxTest + common.jaxlibLatest {
+  local hf_vit_common = common.JaxTest + common.jaxlibLatest + common.huggingFace {
     local config = self,
     frameworkPrefix: 'flax-latest',
     modelName:: 'hf-vit',
     extraFlags:: '',
     testScript:: |||
-      set -x
-      set -u
-      set -e
-
-      # .bash_logout sometimes causes a spurious bad exit code, remove it.
-      rm .bash_logout
-
-      pip install --upgrade pip
-      git clone https://github.com/huggingface/transformers.git
-      cd transformers && pip install .
-      pip install -r examples/flax/_tests_requirements.txt
+      %(installPackages)s
       pip install -r examples/flax/vision/requirements.txt
-      pip install --upgrade huggingface-hub urllib3 zipp
-
-      %(testEnvWorkarounds)s
-      %(installLatestJax)s
-
-      python3 -c 'import flax; print("flax version:", flax.__version__)'
-      num_devices=`python3 -c "import jax; print(jax.device_count())"`
-      if [ "$num_devices" = "1" ]; then
-        echo "No TPU devices detected"
-        exit 1
-      fi
+      %(verifySetup)s
 
       wget https://s3.amazonaws.com/fast-ai-imageclas/imagenette2.tgz
       tar -xvzf imagenette2.tgz
@@ -64,16 +44,11 @@ local tpus = import 'templates/tpus.libsonnet';
     ||| % (self.scriptConfig { extraFlags: config.extraFlags }),
   },
 
-  local hf_vit_func_v2_v3 = common.tpuVmBaseImage + mixins.Functional {
-    extraFlags:: '--model_type vit --num_train_epochs 5 --per_device_train_batch_size 32 --per_device_eval_batch_size 32',
+  local func = mixins.Functional {
+    extraFlags+:: '--model_type vit --num_train_epochs 5 \\',
   },
-
-  local hf_vit_func_v4 = common.tpuVmV4Base + mixins.Functional {
-    extraFlags:: '--model_type vit --num_train_epochs 5 --per_device_train_batch_size 64 --per_device_eval_batch_size 64',
-  },
-
-  local hf_vit_conv_v4 = common.tpuVmV4Base + mixins.Convergence {
-    extraFlags:: '--model_name_or_path google/vit-base-patch16-224-in21k --num_train_epochs 30 --per_device_train_batch_size 64 --per_device_eval_batch_size 64',
+  local conv = mixins.Convergence {
+    extraFlags+:: '--model_name_or_path google/vit-base-patch16-224-in21k --num_train_epochs 30 \\',
 
     metricConfig+: {
       sourceMap+:: {
@@ -95,6 +70,16 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
+  local v2 = common.tpuVmBaseImage {
+    extraFlags+:: '--per_device_train_batch_size 32 --per_device_eval_batch_size 32',
+  },
+  local v3 = common.tpuVmBaseImage {
+    extraFlags+:: '--per_device_train_batch_size 32 --per_device_eval_batch_size 32',
+  },
+  local v4 = common.tpuVmV4Base {
+    extraFlags+:: '--per_device_train_batch_size 64 --per_device_eval_batch_size 64',
+  },
+
   local v2_8 = {
     accelerator: tpus.v2_8,
   },
@@ -114,15 +99,18 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: tpus.v4_32,
   },
 
-  local func_tests_v2_v3 = [
-    hf_vit_common + hf_vit_func_v2_v3 + accelerator
-    for accelerator in [v2_8, v2_32, v3_8, v3_32]
+  local func_tests = [
+    hf_vit_common + func + v2 + v2_8,
+    hf_vit_common + func + v2 + v2_32,
+    hf_vit_common + func + v3 + v3_8,
+    hf_vit_common + func + v3 + v3_32,
+    hf_vit_common + func + v4 + v4_8,
+    hf_vit_common + func + v4 + v4_32,
   ],
-  local func_tests_v4 = [
-    hf_vit_common + hf_vit_func_v4 + accelerator
-    for accelerator in [v4_8, v4_32]
-  ],
-  local conv_tests_v4 = [hf_vit_common + hf_vit_conv_v4 + v4_32],
 
-  configs: func_tests_v2_v3 + func_tests_v4 + conv_tests_v4,
+  local conv_tests = [
+    hf_vit_common + conv + v4 + v4_32,
+  ],
+
+  configs: func_tests + conv_tests,
 }
