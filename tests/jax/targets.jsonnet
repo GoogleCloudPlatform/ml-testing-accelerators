@@ -13,9 +13,9 @@
 // limitations under the License.
 
 local compilationCacheTest = import 'compilation-cache.libsonnet';
+local hf = import 'huggingface/targets.jsonnet';
 local latest = import 'latest/targets.jsonnet';
 local nightly = import 'nightly/targets.jsonnet';
-local hf = import 'huggingface/targets.jsonnet';
 local podTest = import 'pod-test.libsonnet';
 local unitTests = import 'unit-tests.libsonnet';
 

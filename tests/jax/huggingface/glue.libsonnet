@@ -99,9 +99,9 @@ local utils = import 'templates/utils.libsonnet';
     extraDeps:: '',
     extraFlags:: '',
     testScript:: hfTestScriptTemplate % (self.scriptConfig {
-                                            extraFlags: config.extraFlags,
-                                            extraDeps: config.extraDeps,
-                                          }),
+                                           extraFlags: config.extraFlags,
+                                           extraDeps: config.extraDeps,
+                                         }),
   },
   local v2_8 = {
     accelerator: tpus.v2_8,
@@ -113,9 +113,9 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_8,
   },
   configs: [
-      bert + mnli + convergence + v4_8 + timeouts.Hours(10),
-      bert + mrpc + convergence + v4_8 + timeouts.Hours(1),
-      bert + mnli + functional + v4_8,
-      bert + mrpc + functional + v4_8,
+    bert + mnli + convergence + v4_8 + timeouts.Hours(10),
+    bert + mrpc + convergence + v4_8 + timeouts.Hours(1),
+    bert + mnli + functional + v4_8,
+    bert + mrpc + functional + v4_8,
   ],
 }
