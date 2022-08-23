@@ -15,7 +15,6 @@
 local hf_vit = import 'hf-vit.libsonnet';
 local imagenet = import 'imagenet.libsonnet';
 local mnist = import 'mnist.libsonnet';
-local vit = import 'vit.libsonnet';
 local wmt = import 'wmt.libsonnet';
 
 // Add new models here
@@ -23,6 +22,5 @@ std.flattenArrays([
   hf_vit.configs,
   imagenet.configs,
   wmt.configs,
-  vit.configs,
   mnist.configs,
 ])
