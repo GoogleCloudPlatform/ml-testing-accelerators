@@ -18,6 +18,28 @@ local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 {
+  local hf_bert_common = common.JaxTest + common.huggingFace {
+    local config = self,
+    frameworkPrefix: 'flax-latest',
+    modelName:: 'hf-bert',
+    extraFlags:: '',
+    testScript:: |||
+      %(installPackages)s
+      pip install -r examples/flax/text-classification/requirements.txt
+      %(verifySetup)s
+
+      xport GCS_BUCKET=$(MODEL_DIR)
+      export OUTPUT_DIR='./bert-glue'
+
+      python3 examples/flax/text-classification/run_flax_glue.py --model_name_or_path bert-base-cased \
+        --output_dir ${OUTPUT_DIR} \
+        --logging_dir ${OUTPUT_DIR} \
+        --per_device_train_batch_size 4 \
+        %(extraFlags)s
+      gsutil -m cp -r ${OUTPUT_DIR} $(MODEL_DIR)
+    ||| % (self.scriptConfig { extraFlags: config.extraFlags }),
+  },
+
   local functional = mixins.Functional {
     extraFlags+: '--num_train_epochs 1',
     extraConfig:: 'default.py',
@@ -45,6 +67,7 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+
   local mnli = {
     modelName+: '-mnli',
     extraFlags+: '--task_name mnli --max_seq_length 512 --eval_steps 1000 ',
@@ -54,55 +77,16 @@ local utils = import 'templates/utils.libsonnet';
     extraFlags+: '--task_name mrpc --max_seq_length 128 ',
   },
 
-  local hfTestScriptTemplate = |||
-    set -x
-    set -u
-    set -e
-
-    # .bash_logout sometimes causes a spurious bad exit code, remove it.
-    rm .bash_logout
-
-    pip install --upgrade pip
-
-    git clone https://github.com/huggingface/transformers.git
-    cd transformers
-    pip install .
-    cd examples/flax
-    pip install -r _tests_requirements.txt
-    cd text-classification
-    pip install -r requirements.txt
-    pip install tensorflow
-    pip install jax[tpu]>=0.2.16 \
-    --find-links https://storage.googleapis.com/jax-releases/libtpu_releases.html
-
-    num_devices=`python3 -c "import jax; print(jax.device_count())"`
-    if [ "$num_devices" = "1" ]; then
-      echo "No TPU devices detected"
-      exit 1
-    fi
-
-    export GCS_BUCKET=$(MODEL_DIR)
-    export OUTPUT_DIR='./bert-glue'
-
-    python3 run_flax_glue.py --model_name_or_path bert-base-cased \
-      --output_dir ${OUTPUT_DIR} \
-      --logging_dir ${OUTPUT_DIR} \
-      --per_device_train_batch_size 4 \
-      %(extraFlags)s
-    gsutil -m cp -r ${OUTPUT_DIR} $(MODEL_DIR)
-  |||,
-
-  local bert = common.JaxTest + common.jaxlibLatest + common.tpuVmV4Base {
-    local config = self,
-    frameworkPrefix: 'flax-latest',
-    modelName: 'bert',
-    extraDeps:: '',
-    extraFlags:: '',
-    testScript:: hfTestScriptTemplate % (self.scriptConfig {
-                                           extraFlags: config.extraFlags,
-                                           extraDeps: config.extraDeps,
-                                         }),
+  local v2 = common.tpuVmBaseImage {
+    extraFlags+:: '--per_device_train_batch_size 4 --per_device_eval_batch_size 4',
   },
+  local v3 = common.tpuVmBaseImage {
+    extraFlags+:: '--per_device_train_batch_size 4 --per_device_eval_batch_size 4',
+  },
+  local v4 = common.tpuVmV4Base {
+    extraFlags+:: '--per_device_train_batch_size 8 --per_device_eval_batch_size 8',
+  },
+
   local v2_8 = {
     accelerator: tpus.v2_8,
   },
@@ -112,10 +96,19 @@ local utils = import 'templates/utils.libsonnet';
   local v4_8 = {
     accelerator: tpus.v4_8,
   },
+
   configs: [
-    bert + mnli + convergence + v4_8 + timeouts.Hours(10),
-    bert + mrpc + convergence + v4_8 + timeouts.Hours(1),
-    bert + mnli + functional + v4_8,
-    bert + mrpc + functional + v4_8,
+    bert + mnli + convergence + v4 + v4_8 + timeouts.Hours(10),
+    bert + mrpc + convergence + v4 + v4_8 + timeouts.Hours(1),
+    bert + mnli + functional + v4 + v4_8,
+    bert + mrpc + functional + v4 + v4_8,
+
+    bert + mrpc + convergence + v3 + v3_8 + timeouts.Hours(1),
+    bert + mnli + functional + v3 + v3_8,
+    bert + mrpc + functional + v3 + v3_8,
+
+    bert + mrpc + convergence + v2 + v2_8 + timeouts.Hours(1),
+    bert + mnli + functional + v2 + v2_8,
+    bert + mrpc + functional + v2 + v2_8,
   ],
 }
