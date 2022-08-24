@@ -13,6 +13,7 @@
 // limitations under the License,
 
 local hf_vit = import 'hf-vit.libsonnet';
+local nlp_glue = import 'glue.libsonnet';
 local imagenet = import 'imagenet.libsonnet';
 local mnist = import 'mnist.libsonnet';
 local wmt = import 'wmt.libsonnet';
@@ -23,4 +24,6 @@ std.flattenArrays([
   imagenet.configs,
   wmt.configs,
   mnist.configs,
+  vit.configs,
+  nlp_glue.configs,
 ])

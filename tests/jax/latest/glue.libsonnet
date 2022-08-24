@@ -95,7 +95,7 @@ local utils = import 'templates/utils.libsonnet';
   local bert = common.JaxTest + common.jaxlibLatest + common.tpuVmV4Base {
     local config = self,
     frameworkPrefix: 'flax-latest',
-    modelName: 'hf-bert',
+    modelName: 'bert',
     extraDeps:: '',
     extraFlags:: '',
     testScript:: hfTestScriptTemplate % (self.scriptConfig {
