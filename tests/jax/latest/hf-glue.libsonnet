@@ -28,7 +28,7 @@ local utils = import 'templates/utils.libsonnet';
       pip install -r examples/flax/text-classification/requirements.txt
       %(verifySetup)s
 
-      xport GCS_BUCKET=$(MODEL_DIR)
+      export GCS_BUCKET=$(MODEL_DIR)
       export OUTPUT_DIR='./bert-glue'
 
       python3 examples/flax/text-classification/run_flax_glue.py --model_name_or_path bert-base-cased \
@@ -41,13 +41,13 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   local functional = mixins.Functional {
-    extraFlags+: '--num_train_epochs 1',
+    extraFlags+: '--num_train_epochs 1 ',
     extraConfig:: 'default.py',
   },
 
   local convergence = mixins.Convergence {
     extraConfig:: 'default.py',
-    extraFlags+: '--num_train_epochs 3 --learning_rate 2e-5 --eval_steps 500',
+    extraFlags+: '--num_train_epochs 3 --learning_rate 2e-5 --eval_steps 500 ',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -56,7 +56,7 @@ local utils = import 'templates/utils.libsonnet';
               FINAL: {
                 fixed_value: {
                   comparison: 'GREATER',
-                  value: 0.85,
+                  value: 0.84,
                 },
                 inclusive_bounds: false,
                 wait_for_n_data_points: 0,
@@ -98,17 +98,17 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   configs: [
-    bert + mnli + convergence + v4 + v4_8 + timeouts.Hours(10),
-    bert + mrpc + convergence + v4 + v4_8 + timeouts.Hours(1),
-    bert + mnli + functional + v4 + v4_8,
-    bert + mrpc + functional + v4 + v4_8,
+    hf_bert_common + mnli + convergence + v4 + v4_8 + timeouts.Hours(10),
+    hf_bert_common + mrpc + convergence + v4 + v4_8 + timeouts.Hours(1),
+    hf_bert_common + mnli + functional + v4 + v4_8,
+    hf_bert_common + mrpc + functional + v4 + v4_8,
 
-    bert + mrpc + convergence + v3 + v3_8 + timeouts.Hours(1),
-    bert + mnli + functional + v3 + v3_8,
-    bert + mrpc + functional + v3 + v3_8,
+    hf_bert_common + mrpc + convergence + v3 + v3_8 + timeouts.Hours(2),
+    hf_bert_common + mnli + functional + v3 + v3_8,
+    hf_bert_common + mrpc + functional + v3 + v3_8,
 
-    bert + mrpc + convergence + v2 + v2_8 + timeouts.Hours(1),
-    bert + mnli + functional + v2 + v2_8,
-    bert + mrpc + functional + v2 + v2_8,
+    hf_bert_common + mrpc + convergence + v2 + v2_8 + timeouts.Hours(2),
+    hf_bert_common + mnli + functional + v2 + v2_8,
+    hf_bert_common + mrpc + functional + v2 + v2_8,
   ],
 }

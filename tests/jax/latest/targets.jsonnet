@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License,
 
+local hf_glue = import 'hf-glue.libsonnet';
 local hf_vit = import 'hf-vit.libsonnet';
-local nlp_glue = import 'glue.libsonnet';
 local imagenet = import 'imagenet.libsonnet';
 local mnist = import 'mnist.libsonnet';
 local wmt = import 'wmt.libsonnet';
@@ -21,9 +21,8 @@ local wmt = import 'wmt.libsonnet';
 // Add new models here
 std.flattenArrays([
   hf_vit.configs,
+  hf_glue.configs,
   imagenet.configs,
   wmt.configs,
   mnist.configs,
-  vit.configs,
-  nlp_glue.configs,
 ])
