@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
@@ -189,11 +190,21 @@ local utils = import 'templates/utils.libsonnet';
   local tpuVm = common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExtraSetup: |||
-        git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
-        echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
-        echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
+	pip3 install tqdm
+	git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
+	git clone -b tpu --single-branch https://github.com/darisoy/fairseq.git fairseq-pjrt/
+	echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
+	echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
       |||,
     },
+  },
+
+  local pjrt = tpuVm + experimental.PjRt {
+    modelName: 'fs-transformer-pjrt',
+    command: [
+      'python3',
+      'fairseq-pjrt/train.py',
+    ] + super.command[2:],
   },
 
   local v3_8 = {
@@ -213,5 +224,6 @@ local utils = import 'templates/utils.libsonnet';
     transformer + v4_8 + convergence + timeouts.Hours(25) + tpuVm,
     transformer + v4_8 + functional_no_save + timeouts.Hours(1) + tpuVm,
     transformer + v3_32 + functional_no_save + timeouts.Hours(1) + tpuVm,
+    transformer + v4_8 + functional_no_save + timeouts.Hours(1) + pjrt,
   ],
 }
