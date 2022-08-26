@@ -190,11 +190,11 @@ local utils = import 'templates/utils.libsonnet';
   local tpuVm = common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExtraSetup: |||
-	pip3 install tqdm
-	git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
-	git clone -b tpu --single-branch https://github.com/darisoy/fairseq.git fairseq-pjrt/
-	echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
-	echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
+        pip3 install tqdm
+        git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
+        git clone -b tpu --single-branch https://github.com/darisoy/fairseq.git fairseq-pjrt/
+        echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
+        echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
       |||,
     },
   },
