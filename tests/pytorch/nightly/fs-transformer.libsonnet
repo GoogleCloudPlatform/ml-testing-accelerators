@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
@@ -196,6 +197,19 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
 
+  local pjrt = tpuVm + experimental.PjRt {
+    tpuSettings+: {
+      tpuVmExtraSetup+: |||
+        pip3 install tqdm
+        git clone -b tpu --single-branch https://github.com/darisoy/fairseq.git fairseq-pjrt/
+      |||,
+    },
+    modelName: 'fs-transformer-pjrt',
+    paramsOverride+: {
+      scriptPath: 'fairseq-pjrt/train.py',
+    },
+  },
+
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
@@ -213,5 +227,7 @@ local utils = import 'templates/utils.libsonnet';
     transformer + v4_8 + convergence + timeouts.Hours(25) + tpuVm,
     transformer + v4_8 + functional_no_save + timeouts.Hours(1) + tpuVm,
     transformer + v3_32 + functional_no_save + timeouts.Hours(1) + tpuVm,
+    transformer + v4_8 + convergence + timeouts.Hours(25) + pjrt,
+    transformer + v4_8 + functional_no_save + timeouts.Hours(1) + pjrt,
   ],
 }
