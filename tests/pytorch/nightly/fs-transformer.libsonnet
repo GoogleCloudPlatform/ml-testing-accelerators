@@ -205,10 +205,9 @@ local utils = import 'templates/utils.libsonnet';
       |||,
     },
     modelName: 'fs-transformer-pjrt',
-    command: [
-      'python3',
-      'fairseq-pjrt/train.py',
-    ] + super.command[2:],
+    paramsOverride+: {
+      scriptPath: "fairseq-pjrt/train.py",
+    },
   },
 
   local v3_8 = {
