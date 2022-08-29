@@ -184,7 +184,7 @@ local utils = import 'templates/utils.libsonnet';
       sourceMap+:: {
         tensorboard+: {
           aggregateAssertionsMap+:: {
-            '0/run/train-loss': {
+            '0/run/validate-test-loss': {
               FINAL: {
                 percent_difference: {
                   comparison: 'LESS',
