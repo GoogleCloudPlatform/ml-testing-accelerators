@@ -38,6 +38,7 @@ local utils = import 'templates/utils.libsonnet';
         self.scriptPath,
         '/datasets/wmt18_en_de_bpej32k',
         '--metrics_debug',
+        '--tensorboard-logdir=$(MODEL_DIR)',
         '--arch=transformer_vaswani_wmt_en_de_big',
         '--max-target-positions=64',
         '--attention-dropout=0.1',
@@ -71,7 +72,17 @@ local utils = import 'templates/utils.libsonnet';
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
-          aggregateAssertionsMap:: {},
+          aggregateAssertionsMap:: {
+            '0/run/train-wps': {
+              MEDIAN: {
+                percent_difference: {
+                  comparison: 'GREATER',
+                  percent: 5,
+                  use_historical_mean: true,
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -157,23 +168,7 @@ local utils = import 'templates/utils.libsonnet';
         '--max-epoch=25',
       ],
     },
-    command: utils.scriptCommand(
-      |||
-        export XLA_USE_BF16=1
-        sudo pip install --editable tpu-examples/deps/fairseq
-        %s 2>&1 | tee training_logs.txt
-        bleu=`fairseq-generate \
-          /datasets/wmt18_en_de_bpej32k \
-          --remove-bpe --quiet --lenpen 0.6 --beam 4 \
-          --path /tmp/checkpoints/checkpoint25.pt \
-          --skip-invalid-size-inputs-valid-test | grep BLEU \
-          | grep -v loadi | tail -1 | cut -d '=' -f 3| cut -d'.' -f 1`
-        echo 'BLEU score is' $bleu
-        wps=$(cat training_logs.txt | grep '| wps ' | tail -1 | grep -o -E ' wps [0-9]+' | sed 's/[^0-9]*//g')
-        echo 'final words per second (wps) is' $wps
-        test $bleu -gt 27 -a $wps -gt 10000
-      ||| % utils.toCommandString(self.paramsOverride.trainCommand)
-    ),
+    command: self.paramsOverride.trainCommand,
     podTemplate+:: {
       spec+: {
         containerMap+: {
@@ -185,11 +180,32 @@ local utils = import 'templates/utils.libsonnet';
         },
       },
     },
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            '0/run/validate-test-loss': {
+              FINAL: {
+                percent_difference: {
+                  comparison: 'LESS',
+                  percent: 5,
+                  use_historical_mean: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   },
 
   local tpuVm = common.PyTorchTpuVmMixin {
     tpuSettings+: {
+      tpuVmExports+: |||
+        export XLA_USE_BF16=$(XLA_USE_BF16)
+      |||,
       tpuVmExtraSetup: |||
+        pip install tensorboardX google-cloud-storage
         git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
         echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
         echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
