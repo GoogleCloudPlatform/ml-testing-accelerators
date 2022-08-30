@@ -22,41 +22,43 @@ local tpus = import 'templates/tpus.libsonnet';
     local config = self,
 
     frameworkPrefix: 'pax',
-    // TODO: set image path
-    image: 'gcr.io/tbd',
     accelerator: tpus.v4_8,
-    // gcs_bucket: '',
     
     tpuSettings+: {
       softwareVersion: 'tpu-vm-v4-base',
       tpuVmCreateSleepSeconds: 60,
+      // PAX tests are structured as bash scripts that run directly on the Cloud
+      // TPU VM instead of using docker images
       tpuVmPaxSetup: |||
-        gsutil cp gs://pax-on-cloud-tpu-project/wheels/20220814/paxml-nightly+20220814-py3-none-any.whl .
-        pip install paxml-nightly+20220814-py3-none-any.whl
-        pip install praxis
+        gsutil cp gs://pax-on-cloud-tpu-project/wheels/20220826/paxml*.whl .
+        gsutil cp gs://pax-on-cloud-tpu-project/wheels/20220826/praxis*.whl .
+        pip install praxis*.whl
+        pip install paxml*.whl
+        pip install jax[tpu] -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+        pip install protobuf==3.15
+      |||,
+      tpuVmPaxCleanup: |||
+        set -x
+        set -u
+
+        cat > testsetup.sh << 'TEST_SCRIPT_EOF'
+        %s
+        TEST_SCRIPT_EOF
+
+        gcloud alpha compute tpus tpu-vm ssh xl-ml-test@$(cat /scripts/tpu_name) \
+        --zone=$(cat /scripts/zone) \
+        --ssh-key-file=/scripts/id_rsa \
+        --strict-host-key-checking=no \
+        --internal-ip \
+        --worker=all \
+        --command "$(cat testsetup.sh)"
+
+        exit_code=$?
+        bash /scripts/cleanup.sh
+        exit $exit_code
       |||,
     },    
-
-
-    metricConfig+: {
-      sourceMap+:: {
-        tensorboard+: {
-          exclude_tags: ['_hparams_/session_start_info'],
-          merge_runs: true,
-        },
-        // // Remove default duration assertion.
-        // literals+: {
-        //   assertions+: {
-        //     duration: null,
-        //   },
-        // },
-      },
-    },
-
-    // scriptConfig+: {
-    //   testEnvWorkarounds: |||
-    //     pip install tensorflow
-    //   |||,
-    // },
   },
+  pax_install: self.PaxTest.tpuSettings.tpuVmPaxSetup,
+  cleanup: self.PaxTest.tpuSettings.tpuVmPaxCleanup,
 }
