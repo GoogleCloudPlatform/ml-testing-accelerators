@@ -161,14 +161,35 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   local convergence = common.Convergence {
+    local config = self,
+
     paramsOverride+:: {
       trainCommand+: [
         '--save-interval=5',
         '--save-dir=/tmp/checkpoints',
         '--max-epoch=25',
       ],
+      generateCommand: [
+        std.strReplace(self.scriptPath, 'train.py', 'generate.py'),
+        '/datasets/wmt18_en_de_bpej32k',
+        '--remove-bpe',
+        '--quiet',
+        '--lenpen 0.6',
+        '--beam 4',
+        '--path /tmp/checkpoints/checkpoint25.pt',
+        '--skip-invalid-size-inputs-valid-test',
+      ],
     },
-    command: self.paramsOverride.trainCommand,
+    command: utils.scriptCommand(
+      |||
+        %s
+
+        %s
+      ||| % [
+        utils.toCommandString(self.paramsOverride.trainCommand),
+        utils.toCommandString(self.paramsOverride.generateCommand),
+      ],
+    ),
     podTemplate+:: {
       spec+: {
         containerMap+: {
