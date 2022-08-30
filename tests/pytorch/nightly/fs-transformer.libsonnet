@@ -187,7 +187,7 @@ local utils = import 'templates/utils.libsonnet';
         %s
       ||| % [
         utils.toCommandString(self.paramsOverride.trainCommand),
-        utils.toCommandString(self.paramsOverride.trainCommand),
+        utils.toCommandString(self.paramsOverride.generateCommand),
       ],
     ),
     podTemplate+:: {
