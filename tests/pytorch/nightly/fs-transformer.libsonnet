@@ -161,6 +161,8 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   local convergence = common.Convergence {
+    local config = self,
+
     paramsOverride+:: {
       trainCommand+: [
         '--save-interval=5',
@@ -180,13 +182,13 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: utils.scriptCommand(
       |||
-        %(train)s
+        %s
 
-        %(generate)s
-      ||| % {
-        train: utils.toCommandString(self.paramsOverride.trainCommand),
-        generate: utils.toCommandString(self.paramsOverride.trainCommand),
-      },
+        %s
+      ||| % [
+        utils.toCommandString(self.paramsOverride.trainCommand),
+        utils.toCommandString(self.paramsOverride.trainCommand),
+      ],
     ),
     podTemplate+:: {
       spec+: {
