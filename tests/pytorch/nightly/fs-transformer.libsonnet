@@ -167,8 +167,27 @@ local utils = import 'templates/utils.libsonnet';
         '--save-dir=/tmp/checkpoints',
         '--max-epoch=25',
       ],
+      generateCommand: [
+        std.strReplace(self.scriptPath, 'train.py', 'generate.py'),
+        '/datasets/wmt18_en_de_bpej32k',
+        '--remove-bpe',
+        '--quiet',
+        '--lenpen 0.6',
+        '--beam 4',
+        '--path /tmp/checkpoints/checkpoint25.pt',
+        '--skip-invalid-size-inputs-valid-test',
+      ],
     },
-    command: self.paramsOverride.trainCommand,
+    command: utils.scriptCommand(
+      |||
+        %(train)s
+
+        %(generate)s
+      ||| % {
+        train: utils.toCommandString(self.paramsOverride.trainCommand),
+        generate: utils.toCommandString(self.paramsOverride.trainCommand),
+      },
+    ),
     podTemplate+:: {
       spec+: {
         containerMap+: {
