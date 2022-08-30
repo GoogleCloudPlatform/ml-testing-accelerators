@@ -84,9 +84,50 @@ local volumes = import 'templates/volumes.libsonnet';
 
     podTemplate+:: {
       spec+: {
+        initContainerMap+:: {
+          'tpu-version': {
+            image: config.podTemplate.spec.containerMap.train.image,
+            env+: [
+              {
+                name: 'TPU_NAME',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: "metadata.annotations['name.cloud-tpus.google.com/train']",
+                  },
+                },
+              },
+            ],
+            command: [
+              'python3',
+              '-c',
+              |||
+                import importlib_metadata
+                import os
+                import re
+
+                import cloud_tpu_client
+
+                requirements = importlib_metadata.requires('torch_xla')
+                libtpu_pattern = r'libtpu-nightly ?@ https:\/\/storage.googleapis.com\/cloud-tpu-tpuvm-artifacts\/wheels\/libtpu-nightly\/libtpu_nightly-\d.\d.dev(\d{8})-\w+-\w+-\w+.whl'
+                libtpu_matches = [
+                  re.findall(libtpu_pattern, req)[0]
+                  for req in requirements
+                  if re.match(libtpu_pattern, req)
+                ]
+                assert len(libtpu_matches) == 1, f'{len(libtpu_matches)} matches in {requirements} (pattern: `{libtpu_pattern}`)'
+                libtpu_date = libtpu_matches[0]
+                print('libtpu date:', libtpu_date)
+
+                ctc = cloud_tpu_client.Client(tpu=os.path.basename('$(TPU_NAME)'), zone=os.path.dirname('$(TPU_NAME)'))
+                ctc.configure_tpu_version(f'pytorch-0.5-dev{libtpu_date}', restart_type='always')
+                ctc.wait_for_healthy()
+              |||
+            ],
+          },
+        },
         containerMap+: {
           train+: {
-            envMap+: {
+            envMap+:: {
               XLA_USE_BF16: '0',
             },
           },
