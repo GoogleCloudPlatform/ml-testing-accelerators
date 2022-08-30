@@ -86,7 +86,7 @@ local volumes = import 'templates/volumes.libsonnet';
       spec+: {
         containerMap+: {
           train+: {
-            envMap+:: {
+            envMap+: {
               XLA_USE_BF16: '0',
             },
           },
