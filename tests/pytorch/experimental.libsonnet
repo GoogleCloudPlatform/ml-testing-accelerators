@@ -46,9 +46,7 @@ local utils = import 'templates/utils.libsonnet';
     },
     podTemplate+:: {
       spec+: {
-        initContainerMap+:: {
-          'tpu-version': null,
-        },
+        initContainerMap+:: {},
         containerMap+:: {
           monitor: null,
           train+: {
