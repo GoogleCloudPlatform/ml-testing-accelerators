@@ -1,20 +1,17 @@
-local common = import '../common.libsonnet';
+local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local utils = import 'templates/utils.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
 
 {
-  local lmspmd2b = common.PaxTest +  mixins.Functional {
-    modelName: 'lmspmd2b',
-
-    command: utils.scriptCommand(
-      |||
-        %(common_install)s
-        python3 /usr/local/lib/python3.7/dist-packages/paxml/main.py --exp=tasks.lm.params.lm_cloud.LmCloudSpmd2B --job_log_dir=$(MODEL_DIR)
-        %(common_cleanup)s
-      ||| % { common_install: common.pax_install, common_cleanup: common.cleanup }
-    ),
+  local lmspmd2b = common.NightlyPaxTest +  mixins.Functional {
+    modelName:: 'lmspmd2b',
+    expPath:: 'tasks.lm.params.lm_cloud.LmCloudSpmd2B',
+  },
+  local v4_8 = {
+    accelerator: tpus.v4_8,
   },
   configs: [
-    lmspmd2b,
+    lmspmd2b + v4_8,
   ],
 }

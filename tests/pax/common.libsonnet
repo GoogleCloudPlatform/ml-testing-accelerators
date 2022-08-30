@@ -23,21 +23,18 @@ local tpus = import 'templates/tpus.libsonnet';
 
     frameworkPrefix: 'pax',
     accelerator: tpus.v4_8,
-    
     tpuSettings+: {
       softwareVersion: 'tpu-vm-v4-base',
       tpuVmCreateSleepSeconds: 60,
-      // PAX tests are structured as bash scripts that run directly on the Cloud
-      // TPU VM instead of using docker images
-      tpuVmPaxSetup: |||
-        gsutil cp gs://pax-on-cloud-tpu-project/wheels/20220826/paxml*.whl .
-        gsutil cp gs://pax-on-cloud-tpu-project/wheels/20220826/praxis*.whl .
-        pip install praxis*.whl
-        pip install paxml*.whl
-        pip install jax[tpu] -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
-        pip install protobuf==3.15
-      |||,
-      tpuVmPaxCleanup: |||
+    },    
+
+    // PAX tests are structured as bash scripts that run directly on the Cloud
+    // TPU VM instead of using docker images
+    testScript:: error 'Must define `testScript`',
+    command: [
+      'bash',
+      '-c',
+      |||
         set -x
         set -u
 
@@ -56,9 +53,7 @@ local tpus = import 'templates/tpus.libsonnet';
         exit_code=$?
         bash /scripts/cleanup.sh
         exit $exit_code
-      |||,
-    },    
+      ||| % config.testScript,
+    ],
   },
-  pax_install: self.PaxTest.tpuSettings.tpuVmPaxSetup,
-  cleanup: self.PaxTest.tpuSettings.tpuVmPaxCleanup,
 }
