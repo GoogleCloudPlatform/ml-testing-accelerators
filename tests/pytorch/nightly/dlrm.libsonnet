@@ -173,15 +173,10 @@ local utils = import 'templates/utils.libsonnet';
         pip install onnx
         git clone --recursive https://github.com/pytorch-tpu/examples.git
         %s 
-        |& tee dlrm_logs.txt
-        acc=`grep Testing dlrm_logs.txt | tail -1 | grep -oP 'best \K[+-]?([0-9]*[.])?[0-9]+'`
-        echo 'Accuracy is' $acc
-        test $(echo $acc'>'78.75 | bc -l) -eq 1  # assert cls acc higher than 78.75
-      ||| % [
-        utils.toCommandString(self.paramsOverride.trainCommand),
-      ]
+      ||| % utils.toCommandString(self.paramsOverride.trainCommand),
     ),
   },
+
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
