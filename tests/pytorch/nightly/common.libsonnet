@@ -125,7 +125,10 @@ local volumes = import 'templates/volumes.libsonnet';
 
     podTemplate+:: {
       spec+: {
-        containerMap+: {
+        initContainerMap+:: {
+          'tpu-version': null,
+        },
+        containerMap+:: {
           train+: {
             envMap+: {
               GPU_NUM_DEVICES: '%d' % config.accelerator.count,
