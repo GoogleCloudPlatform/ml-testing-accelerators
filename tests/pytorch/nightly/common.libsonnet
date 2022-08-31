@@ -66,6 +66,7 @@ local volumes = import 'templates/volumes.libsonnet';
                 print('libtpu date:', libtpu_date)
 
                 ctc = cloud_tpu_client.Client(tpu=os.path.basename('$(TPU_NAME)'), zone=os.path.dirname('$(TPU_NAME)'))
+                ctc.wait_for_healthy()
                 ctc.configure_tpu_version(f'pytorch-0.5-dev{libtpu_date}', restart_type='always')
                 ctc.wait_for_healthy()
               |||,
