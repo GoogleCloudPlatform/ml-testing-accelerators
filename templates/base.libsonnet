@@ -140,6 +140,7 @@ local volumes = import 'volumes.libsonnet';
         initContainers: [
           { name: name } + pod.initContainerMap[name]
           for name in std.objectFields(pod.initContainerMap)
+          if pod.initContainerMap[name] != null
         ],
 
         containerMap+:: {
