@@ -21,8 +21,8 @@ local utils = import 'templates/utils.libsonnet';
 {
   local dlrm = common.PyTorchTest {
     local config = self,
-    modelName: 'dlrm',
 
+    modelName: 'dlrm',
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
@@ -31,7 +31,8 @@ local utils = import 'templates/utils.libsonnet';
       miniBatchSize: 256,
       archEmbeddingSize: '1000000-1000000',
       tpuModelParallelGroupLen: 1,
-      tpuCores: 1,
+      tpuCores: config.accelerator.numCores,
+      tpuModelParallelGroupLen: config.accelerator.numCores,
       archSparseFeatureSize: 64,
       archMlpBot: '512-512-64',
       archAlpTop: '1024-1024-1024-1',
@@ -100,7 +101,6 @@ local utils = import 'templates/utils.libsonnet';
       miniBatchSize: 2048,
       archEmbeddingSize: '1000000-1000000',
       tpuModelParallelGroupLen: 1,
-      tpuCores: 8,
     },
     command: utils.scriptCommand(
       |||
@@ -114,8 +114,6 @@ local utils = import 'templates/utils.libsonnet';
     paramsOverride+:: {
       miniBatchSize: 2048,
       archEmbeddingSize: '1000000-1000000-1000000-1000000-1000000-1000000-1000000-1000000',
-      tpuModelParallelGroupLen: 8,
-      tpuCores: 8,
     },
     command: utils.scriptCommand(
       |||
@@ -130,7 +128,6 @@ local utils = import 'templates/utils.libsonnet';
       miniBatchSize: 2048,
       archEmbeddingSize: '1000000-1000000-1000000-1000000-1000000-1000000-1000000-1000000',
       tpuModelParallelGroupLen: 4,
-      tpuCores: 8,
     },
     command: utils.scriptCommand(
       |||
@@ -142,9 +139,7 @@ local utils = import 'templates/utils.libsonnet';
 
   local criteo_kaggle = common.Convergence {
     paramsOverride+:: {
-      tpuCores: 8,
       miniBatchSize: 128,
-      tpuModelParallelGroupLen: 8,
       archSparseFeatureSize: 16,
       archMlpBot: '13-512-256-64-16',
       archAlpTop: '512-256-1',
