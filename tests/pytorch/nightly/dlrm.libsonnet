@@ -52,7 +52,7 @@ local utils = import 'templates/utils.libsonnet';
         '--mini-batch-size=%d' % config.paramsOverride.miniBatchSize,
         '--arch-embedding-size=%s' % config.paramsOverride.archEmbeddingSize,
         '--tpu-model-parallel-group-len=%d' % config.paramsOverride.tpuModelParallelGroupLen,
-        '--tpu-cores=%d' % config.paramsOverride.tpuCores,
+        '--tpu-cores=%d' % config.accelerator.numCores,
       ],
     },
     cpu: '9.0',
@@ -142,7 +142,7 @@ local utils = import 'templates/utils.libsonnet';
       archSparseFeatureSize: 16,
       archMlpBot: '13-512-256-64-16',
       archAlpTop: '512-256-1',
-      aumIndicesPerLookup: 1,
+      numIndicesPerLookup: 1,
       trainCommand+: [
         '--raw-data-file=/datasets/criteo-kaggle-mm/train.txt',
         '--processed-data-file=/datasets/criteo-kaggle-mm/kaggleAdDisplayChallenge_processed.npz',
@@ -157,7 +157,7 @@ local utils = import 'templates/utils.libsonnet';
         '--learning-rate=0.1',
         '--print-freq=1024',
         '--no-save',
-        '--max-epoch=1',
+        '--max-epoch=25',
       ],
     },
     command: utils.scriptCommand(
@@ -171,8 +171,24 @@ local utils = import 'templates/utils.libsonnet';
     ),
   },
 
+  local tpuVm = common.PyTorchTpuVmMixin {
+    tpuSettings+: {
+      tpuVmExtraSetup: |||
+        pip3 install tqdm sklearn tensorboardX google-cloud-storage
+        git clone -b tpu-xrt --single-branch https://github.com/darisoy/dlrm.git dlrm-xrt/
+        echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
+      |||,
+    },
+    paramsOverride+: {
+      scriptPath: 'dlrm-xrt/dlrm_tpu_runner.py',
+    },
+  },
+
   local v3_8 = {
     accelerator: tpus.v3_8,
+  },
+  local v4_8 = {
+    accelerator: tpus.v4_8,
   },
   configs: [
     dlrm + v3_8 + one_core + timeouts.Hours(3) + mixins.Experimental,
@@ -180,5 +196,6 @@ local utils = import 'templates/utils.libsonnet';
     dlrm + v3_8 + mp_fwd + timeouts.Hours(3) + mixins.Experimental,
     dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
     dlrm + v3_8 + criteo_kaggle + timeouts.Hours(6),
+    dlrm + v4_8 + criteo_kaggle + timeouts.Hours(6) + tpuVm,
   ],
 }
