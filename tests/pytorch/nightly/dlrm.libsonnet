@@ -52,7 +52,7 @@ local utils = import 'templates/utils.libsonnet';
         '--mini-batch-size=%d' % config.paramsOverride.miniBatchSize,
         '--arch-embedding-size=%s' % config.paramsOverride.archEmbeddingSize,
         '--tpu-model-parallel-group-len=%d' % config.paramsOverride.tpuModelParallelGroupLen,
-        '--tpu-cores=%d' % config.accelerator.numCores,
+        '--tpu-cores=%d' % config.paramsOverride.tpuCores,
       ],
     },
     cpu: '9.0',
