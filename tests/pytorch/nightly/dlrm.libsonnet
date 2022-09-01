@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
@@ -184,6 +185,18 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
 
+  local pjrt = tpuVm + experimental.PjRt {
+    tpuSettings+: {
+      tpuVmExtraSetup+: |||
+        git clone -b tpu-pjrt --single-branch https://github.com/darisoy/dlrm.git dlrm-pjrt/
+      |||,
+    },
+    modelName: 'dlrm-pjrt',
+    paramsOverride+: {
+      scriptPath: 'dlrm-pjrt/dlrm_tpu_runner.py',
+    },
+  },
+
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
@@ -196,6 +209,7 @@ local utils = import 'templates/utils.libsonnet';
     dlrm + v3_8 + mp_fwd + timeouts.Hours(3) + mixins.Experimental,
     dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
     dlrm + v3_8 + criteo_kaggle + timeouts.Hours(6),
-    dlrm + v4_8 + criteo_kaggle + timeouts.Hours(6) + tpuVm,
+    dlrm + v4_8 + criteo_kaggle + timeouts.Hours(25) + tpuVm,
+    dlrm + v4_8 + criteo_kaggle + timeouts.Hours(25) + pjrt,
   ],
 }
