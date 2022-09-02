@@ -170,6 +170,7 @@ local utils = import 'templates/utils.libsonnet';
         '--max-epoch=25',
       ],
       generateCommand: [
+        'python3',
         std.strReplace(self.scriptPath, 'train.py', 'generate.py'),
         '/datasets/wmt18_en_de_bpej32k',
         '--remove-bpe',
