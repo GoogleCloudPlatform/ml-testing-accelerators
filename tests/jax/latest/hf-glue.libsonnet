@@ -74,7 +74,7 @@ local utils = import 'templates/utils.libsonnet';
   },
   local mrpc = {
     modelName+: '-mrpc',
-    extraFlags+: '--task_name mrpc --max_seq_length 128 ',
+    extraFlags+: '--task_name mrpc --max_seq_length 128 --eval_steps 100 ',
   },
 
   local v2 = common.tpuVmBaseImage {
