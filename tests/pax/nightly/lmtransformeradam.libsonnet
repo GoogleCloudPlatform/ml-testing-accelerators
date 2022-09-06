@@ -6,8 +6,8 @@ local tpus = import 'templates/tpus.libsonnet';
 {
   local lmtransformeradam = common.NightlyPaxTest + mixins.Functional {
     modelName: 'lmtransformeradam',
-    expPath:: 'tasks.lm.params.lm_cloud.LmCloudTransformerAdam',
-    extraFlags:: '--pmap_use_tensorstore=True',
+    expPath:: 'tasks.lm.params.lm_cloud.LmCloudTransformerAdamLimitSteps',
+    extraFlags:: '--jax_fully_async_checkpoint=False --pmap_use_tensorstore=True',
   },
   local v4_8 = {
     accelerator: tpus.v4_8,
@@ -16,4 +16,3 @@ local tpus = import 'templates/tpus.libsonnet';
     lmtransformeradam + v4_8,
   ],
 }
-

@@ -16,11 +16,22 @@ local common = import '../common.libsonnet';
             # .bash_logout sometimes causes a spurious bad exit code, remove it.
             rm .bash_logout
 
-            gsutil cp gs://pax-on-cloud-tpu-project/wheels/20220830/paxml*.whl .
-            gsutil cp gs://pax-on-cloud-tpu-project/wheels/20220830/praxis*.whl .
+            pip install -U pip
+            gsutil cp gs://pax-on-cloud-tpu-project/wheels/20220902/paxml*.whl .
+            gsutil cp gs://pax-on-cloud-tpu-project/wheels/20220902/praxis*.whl .
             pip install praxis*.whl
             pip install paxml*.whl
-            pip install jax[tpu] -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+            sudo pip uninstall jax jaxlib libtpu-nightly libtpu libtpu_tpuv4 tensorflow  -y
+            git clone https://github.com/google/jax.git
+            cd jax/
+            pip install .
+            cd ..
+            pip install --pre -U jaxlib -f https://storage.googleapis.com/jax-releases/jaxlib_nightly_releases.html
+            pip install -U libtpu-nightly -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+            mkdir -p libtpu_folder
+            gsutil -m cp -R gs://pax-on-cloud-tpu-project/libtpu/libtpu.so libtpu_folder/
+            ls -l libtpu_folder/
+            cp libtpu_folder/libtpu.so .local/lib/python3.8/site-packages/libtpu/libtpu.so
             pip install protobuf==3.15
 
             num_devices=`python3 -c "import jax; print(jax.device_count())"`
@@ -30,7 +41,9 @@ local common = import '../common.libsonnet';
                 exit 1
             fi
 
-            python3 .local/lib/python3.8/site-packages/paxml/main.py --exp=%(expPath)s --job_log_dir=$(MODEL_DIR) %(extraFlags)s
+            export GCS_BUCKET=MODEL_DIR
+
+            python3 .local/lib/python3.8/site-packages/paxml/main.py --exp=%(expPath)s --job_log_dir=logs %(extraFlags)s
         ||| % config,
     },
 }
