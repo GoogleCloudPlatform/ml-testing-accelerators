@@ -43,6 +43,18 @@ local utils = import 'templates/utils.libsonnet';
           super.tpuVmCreateSleepSeconds
         else
           180,
+      tpuVmXlaDistPrefix:
+        if config.accelerator.replicas == 1 then
+          null
+        else
+          [
+            'python3',
+            '-m',
+            'torch_xla.distributed.xla_dist',
+            '--tpu=tpu-$(POD_UID)',
+            '--',
+          ],
+      tpuVmMainCommandWorkers: '0',
     },
     podTemplate+:: {
       spec+: {
@@ -51,18 +63,13 @@ local utils = import 'templates/utils.libsonnet';
           train+: {
             local scriptSettings = {
               // Distribute command with xla_dist on pods
-              testCommand: if config.accelerator.replicas == 1 then
+              testCommand: if config.tpuSettings.tpuVmXlaDistPrefix == null then
                 utils.toCommandString(config.command)
               else
                 utils.toCommandString(
-                  [
-                    'python3',
-                    '-m',
-                    'torch_xla.distributed.xla_dist',
-                    '--tpu=tpu-$(POD_UID)',
-                    '--',
-                  ] + config.command,
+                  config.tpuSettings.tpuVmXlaDistPrefix + config.command
                 ),
+              commandWorkers: config.tpuSettings.tpuVmMainCommandWorkers,
               pytorchSetup: config.tpuSettings.tpuVmPytorchSetup,
               extraSetup: config.tpuSettings.tpuVmExtraSetup,
               exports: config.tpuSettings.tpuVmExports,
@@ -96,7 +103,7 @@ local utils = import 'templates/utils.libsonnet';
                 %(exports)s
                 %(testCommand)s
                 TEST_SCRIPT_EOF
-                gcloud alpha compute tpus tpu-vm ssh xl-ml-test@$(cat /scripts/tpu_name) --zone=$(cat /scripts/zone) --ssh-key-file=/scripts/id_rsa --strict-host-key-checking=no --internal-ip --worker=0 --command "$(cat testscript.sh)"
+                gcloud alpha compute tpus tpu-vm ssh xl-ml-test@$(cat /scripts/tpu_name) --zone=$(cat /scripts/zone) --ssh-key-file=/scripts/id_rsa --strict-host-key-checking=no --internal-ip --worker=%(commandWorkers)s --command "$(cat testscript.sh)"
 
                 exit_code=$?
                 bash /scripts/cleanup.sh
@@ -113,6 +120,8 @@ local utils = import 'templates/utils.libsonnet';
       tpuVmExports: |||
         export PJRT_DEVICE=TPU
       |||,
+      tpuVmXlaDistPrefix: null,
+      tpuVmMainCommandWorkers: 'all',
     },
   },
 
