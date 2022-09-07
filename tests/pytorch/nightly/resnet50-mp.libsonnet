@@ -91,6 +91,10 @@ local tpus = import 'templates/tpus.libsonnet';
     // Keep same global batch size as v3
     command+: ['--batch_size=256'],
   },
+  local v4_32 = {
+    accelerator: tpus.v4_32,
+    command+: ['--batch_size=256'],
+  },
 
   local gpu = common.GpuMixin {
     cpu: '7.0',
@@ -142,5 +146,8 @@ local tpus = import 'templates/tpus.libsonnet';
     resnet50 + fake_data + nosummaries + v4_8 + timeouts.Hours(2) + pjrt,
     resnet50 + convergence + nosummaries + v4_8 + timeouts.Hours(24) + tpuVm,
     resnet50 + convergence + nosummaries + v4_8 + timeouts.Hours(24) + pjrt,
+    resnet50 + fake_data + nosummaries + v4_32 + timeouts.Hours(2) + pjrt,
+    resnet50 + convergence + nosummaries + v4_32 + timeouts.Hours(24) + tpuVm,
+    resnet50 + convergence + nosummaries + v4_32 + timeouts.Hours(24) + pjrt,
   ],
 }
