@@ -26,7 +26,7 @@ local tpus = import 'templates/tpus.libsonnet';
     tpuSettings+: {
       softwareVersion: 'tpu-vm-v4-base',
       tpuVmCreateSleepSeconds: 60,
-    },    
+    },
 
     // PAX tests are structured as bash scripts that run directly on the Cloud
     // TPU VM instead of using docker images
