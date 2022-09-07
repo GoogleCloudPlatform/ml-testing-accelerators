@@ -16,9 +16,21 @@ local common = import '../common.libsonnet';
             # .bash_logout sometimes causes a spurious bad exit code, remove it.
             rm .bash_logout
 
+
+            # check for nightly build
+            export DATE=$(date +%Y%m%d)
+            gsutil cp gs://pax-on-cloud-tpu-project/wheels/$DATE/paxml*.whl .
+            gsutil cp gs://pax-on-cloud-tpu-project/wheels/$DATE/praxis*.whl .
+
+            if [ -f praxis*.whl -a -f paxml*.whl ]; then
+                echo "Nightly build succeeded."
+            else 
+                echo "Nighlty build failed or is pending."
+                exit 1
+            fi 
+
+            # install pax and dependencies
             pip install -U pip
-            gsutil cp gs://pax-on-cloud-tpu-project/wheels/20220902/paxml*.whl .
-            gsutil cp gs://pax-on-cloud-tpu-project/wheels/20220902/praxis*.whl .
             pip install praxis*.whl
             pip install paxml*.whl
             sudo pip uninstall jax jaxlib libtpu-nightly libtpu libtpu_tpuv4 tensorflow  -y
