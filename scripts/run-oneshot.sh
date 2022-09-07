@@ -84,11 +84,10 @@ run()
     jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$test_name > $temp_file
 
     job_name=$(kubectl create -f $temp_file -o name)
-    pod_name=$(kubectl get pod -l job-name=${job_name#job.batch/} -o name)
 
-    echo "GKE pod name: ${pod_name#pod/}"
-    kubectl wait --for=condition=ready --timeout=10m $pod_name
-    kubectl logs -f $pod_name --container=train
+    echo "GKE job name: ${job_name#job.batch/}"
+    kubectl wait --for=condition=ready --timeout=10m pod -l job-name=${job_name#job.batch/}
+    kubectl logs -f $job_name
   else
     echo "gcloud container clusters get-credentials $CLUSTER --region $region --project xl-ml-test"
     jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$test_name
