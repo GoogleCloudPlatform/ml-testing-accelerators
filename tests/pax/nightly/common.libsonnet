@@ -5,6 +5,7 @@ local common = import '../common.libsonnet';
     local config = self,
     expPath:: '',
     extraFlags:: '',
+    buildDate:: '$(date +%Y%m%d)',
 
     // PAX tests are structured as bash scripts that run directly on the Cloud
     // TPU VM instead of using docker images
@@ -18,14 +19,13 @@ local common = import '../common.libsonnet';
 
 
       # check for nightly build
-      export DATE=$(date +%Y%m%d)
-      gsutil cp gs://pax-on-cloud-tpu-project/wheels/$DATE/paxml*.whl .
-      gsutil cp gs://pax-on-cloud-tpu-project/wheels/$DATE/praxis*.whl .
+      gsutil cp gs://pax-on-cloud-tpu-project/wheels/%(buildDate)s/paxml*.whl .
+      gsutil cp gs://pax-on-cloud-tpu-project/wheels/%(buildDate)s/praxis*.whl .
 
       if [ -f praxis*.whl -a -f paxml*.whl ]; then
-          echo "Nightly build succeeded."
+          echo "Nightly builds succeeded."
       else 
-          echo "Nighlty build failed or is pending."
+          echo "Nighlty builds failed or are pending."
           exit 1
       fi 
 
@@ -33,7 +33,7 @@ local common = import '../common.libsonnet';
       pip install -U pip
       pip install praxis*.whl
       pip install paxml*.whl
-      sudo pip uninstall jax jaxlib libtpu-nightly libtpu libtpu_tpuv4 tensorflow  -y
+      sudo pip uninstall --yes jax jaxlib libtpu-nightly libtpu libtpu_tpuv4 tensorflow
       git clone https://github.com/google/jax.git
       cd jax/
       pip install .
