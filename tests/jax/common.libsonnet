@@ -103,7 +103,7 @@ local tpus = import 'templates/tpus.libsonnet';
       installLatestJax: 'pip install jax',
       maybeBuildJaxlib: |||
         echo "Installing latest jaxlib-nightly..."
-        pip install jaxlib-nightly \
+        pip install --pre jaxlib \
           -f https://storage.googleapis.com/jax-releases/jaxlib_nightly_releases.html
         pip list | grep jaxlib
         python3 -c 'import jaxlib; print("jaxlib version:", jaxlib.__version__)'
