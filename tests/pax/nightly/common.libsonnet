@@ -1,10 +1,15 @@
 local common = import '../common.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
 
 {
+  Functional:: mixins.Functional {
+    // Run at 2AM PST daily
+    schedule: '0 10 * * *',
+  },
   NightlyPaxTest:: common.PaxTest {
     local config = self,
     expPath:: '',
-    extraFlags:: '',
+    extraFlags:: [],
     buildDate:: '$(date +%Y%m%d)',
 
     // PAX tests are structured as bash scripts that run directly on the Cloud
@@ -17,7 +22,6 @@ local common = import '../common.libsonnet';
       # .bash_logout sometimes causes a spurious bad exit code, remove it.
       rm .bash_logout
 
-
       # check for nightly build
       gsutil cp gs://pax-on-cloud-tpu-project/wheels/%(buildDate)s/paxml*.whl .
       gsutil cp gs://pax-on-cloud-tpu-project/wheels/%(buildDate)s/praxis*.whl .
@@ -29,21 +33,17 @@ local common = import '../common.libsonnet';
           exit 1
       fi 
 
-      # install pax and dependencies
-      pip install -U pip
+      # install Pax and dependencies
       pip install praxis*.whl
       pip install paxml*.whl
       sudo pip uninstall --yes jax jaxlib libtpu-nightly libtpu libtpu_tpuv4 tensorflow
-      git clone https://github.com/google/jax.git
-      cd jax/
-      pip install .
-      cd ..
+
+      # need to install chex from source, since pip version is currently incompatible with latest JAX
+      pip install -U git+https://github.com/deepmind/chex.git
+
+      pip install git+https://github.com/google/jax.git
       pip install --pre -U jaxlib -f https://storage.googleapis.com/jax-releases/jaxlib_nightly_releases.html
       pip install -U libtpu-nightly -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
-      mkdir -p libtpu_folder
-      gsutil -m cp -R gs://pax-on-cloud-tpu-project/libtpu/libtpu.so libtpu_folder/
-      ls -l libtpu_folder/
-      cp libtpu_folder/libtpu.so .local/lib/python3.8/site-packages/libtpu/libtpu.so
       pip install protobuf==3.15
 
       num_devices=`python3 -c "import jax; print(jax.device_count())"`
@@ -53,9 +53,7 @@ local common = import '../common.libsonnet';
           exit 1
       fi
 
-      export GCS_BUCKET=MODEL_DIR
-
       python3 .local/lib/python3.8/site-packages/paxml/main.py --exp=%(expPath)s --job_log_dir=logs %(extraFlags)s
-    ||| % config,
+    ||| % { buildDate: config.buildDate, expPath: config.expPath, extraFlags: std.join(' ', config.extraFlags) },
   },
 }

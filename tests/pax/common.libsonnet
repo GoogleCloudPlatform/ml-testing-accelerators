@@ -14,7 +14,6 @@
 
 local common = import '../common.libsonnet';
 local experimental = import '../experimental.libsonnet';
-local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
