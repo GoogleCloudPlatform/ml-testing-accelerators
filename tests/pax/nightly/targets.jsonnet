@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -10,17 +10,13 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License,
 
-local jax_targets = import 'jax/targets.jsonnet';
-local pax_targets = import 'pax/targets.jsonnet';
-local pytorch_targets = import 'pytorch/targets.jsonnet';
-local tensorflow_targets = import 'tensorflow/targets.jsonnet';
+local spmd = import 'lmspmd2b.libsonnet';
+local transformer = import 'lmtransformeradam.libsonnet';
 
-local all_targets = tensorflow_targets + pytorch_targets + jax_targets + pax_targets;
-
-// Mapping from unique test name to test config
-{
-  [test.testName]: test
-  for test in all_targets
-}
+// Add new models here
+std.flattenArrays([
+  spmd.configs,
+  transformer.configs,
+])
