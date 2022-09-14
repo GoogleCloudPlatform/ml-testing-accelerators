@@ -36,7 +36,7 @@ local mixins = import 'templates/mixins.libsonnet';
       # install Pax and dependencies
       pip install praxis*.whl
       pip install paxml*.whl
-      sudo pip uninstall --yes jax jaxlib libtpu-nightly libtpu libtpu_tpuv4 tensorflow
+      sudo pip uninstall --yes jax jaxlib libtpu-nightly
 
       # need to install chex from source, since pip version is currently incompatible with latest JAX
       pip install -U git+https://github.com/deepmind/chex.git
