@@ -27,7 +27,7 @@ local utils = import 'templates/utils.libsonnet';
     cd kits19
     pip3 install -r requirements.txt
     python3 -m starter_code.get_imaging
-    cd ~
+    cd -
 
     python3 unet3d_test/image_segmentation/pytorch/main.py --data_dir /kits19 \
     --epochs 501 \
