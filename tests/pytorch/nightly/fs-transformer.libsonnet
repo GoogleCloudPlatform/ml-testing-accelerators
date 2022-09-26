@@ -222,8 +222,6 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   local tpuVm = common.PyTorchTpuVmMixin {
-    local config = self,
-
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=$(XLA_USE_BF16)
