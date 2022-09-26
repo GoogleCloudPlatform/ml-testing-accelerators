@@ -175,9 +175,9 @@ local utils = import 'templates/utils.libsonnet';
         '/datasets/wmt18_en_de_bpej32k',
         '--remove-bpe',
         '--quiet',
-        '--lenpen 0.6',
-        '--beam 4',
-        '--path /tmp/checkpoints/checkpoint25.pt',
+        '--lenpen=0.6',
+        '--beam=4',
+        '--path=/tmp/checkpoints/checkpoint25.pt',
         '--skip-invalid-size-inputs-valid-test',
       ],
     },
@@ -222,6 +222,8 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   local tpuVm = common.PyTorchTpuVmMixin {
+    local config = self,
+
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=$(XLA_USE_BF16)
@@ -229,6 +231,7 @@ local utils = import 'templates/utils.libsonnet';
       tpuVmExtraSetup: |||
         pip install tensorboardX google-cloud-storage
         git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
+        pip install --editable ./tpu-examples/deps/fairseq
         echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
         echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
       |||,
@@ -240,6 +243,7 @@ local utils = import 'templates/utils.libsonnet';
       tpuVmExtraSetup+: |||
         pip3 install tqdm
         git clone -b tpu --single-branch https://github.com/darisoy/fairseq.git fairseq-pjrt/
+        pip install --editable ./fairseq-pjrt
       |||,
     },
     modelName: 'fs-transformer-pjrt',
