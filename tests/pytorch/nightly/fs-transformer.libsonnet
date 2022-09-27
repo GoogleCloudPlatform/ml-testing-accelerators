@@ -259,6 +259,9 @@ local utils = import 'templates/utils.libsonnet';
   local v4_8 = {
     accelerator: tpus.v4_8,
   },
+  local v4_32 = {
+    accelerator: tpus.v4_32,
+  },
   configs: [
     transformer + v3_8 + functional_no_save + timeouts.Hours(1),
     transformer + v3_8 + convergence + timeouts.Hours(25) + tpuVm,
@@ -269,5 +272,7 @@ local utils = import 'templates/utils.libsonnet';
     transformer + v3_32 + functional_no_save + timeouts.Hours(1) + tpuVm,
     transformer + v4_8 + convergence + timeouts.Hours(25) + pjrt,
     transformer + v4_8 + functional_no_save + timeouts.Hours(1) + pjrt,
+    transformer + v4_32 + convergence + timeouts.Hours(25) + tpuVm,
+    transformer + v4_32 + convergence + timeouts.Hours(25) + pjrt,
   ],
 }
