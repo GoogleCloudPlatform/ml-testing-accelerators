@@ -186,15 +186,7 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   local pjrt = tpuVm + experimental.PjRt {
-    tpuSettings+: {
-      tpuVmExtraSetup+: |||
-        git clone -b tpu-pjrt --single-branch https://github.com/darisoy/dlrm.git dlrm-pjrt/
-      |||,
-    },
     modelName: 'dlrm-pjrt',
-    paramsOverride+: {
-      scriptPath: 'dlrm-pjrt/dlrm_tpu_runner.py',
-    },
   },
 
   local v3_8 = {
