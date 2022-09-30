@@ -158,7 +158,7 @@ local utils = import 'templates/utils.libsonnet';
         '--learning-rate=0.1',
         '--print-freq=1024',
         '--no-save',
-        '--nepoch=25',
+        '--nepochs=25',
       ],
     },
     command: utils.scriptCommand(
