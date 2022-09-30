@@ -37,6 +37,7 @@ local utils = import 'templates/utils.libsonnet';
       archMlpBot: '512-512-64',
       archAlpTop: '1024-1024-1024-1',
       numIndicesPerLookup: 100,
+      dataGeneration: 'random',
       trainCommand: [
         'python3',
         self.scriptPath,
@@ -44,7 +45,7 @@ local utils = import 'templates/utils.libsonnet';
         '--lr-num-warmup-steps=10',
         '--lr-decay-start-step=10',
         '--num-batches=1000',
-        '--data-generation=random',
+        '--data-generation=%s' % config.paramsOverride.dataGeneration,
         '--numpy-rand-seed=72',
         '--print-freq=100',
         '--use-tpu',
@@ -91,7 +92,7 @@ local utils = import 'templates/utils.libsonnet';
     command: utils.scriptCommand(
       |||
         pip install onnx
-        %s 
+        %s
       ||| % utils.toCommandString(self.paramsOverride.trainCommand),
     ),
   },
@@ -105,7 +106,7 @@ local utils = import 'templates/utils.libsonnet';
     command: utils.scriptCommand(
       |||
         pip install onnx
-        %s 
+        %s
       ||| % utils.toCommandString(self.paramsOverride.trainCommand),
     ),
   },
@@ -118,7 +119,7 @@ local utils = import 'templates/utils.libsonnet';
     command: utils.scriptCommand(
       |||
         pip install onnx
-        %s 
+        %s
       ||| % utils.toCommandString(self.paramsOverride.trainCommand),
     ),
   },
@@ -132,7 +133,7 @@ local utils = import 'templates/utils.libsonnet';
     command: utils.scriptCommand(
       |||
         pip install onnx
-        %s 
+        %s
       ||| % utils.toCommandString(self.paramsOverride.trainCommand),
     ),
   },
@@ -144,11 +145,11 @@ local utils = import 'templates/utils.libsonnet';
       archMlpBot: '13-512-256-64-16',
       archAlpTop: '512-256-1',
       numIndicesPerLookup: 1,
+      dataGeneration: 'dataset',
       trainCommand+: [
         '--raw-data-file=/datasets/criteo-kaggle-mm/train.txt',
         '--processed-data-file=/datasets/criteo-kaggle-mm/kaggleAdDisplayChallenge_processed.npz',
         '--memory-map',
-        '--data-generation=dataset',
         '--print-time',
         '--test-mini-batch-size=16384',
         '--test-freq=101376',
@@ -167,7 +168,7 @@ local utils = import 'templates/utils.libsonnet';
         apt-get install -y bc
         pip install onnx
         git clone --recursive https://github.com/pytorch-tpu/examples.git
-        %s 
+        %s
       ||| % utils.toCommandString(self.paramsOverride.trainCommand),
     ),
   },
