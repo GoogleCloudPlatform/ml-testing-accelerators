@@ -160,7 +160,10 @@ def main(argv):
   cluster_name = FLAGS.cluster_name or _get_metadata('cluster-name')
   cluster_location = FLAGS.cluster_location or _get_metadata('cluster-location')
 
-  topic = f'projects/{project}/topics/{FLAGS.pubsub_topic}'
+  if re.match('^projects/[^/]+/topics/[^/]+$', FLAGS.pubsub_topic):
+    topic = FLAGS.pubsub_topic
+  else:
+    topic = f'projects/{project}/topics/{FLAGS.pubsub_topic}'
   publisher = pubsub_v1.PublisherClient()
 
   while True:
