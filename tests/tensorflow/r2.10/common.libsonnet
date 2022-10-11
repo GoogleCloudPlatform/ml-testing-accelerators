@@ -51,7 +51,7 @@ local mixins = import 'templates/mixins.libsonnet';
       runnerPath: 'official/nlp/train.py',
     },
   },
-  local functional_schedule = '0 7 * * *',
+  local functional_schedule = '0 7 * * 6',
   Functional:: mixins.Functional {
     schedule:
       if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' || self.accelerator.name == 'v4-8' then
