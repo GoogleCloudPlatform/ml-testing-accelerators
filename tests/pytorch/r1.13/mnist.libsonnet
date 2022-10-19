@@ -62,32 +62,16 @@ local utils = import 'templates/utils.libsonnet';
   local v2_8 = {
     accelerator: tpus.v2_8,
   },
-  local v3_32 = {
-    accelerator: tpus.v3_32,
-
+  local v4_8 = {
+    accelerator: tpus.v4_8,
   },
-  local gpu = {
-    local config = self,
-    imageTag+: '_cuda_11.2',
-
+  local gpu = common.GpuMixin {
     // Disable XLA metrics report on GPU
     command+: [
       '--nometrics_debug',
     ],
     flags+: {
       modelDir: null,
-    },
-
-    podTemplate+:: {
-      spec+: {
-        containerMap+: {
-          train+: {
-            envMap+: {
-              GPU_NUM_DEVICES: '%d' % config.accelerator.count,
-            },
-          },
-        },
-      },
     },
   },
   local v100x4 = gpu {
@@ -101,10 +85,23 @@ local utils = import 'templates/utils.libsonnet';
       |||,
     },
   },
+  local pjrt = tpuVm + experimental.PjRt {
+    modelName+: '-pjrt',
+    command: [
+      'python3',
+      'pytorch/xla/test/pjrt/test_train_pjrt_mnist.py',
+    ] + super.command[2:],
+    // TODO: re-enable TensorBoard summaries when they don't cause a crash
+    flags+:: {
+      modelDir: null,
+    },
+  },
 
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1),
     mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
+    mnist + convergence + v2_8 + timeouts.Hours(1) + pjrt,
+    mnist + convergence + v4_8 + timeouts.Hours(1) + pjrt,
     mnist + convergence + v100x4 + timeouts.Hours(6),
   ],
 }
