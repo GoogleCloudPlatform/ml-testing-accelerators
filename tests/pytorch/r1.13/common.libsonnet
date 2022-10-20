@@ -90,9 +90,9 @@ local volumes = import 'templates/volumes.libsonnet';
 
     tpuSettings+: {
       softwareVersion: if config.accelerator.version < 4 then
-        'tpu-vm-base-pt-1-13-0'
+        'tpu-vm-pt-1.13'
       else
-        'tpu-vm-v4-base-pt-1-13-0',
+        'tpu-vm-v4-pt-1.13',
       tpuVmPytorchSetup: |||
         # No need to check out the PyTorch repository, but check out PT/XLA at
         # pytorch/xla anyway
