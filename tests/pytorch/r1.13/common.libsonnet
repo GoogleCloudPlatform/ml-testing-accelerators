@@ -90,14 +90,10 @@ local volumes = import 'templates/volumes.libsonnet';
 
     tpuSettings+: {
       softwareVersion: if config.accelerator.version < 4 then
-        'tpu-vm-base'
+        'projects/cloud-tpu-v2-images-dev/global/images/tpu-vm-base-pt-1-13-0-20221019'
       else
-        'tpu-vm-v4-base',
+        'projects/cloud-tpu-v2-images-dev/global/images/tpu-vm-v4-base-pt-1-13-0-20221019',
       tpuVmPytorchSetup: |||
-        pip install --user \
-          https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-1.13-cp38-cp38-linux_x86_64.whl \
-          https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-1.13-cp38-cp38-linux_x86_64.whl \
-          'torch_xla[tpuvm] @ https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-1.13-cp38-cp38-linux_x86_64.whl'
         # No need to check out the PyTorch repository, but check out PT/XLA at
         # pytorch/xla anyway
         mkdir pytorch
