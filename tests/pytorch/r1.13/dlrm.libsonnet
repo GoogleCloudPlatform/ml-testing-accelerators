@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
@@ -19,45 +20,45 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local command_common = |||
-    pip install onnx
-    git clone --recursive https://github.com/pytorch-tpu/examples.git
-    python examples/deps/dlrm/dlrm_tpu_runner.py \
-      --arch-sparse-feature-size=64 \
-      --arch-mlp-bot=512-512-64 \
-      --arch-mlp-top=1024-1024-1024-1 \
-      --arch-interaction-op=dot \
-      --lr-num-warmup-steps 10 \
-      --lr-decay-start-step 10 \
-      --num-batches=1000 \
-      --data-generation="random" \
-      --numpy-rand-seed=727 \
-      --print-freq 100 \
-      --num-indices-per-lookup=100 \
-      --use-tpu \
-      --metrics-debug \
-      --num-indices-per-lookup-fixed \
-  |||,
   local dlrm = common.PyTorchTest {
-    modelName: 'dlrm',
+    local config = self,
 
+    modelName: 'dlrm',
     volumeMap+: {
       datasets: common.datasetsVolume,
     },
-    podTemplate+:: {
-      spec+: {
-        containerMap+: {
-          train+: {
-            resources+: {
-              requests: {
-                cpu: '9.0',
-                memory: '30Gi',
-              },
-            },
-          },
-        },
-      },
+    paramsOverride:: {
+      scriptPath: 'tpu-examples/deps/dlrm/dlrm_tpu_runner.py',
+      miniBatchSize: 256,
+      archEmbeddingSize: '1000000-1000000',
+      tpuModelParallelGroupLen: config.accelerator.numCores,
+      tpuCores: config.accelerator.numCores,
+      archSparseFeatureSize: 64,
+      archMlpBot: '512-512-64',
+      archAlpTop: '1024-1024-1024-1',
+      numIndicesPerLookup: 100,
+      dataGeneration: 'random',
+      trainCommand: [
+        'python3',
+        self.scriptPath,
+        '--arch-interaction-op=dot',
+        '--lr-num-warmup-steps=10',
+        '--lr-decay-start-step=10',
+        '--num-batches=1000',
+        '--data-generation=%s' % config.paramsOverride.dataGeneration,
+        '--numpy-rand-seed=72',
+        '--print-freq=100',
+        '--use-tpu',
+        '--metrics-debug',
+        '--num-indices-per-lookup-fixed',
+        '--mini-batch-size=%d' % config.paramsOverride.miniBatchSize,
+        '--arch-embedding-size=%s' % config.paramsOverride.archEmbeddingSize,
+        '--tpu-model-parallel-group-len=%d' % config.paramsOverride.tpuModelParallelGroupLen,
+        '--tpu-cores=%d' % config.paramsOverride.tpuCores,
+      ],
     },
+    cpu: '9.0',
+    memory: '30Gi',
   },
   local dlrm_convergence = common.PyTorchTest {
     modelName: 'dlrm-convergence',
@@ -82,94 +83,126 @@ local utils = import 'templates/utils.libsonnet';
   },
   local one_core = common.Functional {
     modelName: 'dlrm-onecore',
+    paramsOverride+:: {
+      miniBatchSize: 256,
+      archEmbeddingSize: '1000000-1000000',
+      tpuModelParallelGroupLen: 1,
+      tpuCores: 1,
+    },
     command: utils.scriptCommand(
       |||
-        %(command_common)s  --mini-batch-size=256 \
-          --arch-embedding-size=1000000-1000000 \
-          --tpu-model-parallel-group-len 1 \
-          --tpu-cores=1
-      ||| % command_common
+        pip install onnx
+        %s
+      ||| % utils.toCommandString(self.paramsOverride.trainCommand),
     ),
   },
   local seq_fwd = common.Functional {
     modelName: 'dlrm-seq-fwd',
+    paramsOverride+:: {
+      miniBatchSize: 2048,
+      archEmbeddingSize: '1000000-1000000',
+      tpuModelParallelGroupLen: 1,
+    },
     command: utils.scriptCommand(
       |||
-        %(command_common)s  --mini-batch-size=2048 \
-          --arch-embedding-size=1000000-1000000 \
-          --tpu-model-parallel-group-len 1 \
-          --tpu-cores=8
-      ||| % command_common
+        pip install onnx
+        %s
+      ||| % utils.toCommandString(self.paramsOverride.trainCommand),
     ),
   },
   local mp_fwd = common.Functional {
     modelName: 'dlrm-mp-fwd',
+    paramsOverride+:: {
+      miniBatchSize: 2048,
+      archEmbeddingSize: '1000000-1000000-1000000-1000000-1000000-1000000-1000000-1000000',
+    },
     command: utils.scriptCommand(
       |||
-        %(command_common)s  --mini-batch-size=2048 \
-          --arch-embedding-size=1000000-1000000-1000000-1000000-1000000-1000000-1000000-1000000 \
-          --tpu-model-parallel-group-len 8 \
-          --tpu-cores=8
-      ||| % command_common
+        pip install onnx
+        %s
+      ||| % utils.toCommandString(self.paramsOverride.trainCommand),
     ),
   },
   local mp_dp_fwd = common.Functional {
     modelName: 'dlrm-mpdp-fwd',
+    paramsOverride+:: {
+      miniBatchSize: 2048,
+      archEmbeddingSize: '1000000-1000000-1000000-1000000-1000000-1000000-1000000-1000000',
+      tpuModelParallelGroupLen: 4,
+    },
     command: utils.scriptCommand(
       |||
-        %(command_common)s  --mini-batch-size=2048 \
-          --arch-embedding-size=1000000-1000000-1000000-1000000-1000000-1000000-1000000-1000000 \
-          --tpu-model-parallel-group-len 4 \
-          --tpu-cores=8
-      ||| % command_common
+        pip install onnx
+        %s
+      ||| % utils.toCommandString(self.paramsOverride.trainCommand),
     ),
   },
-  local convergence_common = |||
-    --raw-data-file=/datasets/criteo-kaggle-mm/train.txt \
-    --processed-data-file=/datasets/criteo-kaggle-mm/kaggleAdDisplayChallenge_processed.npz \
-    --memory-map \
-    --arch-sparse-feature-size=16 \
-    --arch-mlp-bot="13-512-256-64-16" \
-    --arch-mlp-top="512-256-1" \
-    --data-generation=dataset \
-    --data-set=kaggle \
-    --loss-function=bce \
-    --round-targets=True \
-    --learning-rate=0.1 \
-    --mini-batch-size=128 \
-    --print-freq=1024 \
-    --print-time \
-    --test-mini-batch-size=16384 \
-    --test-freq=101376 \
-    --use-tpu \
-    --num-indices-per-lookup=1 \
-    --num-indices-per-lookup-fixed \
-    --tpu-model-parallel-group-len 8 \
-    --tpu-metrics-debug \
-    --tpu-cores=8 |& tee dlrm_logs.txt
-    acc=`grep Testing dlrm_logs.txt | tail -1 | grep -oP 'best \K[+-]?([0-9]*[.])?[0-9]+'`
-    echo 'Accuracy is' $acc
-    test $(echo $acc'>'78.75 | bc -l) -eq 1  # assert cls acc higher than 78.75
-  |||,
+
   local criteo_kaggle = common.Convergence {
+    paramsOverride+:: {
+      miniBatchSize: 128,
+      archSparseFeatureSize: 16,
+      archMlpBot: '13-512-256-64-16',
+      archAlpTop: '512-256-1',
+      numIndicesPerLookup: 1,
+      dataGeneration: 'dataset',
+      trainCommand+: [
+        '--raw-data-file=/datasets/criteo-kaggle-mm/train.txt',
+        '--processed-data-file=/datasets/criteo-kaggle-mm/kaggleAdDisplayChallenge_processed.npz',
+        '--memory-map',
+        '--print-time',
+        '--test-mini-batch-size=16384',
+        '--test-freq=101376',
+        '--data-set=kaggle',
+        '--loss-function=bce',
+        '--round-targets=True',
+        '--learning-rate=0.1',
+        '--print-freq=1024',
+        '--no-save',
+        '--nepochs=25',
+      ],
+    },
     command: utils.scriptCommand(
       |||
+        set +e
         apt-get install -y bc
         pip install onnx
         git clone --recursive https://github.com/pytorch-tpu/examples.git
-        python examples/deps/dlrm/dlrm_tpu_runner.py \
-          %(convergence_common)s
-      ||| % convergence_common
+        %s
+      ||| % utils.toCommandString(self.paramsOverride.trainCommand),
     ),
   },
+
+  local tpuVm = common.PyTorchTpuVmMixin {
+    tpuSettings+: {
+      tpuVmExtraSetup: |||
+        pip3 install tqdm sklearn tensorboardX google-cloud-storage
+        git clone -b tpu-xrt --single-branch https://github.com/darisoy/dlrm.git dlrm-xrt/
+        echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
+      |||,
+    },
+    paramsOverride+: {
+      scriptPath: 'dlrm-xrt/dlrm_tpu_runner.py',
+    },
+  },
+
+  local pjrt = tpuVm + experimental.PjRt {
+    modelName: 'dlrm-pjrt',
+  },
+
   local v3_8 = {
     accelerator: tpus.v3_8,
+  },
+  local v4_8 = {
+    accelerator: tpus.v4_8,
   },
   configs: [
     dlrm + v3_8 + one_core + timeouts.Hours(3) + mixins.Experimental,
     dlrm + v3_8 + seq_fwd + timeouts.Hours(3) + mixins.Experimental,
     dlrm + v3_8 + mp_fwd + timeouts.Hours(3) + mixins.Experimental,
     dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3),
-    dlrm_convergence + v3_8 + criteo_kaggle + timeouts.Hours(6),
+    dlrm + v3_8 + criteo_kaggle + timeouts.Hours(6),
+    dlrm + v4_8 + criteo_kaggle + timeouts.Hours(25) + tpuVm,
+    dlrm + v4_8 + criteo_kaggle + timeouts.Hours(25) + pjrt,
   ],
 }

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
@@ -37,6 +38,7 @@ local utils = import 'templates/utils.libsonnet';
         self.scriptPath,
         '/datasets/wmt18_en_de_bpej32k',
         '--metrics_debug',
+        '--tensorboard-logdir=$(MODEL_DIR)',
         '--arch=transformer_vaswani_wmt_en_de_big',
         '--max-target-positions=64',
         '--attention-dropout=0.1',
@@ -70,7 +72,17 @@ local utils = import 'templates/utils.libsonnet';
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
-          aggregateAssertionsMap:: {},
+          aggregateAssertionsMap:: {
+            '0/run/train-wps': {
+              MEDIAN: {
+                percent_difference: {
+                  comparison: 'GREATER',
+                  percent: 5,
+                  use_historical_mean: true,
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -149,29 +161,35 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   local convergence = common.Convergence {
+    local config = self,
+
     paramsOverride+:: {
       trainCommand+: [
         '--save-interval=5',
         '--save-dir=/tmp/checkpoints',
         '--max-epoch=25',
       ],
+      generateCommand: [
+        'python3',
+        std.strReplace(self.scriptPath, 'train.py', 'generate.py'),
+        '/datasets/wmt18_en_de_bpej32k',
+        '--remove-bpe',
+        '--quiet',
+        '--lenpen=0.6',
+        '--beam=4',
+        '--path=/tmp/checkpoints/checkpoint25.pt',
+        '--skip-invalid-size-inputs-valid-test',
+      ],
     },
     command: utils.scriptCommand(
       |||
-        export XLA_USE_BF16=1
-        pip install --editable tpu-examples/deps/fairseq
-        %s 2>&1 | tee training_logs.txt
-        bleu=`fairseq-generate \
-          /datasets/wmt18_en_de_bpej32k \
-          --remove-bpe --quiet --lenpen 0.6 --beam 4 \
-          --path /tmp/checkpoints/checkpoint25.pt \
-          --skip-invalid-size-inputs-valid-test | grep BLEU \
-          | grep -v loadi | tail -1 | cut -d '=' -f 3| cut -d'.' -f 1`
-        echo 'BLEU score is' $bleu
-        wps=$(cat training_logs.txt | grep '| wps ' | tail -1 | grep -o -E ' wps [0-9]+' | sed 's/[^0-9]*//g')
-        echo 'final words per second (wps) is' $wps
-        test $bleu -gt 27 -a $wps -gt 10000
-      ||| % utils.toCommandString(self.paramsOverride.trainCommand)
+        %s
+
+        %s
+      ||| % [
+        utils.toCommandString(self.paramsOverride.trainCommand),
+        utils.toCommandString(self.paramsOverride.generateCommand),
+      ],
     ),
     podTemplate+:: {
       spec+: {
@@ -184,15 +202,51 @@ local utils = import 'templates/utils.libsonnet';
         },
       },
     },
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            '0/run/validate-test-loss': {
+              FINAL: {
+                percent_difference: {
+                  comparison: 'LESS',
+                  percent: 5,
+                  use_historical_mean: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   },
 
   local tpuVm = common.PyTorchTpuVmMixin {
     tpuSettings+: {
+      tpuVmExports+: |||
+        export XLA_USE_BF16=$(XLA_USE_BF16)
+      |||,
       tpuVmExtraSetup: |||
+        pip install tensorboardX google-cloud-storage
         git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
+        pip install --editable ./tpu-examples/deps/fairseq
         echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
         echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
       |||,
+    },
+  },
+
+  local pjrt = tpuVm + experimental.PjRt {
+    tpuSettings+: {
+      tpuVmExtraSetup+: |||
+        pip3 install tqdm
+        git clone -b tpu --single-branch https://github.com/darisoy/fairseq.git fairseq-pjrt/
+        pip install --editable ./fairseq-pjrt
+      |||,
+    },
+    modelName: 'fs-transformer-pjrt',
+    paramsOverride+: {
+      scriptPath: 'fairseq-pjrt/train.py',
     },
   },
 
@@ -202,11 +256,23 @@ local utils = import 'templates/utils.libsonnet';
   local v3_32 = {
     accelerator: tpus.v3_32,
   },
+  local v4_8 = {
+    accelerator: tpus.v4_8,
+  },
+  local v4_32 = {
+    accelerator: tpus.v4_32,
+  },
   configs: [
     transformer + v3_8 + functional_no_save + timeouts.Hours(1),
     transformer + v3_8 + convergence + timeouts.Hours(25) + tpuVm,
     transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
     transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
+    transformer + v4_8 + convergence + timeouts.Hours(25) + tpuVm,
+    transformer + v4_8 + functional_no_save + timeouts.Hours(1) + tpuVm,
     transformer + v3_32 + functional_no_save + timeouts.Hours(1) + tpuVm,
+    transformer + v4_8 + convergence + timeouts.Hours(25) + pjrt,
+    transformer + v4_8 + functional_no_save + timeouts.Hours(1) + pjrt,
+    transformer + v4_32 + convergence + timeouts.Hours(25) + tpuVm,
+    transformer + v4_32 + convergence + timeouts.Hours(25) + pjrt,
   ],
 }
