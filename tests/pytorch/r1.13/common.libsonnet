@@ -102,7 +102,7 @@ local volumes = import 'templates/volumes.libsonnet';
         # pytorch/xla anyway
         mkdir pytorch
         cd pytorch
-        git clone https://github.com/pytorch/xla.git
+        git clone https://github.com/pytorch/xla.git -b r1.13
       |||,
     },
     podTemplate+:: {
