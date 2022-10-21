@@ -46,7 +46,7 @@ local mixins = import 'templates/mixins.libsonnet';
       export COLUMNS=160
       # Remove 'Captured stdout call' due to b/181896778
       python3 -u -m pytest --tb=short --continue-on-collection-errors \
-          tests examples | sed 's/Captured stdout call/output/'
+         -W default tests examples | sed 's/Captured stdout call/output/'
       exit ${PIPESTATUS[0]}
     ||| % self.scriptConfig,
   },
