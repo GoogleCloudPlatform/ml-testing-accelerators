@@ -14,6 +14,7 @@
 
 local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
 
 {
   local runUnitTests = common.JaxTest + mixins.Functional {
@@ -52,9 +53,9 @@ local mixins = import 'templates/mixins.libsonnet';
   },
 
   configs: [
-    runUnitTests + common.jaxlibHead + common.tpuVmBaseImage,
-    runUnitTests + common.jaxlibLatest + common.tpuVmBaseImage,
-    runUnitTests + common.jaxlibHead + common.tpuVmV4Base,
-    runUnitTests + common.jaxlibLatest + common.tpuVmV4Base,
+    runUnitTests + common.jaxlibHead + timeouts.Minutes(90) + common.tpuVmBaseImage,
+    runUnitTests + common.jaxlibLatest + timeouts.Minutes(90) + common.tpuVmBaseImage,
+    runUnitTests + common.jaxlibHead + timeouts.Minutes(90) + common.tpuVmV4Base,
+    runUnitTests + common.jaxlibLatest + timeouts.Minutes(90) + common.tpuVmV4Base,
   ],
 }
