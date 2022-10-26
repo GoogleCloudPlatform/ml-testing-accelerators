@@ -48,7 +48,9 @@ local mixins = import 'templates/mixins.libsonnet';
       from jax import pmap, lax
       from jax._src.util import prod
       import numpy as np
+      from jax._src.config import config
 
+      config.update('jax_persistent_cache_min_instruction_count', 0)
       cc.initialize_cache("/tmp/compilation_cache_integration_test")
       f = pmap(lambda x: x - lax.psum(x, 'i'), axis_name='i')
       print(f(np.arange(8)))
