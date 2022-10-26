@@ -196,6 +196,9 @@ local utils = import 'templates/utils.libsonnet';
   local v4_8 = {
     accelerator: tpus.v4_8,
   },
+  local v4_32 = {
+    accelerator: tpus.v4_32,
+  },
   configs: [
     dlrm + v3_8 + one_core + timeouts.Hours(3) + mixins.Experimental,
     dlrm + v3_8 + seq_fwd + timeouts.Hours(3) + mixins.Experimental,
@@ -204,5 +207,7 @@ local utils = import 'templates/utils.libsonnet';
     dlrm + v3_8 + criteo_kaggle + timeouts.Hours(6),
     dlrm + v4_8 + criteo_kaggle + timeouts.Hours(25) + tpuVm,
     dlrm + v4_8 + criteo_kaggle + timeouts.Hours(25) + pjrt,
+    dlrm + v4_32 + criteo_kaggle + timeouts.Hours(25) + tpuVm,
+    dlrm + v4_32 + criteo_kaggle + timeouts.Hours(25) + pjrt,
   ],
 }
