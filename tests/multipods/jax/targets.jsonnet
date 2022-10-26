@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local jax_targets = import 'jax/targets.jsonnet';
-local pax_targets = import 'pax/targets.jsonnet';
-local pytorch_targets = import 'pytorch/targets.jsonnet';
-local tensorflow_targets = import 'tensorflow/targets.jsonnet';
-local multipod_jax_targets = import 'multipods/jax/targets.jsonnet';
+local topologyDiscoveryAndDcnBmTests = import 'topology-discovery-and-dcn-bm-tests.libsonnet';
 
-local all_targets = multipod_jax_targets;
-
-// Mapping from unique test name to test config
-{
-  [test.testName]: test
-  for test in all_targets
-}
+std.flattenArrays([
+  topologyDiscoveryAndDcnBmTests.configs,
+])

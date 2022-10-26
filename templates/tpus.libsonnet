@@ -68,5 +68,6 @@ local base = import 'base.libsonnet';
   v2_32: self.TpuSpec { version: 2, size: 32 },
   v3_32: self.TpuSpec { version: 3, size: 32 },
   v4_8: self.TpuSpec { version: 4, size: 8 },
+  v4_16: self.TpuSpec { version: 4, size: 16 },
   v4_32: self.TpuSpec { version: 4, size: 32 },
 }
