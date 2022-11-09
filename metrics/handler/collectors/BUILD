@@ -22,6 +22,7 @@ py_library(
     requirement("absl-py"),
     requirement("numpy"),
     requirement("protobuf"),
+    requirement("pytz"),
   ],
   visibility = ["//visibility:public"],
 )

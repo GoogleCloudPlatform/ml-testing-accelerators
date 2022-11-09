@@ -172,6 +172,10 @@ def process_dataframes(job_status_dataframe, metrics_dataframe):
     elif detailed_status.startswith('failure') and 'metrics' in \
         detailed_status:
       return 'M'
+    elif detailed_status.startswith('missed'):
+      # `X` is used to denote missed executions because `M` is already in use by
+      # metrics failures.
+      return 'X'
     else:
       return detailed_status[:1].upper()
   job_status_dataframe['job_status_abbrev'] = job_status_dataframe[
