@@ -22,7 +22,7 @@ local utils = import 'templates/utils.libsonnet';
     git clone https://github.com/huggingface/transformers.git
     cd transformers && pip install .
     git log -1
-    pip install datasets evaluate sklearn
+    pip install datasets evaluate scikit-learn
     python examples/pytorch/xla_spawn.py \
       --num_cores 8 \
       examples/pytorch/language-modeling/run_mlm.py \

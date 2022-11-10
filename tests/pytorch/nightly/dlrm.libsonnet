@@ -176,7 +176,7 @@ local utils = import 'templates/utils.libsonnet';
   local tpuVm = common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExtraSetup: |||
-        pip3 install tqdm sklearn tensorboardX google-cloud-storage
+        pip3 install tqdm scikit-learn tensorboardX google-cloud-storage
         git clone -b tpu-xrt --single-branch https://github.com/darisoy/dlrm.git dlrm-xrt/
         echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
       |||,
