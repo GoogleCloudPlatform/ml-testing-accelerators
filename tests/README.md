@@ -2,7 +2,7 @@
 
 ## Build Instructions
 
-See [our developing doc](../doc/developing) for build pre-requisites.
+See [our developing doc](../doc/developing.md) for build pre-requisites.
 
 To build all of the templates and output Kubernetes resources, run the following:
 
@@ -74,6 +74,6 @@ Please be mindful of the resources in the project before running this.
 
 To create a new test, start by copying a similar file from the same ML framework and version. Update the training commands as necessary, and add that file to the `targets.jsonnet` in the same directory.
 
-See [here](../metrics_handler/README.md) for details on configuring alerts and recording the training metrics of your test.
+See [here](../metrics/README.md) for details on configuring alerts and recording the training metrics of your test.
 
 Before you send your code for review, we recommend that you run a one-shot test using the command above to ensure that the test works as expected. If you're not sure what the generated name of your test will be, try running `multifile.jsonnet` to see what the file names of the generated tests are.
