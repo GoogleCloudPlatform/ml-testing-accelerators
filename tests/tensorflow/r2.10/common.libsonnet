@@ -78,6 +78,7 @@ local mixins = import 'templates/mixins.libsonnet';
     schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
+    schedule: null,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
