@@ -44,7 +44,7 @@ local volumes = import 'templates/volumes.libsonnet';
       // Number of slices to be created
       slices: 2,
 
-      softwareVersion: 'tpu-vm-v4-base',
+      softwareVersion: 'tpu-vm-base-gvnic',
 
       // Startup script in TPU VM metadata.
       tpuVmStartupScript: 'echo Running startup script',

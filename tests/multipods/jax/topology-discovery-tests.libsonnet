@@ -16,8 +16,11 @@ local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 
 {
-  local runTopologyDiscoveryAndDcnBmTest = common.JaxTest + mixins.Functional {
-    modelName: '%s-topology-discovery' % [self.jaxlibVersion],
+  local runTopologyDiscoveryTest = common.JaxTest + mixins.Functional {
+    modelName: '%s-topo-discovery' % [self.jaxlibVersion],
+
+    // Trigger the test at 09:00 UTC.
+    schedule: '0 9 * * *',
 
     testScript:: |||
       set +x
@@ -42,6 +45,6 @@ local mixins = import 'templates/mixins.libsonnet';
   },
 
   configs: [
-    runTopologyDiscoveryAndDcnBmTest + common.jaxlibHead + common.tpuVmV4Base,
+    runTopologyDiscoveryTest + common.jaxlibNightly + common.tpuVmV4Base,
   ],
 }

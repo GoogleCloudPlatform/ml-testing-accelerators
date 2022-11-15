@@ -21,7 +21,7 @@ local tpus = import 'templates/tpus.libsonnet';
   JaxTest:: common.CloudAcceleratorTest + experimental_multipod.BaseTpuVmMixin {
     local config = self,
 
-    frameworkPrefix: 'jax',
+    frameworkPrefix: 'mp-jax',
     image: 'google/cloud-sdk',
     accelerator: tpus.v4_16,
 
@@ -110,6 +110,7 @@ local tpus = import 'templates/tpus.libsonnet';
           if [[ $? -ne 0 ]]; then
             echo "LOGGER: Set up failed on slice_${i}. Here is the output:"
             cat output_testsetup_${i}.txt
+            bash /scripts/cleanup.sh
             exit 1
           fi
         done
@@ -145,6 +146,7 @@ local tpus = import 'templates/tpus.libsonnet';
             WORKER=$(( ${i} - (${SLICE} * ${SLICE_COUNT}) ))
             echo "LOGGER: Test script failed on slice_${SLICE} & worker_${WORKER}. Here is the output:"
             cat output_slice_${SLICE}_worker_${WORKER}.txt
+            bash /scripts/cleanup.sh
             exit 1
           fi
         done
@@ -205,12 +207,47 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
+  jaxlibNightly:: {
+    jaxlibVersion:: 'nightly',
+    scriptConfig+: {
+      // Install jax without jaxlib or libtpu deps
+      installJax: |||
+        echo "Checking out and installing JAX..."
+        git clone https://github.com/google/jax.git
+
+        cd jax
+        pip install -r build/test-requirements.txt
+
+        pip install -e .
+
+        cd
+      |||,
+      installJaxlib: |||
+        echo "Installing jaxlib from Nightly..."
+        pip install --pre -U jaxlib -f https://storage.googleapis.com/jax-releases/jaxlib_nightly_releases.html
+
+        echo "Jaxlib installation completed..."
+        python3 -c 'import jaxlib; print("jaxlib version:", jaxlib.__version__)'
+      |||,
+      installLibtpu: |||
+        /usr/bin/docker-credential-gcr configure-docker
+        sudo bash /var/scripts/docker-login.sh
+
+        sudo docker create --name libtpu_next gcr.io/cloud-tpu-v2-images-dev/libtpu_unsanitized:nightly "/bin/bash"
+        sudo docker cp libtpu_next:_libtpu_next.so /lib/libtpu.so
+
+        sudo docker rm libtpu_next
+        echo "export TPU_LIBRARY_PATH=/lib/libtpu.so" >> ~/.profile
+      |||,
+    },
+  },
+
   tpuVmV4Base:: {
     local config = self,
     accelerator: tpus.v4_16,
 
     tpuSettings+: {
-      softwareVersion: 'tpu-vm-v4-base',
+      softwareVersion: 'tpu-vm-base-gvnic',
     },
     scriptConfig+: {
       testEnvWorkarounds: |||

@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local topologyDiscoveryAndDcnBmTests = import 'topology-discovery-and-dcn-bm-tests.libsonnet';
+local topologyDiscoveryTests = import 'topology-discovery-tests.libsonnet';
 
 std.flattenArrays([
-  topologyDiscoveryAndDcnBmTests.configs,
+  topologyDiscoveryTests.configs,
 ])
