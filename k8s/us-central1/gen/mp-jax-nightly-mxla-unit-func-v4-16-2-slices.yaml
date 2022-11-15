@@ -1,0 +1,365 @@
+# Copyright 2020 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"apiVersion": "batch/v1"
+"kind": "CronJob"
+"metadata":
+  "labels":
+    "accelerator": "v4-16"
+    "benchmarkId": "mp-jax-nightly-mxla-unit-func-v4-16-2-slices"
+    "frameworkVersion": "mp-jax"
+    "mode": "func"
+    "model": "nightly-mxla-unit"
+  "name": "mp-jax-nightly-mxla-unit-func-v4-16-2-slices"
+  "namespace": "automated"
+"spec":
+  "concurrencyPolicy": "Forbid"
+  "jobTemplate":
+    "metadata":
+      "annotations":
+        "ml-testing-accelerators/gcs-subdir": "mp-jax/nightly-mxla-unit/func/v4-16"
+        "ml-testing-accelerators/metric-config": |
+          {
+            "sources": [
+              {
+                "tensorboard": {
+                  "aggregate_assertions": [
+          
+                  ],
+                  "exclude_tags": [
+                    "_hparams_/session_start_info"
+                  ],
+                  "include_tags": [
+                    {
+                      "strategies": [
+                        "FINAL"
+                      ],
+                      "tag_pattern": "*"
+                    }
+                  ],
+                  "merge_runs": true
+                }
+              }
+            ]
+          }
+      "labels":
+        "accelerator": "v4-16"
+        "benchmarkId": "mp-jax-nightly-mxla-unit-func-v4-16-2-slices"
+        "frameworkVersion": "mp-jax"
+        "mode": "func"
+        "model": "nightly-mxla-unit"
+    "spec":
+      "activeDeadlineSeconds": 3600
+      "backoffLimit": 0
+      "template":
+        "metadata":
+          "annotations":
+            "reserved.cloud-tpus.google.com": "false"
+            "tf-version.cloud-tpus.google.com": "tpu-vm-base-gvnic"
+        "spec":
+          "containers":
+          - "args":
+            - "bash"
+            - "-c"
+            - |
+              set +x
+              set -u
+              
+              cat > testsetup.sh << SCRIPT_EOF
+              set +x
+              set -u
+              set -e
+              
+              # .bash_logout sometimes causes a spurious bad exit code, remove it.
+              rm .bash_logout
+              
+              echo "Installing Numpy, six and wheel"
+              pip install numpy six wheel
+              
+              echo "Checking out and installing JAX..."
+              git clone https://github.com/google/jax.git
+              
+              cd jax
+              pip install -r build/test-requirements.txt
+              
+              pip install -e .
+              
+              cd
+              
+              echo "Installing jaxlib from Nightly..."
+              pip install --pre -U jaxlib -f https://storage.googleapis.com/jax-releases/jaxlib_nightly_releases.html
+              
+              echo "Jaxlib installation completed..."
+              python3 -c 'import jaxlib; print("jaxlib version:", jaxlib.__version__)'
+              
+              /usr/bin/docker-credential-gcr configure-docker
+              sudo bash /var/scripts/docker-login.sh
+              
+              sudo docker create --name libtpu_next gcr.io/cloud-tpu-v2-images-dev/libtpu_unsanitized:nightly "/bin/bash"
+              sudo docker cp libtpu_next:_libtpu_next.so /lib/libtpu.so
+              
+              sudo docker rm libtpu_next
+              echo "export TPU_LIBRARY_PATH=/lib/libtpu.so" >> ~/.profile
+              
+              SCRIPT_EOF
+              
+              setup_process_ids=()
+              
+              SLICE_COUNT=$(cat /scripts/slice_count)
+              ZONE=$(cat /scripts/zone)
+              
+              for (( i=0; i < ${SLICE_COUNT}; i++ )); do
+                gcloud alpha compute tpus tpu-vm ssh cloud-tpu-multipod-dev@$(cat /scripts/tpu_name_${i}) \
+                --zone=${ZONE} \
+                --ssh-key-file=/scripts/id_rsa \
+                --strict-host-key-checking=no \
+                --internal-ip \
+                --worker=all \
+                --command "$(cat testsetup.sh)" >> output_testsetup_${i}.txt 2>&1 &
+              
+                setup_process_ids+=($!)
+              done
+              
+              echo "LOGGER: Waiting for test setup to be installed on all TPU VM hosts in ${SLICE_COUNT} slices."
+              
+              for i in "${!setup_process_ids[@]}"; do
+                wait ${setup_process_ids[$i]}
+                if [[ $? -ne 0 ]]; then
+                  echo "LOGGER: Set up failed on slice_${i}. Here is the output:"
+                  cat output_testsetup_${i}.txt
+                  bash /scripts/cleanup.sh
+                  exit 1
+                fi
+              done
+              
+              echo "LOGGER: Test set up completed successfully on ${SLICE_COUNT} slices."
+              
+              test_script_process_ids=()
+              
+              cat > test_script.sh << TEST_SCRIPT_EOF
+              set +x
+              set -u
+              set -e
+              
+              . ~/.profile
+              
+              python3 -c 'import jax; print("jax version:", jax.__version__)'
+              python3 -c 'import jaxlib; print("jaxlib version:", jaxlib.__version__)'
+              echo "Environment Variable List:"
+              printenv
+              
+              
+              export TPU_NAME=local
+              export TPU_STDERR_LOG_LEVEL=0
+              export TPU_MIN_LOG_LEVEL=0
+              export TPU_VMODULE=tpu_configuration_ops_impl=3
+              export JAX_USE_PJRT_C_API_ON_TPU=1
+              export TF_CPP_MIN_LOG_LEVEL=0
+              
+              git clone --single-branch --branch multipod-tests https://github.com/GoogleCloudPlatform/ml-testing-accelerators.git --depth=1
+              
+              python3 ml-testing-accelerators/tests/multipods/jax/unit_tests/mxla_jax_test.py
+              
+              exit 0
+              
+              TEST_SCRIPT_EOF
+              
+              for (( i=0; i < ${SLICE_COUNT}; i++ )); do
+                for (( j=0; j < $(cat /scripts/worker_count_slice_${i}); j++ )); do
+                  gcloud alpha compute tpus tpu-vm ssh cloud-tpu-multipod-dev@$(cat /scripts/tpu_name_${i}) \
+                  --zone=${ZONE} \
+                  --ssh-key-file=/scripts/id_rsa \
+                  --strict-host-key-checking=no \
+                  --internal-ip \
+                  --worker=${j} \
+                  --command "$(cat test_script.sh)" >> output_slice_${i}_worker_${j}.txt 2>&1 &
+              
+                  test_script_process_ids+=($!)
+                done
+              done
+              
+              echo "LOGGER: Waiting for test scripts to be completed on all TPU VM hosts in ${SLICE_COUNT} slices."
+              
+              for i in "${!test_script_process_ids[@]}"; do
+                wait ${test_script_process_ids[$i]}
+                if [[ $? -ne 0 ]]; then
+                  SLICE=$((${i}/${SLICE_COUNT}))
+                  WORKER=$(( ${i} - (${SLICE} * ${SLICE_COUNT}) ))
+                  echo "LOGGER: Test script failed on slice_${SLICE} & worker_${WORKER}. Here is the output:"
+                  cat output_slice_${SLICE}_worker_${WORKER}.txt
+                  bash /scripts/cleanup.sh
+                  exit 1
+                fi
+              done
+              
+              echo "LOGGER: Test script completed successfully on all the TPU VM hosts of ${SLICE_COUNT} slices. Here is the output from Slice 0:"
+              cat output_slice_0_worker_0.txt
+              
+              echo "LOGGER: Cleaning up the TPU VM resources:"
+              
+              sleep 60
+              
+              bash /scripts/cleanup.sh
+              
+              exit_code=$?
+              
+              exit $exit_code
+            "env":
+            - "name": "POD_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.name"
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            - "name": "POD_NAMESPACE"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.namespace"
+            - "name": "JOB_NAME"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.labels['job-name']"
+            - "name": "MODEL_DIR"
+              "value": "$(OUTPUT_BUCKET)/mp-jax/nightly-mxla-unit/func/v4-16/$(JOB_NAME)"
+            - "name": "KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS"
+              "value": "tpu-$(POD_UID)"
+            - "name": "LOCAL_OUTPUT_DIR"
+              "value": "/tmp/model_dir"
+            "envFrom":
+            - "configMapRef":
+                "name": "gcs-buckets"
+            "image": "google/cloud-sdk"
+            "imagePullPolicy": "Always"
+            "lifecycle":
+              "preStop":
+                "exec":
+                  "command":
+                  - "bash"
+                  - "/scripts/cleanup.sh"
+            "name": "train"
+            "resources":
+              "limits":
+                "tpu.googleapis.com/v4": 16
+              "requests":
+                "cpu": 1
+                "memory": "2Gi"
+            "volumeMounts":
+            - "mountPath": "/scripts"
+              "name": "scripts"
+              "readOnly": false
+          "initContainers":
+          - "command":
+            - "/bin/bash"
+            - "-c"
+            - |
+              set -u
+              set -e
+              set -x
+              
+              set +x
+              project=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google")
+              zone=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google" | awk -F'/' '{print $4}')
+              tpu_name_prefix=tpu-${POD_UID}
+              ssh-keygen -t rsa -f /scripts/id_rsa -q -N ""
+              
+              echo "${project}:$(cat /scripts/id_rsa.pub)" > ssh-keys.txt
+              echo 'echo Running startup script' > startup-script.txt
+              
+              echo 2 >> /scripts/slice_count
+              for (( i=0; i < 2; i++ )); do
+                tpu_name=${tpu_name_prefix}-${i}
+                echo "
+                gcloud alpha compute tpus tpu-vm delete -q ${tpu_name} --zone=${zone}
+                " > /scripts/cleanup_${i}.sh
+              
+                echo "
+                bash /scripts/cleanup_${i}.sh
+                " >> /scripts/cleanup.sh
+              
+                # Retry every 30 seconds for 10 minutes
+                for j in {1..20}; do
+                  set +e
+                  gcloud alpha compute tpus tpu-vm create ${tpu_name} \
+                    --accelerator-type='v4-16' \
+                    --version='tpu-vm-base-gvnic'  \
+                    --metadata-from-file='ssh-keys=ssh-keys.txt,startup-script=startup-script.txt' \
+                    --labels='test-name=mp-jax-nightly-mxla-unit-func-v4-16-2-slices' \
+                    --zone=${zone}
+              
+                  exit_code=$?
+                  set -e
+                  test $exit_code = 0 && break || sleep 30;
+                done
+              
+                if [ $exit_code -ne 0 ]; then
+                  exit $exit_code
+                fi
+              
+                echo ${tpu_name} >> /scripts/tpu_name_${i}
+              
+                if [ ${i} -eq 0 ]; then
+                  gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(networkEndpoints[0].ipAddress)" > /scripts/coordinator_ip
+                fi
+                gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(networkEndpoints[0].ipAddress)" >> /scripts/tpu_ip_slice_${i}
+                gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --flatten="networkEndpoints[]" --format="csv[no-heading](networkEndpoints.ipAddress)" >> /scripts/all_tpu_ips_slice_${i}
+                wc -l < /scripts/all_tpu_ips_slice_${i} >> /scripts/worker_count_slice_${i}
+              done
+              
+              sleep 60
+              
+              COORDINATOR_IP=$(cat /scripts/coordinator_ip)
+              SLICE_COUNT=$(cat /scripts/slice_count)
+              
+              for (( i=0; i < 2; i++ )); do
+                cat > set_mxla_flags.sh << SCRIPT_EOF
+                echo "export MEGASCALE_COORDINATOR_ADDRESS=${COORDINATOR_IP}:8080" >> ~/.profile
+                echo "export MEGASCALE_NUM_SLICES=${SLICE_COUNT}" >> ~/.profile
+                echo "export MEGASCALE_SLICE_ID=${i}" >> ~/.profile
+              SCRIPT_EOF
+              
+                gcloud alpha compute tpus tpu-vm ssh cloud-tpu-multipod-dev@$(cat /scripts/tpu_name_${i}) \
+                --zone=${zone} \
+                --ssh-key-file=/scripts/id_rsa \
+                --strict-host-key-checking=no \
+                --internal-ip \
+                --worker=all \
+                --command "$(cat set_mxla_flags.sh)"
+              done
+              
+              echo ${zone} > /scripts/zone
+              
+              echo "LOGGER: TPU VMs created successfully."
+              
+            "env":
+            - "name": "POD_UID"
+              "valueFrom":
+                "fieldRef":
+                  "fieldPath": "metadata.uid"
+            "image": "google/cloud-sdk"
+            "name": "create-tpu-slices"
+            "volumeMounts":
+            - "mountPath": "/scripts"
+              "name": "scripts"
+          "nodeSelector":
+            "tpu-available": "true"
+          "priorityClassName": "tpu-pod"
+          "restartPolicy": "Never"
+          "volumes":
+          - "emptyDir":
+              "medium": "Memory"
+            "name": "scripts"
+  "schedule": "0 9 * * *"
+  "successfulJobsHistoryLimit": 1

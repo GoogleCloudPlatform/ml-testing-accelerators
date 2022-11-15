@@ -13,7 +13,9 @@
 // limitations under the License.
 
 local topologyDiscoveryTests = import 'topology-discovery-tests.libsonnet';
+local mxlaUnitTests = import 'mxla-unit-tests.libsonnet';
 
 std.flattenArrays([
   topologyDiscoveryTests.configs,
+  mxlaUnitTests.configs,
 ])
