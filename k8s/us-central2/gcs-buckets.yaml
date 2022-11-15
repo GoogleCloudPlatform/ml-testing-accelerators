@@ -29,6 +29,7 @@ data:
   TRANSFORMER_DIR: gs://xl-ml-test-us-central2/data/transformer
   TF1_BERT_DIR: gs://xl-ml-test-us-central2/data/old-bert
   T2T_TRANSFORMER_DIR: gs://xl-ml-test-us-central2/data/old-transformer
+  TF_NLP_BERT_DIR: gs://cloud-tpu-checkpoints/bert/tf_nlp_bert
   LITS_DIR: gs://xl-ml-test-us-central2/data/liver-seg
   SHAPEMASK_DIR: gs://xl-ml-test-us-central2/data/shapemask
   PERFZERO_DATA_DIR: gs://xl-ml-test-us-central2/data
@@ -37,4 +38,3 @@ data:
   XLNET_CHECKPOINT_DIR: gs://cloud-tpu-checkpoints/xlnet/keras_xlnet
   XLNET_IMDB_DIR: gs://xl-ml-test-us-central2/data/xlnet-imdb
   XLNET_SQUAD_DIR: gs://xl-ml-test-us-central2/data/xlnet-squad
-  TF_NLP_BERT_DIR: gs://cloud-tpu-checkpoints/bert/tf_nlp_bert
