@@ -24,6 +24,7 @@ message TestCompletedEvent {
     COMPLETED = 0;
     FAILED = 1;
     TIMEOUT = 2;
+    MISSED = 3;
   }
 
   string benchmark_id = 1;

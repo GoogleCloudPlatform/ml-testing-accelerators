@@ -46,13 +46,10 @@ local mixins = import 'templates/mixins.libsonnet';
       runnerPath: 'official/nlp/train.py',
     },
   },
-  local functional_schedule = '0 7 * * *',
+  // Trigger the tests at 23:00 UTC.
+  local functional_schedule = '0 23 * * *',
   Functional:: mixins.Functional {
-    schedule:
-      if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' || self.accelerator.name == 'v4-8' then
-        functional_schedule
-      else
-        null,
+    schedule: functional_schedule,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -77,6 +74,7 @@ local mixins = import 'templates/mixins.libsonnet';
     schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
+    schedule: '0 1 * * *',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -95,14 +93,6 @@ local mixins = import 'templates/mixins.libsonnet';
           },
         },
       },
-    },
-  },
-  ServingTest:: common.ServingTest {
-    local config = self,
-    image: 'gcr.io/xl-ml-test/allencwang-load-test',
-    frameworkPrefix: 'tf-nightly',
-    servingConfig+: {
-      modelServerImage: 'gcr.io/xl-ml-test/allencwang-tf-serving-tpu:latest',
     },
   },
 }

@@ -13,6 +13,8 @@ import pandas as pd
 
 SAMPLE_LOGS_LINK = 'https://console.cloud.google.com/logs?project=xl-ml-test&advancedFilter=resource.type%3Dk8s_container%0Aresource.labels.project_id%3Dxl-ml-test%0Aresource.labels.location=us-central1-b%0Aresource.labels.cluster_name=xl-ml-test%0Aresource.labels.namespace_name=automated%0Aresource.labels.pod_name:pt-1.5-cpp-ops-func-v2-8-1587398400&dateRangeUnbound=backwardInTime'
 
+SAMPLE_WORKLOAD_LINK = 'https://console.cloud.google.com/kubernetes/job/europe-west4/xl-ml-test-europe-west4/automated/jax-pod-latest-tpu-vm-base-func-v2-32-1vm-27799680/logs?project=xl-ml-test'
+
 def _get_values_for_failures(values, statuses):
   return [zipped[0] for zipped in zip(
       values, statuses) if zipped[1] == 'failure']
@@ -41,6 +43,11 @@ class MainHeatmapTest(parameterized.TestCase):
         'metric_statuses': ['success', 'success', 'failure'],
         'expected_overall_statuses': ['success', 'failure', 'failure'],
         'expected_job_status_abbrevs': ['', 'F', 'M']}),
+    ('some_missed_some_failed_some_oob', {
+        'job_statuses': ['missed', 'failure', 'success'],
+        'metric_statuses': ['success', 'success', 'failure'],
+        'expected_overall_statuses': ['missed', 'failure', 'failure'],
+        'expected_job_status_abbrevs': ['X', 'F', 'M']}),
   )
   def test_process_dataframes(self, args_dict):
     job_statuses = args_dict['job_statuses']
@@ -53,6 +60,7 @@ class MainHeatmapTest(parameterized.TestCase):
             len(job_statuses))]),
         'job_status': pd.Series(job_statuses),
         'logs_link': pd.Series([SAMPLE_LOGS_LINK for _ in job_statuses]),
+        'workload_link': pd.Series([SAMPLE_WORKLOAD_LINK for _ in job_statuses]),
         'logs_download_command': pd.Series(
             ['my command'] + ['' for _ in job_statuses[1:]]),
     })

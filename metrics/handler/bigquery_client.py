@@ -31,6 +31,7 @@ PROTO_STATUS_TO_BQ_STATUS = {
   metrics_pb2.TestCompletedEvent.COMPLETED: 'success',
   metrics_pb2.TestCompletedEvent.FAILED: 'failure',
   metrics_pb2.TestCompletedEvent.TIMEOUT: 'timeout',
+  metrics_pb2.TestCompletedEvent.MISSED: 'missed',
 }
 
 @dataclasses.dataclass
