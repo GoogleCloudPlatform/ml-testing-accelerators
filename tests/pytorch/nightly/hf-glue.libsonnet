@@ -35,17 +35,17 @@ local utils = import 'templates/utils.libsonnet';
       model_name_or_path: 'bert-base-cased',
       per_device_train_batch_size: 64,
       per_device_eval_batch_size: 64,
-    }, 
+    },
     command: utils.scriptCommand(
       |||
         %s 
         %s 
         %s 
-      ||| % [ 
-              command_common,
-              utils.toCommandString(self.paramsOverride.trainCommand),
-              command_copy_metrics,
-       ]
+      ||| % [
+        command_common,
+        utils.toCommandString(self.paramsOverride.trainCommand),
+        command_copy_metrics,
+      ]
     ),
     metricConfig+: {
       sourceMap+:: {
@@ -72,17 +72,17 @@ local utils = import 'templates/utils.libsonnet';
       model_name_or_path: 'xlnet-large-cased',
       per_device_train_batch_size: 32,
       per_device_eval_batch_size: 16,
-    }, 
+    },
     command: utils.scriptCommand(
       |||
         %s 
         %s 
         %s 
-      ||| % [ 
-              command_common,
-              utils.toCommandString(self.paramsOverride.trainCommand),
-              command_copy_metrics,
-       ]
+      ||| % [
+        command_common,
+        utils.toCommandString(self.paramsOverride.trainCommand),
+        command_copy_metrics,
+      ]
     ),
     metricConfig+: {
       sourceMap+:: {
@@ -109,17 +109,17 @@ local utils = import 'templates/utils.libsonnet';
       model_name_or_path: 'roberta-large',
       per_device_train_batch_size: 16,
       per_device_eval_batch_size: 16,
-    }, 
+    },
     command: utils.scriptCommand(
       |||
         %s 
         %s 
         %s 
-      ||| % [ 
-              command_common,
-              utils.toCommandString(self.paramsOverride.trainCommand),
-              command_copy_metrics,
-       ]
+      ||| % [
+        command_common,
+        utils.toCommandString(self.paramsOverride.trainCommand),
+        command_copy_metrics,
+      ]
     ),
     metricConfig+: {
       sourceMap+:: {
@@ -146,17 +146,17 @@ local utils = import 'templates/utils.libsonnet';
       model_name_or_path: 'distilbert-base-uncased',
       per_device_train_batch_size: 512,
       per_device_eval_batch_size: 512,
-    }, 
+    },
     command: utils.scriptCommand(
       |||
         %s 
         %s 
         %s 
-      ||| % [ 
-              command_common,
-              utils.toCommandString(self.paramsOverride.trainCommand),
-              command_copy_metrics,
-       ]
+      ||| % [
+        command_common,
+        utils.toCommandString(self.paramsOverride.trainCommand),
+        command_copy_metrics,
+      ]
     ),
     metricConfig+: {
       sourceMap+:: {
@@ -244,7 +244,7 @@ local utils = import 'templates/utils.libsonnet';
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
-  },  
+  },
   local v4_8 = {
     accelerator: tpus.v4_8,
   },
