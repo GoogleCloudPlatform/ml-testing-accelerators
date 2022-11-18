@@ -106,7 +106,7 @@ local utils = import 'templates/utils.libsonnet';
     hf_bert_common + mnli + functional + v3 + v3_8,
     hf_bert_common + mrpc + functional + v3 + v3_8,
 
-    hf_bert_common + mnli + functional + v2 + v2_8,
+    hf_bert_common + mnli + functional + v2 + v2_8 + timeouts.Minutes(75),
     hf_bert_common + mrpc + functional + v2 + v2_8,
   ],
 }
