@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License,
 
+local hf_bart = import 'hf-bart.libsonnet';
 local hf_glue = import 'hf-glue.libsonnet';
 local hf_vit = import 'hf-vit.libsonnet';
 local imagenet = import 'imagenet.libsonnet';
@@ -20,6 +21,7 @@ local wmt = import 'wmt.libsonnet';
 
 // Add new models here
 std.flattenArrays([
+  hf_bart.configs,
   hf_vit.configs,
   hf_glue.configs,
   imagenet.configs,
