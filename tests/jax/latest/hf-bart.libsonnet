@@ -76,39 +76,36 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  local tpuVm = common.tpuVmBaseImage,
-  local tpuVmV4 = common.tpuVmV4Base,
-
-  local v2_8 = {
+  local v2_8 = common.tpuVmBaseImage {
     accelerator: tpus.v2_8,
   },
-  local v2_32 = {
+  local v2_32 = common.tpuVmBaseImage {
     accelerator: tpus.v2_32,
   },
-  local v3_8 = {
+  local v3_8 = common.tpuVmBaseImage {
     accelerator: tpus.v3_8,
   },
-  local v3_32 = {
+  local v3_32 = common.tpuVmBaseImage {
     accelerator: tpus.v3_32,
   },
-  local v4_8 = {
+  local v4_8 = common.tpuVmV4Base {
     accelerator: tpus.v4_8,
   },
-  local v4_32 = {
+  local v4_32 = common.tpuVmV4Base {
     accelerator: tpus.v4_32,
   },
 
   local func_tests = [
-    hf_bart_common + func + tpuVm + v2_8,
-    hf_bart_common + func + tpuVm + v2_32,
-    hf_bart_common + func + tpuVm + v3_8,
-    hf_bart_common + func + tpuVm + v3_32,
-    hf_bart_common + func + tpuVmV4 + v4_8,
-    hf_bart_common + func + tpuVmV4 + v4_32,
+    hf_bart_common + func + v2_8,
+    hf_bart_common + func + v2_32,
+    hf_bart_common + func + v3_8,
+    hf_bart_common + func + v3_32,
+    hf_bart_common + func + v4_8,
+    hf_bart_common + func + v4_32,
   ],
 
   local conv_tests = [
-    hf_bart_common + conv + tpuVmV4 + v4_32,
+    hf_bart_common + conv + v4_32,
   ],
 
   configs: func_tests + conv_tests,
