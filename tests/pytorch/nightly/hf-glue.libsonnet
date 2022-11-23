@@ -36,17 +36,6 @@ local utils = import 'templates/utils.libsonnet';
       per_device_train_batch_size: 64,
       per_device_eval_batch_size: 64,
     },
-    command: utils.scriptCommand(
-      |||
-        %s 
-        %s 
-        %s 
-      ||| % [
-        command_common,
-        utils.toCommandString(self.paramsOverride.trainCommand),
-        command_copy_metrics,
-      ]
-    ),
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -56,117 +45,6 @@ local utils = import 'templates/utils.libsonnet';
                 fixed_value: {
                   comparison: 'GREATER',
                   value: 0.80,
-                },
-                inclusive_bounds: false,
-                wait_for_n_data_points: 0,
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-  local xlnet_large_cased = common.Convergence {
-    modelName: 'hf-glue-xlnet-l-c',
-    paramsOverride+:: {
-      model_name_or_path: 'xlnet-large-cased',
-      per_device_train_batch_size: 32,
-      per_device_eval_batch_size: 16,
-    },
-    command: utils.scriptCommand(
-      |||
-        %s 
-        %s 
-        %s 
-      ||| % [
-        command_common,
-        utils.toCommandString(self.paramsOverride.trainCommand),
-        command_copy_metrics,
-      ]
-    ),
-    metricConfig+: {
-      sourceMap+:: {
-        tensorboard+: {
-          aggregateAssertionsMap+:: {
-            'eval/accuracy': {
-              FINAL: {
-                fixed_value: {
-                  comparison: 'GREATER',
-                  value: 0.85,
-                },
-                inclusive_bounds: false,
-                wait_for_n_data_points: 0,
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-  local roberta_large = common.Convergence {
-    modelName: 'hf-glue-roberta-l',
-    paramsOverride+:: {
-      model_name_or_path: 'roberta-large',
-      per_device_train_batch_size: 16,
-      per_device_eval_batch_size: 16,
-    },
-    command: utils.scriptCommand(
-      |||
-        %s 
-        %s 
-        %s 
-      ||| % [
-        command_common,
-        utils.toCommandString(self.paramsOverride.trainCommand),
-        command_copy_metrics,
-      ]
-    ),
-    metricConfig+: {
-      sourceMap+:: {
-        tensorboard+: {
-          aggregateAssertionsMap+:: {
-            'eval/accuracy': {
-              FINAL: {
-                fixed_value: {
-                  comparison: 'GREATER',
-                  value: 0.85,
-                },
-                inclusive_bounds: false,
-                wait_for_n_data_points: 0,
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-  local distilbert_base_uncased = common.Convergence {
-    modelName: 'hf-glue-distilbert-b-uc',
-    paramsOverride+:: {
-      model_name_or_path: 'distilbert-base-uncased',
-      per_device_train_batch_size: 512,
-      per_device_eval_batch_size: 512,
-    },
-    command: utils.scriptCommand(
-      |||
-        %s 
-        %s 
-        %s 
-      ||| % [
-        command_common,
-        utils.toCommandString(self.paramsOverride.trainCommand),
-        command_copy_metrics,
-      ]
-    ),
-    metricConfig+: {
-      sourceMap+:: {
-        tensorboard+: {
-          aggregateAssertionsMap+:: {
-            'eval/accuracy': {
-              FINAL: {
-                fixed_value: {
-                  comparison: 'GREATER',
-                  value: 0.70,
                 },
                 inclusive_bounds: false,
                 wait_for_n_data_points: 0,
@@ -207,6 +85,17 @@ local utils = import 'templates/utils.libsonnet';
         '--per_device_eval_batch_size=%d ' % config.paramsOverride.per_device_train_batch_size,
       ],
     },
+    command: utils.scriptCommand(
+      |||
+        %s 
+        %s 
+        %s 
+      ||| % [
+        command_common,
+        utils.toCommandString(self.paramsOverride.trainCommand),
+        command_copy_metrics,
+      ]
+    ),
     podTemplate+:: {
       spec+: {
         containerMap+: {
@@ -222,16 +111,90 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  local xlnet_large_cased = common.Convergence {
+    modelName: 'hf-glue-xlnet-l-c',
+    paramsOverride+:: {
+      model_name_or_path: 'xlnet-large-cased',
+      per_device_train_batch_size: 32,
+      per_device_eval_batch_size: 16,
+    },
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'eval/accuracy': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 0.85,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  local roberta_large = common.Convergence {
+    modelName: 'hf-glue-roberta-l',
+    paramsOverride+:: {
+      model_name_or_path: 'roberta-large',
+      per_device_train_batch_size: 16,
+      per_device_eval_batch_size: 16,
+    },
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'eval/accuracy': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 0.85,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  local distilbert_base_uncased = common.Convergence {
+    modelName: 'hf-glue-distilbert-b-uc',
+    paramsOverride+:: {
+      model_name_or_path: 'distilbert-base-uncased',
+      per_device_train_batch_size: 512,
+      per_device_eval_batch_size: 512,
+    },
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'eval/accuracy': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 0.70,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
   local tpuVm = common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=$(XLA_USE_BF16)
       |||,
       tpuVmExtraSetup: |||
-        pip install pathlib tensorboardX google-cloud-storage
-        git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
-        pip install --editable ./tpu-examples/deps/fairseq
-        echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
         echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
       |||,
     },
@@ -251,9 +214,9 @@ local utils = import 'templates/utils.libsonnet';
   configs: [
     hf_glue + v2_8 + bert_base_cased + timeouts.Hours(2),
     hf_glue + v3_8 + xlnet_large_cased + timeouts.Hours(5),
-    hf_glue + v3_8 + roberta_large + timeouts.Hours(4),
+    hf_glue + v3_8 + roberta_large + timeouts.Hours(8),
     hf_glue + v3_8 + distilbert_base_uncased + timeouts.Hours(2),
-    hf_glue + v4_8 + roberta_large + timeouts.Hours(4) + tpuVm,
-    hf_glue + v4_8 + distilbert_base_uncased + timeouts.Hours(4) + pjrt,
+    hf_glue + v4_8 + roberta_large + timeouts.Hours(6) + tpuVm,
+    hf_glue + v4_8 + distilbert_base_uncased + timeouts.Hours(2) + pjrt,
   ],
 }
