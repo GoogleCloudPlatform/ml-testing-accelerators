@@ -1,3 +1,4 @@
+import jax
 from jax.experimental import multihost_utils
 
 if __name__ == '__main__':
