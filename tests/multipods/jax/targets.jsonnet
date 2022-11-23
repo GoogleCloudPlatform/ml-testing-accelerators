@@ -14,8 +14,10 @@
 
 local topologyDiscoveryTests = import 'topology-discovery-tests.libsonnet';
 local mxlaUnitTests = import 'mxla-unit-tests.libsonnet';
+local syncDevicesTests = import 'sync-devices.libsonnet';
 
 std.flattenArrays([
   topologyDiscoveryTests.configs,
   mxlaUnitTests.configs,
+  syncDevicesTests.configs
 ])
