@@ -17,7 +17,10 @@ local tpus = import 'templates/tpus.libsonnet';
       	set -u
       	set -e
       	. ~/.profile
-      	export TPU_NAME=local
+
+	%(printDiagnostics)s
+
+	export TPU_NAME=local
       	export TPU_STDERR_LOG_LEVEL=0
       	export TPU_MIN_LOG_LEVEL=0
       	export JAX_USE_PJRT_C_API_ON_TPU=1
@@ -26,7 +29,7 @@ local tpus = import 'templates/tpus.libsonnet';
 	git clone --single-branch --branch multipod-tests https://github.com/GoogleCloudPlatform/ml-testing-accelerators.git --depth=1
       	python3 ml-testing-accelerators/tests/multipods/pax/unit_tests/sync_devices.py
       	exit 0
-      |||,
+      ||| % self.scriptConfig,
     },
 
     configs: [
