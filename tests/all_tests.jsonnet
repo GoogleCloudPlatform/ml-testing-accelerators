@@ -17,8 +17,9 @@ local pax_targets = import 'pax/targets.jsonnet';
 local pytorch_targets = import 'pytorch/targets.jsonnet';
 local tensorflow_targets = import 'tensorflow/targets.jsonnet';
 local multipod_jax_targets = import 'multipods/jax/targets.jsonnet';
+local multipod_pax_targets = import 'multipods/pax/targets.jsonnet';
 
-local all_targets = multipod_jax_targets;
+local all_targets = multipod_jax_targets + multipod_pax_targets;
 
 // Mapping from unique test name to test config
 {
