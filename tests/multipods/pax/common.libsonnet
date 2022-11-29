@@ -85,7 +85,7 @@ local tpus = import 'templates/tpus.libsonnet';
         %(installJax)s
         %(installJaxlib)s
         %(installLibtpu)s
-	%(installPax)s
+        %(installPax)s
         SCRIPT_EOF
 
         setup_process_ids=()
@@ -165,7 +165,7 @@ local tpus = import 'templates/tpus.libsonnet';
         exit_code=$?
 
         exit $exit_code
-      ||| % {testScript: config.testScript, installPipPackages: config.scriptConfig.installPipPackages, installJax: config.scriptConfig.installJax, installJaxlib: config.scriptConfig.installJaxlib, installLibtpu: config.scriptConfig.installLibtpu},
+      ||| % {testScript: config.testScript, installPipPackages: config.scriptConfig.installPipPackages, installJax: config.scriptConfig.installJax, installJaxlib: config.scriptConfig.installJaxlib, installLibtpu: config.scriptConfig.installLibtpu, installPax: config.scriptConfig.installPax},
     ],
   },
 
@@ -217,7 +217,6 @@ local tpus = import 'templates/tpus.libsonnet';
 
   paxNightly:: {
     paxVersion:: 'nightly',
-    buildDate:: '$(date +%Y%m%d)',
     scriptConfig+: {
       // Install jax without jaxlib or libtpu deps
       installJax: |||
@@ -249,19 +248,20 @@ local tpus = import 'templates/tpus.libsonnet';
         echo "export TPU_LIBRARY_PATH=/lib/libtpu.so" >> ~/.profile
       |||,
       installPax: |||
-	echo "Installing nightly Pax"
-	gsutil cp gs://pax-on-cloud-tpu-project/wheels/%(buildDate)s/paxml*.whl .
-	gsutil cp gs://pax-on-cloud-tpu-project/wheels/%(buildDate)s/praxis*.whl .
-	if [ -f praxis*.whl -a -f paxml*.whl ]; then
-	    echo "Nightly builds succeeded."
-	else
-	    echo "Nighlty builds failed or are pending."
-	    exit 1
-	fi
-
-	pip install praxis*.whl
-	pip install paxml*.whl
-      ||| % {buildDate: self.buildDate},
+        today=$(date + +%Y%m%d)
+        echo "Installing nightly Pax"
+        gsutil cp gs://pax-on-cloud-tpu-project/wheels/${today}/paxml*.whl .
+        gsutil cp gs://pax-on-cloud-tpu-project/wheels/${today}/praxis*.whl .
+        if [ -f praxis*.whl -a -f paxml*.whl ]; then
+          echo "Nightly builds succeeded."
+        else
+          echo "Nighlty builds failed or are pending."
+          exit 1
+        fi
+        
+        pip install praxis*.whl
+        pip install paxml*.whl
+      |||,
     },
   },
 
