@@ -18,10 +18,10 @@ local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  JaxTest:: common.CloudAcceleratorTest + experimental_multipod.BaseTpuVmMixin {
+  PaxTest:: common.CloudAcceleratorTest + experimental_multipod.BaseTpuVmMixin {
     local config = self,
 
-    frameworkPrefix: 'mp-jax',
+    frameworkPrefix: 'mp-pax',
     image: 'google/cloud-sdk',
     accelerator: tpus.v4_16,
 
@@ -69,106 +69,108 @@ local tpus = import 'templates/tpus.libsonnet';
       'bash',
       '-c',
       |||
-        set +x
-        set -u
+      set +x
+      set -u
 
-        cat > testsetup.sh << SCRIPT_EOF
-        set +x
-        set -u
-        set -e
+      cat > testsetup.sh << SCRIPT_EOF
+      set +x
+      set -u
+      set -e
 
-        # .bash_logout sometimes causes a spurious bad exit code, remove it.
-        rm .bash_logout
+      # .bash_logout sometimes causes a spurious bad exit code, remove it.
+      rm .bash_logout
 
-        %(installPipPackages)s
-        %(installJax)s
-        %(installJaxlib)s
-        %(installLibtpu)s
-        SCRIPT_EOF
+      %(installPipPackages)s
+      %(installJax)s
+      %(installJaxlib)s
+      %(installLibtpu)s
+      %(installPax)s
+      SCRIPT_EOF
 
-        setup_process_ids=()
+      setup_process_ids=()
 
-        SLICE_COUNT=$(cat /scripts/slice_count)
-        ZONE=$(cat /scripts/zone)
+      SLICE_COUNT=$(cat /scripts/slice_count)
+      ZONE=$(cat /scripts/zone)
 
-        for (( i=0; i < ${SLICE_COUNT}; i++ )); do
-          gcloud alpha compute tpus tpu-vm ssh cloud-tpu-multipod-dev@$(cat /scripts/tpu_name_${i}) \
-          --zone=${ZONE} \
-          --ssh-key-file=/scripts/id_rsa \
-          --strict-host-key-checking=no \
-          --internal-ip \
-          --worker=all \
-          --command "$(cat testsetup.sh)" >> output_testsetup_${i}.txt 2>&1 &
+      for (( i=0; i < ${SLICE_COUNT}; i++ )); do
+      gcloud alpha compute tpus tpu-vm ssh cloud-tpu-multipod-dev@$(cat /scripts/tpu_name_${i}) \
+      --zone=${ZONE} \
+      --ssh-key-file=/scripts/id_rsa \
+      --strict-host-key-checking=no \
+      --internal-ip \
+      --worker=all \
+      --command "$(cat testsetup.sh)" >> output_testsetup_${i}.txt 2>&1 &
 
-          setup_process_ids+=($!)
-        done
+      setup_process_ids+=($!)
+      done
 
-        echo "LOGGER: Waiting for test setup to be installed on all TPU VM hosts in ${SLICE_COUNT} slices."
+      echo "LOGGER: Waiting for test setup to be installed on all TPU VM hosts in ${SLICE_COUNT} slices."
 
-        for i in "${!setup_process_ids[@]}"; do
-          wait ${setup_process_ids[$i]}
-          if [[ $? -ne 0 ]]; then
-            echo "LOGGER: Set up failed on slice_${i}. Here is the output:"
-            cat output_testsetup_${i}.txt
-            bash /scripts/cleanup.sh
-            exit 1
-          fi
-        done
-
-        echo "LOGGER: Test set up completed successfully on ${SLICE_COUNT} slices."
-
-        test_script_process_ids=()
-
-        cat > test_script.sh << TEST_SCRIPT_EOF
-        %(testScript)s
-        TEST_SCRIPT_EOF
-
-        for (( i=0; i < ${SLICE_COUNT}; i++ )); do
-          for (( j=0; j < $(cat /scripts/worker_count_slice_${i}); j++ )); do
-            gcloud alpha compute tpus tpu-vm ssh cloud-tpu-multipod-dev@$(cat /scripts/tpu_name_${i}) \
-            --zone=${ZONE} \
-            --ssh-key-file=/scripts/id_rsa \
-            --strict-host-key-checking=no \
-            --internal-ip \
-            --worker=${j} \
-            --command "$(cat test_script.sh)" >> output_slice_${i}_worker_${j}.txt 2>&1 &
-
-            test_script_process_ids+=($!)
-          done
-        done
-
-        echo "LOGGER: Waiting for test scripts to be completed on all TPU VM hosts in ${SLICE_COUNT} slices."
-
-        for i in "${!test_script_process_ids[@]}"; do
-          wait ${test_script_process_ids[$i]}
-          if [[ $? -ne 0 ]]; then
-            SLICE=$((${i}/${SLICE_COUNT}))
-            WORKER=$(( ${i} - (${SLICE} * ${SLICE_COUNT}) ))
-            echo "LOGGER: Test script failed on slice_${SLICE} & worker_${WORKER}. Here is the output:"
-            cat output_slice_${SLICE}_worker_${WORKER}.txt
-            bash /scripts/cleanup.sh
-            exit 1
-          fi
-        done
-
-        echo "LOGGER: Test script completed successfully on all the TPU VM hosts of ${SLICE_COUNT} slices. Here is the output from Slice 0:"
-        cat output_slice_0_worker_0.txt
-
-        echo "LOGGER: Cleaning up the TPU VM resources:"
-
-        sleep 60
-
+      for i in "${!setup_process_ids[@]}"; do
+      wait ${setup_process_ids[$i]}
+      if [[ $? -ne 0 ]]; then
+        echo "LOGGER: Set up failed on slice_${i}. Here is the output:"
+        cat output_testsetup_${i}.txt
         bash /scripts/cleanup.sh
+        exit 1
+      fi
+      done
 
-        exit_code=$?
+      echo "LOGGER: Test set up completed successfully on ${SLICE_COUNT} slices."
 
-        exit $exit_code
-      ||| % { testScript: config.testScript, installPipPackages: config.scriptConfig.installPipPackages, installJax: config.scriptConfig.installJax, installJaxlib: config.scriptConfig.installJaxlib, installLibtpu: config.scriptConfig.installLibtpu },
+      test_script_process_ids=()
+
+      cat > test_script.sh << TEST_SCRIPT_EOF
+
+      %(testScript)s
+      TEST_SCRIPT_EOF
+
+      for (( i=0; i < ${SLICE_COUNT}; i++ )); do
+        for (( j=0; j < $(cat /scripts/worker_count_slice_${i}); j++ )); do
+	  gcloud alpha compute tpus tpu-vm ssh cloud-tpu-multipod-dev@$(cat /scripts/tpu_name_${i}) \
+	  --zone=${ZONE} \
+	  --ssh-key-file=/scripts/id_rsa \
+	  --strict-host-key-checking=no \
+	  --internal-ip \
+	  --worker=${j} \
+	  --command "$(cat test_script.sh)" >> output_slice_${i}_worker_${j}.txt 2>&1 &
+
+	  test_script_process_ids+=($!)
+        done
+      done
+
+      echo "LOGGER: Waiting for test scripts to be completed on all TPU VM hosts in ${SLICE_COUNT} slices."
+
+      for i in "${!test_script_process_ids[@]}"; do
+        wait ${test_script_process_ids[$i]}
+	if [[ $? -ne 0 ]]; then
+	  SLICE=$((${i}/${SLICE_COUNT}))
+	  WORKER=$(( ${i} - (${SLICE} * ${SLICE_COUNT}) ))
+	  echo "LOGGER: Test script failed on slice_${SLICE} & worker_${WORKER}. Here is the output:"
+	  cat output_slice_${SLICE}_worker_${WORKER}.txt
+	  bash /scripts/cleanup.sh
+	  exit 1
+	fi
+      done
+
+      echo "LOGGER: Test script completed successfully on all the TPU VM hosts of ${SLICE_COUNT} slices. Here is the output from Slice 0:"
+      cat output_slice_0_worker_0.txt
+
+      echo "LOGGER: Cleaning up the TPU VM resources:"
+
+      sleep 60
+
+      bash /scripts/cleanup.sh
+
+      exit_code=$?
+      exit $exit_code
+
+      ||| % {testScript: config.testScript, installPipPackages: config.scriptConfig.installPipPackages, installJax: config.scriptConfig.installJax, installJaxlib: config.scriptConfig.installJaxlib, installLibtpu: config.scriptConfig.installLibtpu, installPax: config.scriptConfig.installPax},
     ],
   },
 
-  jaxlibHead:: {
-    jaxlibVersion:: 'head',
+  paxHead:: {
+    paxlibVersion:: 'head',
     scriptConfig+: {
       // Install jax without jaxlib or libtpu deps
       installJax: |||
@@ -204,11 +206,18 @@ local tpus = import 'templates/tpus.libsonnet';
         sudo docker rm libtpu_next
         echo "export TPU_LIBRARY_PATH=/lib/libtpu.so" >> ~/.profile
       |||,
+      installPax: |||
+	echo "Installing Pax from PyPI"
+
+	pip install praxis
+	pip install paxml
+      |||,
     },
   },
 
-  jaxlibNightly:: {
-    jaxlibVersion:: 'nightly',
+  paxNightly:: {
+    paxlibVersion:: 'nightly',
+    buildDate:: '$(date +%Y%m%d)',
     scriptConfig+: {
       // Install jax without jaxlib or libtpu deps
       installJax: |||
@@ -239,6 +248,24 @@ local tpus = import 'templates/tpus.libsonnet';
         sudo docker rm libtpu_next
         echo "export TPU_LIBRARY_PATH=/lib/libtpu.so" >> ~/.profile
       |||,
+      installPax: |||
+	echo "Installing Pax nightly"
+
+	# check for nightly build
+      	gsutil cp gs://pax-on-cloud-tpu-project/wheels/%(buildDate)s/paxml*.whl .
+      	gsutil cp gs://pax-on-cloud-tpu-project/wheels/%(buildDate)s/praxis*.whl .
+
+	if [ -f praxis*.whl -a -f paxml*.whl ]; then
+          echo "Nightly builds succeeded."
+	else
+          echo "Nighlty builds failed or are pending."
+          exit 1
+      	fi
+
+	# install Pax and dependencies
+      	pip install praxis*.whl
+      	pip install paxml*.whl
+      ||| % { buildDate: self.buildDate },
     },
   },
 
@@ -253,8 +280,8 @@ local tpus = import 'templates/tpus.libsonnet';
       testEnvWorkarounds: |||
         pip install tensorflow
         pip uninstall -y libtpu-nightly
-
       |||,
     },
   },
 }
+

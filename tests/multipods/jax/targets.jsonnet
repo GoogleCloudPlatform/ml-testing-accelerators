@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local topologyDiscoveryTests = import 'topology-discovery-tests.libsonnet';
 local mxlaUnitTests = import 'mxla-unit-tests.libsonnet';
 local syncDevicesTests = import 'sync-devices.libsonnet';
+local topologyDiscoveryTests = import 'topology-discovery-tests.libsonnet';
 
 std.flattenArrays([
   topologyDiscoveryTests.configs,
   mxlaUnitTests.configs,
-  syncDevicesTests.configs
+  syncDevicesTests.configs,
 ])
