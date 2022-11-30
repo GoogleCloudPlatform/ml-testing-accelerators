@@ -112,10 +112,23 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: gpus.teslaV100 { count: 4 },
   },
 
-  local nosummaries = {
-    flags+:: {
-      modelDir: null,
+  local torch_ddp = {
+    modelName+: '-torch-ddp',
+    command+: [
+      '--ddp',
+    ],
+  },
+  local xla_ddp = {
+    modelName+: '-xla-ddp',
+    tpuSettings+: {
+      tpuVmExports+: |||
+        export PJRT_INIT_TORCH_DISTRIBUTED=1
+      |||,
     },
+    command+: [
+      '--ddp',
+      '--ddp_pjrt',
+    ],
   },
 
   local tpuVm = common.PyTorchTpuVmMixin {
@@ -127,27 +140,28 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local pjrt = tpuVm + experimental.PjRt {
     modelName: 'resnet50-pjrt',
-    command: [
-      'python3',
-      'pytorch/xla/test/pjrt/test_train_pjrt_imagenet.py',
-    ] + super.command[2:],
   },
 
   configs: [
     resnet50 + functional + v100x4 + timeouts.Hours(1),
     resnet50 + functional + v3_8 + timeouts.Hours(2) + tpuVm,
-    resnet50 + fake_data + nosummaries + v3_8 + timeouts.Hours(2) + tpuVm,
-    resnet50 + fake_data + nosummaries + v3_8 + timeouts.Hours(2) + pjrt,
-    resnet50 + convergence + nosummaries + v3_8 + timeouts.Hours(24) + tpuVm,
-    resnet50 + convergence + nosummaries + v3_8 + timeouts.Hours(24) + pjrt,
+    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm,
+    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm + torch_ddp,
+    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt,
+    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt + xla_ddp,
+    resnet50 + convergence + v3_8 + timeouts.Hours(24) + tpuVm,
+    resnet50 + convergence + v3_8 + timeouts.Hours(24) + pjrt,
     resnet50 + functional + v3_32 + timeouts.Hours(1) + tpuVm,
     resnet50 + convergence + v3_32 + timeouts.Hours(12) + tpuVm,
-    resnet50 + fake_data + nosummaries + v4_8 + timeouts.Hours(2) + tpuVm,
-    resnet50 + fake_data + nosummaries + v4_8 + timeouts.Hours(2) + pjrt,
-    resnet50 + convergence + nosummaries + v4_8 + timeouts.Hours(24) + tpuVm,
-    resnet50 + convergence + nosummaries + v4_8 + timeouts.Hours(24) + pjrt,
-    resnet50 + fake_data + nosummaries + v4_32 + timeouts.Hours(2) + pjrt,
-    resnet50 + convergence + nosummaries + v4_32 + timeouts.Hours(24) + tpuVm,
-    resnet50 + convergence + nosummaries + v4_32 + timeouts.Hours(24) + pjrt,
+    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + tpuVm,
+    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + tpuVm + torch_ddp,
+    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt,
+    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt + torch_ddp,
+    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt + xla_ddp,
+    resnet50 + convergence + v4_8 + timeouts.Hours(24) + tpuVm,
+    resnet50 + convergence + v4_8 + timeouts.Hours(24) + pjrt,
+    resnet50 + fake_data + v4_32 + timeouts.Hours(2) + pjrt,
+    resnet50 + convergence + v4_32 + timeouts.Hours(24) + tpuVm,
+    resnet50 + convergence + v4_32 + timeouts.Hours(24) + pjrt,
   ],
 }
