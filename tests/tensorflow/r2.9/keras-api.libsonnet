@@ -37,7 +37,8 @@ local utils = import 'templates/utils.libsonnet';
   local API = common.RunNightly {
     mode: 'api',
     timeout: timeouts.one_hour,
-    schedule: null,
+    // Run at 2AM PST daily
+    schedule: '0 10 * * *',
     tpuSettings+: {
       preemptible: true,
     },

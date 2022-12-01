@@ -51,9 +51,13 @@ local mixins = import 'templates/mixins.libsonnet';
       runnerPath: 'official/nlp/train.py',
     },
   },
-  local functional_schedule = null,
+  local functional_schedule = '0 7 * * 6',
   Functional:: mixins.Functional {
-    schedule: null,
+    schedule:
+      if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' || self.accelerator.name == 'v4-8' then
+        functional_schedule
+      else
+        null,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -78,7 +82,6 @@ local mixins = import 'templates/mixins.libsonnet';
     schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
-    schedule: null,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
