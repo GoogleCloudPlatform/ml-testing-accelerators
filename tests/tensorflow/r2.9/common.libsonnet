@@ -20,24 +20,24 @@ local mixins = import 'templates/mixins.libsonnet';
   ModelGardenTest:: common.ModelGardenTest {
     local config = self,
 
-    frameworkPrefix: 'tf-r2.9.1',
+    frameworkPrefix: 'tf-r2.9.3',
     tpuSettings+: {
-      softwareVersion: '2.9.1',
+      softwareVersion: '2.9.3',
     },
-    imageTag: 'r2.9.1',
+    imageTag: 'r2.9.3',
   },
   // Setting the version for TPU VM.
   tpuVm:: experimental.TensorFlowTpuVmMixin {
     local config = self,
     tpuSettings+: {
       softwareVersion: if config.accelerator.version == 4 && config.accelerator.replicas == 1 then
-        'tpu-vm-tf-2.9.1-v4'
+        'tpu-vm-tf-2.9.3-v4'
       else if config.accelerator.version == 4 && config.accelerator.replicas > 1 then
-        'tpu-vm-tf-2.9.1-pod-v4'
+        'tpu-vm-tf-2.9.3-pod-v4'
       else if config.accelerator.replicas == 1 then
-        'tpu-vm-tf-2.9.1'
+        'tpu-vm-tf-2.9.3'
       else
-        'tpu-vm-tf-2.9.1-pod',
+        'tpu-vm-tf-2.9.3-pod',
     },
   },
   TfVisionTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
@@ -51,7 +51,7 @@ local mixins = import 'templates/mixins.libsonnet';
     },
   },
   // Running functional tests at 2 PM PST on Saturday.
-  local functional_schedule = null,
+  local functional_schedule = '0 21 * * *',
   Functional:: mixins.Functional {
     schedule: functional_schedule,
     metricConfig+: {
@@ -78,7 +78,7 @@ local mixins = import 'templates/mixins.libsonnet';
     schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
-    schedule: null,
+    schedule: '0 23 * * *',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {

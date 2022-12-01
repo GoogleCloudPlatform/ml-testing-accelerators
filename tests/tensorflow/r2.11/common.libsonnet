@@ -47,7 +47,7 @@ local mixins = import 'templates/mixins.libsonnet';
     },
   },
   // Trigger the tests at 23:00 UTC.
-  local functional_schedule = '0 23 * * *',
+  local functional_schedule = '0 4 * * *',
   Functional:: mixins.Functional {
     schedule: functional_schedule,
     metricConfig+: {
@@ -74,7 +74,7 @@ local mixins = import 'templates/mixins.libsonnet';
     schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
-    schedule: '0 1 * * *',
+    schedule: '0 6 * * *',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {

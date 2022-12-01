@@ -21,24 +21,24 @@ local mixins = import 'templates/mixins.libsonnet';
   ModelGardenTest:: common.ModelGardenTest {
     local config = self,
 
-    frameworkPrefix: 'tf-r2.10.0',
+    frameworkPrefix: 'tf-r2.10.1',
     tpuSettings+: {
-      softwareVersion: '2.10.0',
+      softwareVersion: '2.10.1',
     },
-    imageTag: 'r2.10.0',
+    imageTag: 'r2.10.1',
   },
   // Setting the version for TPU VM.
   tpuVm:: experimental.TensorFlowTpuVmMixin {
     local config = self,
     tpuSettings+: {
       softwareVersion: if config.accelerator.version == 4 && config.accelerator.replicas == 1 then
-        'tpu-vm-tf-2.10.0-v4'
+        'tpu-vm-tf-2.10.1-v4'
       else if config.accelerator.version == 4 && config.accelerator.replicas > 1 then
-        'tpu-vm-tf-2.10.0-pod-v4'
+        'tpu-vm-tf-2.10.1-pod-v4'
       else if config.accelerator.replicas == 1 then
-        'tpu-vm-tf-2.10.0'
+        'tpu-vm-tf-2.10.1'
       else
-        'tpu-vm-tf-2.10.0-pod',
+        'tpu-vm-tf-2.10.1-pod',
     },
   },
   TfVisionTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
@@ -51,7 +51,7 @@ local mixins = import 'templates/mixins.libsonnet';
       runnerPath: 'official/nlp/train.py',
     },
   },
-  local functional_schedule = '0 7 * * 6',
+  local functional_schedule = '0 2 * * *',
   Functional:: mixins.Functional {
     schedule:
       if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' || self.accelerator.name == 'v4-8' then
@@ -82,6 +82,7 @@ local mixins = import 'templates/mixins.libsonnet';
     schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
+    schedule: '0 4 * * *',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
