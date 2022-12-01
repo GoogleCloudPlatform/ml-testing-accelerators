@@ -20,11 +20,11 @@ local mixins = import 'templates/mixins.libsonnet';
   ModelGardenTest:: common.ModelGardenTest {
     local config = self,
 
-    frameworkPrefix: 'tf-r2.8.0',
+    frameworkPrefix: 'tf-r2.8.4',
     tpuSettings+: {
-      softwareVersion: '2.8.0',
+      softwareVersion: '2.8.4',
     },
-    imageTag: 'r2.8.0',
+    imageTag: 'r2.8.4',
   },
 
   // Setting the version for TPU VM.
@@ -32,15 +32,15 @@ local mixins = import 'templates/mixins.libsonnet';
     local config = self,
     tpuSettings+: {
       softwareVersion: if config.accelerator.replicas == 1 then
-        'tpu-vm-tf-2.8.0'
+        'tpu-vm-tf-2.8.4'
       else
-        'tpu-vm-tf-2.8.0-pod',
+        'tpu-vm-tf-2.8.4-pod',
     },
   },
 
-  // Running functional tests at 10PM PST Sat.
+  // Running functional tests at 10PM PST daily.
   Functional:: mixins.Functional {
-    schedule: null,
+    schedule: '0 6 * * *',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -61,9 +61,9 @@ local mixins = import 'templates/mixins.libsonnet';
     },
   },
 
-  // Don't run tests by default since the release is stable.
+  // Running convergence tests at Midnight PST daily.
   Convergence:: mixins.Convergence {
-    schedule: null,
+    schedule: '0 8 * * *',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
