@@ -58,7 +58,7 @@ def test_megascale_pjit():
         ids,
         np.array(
             np.array([d.id for d in devices]).reshape(
-                (2, len(devices) // 2)).transpose().flat))
+                (2, len(devices) // 2)).flat))
     np.testing.assert_array_equal(id_sum,
                                   np.array([d.id for d in jax.devices()]).sum())
   print("test_megascale_pjit is done.")
