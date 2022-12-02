@@ -42,7 +42,7 @@ def test_megascale_pjit():
   """Test MegaScale pjit."""
 
   devices = jax.devices()
-
+  print(devices)
   def fun(x):
     return x, x.sum()
 
