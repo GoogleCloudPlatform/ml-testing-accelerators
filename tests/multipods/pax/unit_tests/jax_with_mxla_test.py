@@ -53,7 +53,7 @@ def test_megascale_pjit():
 
   with Mesh(
       np.array(devices).reshape((2, len(devices) // 2)), ("model", "data")):
-    ids, id_sum = fn(np.array([d.id for d in jax.local_devices()]))
+    ids, id_sum = fn(np.array([d.id for d in jax.devices()]))
     np.testing.assert_array_equal(
         ids,
         np.array(
