@@ -42,8 +42,7 @@ def test_megascale_pjit():
   """Test MegaScale pjit."""
 
   devices = jax.devices()
-  print(devices)
-  print(jax.local_devices())
+
   def fun(x):
     return x, x.sum()
 
@@ -51,16 +50,16 @@ def test_megascale_pjit():
   in_axis_resources = _PartitionSpec(("data", "model"))
   fn = pjit.pjit(fun, in_axis_resources, out_axis_resources)
 
-  with Mesh(
-      np.array(devices).reshape((2, len(devices) // 2)), ("model", "data")):
-    ids, id_sum = fn(np.array([d.id for d in jax.devices()]))
+  mesh = Mesh(np.array(devices).reshape((2, len(devices) // 2)), ('model', 'data'))
+  inp = np.array([d.id for d in jax.local_devices()])
+  with mesh:
+    global_inp = multihost_utils.host_local_array_to_global_array(inp, mesh, in_axis_resources)
+    out = fn(global_inp)
+    ids, id_sum = multihost_utils.global_array_to_host_local_array(out, mesh, out_axis_resources)
     np.testing.assert_array_equal(
         ids,
-        np.array(
-            np.array([d.id for d in devices]).reshape(
-                (2, len(devices) // 2)).flat))
-    np.testing.assert_array_equal(id_sum,
-                                  np.array([d.id for d in jax.devices()]).sum())
+        np.array(np.array([d.id for d in devices]).reshape((2, len(devices) // 2)).transpose().flat))
+    np.testing.assert_array_equal(id_sum,np.array([d.id for d in jax.devices()]).sum())
   print("test_megascale_pjit is done.")
 
 
