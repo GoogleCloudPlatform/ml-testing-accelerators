@@ -32,7 +32,7 @@ def training_loop(inp):
   return jax.numpy.sum(inp, axis = 2)
 
 def gen_data():
-  return jax.numpy.zeros((BATCH, SIZE, SIZE), dtype=jax.numpy.bfloat16 )
+  return jax.numpy.ones((BATCH, SIZE, SIZE), dtype=jax.numpy.bfloat16 )
 
 mesh_shape = [len(jax.devices())]
 devices = np.asarray(jax.devices()).reshape(*mesh_shape)
@@ -54,6 +54,7 @@ gen_data_sharded = pjit(
 with maps.Mesh(mesh.devices, mesh.axis_names):
   presharded_X = jax.block_until_ready(gen_data_sharded())
   print(f'presharded_X shape {presharded_X.shape}')
-  jax.block_until_ready(pjit_training_loop(presharded_X))
-
+  total = jax.block_until_ready(pjit_training_loop(presharded_X))
+  np.testing.assert_array_equal(total, np.full((1024, 1024), 1024))
   time = simple_timeit(lambda : jax.block_until_ready(pjit_training_loop(presharded_X)))
+
