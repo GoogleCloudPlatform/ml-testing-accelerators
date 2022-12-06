@@ -16,9 +16,11 @@ Copyright 2021 Google LLC
 local mxlaUnitTests = import 'mxla-unit-tests.libsonnet';
 local syncDevicesTests = import 'sync-devices.libsonnet';
 local topologyDiscoveryTests = import 'topology-discovery-tests.libsonnet';
+local jaxTestrun = import 'jaxTestrun.libsonnet';
 
 std.flattenArrays([
   topologyDiscoveryTests.configs,
   mxlaUnitTests.configs,
   syncDevicesTests.configs,
+  jaxTestrun.configs,
 ])
