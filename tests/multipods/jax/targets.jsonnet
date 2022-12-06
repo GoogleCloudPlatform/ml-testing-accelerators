@@ -1,4 +1,5 @@
-// Copyright 2021 Google LLC
+/
+Copyright 2021 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,11 +16,9 @@
 local mxlaUnitTests = import 'mxla-unit-tests.libsonnet';
 local syncDevicesTests = import 'sync-devices.libsonnet';
 local topologyDiscoveryTests = import 'topology-discovery-tests.libsonnet';
-local jaxTestrun = import 'jaxTestrun.libsonnet';
 
 std.flattenArrays([
   topologyDiscoveryTests.configs,
   mxlaUnitTests.configs,
   syncDevicesTests.configs,
-  jaxTestrun.configs,
 ])
