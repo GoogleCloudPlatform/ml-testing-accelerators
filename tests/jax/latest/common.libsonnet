@@ -20,8 +20,8 @@ local tpus = import 'templates/tpus.libsonnet';
     local config = self,
 
     frameworkPrefix: 'flax-latest',
-    extraDeps:: '',
-    extraFlags:: '',
+    extraDeps:: [],
+    extraFlags:: [],
 
     testScript:: |||
       set -x
@@ -55,9 +55,9 @@ local tpus = import 'templates/tpus.libsonnet';
       python3 main.py --workdir=$(MODEL_DIR)  --config=configs/%(extraConfig)s %(extraFlags)s
     ||| % (self.scriptConfig {
              modelName: config.modelName,
-             extraDeps: config.extraDeps,
+             extraDeps: std.join(' ', config.extraDeps),
              extraConfig: config.extraConfig,
-             extraFlags: config.extraFlags,
+             extraFlags: std.join(' ', config.extraFlags),
            }),
   },
 }

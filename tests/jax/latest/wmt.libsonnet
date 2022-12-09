@@ -18,12 +18,12 @@ local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 {
   local functional = mixins.Functional {
-    extraFlags:: '--config.num_train_steps=10 --config.per_device_batch_size=16',
+    extraFlags+:: ['--config.num_train_steps=10', '--config.per_device_batch_size=16'],
     extraConfig:: 'default.py',
   },
   local convergence = mixins.Convergence {
     extraConfig:: 'default.py',
-    extraFlags:: '--config.reverse_translation=True  --config.per_device_batch_size=32',
+    extraFlags+:: ['--config.reverse_translation=True', '--config.per_device_batch_size=32'],
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
@@ -33,7 +33,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local wmt = common.runFlaxLatest {
     modelName:: 'wmt',
-    extraDeps:: 'tensorflow_text sentencepiece',
+    extraDeps+:: ['tensorflow_text sentencepiece'],
   },
   configs: [
     wmt + functional + v2_8,

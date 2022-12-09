@@ -22,7 +22,7 @@ local utils = import 'templates/utils.libsonnet';
     local config = self,
     frameworkPrefix: 'flax-latest',
     modelName:: 'hf-bert',
-    extraFlags:: '',
+    extraFlags:: [],
     testScript:: |||
       %(installPackages)s
       pip install -r examples/flax/text-classification/requirements.txt
@@ -37,17 +37,17 @@ local utils = import 'templates/utils.libsonnet';
         --per_device_train_batch_size 4 \
         %(extraFlags)s
       gsutil -m cp -r ${OUTPUT_DIR} $(MODEL_DIR)
-    ||| % (self.scriptConfig { extraFlags: config.extraFlags }),
+    ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
   },
 
   local functional = mixins.Functional {
-    extraFlags+: '--num_train_epochs 1 ',
+    extraFlags+: ['--num_train_epochs 1'],
     extraConfig:: 'default.py',
   },
 
   local convergence = mixins.Convergence {
     extraConfig:: 'default.py',
-    extraFlags+: '--num_train_epochs 3 --learning_rate 2e-5 --eval_steps 500 ',
+    extraFlags+: ['--num_train_epochs 3', '--learning_rate 2e-5', '--eval_steps 500'],
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -70,21 +70,21 @@ local utils = import 'templates/utils.libsonnet';
 
   local mnli = {
     modelName+: '-mnli',
-    extraFlags+: '--task_name mnli --max_seq_length 512 --eval_steps 1000 ',
+    extraFlags+: ['--task_name mnli', '--max_seq_length 512', '--eval_steps 1000'],
   },
   local mrpc = {
     modelName+: '-mrpc',
-    extraFlags+: '--task_name mrpc --max_seq_length 128 --eval_steps 100 ',
+    extraFlags+: ['--task_name mrpc', '--max_seq_length 128', '--eval_steps 100'],
   },
 
   local v2 = common.tpuVmBaseImage {
-    extraFlags+:: '--per_device_train_batch_size 4 --per_device_eval_batch_size 4',
+    extraFlags+:: ['--per_device_train_batch_size 4', '--per_device_eval_batch_size 4'],
   },
   local v3 = common.tpuVmBaseImage {
-    extraFlags+:: '--per_device_train_batch_size 4 --per_device_eval_batch_size 4',
+    extraFlags+:: ['--per_device_train_batch_size 4', '--per_device_eval_batch_size 4'],
   },
   local v4 = common.tpuVmV4Base {
-    extraFlags+:: '--per_device_train_batch_size 8 --per_device_eval_batch_size 8',
+    extraFlags+:: ['--per_device_train_batch_size 8', '--per_device_eval_batch_size 8'],
   },
 
   local v2_8 = {
