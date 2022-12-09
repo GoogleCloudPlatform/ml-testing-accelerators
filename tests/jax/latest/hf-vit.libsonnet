@@ -21,7 +21,7 @@ local tpus = import 'templates/tpus.libsonnet';
     local config = self,
     frameworkPrefix: 'flax-latest',
     modelName:: 'hf-vit',
-    extraFlags:: '',
+    extraFlags:: [],
     testScript:: |||
       %(installPackages)s
       pip install -r examples/flax/vision/requirements.txt
@@ -41,14 +41,14 @@ local tpus = import 'templates/tpus.libsonnet';
 
       # Ignore CommandException for the rest workers in TPU pod
       gsutil -m cp -r ./vit-imagenette $(MODEL_DIR) || exit 0
-    ||| % (self.scriptConfig { extraFlags: config.extraFlags }),
+    ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
   },
 
   local func = mixins.Functional {
-    extraFlags+:: '--model_type vit --num_train_epochs 5 \\',
+    extraFlags+:: ['--model_type vit', '--num_train_epochs 5'],
   },
   local conv = mixins.Convergence {
-    extraFlags+:: '--model_name_or_path google/vit-base-patch16-224-in21k --num_train_epochs 30 \\',
+    extraFlags+:: ['--model_name_or_path google/vit-base-patch16-224-in21k', '--num_train_epochs 30'],
 
     metricConfig+: {
       sourceMap+:: {
@@ -71,13 +71,13 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   local v2 = common.tpuVmBaseImage {
-    extraFlags+:: '--per_device_train_batch_size 32 --per_device_eval_batch_size 32',
+    extraFlags+:: ['--per_device_train_batch_size 32', '--per_device_eval_batch_size 32'],
   },
   local v3 = common.tpuVmBaseImage {
-    extraFlags+:: '--per_device_train_batch_size 32 --per_device_eval_batch_size 32',
+    extraFlags+:: ['--per_device_train_batch_size 32', '--per_device_eval_batch_size 32'],
   },
   local v4 = common.tpuVmV4Base {
-    extraFlags+:: '--per_device_train_batch_size 64 --per_device_eval_batch_size 64',
+    extraFlags+:: ['--per_device_train_batch_size 64', '--per_device_eval_batch_size 64'],
   },
 
   local v2_8 = {

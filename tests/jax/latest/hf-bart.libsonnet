@@ -21,7 +21,7 @@ local tpus = import 'templates/tpus.libsonnet';
     local config = self,
     frameworkPrefix: 'flax-latest',
     modelName:: 'hf-bart',
-    extraFlags:: '',
+    extraFlags:: [],
     testScript:: |||
       %(installPackages)s
       pip install -r examples/flax/summarization/requirements.txt
@@ -45,14 +45,14 @@ local tpus = import 'templates/tpus.libsonnet';
 
       # Ignore CommandException for the rest workers in TPU pod
       gsutil -m cp -r ./bart-base-wiki $(MODEL_DIR) || exit 0
-    ||| % (self.scriptConfig { extraFlags: config.extraFlags }),
+    ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
   },
 
   local func = mixins.Functional {
-    extraFlags+:: '--num_train_epochs 3 \\',
+    extraFlags+:: ['--num_train_epochs 3'],
   },
   local conv = mixins.Convergence {
-    extraFlags+:: '--num_train_epochs 30 \\',
+    extraFlags+:: ['--num_train_epochs 30'],
 
     metricConfig+: {
       sourceMap+:: {
@@ -76,27 +76,27 @@ local tpus = import 'templates/tpus.libsonnet';
 
   local v2_8 = common.tpuVmBaseImage {
     accelerator: tpus.v2_8,
-    extraFlags+:: '--per_device_train_batch_size 32 --per_device_eval_batch_size 32',
+    extraFlags+:: ['--per_device_train_batch_size 32', '--per_device_eval_batch_size 32'],
   },
   local v2_32 = common.tpuVmBaseImage {
     accelerator: tpus.v2_32,
-    extraFlags+:: '--per_device_train_batch_size 8 --per_device_eval_batch_size 8',
+    extraFlags+:: ['--per_device_train_batch_size 8', '--per_device_eval_batch_size 8'],
   },
   local v3_8 = common.tpuVmBaseImage {
     accelerator: tpus.v3_8,
-    extraFlags+:: '--per_device_train_batch_size 32 --per_device_eval_batch_size 32',
+    extraFlags+:: ['--per_device_train_batch_size 32', '--per_device_eval_batch_size 32'],
   },
   local v3_32 = common.tpuVmBaseImage {
     accelerator: tpus.v3_32,
-    extraFlags+:: '--per_device_train_batch_size 16 --per_device_eval_batch_size 16',
+    extraFlags+:: ['--per_device_train_batch_size 16', '--per_device_eval_batch_size 16'],
   },
   local v4_8 = common.tpuVmV4Base {
     accelerator: tpus.v4_8,
-    extraFlags+:: '--per_device_train_batch_size 64 --per_device_eval_batch_size 64',
+    extraFlags+:: ['--per_device_train_batch_size 64', '--per_device_eval_batch_size 64'],
   },
   local v4_32 = common.tpuVmV4Base {
     accelerator: tpus.v4_32,
-    extraFlags+:: '--per_device_train_batch_size 32 --per_device_eval_batch_size 32',
+    extraFlags+:: ['--per_device_train_batch_size 32', '--per_device_eval_batch_size 32'],
   },
 
   local func_tests = [

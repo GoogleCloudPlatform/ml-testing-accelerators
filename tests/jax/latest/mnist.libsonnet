@@ -17,7 +17,7 @@ local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 {
   local functional = mixins.Functional {
-    extraFlags:: '--config.num_epochs=1',
+    extraFlags+:: ['--config.num_epochs=1'],
     extraConfig:: 'default.py',
   },
   local convergence = mixins.Convergence {
@@ -31,7 +31,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local v3_32 = {
     accelerator: tpus.v3_32,
-    extraFlags+:: ' --config.batch_size=$((32*256))',
+    extraFlags+:: ['--config.batch_size=$((32*256))'],
   },
   local mnist = common.runFlaxLatest {
     modelName:: 'mnist',
