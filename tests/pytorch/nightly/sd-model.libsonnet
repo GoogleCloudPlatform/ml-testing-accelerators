@@ -53,7 +53,7 @@ local utils = import 'templates/utils.libsonnet';
     command: utils.scriptCommand(
       |||
         %(common)s --base configs/latent-diffusion/cin-ldm-vq-f8-ss.yaml
-      ||| % { common: command_common }
+      ||| % { common: command_common}
     ),
     metricConfig+: {
       sourceMap+:: {
