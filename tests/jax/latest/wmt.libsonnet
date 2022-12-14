@@ -25,6 +25,12 @@ local tpus = import 'templates/tpus.libsonnet';
     extraConfig:: 'default.py',
     extraFlags+:: ['--config.reverse_translation=True', '--config.per_device_batch_size=32'],
   },
+  local profile = {
+    mode: 'profile',
+    timeout: timeouts.one_hour,
+    extraFlags+:: ['--config.num_train_steps=40', '--config.per_device_batch_size=16'],
+    extraConfig:: 'default.py',
+  },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
@@ -35,8 +41,15 @@ local tpus = import 'templates/tpus.libsonnet';
     modelName:: 'wmt',
     extraDeps+:: ['tensorflow_text sentencepiece'],
   },
+  local wmt_profiling = wmt {
+    local config = self,
+    testScript+:: |||
+       gsutil -q stat $(MODEL_DIR)/plugins/profile/*/*.xplane.pb
+    ||| % (self.scriptConfig{}),
+  },
   configs: [
     wmt + functional + v2_8,
     wmt + convergence + v3_8 + timeouts.Hours(20),
+    wmt_profiling + profile + v3_8,
   ],
 }
