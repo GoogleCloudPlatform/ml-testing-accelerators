@@ -12,19 +12,6 @@ os.environ["JAX_USE_PJRT_C_API_ON_TPU"] = "1"
 
 print(f"devices found. number {len(jax.devices())}, details: {jax.devices()}", flush = True)
 
-def simple_timeit(f, tries = 10, verbose = True):
-  outcomes = []
-  f() #warm it up!
-  for i in range(tries):
-    s = datetime.datetime.now()
-    r = f()
-    e = datetime.datetime.now()
-    outcomes.append((e-s).total_seconds())
-  average_time = sum(outcomes)/len(outcomes)
-  if verbose:
-    print(f"average time: {average_time}, timings (seconds) {outcomes}")
-  return average_time
-
 BATCH = 1024
 SIZE = 1024
 
@@ -56,4 +43,3 @@ with maps.Mesh(mesh.devices, mesh.axis_names):
   print(f'presharded_X shape {presharded_X.shape}')
   total = jax.block_until_ready(pjit_training_loop(presharded_X))
   np.testing.assert_array_equal(total, np.full((1024, 1024), 1024))
-  time = simple_timeit(lambda : jax.block_until_ready(pjit_training_loop(presharded_X)))
