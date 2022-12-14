@@ -17,10 +17,16 @@ local mxlaUnitTests = import 'mxla-unit-tests.libsonnet';
 local syncDevicesTests = import 'sync-devices.libsonnet';
 local topologyDiscoveryTests = import 'topology-discovery-tests.libsonnet';
 local jaxTestrun = import 'jaxTestrun.libsonnet';
+local gpt1like_slice1_v416 = import 'gpt1like-slice=1-v416.libsonnet';
+local gpt1like_slice2_v416 = import 'gpt1like-slice=2-v416.libsonnet';
+local gpt1like_slice4_v416 = import 'gpt1like-slice=4-v416.libsonnet';
 
 std.flattenArrays([
   topologyDiscoveryTests.configs,
   mxlaUnitTests.configs,
   syncDevicesTests.configs,
   jaxTestrun.configs,
+  gpt1like_slice1_v416.configs,
+  gpt1like_slice2_v416.configs,
+  gpt1like_slice4_v416.configs,
 ])
