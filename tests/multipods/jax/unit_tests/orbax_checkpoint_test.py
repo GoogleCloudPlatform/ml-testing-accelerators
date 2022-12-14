@@ -41,6 +41,7 @@ ckpt_dir = bucket_path / dir_name
 
 # Create the bucket subdirectory for checkpoints (only once)
 # This will error if the directory already exists.
+print("orbax_checkpoint_test: Creating directory " + str(ckpt_dir))
 if jax.process_index() == 0:
   ckpt_dir.mkdir()
 
