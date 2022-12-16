@@ -1,5 +1,5 @@
-local syncDevicesTests = import 'sync-devices.libsonnet';
+local lmspmdNightly = import 'lmspmdNightly.libsonnet';
 
 std.flattenArrays([
-  syncDevicesTests.configs,
+  lmspmdNightly.configs,
 ])
