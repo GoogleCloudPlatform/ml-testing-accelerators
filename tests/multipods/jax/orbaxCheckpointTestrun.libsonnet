@@ -20,13 +20,13 @@ local tpus = import 'templates/tpus.libsonnet';
   local syncDevicesTest = common.JaxTest + mixins.Functional {
     modelName: '%s-jax-orbax' % [self.jaxlibVersion],
 
-    // Trigger the test at 09:00 UTC.
-    schedule: '0 9 * * *',
+    // Trigger the test at 13:00 UTC.
+    schedule: '0 13 * * *',
     tpuSettings+: {
       slices: 2,
     },
     testScript:: |||
-      set +x
+      set -x
       set -u
       set -e
       . ~/.profile
