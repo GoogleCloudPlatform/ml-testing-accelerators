@@ -45,8 +45,6 @@ local utils = import 'templates/utils.libsonnet';
         export XLA_USE_BF16=$(XLA_USE_BF16)
       |||,
       tpuVmExtraSetup: |||
-        pip install google-cloud-storage
-        git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
         echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
         echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
       |||,
