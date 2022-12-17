@@ -39,9 +39,21 @@ local utils = import 'templates/utils.libsonnet';
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
+  local tpuVm = common.PyTorchTpuVmMixin {
+    tpuSettings+: {
+      tpuVmExports+: |||
+        export XLA_USE_BF16=$(XLA_USE_BF16)
+      |||,
+      tpuVmExtraSetup: |||
+        echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
+        echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
+      |||,
+    },
+  },
+
 
   configs: [
-    operations + v2_8 + common.Functional + timeouts.Hours(6),
-    operations + v3_8 + common.Functional + timeouts.Hours(6),
+    operations + v2_8 + common.Functional + timeouts.Hours(6) + tpuVm,
+    operations + v3_8 + common.Functional + timeouts.Hours(6) + tpuVm,
   ],
 }
