@@ -31,7 +31,7 @@ local utils = import 'templates/utils.libsonnet';
   |||,
   local hf_mae = common.PyTorchTest {
     local config = self,
-    modelName: 'hf-glue',
+    modelName: 'hf-mae',
     paramsOverride:: {
       scriptPath: 'examples/pytorch/xla_spawn.py',
       tpuCores: config.accelerator.numCores,
@@ -43,9 +43,9 @@ local utils = import 'templates/utils.libsonnet';
         '--model_name=%s' % config.paramsOverride.model_name,
         '--dataset_name=cifar10',
         '--remove_unused_columns=False',
-        '--label_names=pixel_values'
-        '--mask_ratio=0.75'
-        '--norm_pix_loss=True'
+        '--label_names=pixel_values',
+        '--mask_ratio=0.75',
+        '--norm_pix_loss=True',
         '--do_train=true',
         '--do_eval=true',
         '--base_learning_rate=1.5e-4',
@@ -65,7 +65,7 @@ local utils = import 'templates/utils.libsonnet';
         '--output_dir=MAE',
         '--overwrite_output_dir=true',
         '--logging_dir=./tensorboard-metrics',
-        '--task_name=MAE'
+        '--task_name=MAE',
         '--overwrite_cache=true',
         '--tpu_metrics_debug=true',
       ],
