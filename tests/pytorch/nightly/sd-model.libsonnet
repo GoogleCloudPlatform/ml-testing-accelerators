@@ -48,59 +48,11 @@ local utils = import 'templates/utils.libsonnet';
     python3 main_ll_profile.py \
     --train --no-test \
   |||,
-  local base_metrics = common.Convergence {
-    modelName: 'sd-base-metrics',
-    command: utils.scriptCommand(
-      |||
-        %(common)s --base configs/latent-diffusion/cin-ldm-vq-f8-ss.yaml
-      ||| % { common: command_common }
-    ),
-    metricConfig+: {
-      sourceMap+:: {
-        tensorboard+: {
-          aggregateAssertionsMap+:: {
-            'eval/loss': {
-              FINAL: {
-                fixed_value: {
-                  comparison: 'LESS',
-                  value: 0.17,
-                },
-                inclusive_bounds: false,
-                wait_for_n_data_points: 0,
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-  local training_time = common.Convergence {
-    command: utils.scriptCommand(
-      |||
-        %(command_common)s --base configs/latent-diffusion/cin-ldm-vq-f8-ss.yaml \
-          2>&1 | tee training_logs.txt
-        train_time=$(
-          cat training_logs.txt | grep 'Training time:' |  \
-          grep -oP '\K[+-]?([0-9]*[.])?[0-9]+'
-        )
-        echo 'Training time is' $train_time
-<<<<<<< HEAD
-        test $(echo $train_time'<'40000 | bc -l) -eq 1  # assert model trainig time is less then 40000 seconds
-=======
-        test $(echo $train_time'<'100000 | bc -l) -eq 1  # assert model trainig time is less then 100000 seconds
->>>>>>> 0c0ac474 (adding stable diffusion model to nightly tests)
-      ||| % command_common
-    ),
-  },
   local functional = common.Functional {
     command: utils.scriptCommand(
       |||
         %(common)s --base configs/latent-diffusion/cin-ldm-vq-f8-ss-ep2.yaml
-<<<<<<< HEAD
       ||| % { common: command_common }
-=======
-      ||| % {common: command_common}
->>>>>>> 0c0ac474 (adding stable diffusion model to nightly tests)
     ),
   },
   local sd_model = common.PyTorchTest {
@@ -135,8 +87,6 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_8,
   },
   configs: [
-    sd_model + v4_8 + training_time + timeouts.Hours(30) + tpuVm,
-    sd_model + v4_8 + base_metrics + timeouts.Hours(30) + tpuVm,
     sd_model + v4_8 + functional + timeouts.Hours(25) + tpuVm,
   ],
 }
