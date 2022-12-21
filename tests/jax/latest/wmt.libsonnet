@@ -25,7 +25,7 @@ local tpus = import 'templates/tpus.libsonnet';
     extraConfig:: 'default.py',
     extraFlags+:: ['--config.reverse_translation=True', '--config.per_device_batch_size=32'],
   },
-  local profile = {
+  local profile = mixins.Functional {
     mode: 'profile',
     timeout: timeouts.one_hour,
     extraFlags+:: ['--config.num_train_steps=40', '--config.per_device_batch_size=16'],
@@ -39,7 +39,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local wmt = common.runFlaxLatest {
     modelName:: 'wmt',
-    extraDeps+:: ['tensorflow_text sentencepiece'],
+    extraDeps+:: ['tensorflow_text sentencepiece', 'protobuf==3.20.*', 'tensorflow_datasets'],
   },
   local wmt_profiling = wmt {
     local config = self,
