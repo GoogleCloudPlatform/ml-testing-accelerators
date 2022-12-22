@@ -38,7 +38,6 @@ local mixins = import 'templates/mixins.libsonnet';
     },
   },
 
-  // Running functional tests at 10PM PST daily.
   Functional:: mixins.Functional {
     schedule: null,
     metricConfig+: {
