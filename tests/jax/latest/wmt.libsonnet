@@ -38,7 +38,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local wmt = common.runFlaxLatest {
     modelName:: 'wmt',
-    extraDeps+:: ['tensorflow_text sentencepiece', 'protobuf==3.20.*', 'tensorflow_datasets'],
+    extraDeps+:: ['tensorflow_text sentencepiece protobuf==3.20.* tensorflow_datasets'],
   },
   local wmt_profiling = wmt {
     local config = self,
@@ -49,6 +49,6 @@ local tpus = import 'templates/tpus.libsonnet';
   configs: [
     wmt + functional + v2_8,
     wmt + convergence + v3_8 + timeouts.Hours(20),
-    wmt_profiling + profile + v3_8 + timeouts.Hours(1),
+    wmt_profiling + profile + v3_8 + timeouts.Minutes(40),
   ],
 }
