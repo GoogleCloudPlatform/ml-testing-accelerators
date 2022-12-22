@@ -49,10 +49,6 @@ local tpus = import 'templates/tpus.libsonnet';
       pip install -e .
       cd examples/%(modelName)s
 
-      if [ ! -z $(ls | grep 'requirements.txt') ]; then
-        pip install -r requirements.txt
-      fi
-
       export GCS_BUCKET=$(MODEL_DIR)
       export TFDS_DATA_DIR=$(TFDS_DIR)
 

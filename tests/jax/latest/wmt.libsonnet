@@ -33,7 +33,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local wmt = common.runFlaxLatest {
     modelName:: 'wmt',
-    extraDeps+:: ['tensorflow_text sentencepiece'],
+    extraDeps+:: ['tensorflow-cpu tensorflow-datasets tensorflow_text sentencepiece'],
   },
   configs: [
     wmt + functional + v2_8,
