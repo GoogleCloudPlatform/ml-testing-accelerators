@@ -34,15 +34,13 @@ local tpus = import 'templates/tpus.libsonnet';
     extraFlags+:: ['--config.batch_size=$((32*256))'],
   },
   local mnist = common.runFlaxLatest {
-    modelName:: 'mnist',
-  },
-  local mnist_pod = common.runFlaxLatest {
+    extraDeps+:: ['tensorflow-cpu tensorflow-datasets'],
     modelName:: 'mnist',
   },
   configs: [
     mnist + functional + v2_8,
     mnist + convergence + v3_8,
-    mnist_pod + functional + v3_32,
-    mnist_pod + convergence + v3_32,
+    mnist + functional + v3_32,
+    mnist + convergence + v3_32,
   ],
 }

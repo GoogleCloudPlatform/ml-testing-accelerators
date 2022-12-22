@@ -38,7 +38,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local wmt = common.runFlaxLatest {
     modelName:: 'wmt',
-    extraDeps+:: ['tensorflow_text sentencepiece protobuf==3.20.* tensorflow_datasets'],
+    extraDeps+:: ['tensorflow-cpu tensorflow-datasets tensorflow_text sentencepiece'],
   },
   local wmt_profiling = wmt {
     local config = self,

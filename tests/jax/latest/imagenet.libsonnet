@@ -35,14 +35,12 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local imagenet = common.runFlaxLatest {
     modelName:: 'imagenet',
-  },
-  local imagenet_pod = common.runFlaxLatest {
-    modelName:: 'imagenet',
+    extraDeps+:: ['tensorflow-cpu tensorflow-datasets'],
   },
   configs: [
     imagenet + functional + v2_8,
     imagenet + convergence + v3_8,
-    imagenet_pod + functional + v3_32,
-    imagenet_pod + convergence + v3_32,
+    imagenet + functional + v3_32,
+    imagenet + convergence + v3_32,
   ],
 }
