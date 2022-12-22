@@ -46,8 +46,7 @@ local mixins = import 'templates/mixins.libsonnet';
       runnerPath: 'official/nlp/train.py',
     },
   },
-  // Trigger the tests at 23:00 UTC.
-  local functional_schedule = '0 4 * * *',
+  local functional_schedule = null,
   Functional:: mixins.Functional {
     schedule: functional_schedule,
     metricConfig+: {
@@ -74,7 +73,7 @@ local mixins = import 'templates/mixins.libsonnet';
     schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
-    schedule: '0 6 * * *',
+    schedule: null,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
