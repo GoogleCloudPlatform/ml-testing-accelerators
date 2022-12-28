@@ -74,6 +74,6 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_8,
   },
   configs: [
-    sd_model + v4_8 + common.Functional + timeouts.Hours(25) + tpuVm,
+    sd_model + v4_8 + common.Functional + timeouts.Hours(25) + tpuVm + mixins.Experimental,
   ],
 }

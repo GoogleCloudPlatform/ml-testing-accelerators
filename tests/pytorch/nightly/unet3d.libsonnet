@@ -84,6 +84,6 @@ local utils = import 'templates/utils.libsonnet';
 
   },
   configs: [
-    unet3d + v3_8 + conv + timeouts.Hours(25) + tpuVm,
+    unet3d + v3_8 + conv + timeouts.Hours(25) + tpuVm + mixins.Experimental,
   ],
 }

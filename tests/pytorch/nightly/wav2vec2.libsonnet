@@ -65,7 +65,7 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
   },
   configs: [
-    w2v2 + v3_8 + func + timeouts.Hours(2),
-    w2v2 + v3_8 + conv + timeouts.Hours(20),
+    w2v2 + v3_8 + func + timeouts.Hours(2) + mixins.Experimental,
+    w2v2 + v3_8 + conv + timeouts.Hours(20) + mixins.Experimental,
   ],
 }

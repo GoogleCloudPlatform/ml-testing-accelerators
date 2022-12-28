@@ -117,7 +117,7 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_32,
   },
   configs: [
-    roberta + v3_8 + functional + timeouts.Hours(1),
-    roberta + v3_8 + convergence + timeouts.Hours(6) + tpuVm,
+    roberta + v3_8 + functional + timeouts.Hours(1) + mixins.Experimental,
+    roberta + v3_8 + convergence + timeouts.Hours(6) + tpuVm + mixins.Experimental,
   ],
 }

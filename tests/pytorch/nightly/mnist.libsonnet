@@ -98,10 +98,10 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   configs: [
-    mnist + convergence + v2_8 + timeouts.Hours(1),
-    mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
-    mnist + convergence + v2_8 + timeouts.Hours(1) + pjrt,
-    mnist + convergence + v4_8 + timeouts.Hours(1) + pjrt,
-    mnist + convergence + v100x4 + timeouts.Hours(6),
+    mnist + convergence + v2_8 + timeouts.Hours(1) + mixins.Experimental,
+    mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm + mixins.Experimental,
+    mnist + convergence + v2_8 + timeouts.Hours(1) + pjrt + mixins.Experimental,
+    mnist + convergence + v4_8 + timeouts.Hours(1) + pjrt + mixins.Experimental,
+    mnist + convergence + v100x4 + timeouts.Hours(6) + mixins.Experimental,
   ],
 }
