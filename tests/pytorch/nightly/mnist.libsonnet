@@ -101,6 +101,6 @@ local utils = import 'templates/utils.libsonnet';
     mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
     mnist + convergence + v2_8 + timeouts.Hours(1) + pjrt,
     mnist + convergence + v4_8 + timeouts.Hours(1) + pjrt,
-    mnist + convergence + v100x4 + timeouts.Hours(6) + tpuVm,
+    mnist + convergence + v100x4 + timeouts.Hours(6),
   ],
 }
