@@ -14,6 +14,7 @@
 
 local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
@@ -117,7 +118,7 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_32,
   },
   configs: [
-    roberta + v3_8 + functional + timeouts.Hours(1) + tpuVm,
-    roberta + v3_8 + convergence + timeouts.Hours(6) + tpuVm,
+    roberta + v3_8 + functional + timeouts.Hours(1) + tpuVm + mixins.Experimental,
+    roberta + v3_8 + convergence + timeouts.Hours(6) + tpuVm + mixins.Experimental,
   ],
 }
