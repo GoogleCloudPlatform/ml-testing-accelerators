@@ -206,6 +206,6 @@ local utils = import 'templates/utils.libsonnet';
     dlrm + v3_8 + mp_dp_fwd + timeouts.Hours(3) + tpuVm,
     dlrm + v3_8 + criteo_kaggle + timeouts.Hours(6) + tpuVm,
     dlrm + v4_8 + criteo_kaggle + timeouts.Hours(25) + tpuVm,
-    dlrm + v4_8 + criteo_kaggle + timeouts.Hours(25) + pjrt, // pjrt has tpuVm inside
+    dlrm + v4_8 + criteo_kaggle + timeouts.Hours(25) + pjrt,
   ],
 }
