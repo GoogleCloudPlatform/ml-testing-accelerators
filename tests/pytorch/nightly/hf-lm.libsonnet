@@ -183,6 +183,20 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  local tpuVm = common.PyTorchTpuVmMixin {
+    tpuSettings+: {
+      tpuVmExports+: |||
+        export XLA_USE_BF16=$(XLA_USE_BF16)
+      |||,
+      tpuVmExtraSetup: |||
+        pip install tensorboardX google-cloud-storage
+        git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
+        pip install --editable ./tpu-examples/deps/fairseq
+        echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
+        echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
+      |||,
+    },
+  },
   local v2_8 = {
     accelerator: tpus.v2_8,
   },
@@ -190,9 +204,9 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
   },
   configs: [
-    hf_lm + v2_8 + roberta_base_pre + timeouts.Hours(5),
-    hf_lm + v3_8 + roberta_base_fine + timeouts.Hours(3),
-    hf_lm + v3_8 + bert_base_pre + timeouts.Hours(6),
-    hf_lm + v3_8 + bert_base_fine + timeouts.Hours(5),
+    hf_lm + v2_8 + roberta_base_pre + timeouts.Hours(5) + tpuVm,
+    hf_lm + v3_8 + roberta_base_fine + timeouts.Hours(3) + tpuVm,
+    hf_lm + v3_8 + bert_base_pre + timeouts.Hours(6) + tpuVm,
+    hf_lm + v3_8 + bert_base_fine + timeouts.Hours(5) + tpuVm,
   ],
 }

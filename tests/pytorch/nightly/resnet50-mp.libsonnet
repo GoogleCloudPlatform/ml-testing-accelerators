@@ -143,7 +143,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
-    resnet50 + functional + v100x4 + timeouts.Hours(1),
+    resnet50 + functional + v100x4 + timeouts.Hours(1) + tpuVm,
     resnet50 + functional + v3_8 + timeouts.Hours(2) + tpuVm,
     resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm,
     resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm + torch_ddp,

@@ -61,11 +61,25 @@ local utils = import 'templates/utils.libsonnet';
 
     ),
   },
+  local tpuVm = common.PyTorchTpuVmMixin {
+    tpuSettings+: {
+      tpuVmExports+: |||
+        export XLA_USE_BF16=$(XLA_USE_BF16)
+      |||,
+      tpuVmExtraSetup: |||
+        pip install tensorboardX google-cloud-storage
+        git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
+        pip install --editable ./tpu-examples/deps/fairseq
+        echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
+        echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
+      |||,
+    },
+  },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
   configs: [
-    w2v2 + v3_8 + func + timeouts.Hours(2),
-    w2v2 + v3_8 + conv + timeouts.Hours(20),
+    w2v2 + v3_8 + func + timeouts.Hours(2) + tpuVm,
+    w2v2 + v3_8 + conv + timeouts.Hours(20) + tpuVm,
   ],
 }
