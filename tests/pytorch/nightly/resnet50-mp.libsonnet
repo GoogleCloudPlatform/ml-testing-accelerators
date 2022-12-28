@@ -14,8 +14,8 @@
 
 local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
-local mixins = import 'templates/mixins.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
