@@ -40,9 +40,6 @@ local utils = import 'templates/utils.libsonnet';
         export XLA_USE_BF16=$(XLA_USE_BF16)
       |||,
       tpuVmExtraSetup: |||
-        pip install tensorboardX google-cloud-storage
-        git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
-        pip install --editable ./tpu-examples/deps/fairseq
         echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
         echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
       |||,
@@ -54,23 +51,8 @@ local utils = import 'templates/utils.libsonnet';
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
-  local cpp_ops_tpu_vm = common.PyTorchTest {
-    modelName: 'cpp-ops',
-
-    command: utils.scriptCommand(
-      |||
-        %(command_common)s
-        cd xla/test/cpp
-        export TPUVM_MODE=1
-        ./run_tests.sh
-      ||| % common.tpu_vm_nightly_install
-    ),
-  },
 
   configs: [
     operations + v2_8 + common.Functional + timeouts.Hours(4) + tpuVm,
-    // TPUVM not working yet: https://b.corp.google.com/issues/183450497#comment18
-    // cpp_ops_tpu_vm + v3_8 + common.Functional + timeouts.Hours(4) + experimental.PyTorchTpuVmMixin,
-    // cpp_ops_tpu_vm + v2_8 + common.Functional + timeouts.Hours(4) + experimental.PyTorchTpuVmMixin,
   ],
 }
