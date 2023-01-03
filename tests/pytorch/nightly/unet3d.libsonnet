@@ -13,6 +13,7 @@
 // limitations under the License.
 
 local common = import 'common.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
@@ -84,6 +85,6 @@ local utils = import 'templates/utils.libsonnet';
 
   },
   configs: [
-    unet3d + v3_8 + conv + timeouts.Hours(25) + tpuVm,
+    unet3d + v3_8 + conv + timeouts.Hours(25) + tpuVm + mixins.Experimental,
   ],
 }
