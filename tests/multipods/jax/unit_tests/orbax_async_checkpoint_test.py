@@ -64,7 +64,7 @@ coordinator_address = get_coordinator_address()
 print('orbax_async_checkpoint_test: Using coordinator_address: ', coordinator_address)
 
 jax.distributed.initialize(coordinator_address=coordinator_address,num_processes=jax.process_count(),process_id=jax.process_index())
-print('orbax_async_checkpoint_test: Initialized successful!)
+print('orbax_async_checkpoint_test: Initialized successful!')
 
 mngr = orbax.CheckpointManager(ckpt_dir, orbax.AsyncCheckpointer(orbax.PyTreeCheckpointHandler()))
 print("orbax_async_checkpoint_test: Created Async CheckpointManager")
