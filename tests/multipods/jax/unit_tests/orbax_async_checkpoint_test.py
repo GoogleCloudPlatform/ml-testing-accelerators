@@ -50,7 +50,7 @@ def regather_ip_0(hosts_arr):
 
 def get_coordinator_ip():
   ip_nums= gen_ip_nums()
-  ip_nums_across_devices = [ip_nums for _ in range(len(jax.devices()))]
+  ip_nums_across_devices = [ip_nums.copy() for _ in range(len(jax.devices()))]
   ip_dict = {'host_ips':ip_nums_across_devices}
   ip_nums_gathered = jax.experimental.multihost_utils.process_allgather(ip_dict)
   return regather_ip_0(ip_nums_gathered['host_ips'][0])
