@@ -11,7 +11,6 @@ from jax.experimental import multihost_utils
 import numpy as np
 import orbax.checkpoint as orbax
 import time
-import portpicker
 from google.cloud import storage
 from jax._src.lib import xla_bridge
 from jax._src.cloud_tpu_init import running_in_cloud_tpu_vm, get_metadata
