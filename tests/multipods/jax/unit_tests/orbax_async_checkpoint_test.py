@@ -33,9 +33,11 @@ dir_name_flag = flags.DEFINE_string(
 
 FLAGS(sys.argv)  # parses the flags.
 
+print('orbax_async_checkpoint_test: Setting up ckpt_dir')
 bucket_path = epath.Path(bucket_path_flag.value)
 dir_name = dir_name_flag.value
 ckpt_dir = bucket_path / dir_name
+print('orbax_async_checkpoint_test: Using ckpt_dir: ', ckpt_dir)
 
 def gen_local_ip():
   return get_metadata('worker-network-endpoints').split(',')[0]
@@ -62,6 +64,7 @@ coordinator_address = get_coordinator_address()
 print('orbax_async_checkpoint_test: Using coordinator_address: ', coordinator_address)
 
 jax.distributed.initialize(coordinator_address=coordinator_address,num_processes=jax.process_count(),process_id=jax.process_index())
+print('orbax_async_checkpoint_test: Initialized successful!)
 
 mngr = orbax.CheckpointManager(ckpt_dir, orbax.AsyncCheckpointer(orbax.PyTreeCheckpointHandler()))
 print("orbax_async_checkpoint_test: Created Async CheckpointManager")
