@@ -59,7 +59,7 @@ def gen_local_ip_nums():
 def get_coordinator_ip():
   ip_nums= gen_local_ip_nums()
   str_list = list()
-  # Very strange behavior is occasionaly been without the pause,
+  # Very strange behavior is occasionaly seen without the pause,
   # The elements (typically the 2nd and 3rd) are sometimes read in the wrong order for 
   # the other host.
   for num in ip_nums:
