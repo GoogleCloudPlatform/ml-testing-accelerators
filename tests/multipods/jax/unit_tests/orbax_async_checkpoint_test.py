@@ -64,7 +64,7 @@ def get_coordinator_ip():
   # the other host.
   for num in ip_nums:
     broadcasted_num = broadcast_from_process_0(num)
-    time.sleep(1.0)
+    time.sleep(3.0)
     print("orbax_async_checkpoint_test: broadcasted ", broadcasted_num, flush=True)
     str_list.append(str(broadcasted_num))
   return '.'.join(str_list)
@@ -74,8 +74,9 @@ def get_coordinator_address():
   port = "8476"
   return host_0_ip + ":" + str(port)
 
+multihost_utils.sync_global_devices('Getting coordinator address')
 coordinator_address = get_coordinator_address()
-print('orbax_async_checkpoint_test: Using coordinator_address: ', coordinator_address, flush=True)
+print('orbax_async_checkpoint_test: Using synced coordinator_address: ', coordinator_address, flush=True)
 
 jax.distributed.initialize(coordinator_address=coordinator_address,num_processes=jax.process_count(),process_id=jax.process_index())
 print('orbax_async_checkpoint_test: Initialized successful!', flush=True)
