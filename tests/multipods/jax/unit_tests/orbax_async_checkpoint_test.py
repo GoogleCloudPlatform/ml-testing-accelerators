@@ -39,43 +39,21 @@ dir_name = dir_name_flag.value
 ckpt_dir = bucket_path / dir_name
 print('orbax_async_checkpoint_test: Using ckpt_dir: ', ckpt_dir, flush=True)
 
-def broadcast_from_process_0(value):
-  """broadcasts non-negative value from process 0 to all processes"""
-  if jax.process_index() != 0:
-    value = 0
-  values_gathered = jax.experimental.multihost_utils.process_allgather(value)
-  return jax.numpy.max(values_gathered)
-
 def gen_local_ip():
-  to_ret = get_metadata('worker-network-endpoints').split(',')[0] # Array with 1 element, we just grab it.
-  print("orbax_async_checkpoint_test: gen_local_ip: ", to_ret, flush=True)
-  return to_ret
+  # array with 1 element, we just grab it.
+  return get_metadata('worker-network-endpoints').split(',')[0] 
 
 def gen_local_ip_nums():
-  to_ret = [int(num) for num in gen_local_ip().split(":")[-1].split(".")]
-  print("orbax_async_checkpoint_test: gen_local_ip_nums: ", to_ret, flush=True)
-  return to_ret
+  return [int(num) for num in gen_local_ip().split(":")[-1].split(".")]
 
 def get_coordinator_ip():
-  ip_nums= gen_local_ip_nums()
-  str_list = list()
-  # Very strange behavior is occasionaly seen without the pause,
-  # The elements (typically the 2nd and 3rd) are sometimes read in the wrong order for 
-  # the other host.
-  for num in ip_nums:
-    broadcasted_num = broadcast_from_process_0(num)
-    time.sleep(3.0)
-    print("orbax_async_checkpoint_test: broadcasted ", broadcasted_num, flush=True)
-    str_list.append(str(broadcasted_num))
-  return '.'.join(str_list)
-  
-def get_coordinator_address():
-  host_0_ip = get_coordinator_ip()
-  port = "8476"
-  return host_0_ip + ":" + str(port)
+  local_ip_nums = jax.numpy.array(gen_local_ip_nums())
+  coordinator_ip_nums = multihost_utils.broadcast_one_to_all(local_ip_nums)
+  coordinator_ip_strings = [str(num) for num in list(coordinator_ip_nums)]
+  return '.'.join(coordinator_ip_strings)
 
-multihost_utils.sync_global_devices('Getting coordinator address')
-coordinator_address = get_coordinator_address()
+port = "8476"
+coordinator_address = get_coordinator_ip() + ":" + port
 print('orbax_async_checkpoint_test: Using synced coordinator_address: ', coordinator_address, flush=True)
 
 jax.distributed.initialize(coordinator_address=coordinator_address,num_processes=jax.process_count(),process_id=jax.process_index())
