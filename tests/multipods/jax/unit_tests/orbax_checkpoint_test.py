@@ -29,21 +29,11 @@ bucket_path_flag = flags.DEFINE_string(
 dir_name_flag = flags.DEFINE_string(
     "ckpt_dir", None, "GCS cloud bucket directory e.g. orbax-checkpoints")
 
-clean_dir_flag = flags.DEFINE_bool(
-    "clean_dir", False,
-    "Whether or not to delete the checkpointing directory at test completion")
-
 FLAGS(sys.argv)  # parses the flags.
 
 bucket_path = epath.Path(bucket_path_flag.value)
 dir_name = dir_name_flag.value
 ckpt_dir = bucket_path / dir_name
-
-# Create the bucket subdirectory for checkpoints (only once)
-# This will error if the directory already exists.
-print("orbax_checkpoint_test: Creating directory " + str(ckpt_dir))
-if jax.process_index() == 0:
-  ckpt_dir.mkdir()
 
 mngr = orbax.CheckpointManager(
     ckpt_dir, orbax.Checkpointer(orbax.PyTreeCheckpointHandler()))
@@ -77,15 +67,5 @@ with maps.Mesh(mesh.devices, mesh.axis_names):
 print("orbax_checkpoint_test: Attempting restore...!")
 s2 = mngr.restore(0)
 print("orbax_checkpoint_test: Restore successful!")
-
-if clean_dir_flag.value:
-  if jax.process_index() == 0:
-    print("orbax_checkpoint_test: Deleting checkpoints")
-    storage_client = storage.Client()
-    bucket = storage_client.get_bucket(bucket_name)
-    blobs = bucket.list_blobs(prefix=dir_name)
-    for blob in blobs:
-      blob.delete()
-    print("orbax_checkpoint_test: Checkpoints deleted!")
 
 print("orbax_checkpoint_test: Test finished successfully")
