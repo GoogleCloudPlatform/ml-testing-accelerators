@@ -42,6 +42,7 @@ local tpus = import 'templates/tpus.libsonnet';
       pip3 install importlib-resources
       pip3 install etils
       pip3 install orbax
+      pip3 install portpicker
       pip3 install tensorflow
       python3 ml-testing-accelerators/tests/multipods/jax/unit_tests/orbax_async_checkpoint_test.py --bucket_path=gs://multipod-xlml-outputs${MODEL_DIR:4:500} --ckpt_dir=orbax-checkpoints
       exit 0

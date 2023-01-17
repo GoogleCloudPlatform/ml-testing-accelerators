@@ -10,6 +10,7 @@ from jax.experimental.pjit import pjit
 from jax.experimental import multihost_utils
 import numpy as np
 import orbax.checkpoint as orbax
+import portpicker
 import time
 from google.cloud import storage
 from jax._src.lib import xla_bridge
@@ -52,8 +53,8 @@ def get_coordinator_ip():
   coordinator_ip_strings = [str(num) for num in list(coordinator_ip_nums)]
   return '.'.join(coordinator_ip_strings)
 
-port = "8476"
-coordinator_address = get_coordinator_ip() + ":" + port
+port = multihost_utils.broadcast_one_to_all(jax.numpy.array(portpicker.pick_unused_port()))
+coordinator_address = get_coordinator_ip() + ":" + str(port)
 print('orbax_async_checkpoint_test: Using synced coordinator_address: ', coordinator_address, flush=True)
 
 jax.distributed.initialize(coordinator_address=coordinator_address,num_processes=jax.process_count(),process_id=jax.process_index())
