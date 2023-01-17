@@ -3,7 +3,7 @@
 A set of tools and examples to run machine learning tests on ML hardware
 accelerators (TPUs or GPUs) using Google Cloud Platform.
 
-This is not an officially supported Google product.
+This is no asfdat an officially supported Google product.
 
 ## Getting Started
 
