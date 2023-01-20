@@ -14,7 +14,9 @@ import portpicker
 import time
 from google.cloud import storage
 from jax._src.lib import xla_bridge
-from jax._src.cloud_tpu_init import running_in_cloud_tpu_vm, get_metadata
+from jax._src.cloud_tpu_init import running_in_cloud_tpu_vm
+from jax._src.clusters.cloud_tpu_cluster import get_metadata
+
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
 os.environ["JAX_USE_PJRT_C_API_ON_TPU"] = "1"
