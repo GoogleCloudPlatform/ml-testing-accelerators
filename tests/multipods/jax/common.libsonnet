@@ -24,7 +24,9 @@ local tpus = import 'templates/tpus.libsonnet';
     frameworkPrefix: 'mp-jax',
     image: 'google/cloud-sdk',
     accelerator: tpus.v4_16,
-
+    tpuExists: false,
+    tpuPrefix: 'test',
+    userName: 'cloud-tpu-multipod-dev',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -71,52 +73,54 @@ local tpus = import 'templates/tpus.libsonnet';
       |||
         set +x
         set -u
-
-        cat > testsetup.sh << SCRIPT_EOF
-        set +x
-        set -u
-        set -e
-
-        # .bash_logout sometimes causes a spurious bad exit code, remove it.
-        rm .bash_logout
-
-        %(installPipPackages)s
-        %(installJax)s
-        %(installJaxlib)s
-        %(installLibtpu)s
-        SCRIPT_EOF
-
-        setup_process_ids=()
-
         SLICE_COUNT=$(cat /scripts/slice_count)
         ZONE=$(cat /scripts/zone)
 
-        for (( i=0; i < ${SLICE_COUNT}; i++ )); do
-          gcloud alpha compute tpus tpu-vm ssh cloud-tpu-multipod-dev@$(cat /scripts/tpu_name_${i}) \
-          --zone=${ZONE} \
-          --ssh-key-file=/scripts/id_rsa \
-          --strict-host-key-checking=no \
-          --internal-ip \
-          --worker=all \
-          --command "$(cat testsetup.sh)" >> output_testsetup_${i}.txt 2>&1 &
+        if [ %(tpuExists)s = false ]; then
+          cat > testsetup.sh << SCRIPT_EOF
+          set +x
+          set -u
+          set -e
+          
+          # .bash_logout sometimes causes a spurious bad exit code, remove it.
+          rm .bash_logout
+          
+          %(installPipPackages)s
+          %(installJax)s
+          %(installJaxlib)s
+          %(installLibtpu)s
+        SCRIPT_EOF
 
-          setup_process_ids+=($!)
-        done
+          setup_process_ids=()
 
-        echo "LOGGER: Waiting for test setup to be installed on all TPU VM hosts in ${SLICE_COUNT} slices."
+          for (( i=0; i < ${SLICE_COUNT}; i++ )); do
+            gcloud alpha compute tpus tpu-vm ssh %(userName)s@$(cat /scripts/tpu_name_${i}) \
+            --zone=${ZONE} \
+            --ssh-key-file=/scripts/id_rsa \
+            --strict-host-key-checking=no \
+            --internal-ip \
+            --worker=all \
+            --command "$(cat testsetup.sh)" >> output_testsetup_${i}.txt 2>&1 &
 
-        for i in "${!setup_process_ids[@]}"; do
-          wait ${setup_process_ids[$i]}
-          if [[ $? -ne 0 ]]; then
-            echo "LOGGER: Set up failed on slice_${i}. Here is the output:"
-            cat output_testsetup_${i}.txt
-            bash /scripts/cleanup.sh
-            exit 1
-          fi
-        done
+            setup_process_ids+=($!)
+          done
 
-        echo "LOGGER: Test set up completed successfully on ${SLICE_COUNT} slices."
+          echo "LOGGER: Waiting for test setup to be installed on all TPU VM hosts in ${SLICE_COUNT} slices."
 
+          for i in "${!setup_process_ids[@]}"; do
+            wait ${setup_process_ids[$i]}
+            if [[ $? -ne 0 ]]; then
+              echo "LOGGER: Set up failed on slice_${i}. Here is the output:"
+              cat output_testsetup_${i}.txt
+              bash /scripts/cleanup.sh
+              exit 1
+            fi
+          done
+
+          echo "LOGGER: Test set up completed successfully on ${SLICE_COUNT} slices."
+        else
+          echo "LOGGER: Not installing anything"
+        fi
         test_script_process_ids=()
 
         cat > test_script.sh << TEST_SCRIPT_EOF
@@ -125,7 +129,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
         for (( i=0; i < ${SLICE_COUNT}; i++ )); do
           for (( j=0; j < $(cat /scripts/worker_count_slice_${i}); j++ )); do
-            gcloud alpha compute tpus tpu-vm ssh cloud-tpu-multipod-dev@$(cat /scripts/tpu_name_${i}) \
+            gcloud alpha compute tpus tpu-vm ssh %(userName)s@$(cat /scripts/tpu_name_${i}) \
             --zone=${ZONE} \
             --ssh-key-file=/scripts/id_rsa \
             --strict-host-key-checking=no \
@@ -153,17 +157,15 @@ local tpus = import 'templates/tpus.libsonnet';
 
         echo "LOGGER: Test script completed successfully on all the TPU VM hosts of ${SLICE_COUNT} slices. Here is the output from Slice 0:"
         cat output_slice_0_worker_0.txt
-
-        echo "LOGGER: Cleaning up the TPU VM resources:"
-
-        sleep 60
-
+        
+        sleep 30
+        echo $(cat /scripts/cleanup.sh)
         bash /scripts/cleanup.sh
 
         exit_code=$?
 
         exit $exit_code
-      ||| % { testScript: config.testScript, installPipPackages: config.scriptConfig.installPipPackages, installJax: config.scriptConfig.installJax, installJaxlib: config.scriptConfig.installJaxlib, installLibtpu: config.scriptConfig.installLibtpu },
+      ||| % { testScript: config.testScript, installPipPackages: config.scriptConfig.installPipPackages, installJax: config.scriptConfig.installJax, installJaxlib: config.scriptConfig.installJaxlib, installLibtpu: config.scriptConfig.installLibtpu, userName: config.userName, tpuExists: config.tpuExists },
     ],
   },
 
@@ -241,7 +243,41 @@ local tpus = import 'templates/tpus.libsonnet';
       |||,
     },
   },
-
+  jaxlibOldStable:: {
+    jaxlibVersion:: 'old',
+    scriptConfig+: {
+      installJax: |||
+        pip3 install jax==0.3.25
+      |||,
+      installJaxlib: |||
+        pip3 install jaxlib==0.3.25
+      |||,
+      installLibtpu: |||
+        /usr/bin/docker-credential-gcr configure-docker
+        sudo bash /var/scripts/docker-login.sh
+        
+        sudo docker create --name libtpu_next gcr.io/cloud-tpu-v2-images-dev/libtpu_unsanitized:libtpu_unsanitized_2022111705_RC00 "/bin/bash"
+        sudo docker cp libtpu_next:_libtpu_next.so /lib/libtpu.so
+        
+        sudo docker rm libtpu_next
+        echo "export TPU_LIBRARY_PATH=/lib/libtpu.so" >> ~/.profile
+      |||,
+    },
+  },
+  noInstall:: {
+    jaxlibVersion:: 'not-installed',
+    scriptConfig+: {
+      installJax: |||
+        true
+      |||,
+      installJaxlib: |||
+        true
+      |||,
+      installLibtpu: |||
+        true
+      |||,
+    },
+  },
   tpuVmV4Base:: {
     local config = self,
     accelerator: tpus.v4_16,
