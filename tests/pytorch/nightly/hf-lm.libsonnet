@@ -189,7 +189,7 @@ local utils = import 'templates/utils.libsonnet';
         export XLA_USE_BF16=$(XLA_USE_BF16)
       |||,
       tpuVmExtraSetup: |||
-        pip install tensorboardX google-cloud-storage pathlib
+        pip install tensorboardX google-cloud-storage
         echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
         echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
       |||,
