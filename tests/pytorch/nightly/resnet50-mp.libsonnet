@@ -166,6 +166,7 @@ local tpus = import 'templates/tpus.libsonnet';
     resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt,
     resnet50 + convergence + v4_8 + timeouts.Hours(24) + pjrt,
     resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt + pjrt_ddp,
+    resnet50 + convergence + v4_8 + timeouts.Hours(2) + pjrt + pjrt_ddp,
     resnet50 + fake_data + v4_32 + timeouts.Hours(2) + pjrt,
     resnet50 + convergence + v4_32 + timeouts.Hours(24) + pjrt,
   ],
