@@ -113,22 +113,23 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: gpus.teslaV100 { count: 4 },
   },
 
-  local torch_ddp = {
+  local xrt_ddp = {
     modelName+: '-torch-ddp',
-    command+: [
-      '--ddp',
-    ],
-  },
-  local xla_ddp = {
-    modelName+: '-xla-ddp',
     tpuSettings+: {
       tpuVmExports+: |||
-        export PJRT_INIT_TORCH_DISTRIBUTED=1
+        export MASTER_ADDR=1
+        export MASTER_PORT=12355
       |||,
     },
     command+: [
       '--ddp',
-      '--ddp_pjrt',
+    ],
+  },
+  local pjrt_ddp = {
+    modelName+: '-ddp',
+    command+: [
+      '--ddp',
+      '--pjrt_distributed',
     ],
   },
 
@@ -144,25 +145,29 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
+    // XRT
     resnet50 + functional + v100x4 + timeouts.Hours(1),
     resnet50 + functional + v3_8 + timeouts.Hours(2) + tpuVm + mixins.Experimental,
     resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm,
-    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm + torch_ddp,
-    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt,
-    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt + xla_ddp,
+    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm + xrt_ddp,
     resnet50 + convergence + v3_8 + timeouts.Hours(24) + tpuVm,
-    resnet50 + convergence + v3_8 + timeouts.Hours(24) + pjrt,
+    resnet50 + fake_data + v3_32 + timeouts.Hours(1) + tpuVm,
     resnet50 + functional + v3_32 + timeouts.Hours(1) + tpuVm + mixins.Experimental,
-    resnet50 + convergence + v3_32 + timeouts.Hours(12) + tpuVm,
+    resnet50 + convergence + v3_32 + timeouts.Hours(12) + tpuVm + mixins.Experimental,
     resnet50 + fake_data + v4_8 + timeouts.Hours(2) + tpuVm,
-    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + tpuVm + torch_ddp + mixins.Experimental,
-    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt,
-    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt + torch_ddp + mixins.Experimental,
-    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt + xla_ddp,
+    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + tpuVm + xrt_ddp + mixins.Experimental,
     resnet50 + convergence + v4_8 + timeouts.Hours(24) + tpuVm + mixins.Experimental,
-    resnet50 + convergence + v4_8 + timeouts.Hours(24) + pjrt + mixins.Experimental,
-    resnet50 + fake_data + v4_32 + timeouts.Hours(2) + pjrt + mixins.Experimental,
     resnet50 + convergence + v4_32 + timeouts.Hours(24) + tpuVm + mixins.Experimental,
-    resnet50 + convergence + v4_32 + timeouts.Hours(24) + pjrt + mixins.Experimental,
+    // PJRT
+    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt,
+    resnet50 + convergence + v3_8 + timeouts.Hours(24) + pjrt,
+    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt + pjrt_ddp,
+    resnet50 + fake_data + v3_32 + timeouts.Hours(1) + pjrt,
+    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt,
+    resnet50 + convergence + v4_8 + timeouts.Hours(24) + pjrt,
+    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt + pjrt_ddp,
+    resnet50 + convergence + v4_8 + timeouts.Hours(2) + pjrt + pjrt_ddp,
+    resnet50 + fake_data + v4_32 + timeouts.Hours(2) + pjrt,
+    resnet50 + convergence + v4_32 + timeouts.Hours(24) + pjrt,
   ],
 }

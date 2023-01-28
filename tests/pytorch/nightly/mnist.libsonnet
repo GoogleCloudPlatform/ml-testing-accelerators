@@ -96,11 +96,19 @@ local utils = import 'templates/utils.libsonnet';
       modelDir: null,
     },
   },
+  local pjrt_ddp = {
+    modelName+: '-ddp',
+    command+: [
+      '--ddp',
+      '--pjrt_distributed',
+    ],
+  },
 
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1) + mixins.Experimental,
     mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm + mixins.Experimental,
-    mnist + convergence + v2_8 + timeouts.Hours(1) + pjrt + mixins.Experimental,
+    mnist + convergence + v2_8 + timeouts.Hours(1) + pjrt,
+    mnist + convergence + v2_8 + timeouts.Hours(1) + pjrt + pjrt_ddp,
     mnist + convergence + v4_8 + timeouts.Hours(1) + pjrt + mixins.Experimental,
     mnist + convergence + v100x4 + timeouts.Hours(6) + mixins.Experimental,
   ],
