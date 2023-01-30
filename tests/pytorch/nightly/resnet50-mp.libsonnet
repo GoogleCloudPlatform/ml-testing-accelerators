@@ -117,7 +117,7 @@ local tpus = import 'templates/tpus.libsonnet';
     modelName+: '-torch-ddp',
     tpuSettings+: {
       tpuVmExports+: |||
-        export MASTER_ADDR=1
+        export MASTER_ADDR=localhost
         export MASTER_PORT=12355
       |||,
     },
@@ -164,9 +164,9 @@ local tpus = import 'templates/tpus.libsonnet';
     resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt + pjrt_ddp,
     resnet50 + fake_data + v3_32 + timeouts.Hours(1) + pjrt,
     resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt,
-    resnet50 + convergence + v4_8 + timeouts.Hours(24) + pjrt,
+    resnet50 + convergence + v4_8 + timeouts.Hours(14) + pjrt,
     resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt + pjrt_ddp,
-    resnet50 + convergence + v4_8 + timeouts.Hours(2) + pjrt + pjrt_ddp,
+    resnet50 + convergence + v4_8 + timeouts.Hours(14) + pjrt + pjrt_ddp,
     resnet50 + fake_data + v4_32 + timeouts.Hours(2) + pjrt,
     resnet50 + convergence + v4_32 + timeouts.Hours(24) + pjrt,
   ],

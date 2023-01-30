@@ -87,14 +87,6 @@ local utils = import 'templates/utils.libsonnet';
   },
   local pjrt = tpuVm + experimental.PjRt {
     modelName+: '-pjrt',
-    command: [
-      'python3',
-      'pytorch/xla/test/pjrt/test_train_pjrt_mnist.py',
-    ] + super.command[2:],
-    // TODO: re-enable TensorBoard summaries when they don't cause a crash
-    flags+:: {
-      modelDir: null,
-    },
   },
   local pjrt_ddp = {
     modelName+: '-ddp',
