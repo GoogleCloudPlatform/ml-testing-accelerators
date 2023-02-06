@@ -41,7 +41,7 @@ mngr = orbax.CheckpointManager(
     ckpt_dir, orbax.Checkpointer(orbax.PyTreeCheckpointHandler()),
     options = orbax.CheckpointManagerOptions(create=True))
 
-print("orbax_checkpoint_test: Created CheckpointManager!", flush=True)
+print("orbax_checkpoint_test: Created CheckpointManager", flush=True)
 
 BATCH = 256
 SIZE = 1024
