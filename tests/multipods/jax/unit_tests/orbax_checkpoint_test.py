@@ -35,10 +35,13 @@ bucket_path = epath.Path(bucket_path_flag.value)
 dir_name = dir_name_flag.value
 ckpt_dir = bucket_path / dir_name
 
-mngr = orbax.CheckpointManager(
-    ckpt_dir, orbax.Checkpointer(orbax.PyTreeCheckpointHandler()))
 
-print("orbax_checkpoint_test: Created CheckpointManager")
+print("orbax_checkpoint_test: Creating CheckpointManager...", flush=True)
+mngr = orbax.CheckpointManager(
+    ckpt_dir, orbax.Checkpointer(orbax.PyTreeCheckpointHandler()),
+    options = orbax.CheckpointManagerOptions(create=True))
+
+print("orbax_checkpoint_test: Created CheckpointManager!", flush=True)
 
 BATCH = 256
 SIZE = 1024
