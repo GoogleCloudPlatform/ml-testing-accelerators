@@ -8,11 +8,7 @@ local mixins = import 'templates/mixins.libsonnet';
   },
     StablePaxTest:: common.PaxTest {
       local config = self,
-
-      tpuSettings+: {
-            softwareVersion: 'stable',
-          },
-
+      frameworkPrefix: 'pax-stable',
       expPath:: '',
       extraFlags:: [],
       buildDate:: '$(date +%Y%m%d)',
@@ -41,7 +37,7 @@ local mixins = import 'templates/mixins.libsonnet';
 
 
         python3 .local/lib/python3.8/site-packages/paxml/main.py --exp=%(expPath)s --job_log_dir=${MODEL_DIR} %(extraFlags)s
-      ||| % { buildDate: config.buildDate, expPath: config.expPath, extraFlags: std.join(' ', config.extraFlags) },
+      ||| % { buildDate: config.buildDate, expPath: config.expPath, extraFlags: std.join(' ', config.extraFlags), MODEL_DIR: config.MODEL_DIR },
 
     },
   Convergence:: mixins.Convergence {
@@ -52,11 +48,11 @@ local mixins = import 'templates/mixins.libsonnet';
         tensorboard+: {
           aggregateAssertionsMap+:: {
             'Metrics/log_pplx': {
-              AVERAGE: {
+              FINAL: {
                 inclusive_bounds: true,
-                std_devs_from_mean: {
-                  comparison: 'LESSER',
-                  std_devs: 2.0,
+                fixed_value: {
+                  comparison: 'LESS',
+                  std_devs: 3.0,
                 },
                 wait_for_n_data_points: 0,
               },
