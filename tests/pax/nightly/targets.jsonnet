@@ -14,9 +14,12 @@
 
 local spmd = import 'lmspmd2b.libsonnet';
 local transformer = import 'lmtransformeradam.libsonnet';
-
+local c4spmd1b_pretraining = import 'c4spmd1b_pretraining.libsonnet';
+local c4spmd1b_pretraining_reload = import 'c4spmd1b_pretraining_reload.libsonnet';
 // Add new models here
 std.flattenArrays([
   spmd.configs,
   transformer.configs,
+  c4spmd1b_pretraining.configs,
+  c4spmd1b_pretraining_reload.configs,
 ])

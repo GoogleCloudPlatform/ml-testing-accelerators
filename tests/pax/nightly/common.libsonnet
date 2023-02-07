@@ -8,6 +8,11 @@ local mixins = import 'templates/mixins.libsonnet';
   },
   NightlyPaxTest:: common.PaxTest {
     local config = self,
+
+    tpuSettings+: {
+          softwareVersion: 'nightly',
+        },
+
     expPath:: '',
     extraFlags:: [],
     buildDate:: '$(date +%Y%m%d)',
@@ -55,5 +60,27 @@ local mixins = import 'templates/mixins.libsonnet';
 
       python3 .local/lib/python3.8/site-packages/paxml/main.py --exp=%(expPath)s --job_log_dir=logs %(extraFlags)s
     ||| % { buildDate: config.buildDate, expPath: config.expPath, extraFlags: std.join(' ', config.extraFlags) },
+  },
+  Convergence:: mixins.Convergence {
+    // Run at 2AM PST daily
+    schedule: '0 10 * * *',
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            Metrics/log_pplx: {
+              AVERAGE: {
+                inclusive_bounds: true,
+                std_devs_from_mean: {
+                  comparison: 'LESSER',
+                  std_devs: 2.0,
+                },
+                wait_for_n_data_points: 0,
+              },
+            },
+          },
+        },
+      },
+    },
   },
 }
