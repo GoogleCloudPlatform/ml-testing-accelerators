@@ -12,4 +12,5 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   configs: [
     lmspmd2b + v4_8,
+    ]
 }

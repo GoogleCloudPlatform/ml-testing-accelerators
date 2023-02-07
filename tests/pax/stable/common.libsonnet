@@ -51,7 +51,7 @@ local mixins = import 'templates/mixins.libsonnet';
       sourceMap+:: {
         tensorboard+: {
           aggregateAssertionsMap+:: {
-            Metrics/log_pplx: {
+            'Metrics/log_pplx': {
               AVERAGE: {
                 inclusive_bounds: true,
                 std_devs_from_mean: {
