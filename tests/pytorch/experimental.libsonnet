@@ -121,7 +121,7 @@ local utils = import 'templates/utils.libsonnet';
   PjRt:: {
     tpuSettings+: {
       tpuVmExports: |||
-        export PJRT_DEVICE=TPU
+        export PJRT_DEVICE=TPU_C_API
       |||,
       tpuVmXlaDistPrefix: null,
       tpuVmMainCommandWorkers: 'all',
