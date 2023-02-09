@@ -12,6 +12,7 @@ local mixins = import 'templates/mixins.libsonnet';
     expPath:: '',
     extraFlags:: [],
     buildDate:: '$(date +%Y%m%d)',
+    model_dir:: $(MODEL_DIR),
 
     // PAX tests are structured as bash scripts that run directly on the Cloud
     // TPU VM instead of using docker images
@@ -24,8 +25,8 @@ local mixins = import 'templates/mixins.libsonnet';
       rm .bash_logout
 
       # check for nightly build
-      gsutil cp gs://pax-on-cloud-tpu-project/wheels/%(buildDate)s/paxml*.whl .
-      gsutil cp gs://pax-on-cloud-tpu-project/wheels/%(buildDate)s/praxis*.whl .
+      gsutil cp gs://pax-on-cloud-tpu-project/wheels/20230207/paxml*.whl .
+      gsutil cp gs://pax-on-cloud-tpu-project/wheels/20230207/praxis*.whl .
 
       if [ -f praxis*.whl -a -f paxml*.whl ]; then
           echo "Nightly builds succeeded."
@@ -50,8 +51,8 @@ local mixins = import 'templates/mixins.libsonnet';
           exit 1
       fi
 
-      python3 .local/lib/python3.8/site-packages/paxml/main.py --exp=%(expPath)s --job_log_dir=${MODEL_DIR} %(extraFlags)s
-    ||| % { buildDate: config.buildDate, expPath: config.expPath, extraFlags: std.join(' ', config.extraFlags), MODEL_DIR: config.MODEL_DIR },
+      python3 .local/lib/python3.8/site-packages/paxml/main.py --exp=%(expPath)s --job_log_dir=%(model_dir)s %(extraFlags)s
+    ||| % { buildDate: config.buildDate, expPath: config.expPath, extraFlags: std.join(' ', config.extraFlags), model_dir: config.model_dir },
   },
   Convergence:: mixins.Convergence {
     // Run at 2AM PST daily
