@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import 'common.libsonnet';
 local experimental = import '../experimental.libsonnet';
+local common = import 'common.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  # FSMT = FairSeq MachineTranslation
-  # Model doc: https://huggingface.co/docs/transformers/model_doc/fsmt
+  // FSMT = FairSeq MachineTranslation
+  // Model doc: https://huggingface.co/docs/transformers/model_doc/fsmt
   local fsmt = common.PyTorchTest {
     modelName: 'hf-fsmt',
     volumeMap+: {
@@ -29,7 +29,7 @@ local tpus = import 'templates/tpus.libsonnet';
       'python3',
       'pytorch/xla/test/pjrt/test_train_hf_transformer.py',
       '--logdir=$(MODEL_DIR)',
-    ]
+    ],
   },
 
   local functional = common.Functional {
