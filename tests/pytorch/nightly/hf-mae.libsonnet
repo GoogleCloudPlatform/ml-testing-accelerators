@@ -23,7 +23,7 @@ local utils = import 'templates/utils.libsonnet';
     git clone https://github.com/huggingface/transformers.git
     cd transformers && pip install .
     git log -1
-    pip install datasets evaluate sklearn
+    pip install datasets evaluate scikit-learn
     pip install -r examples/pytorch/_tests_requirements.txt
   |||,
   local command_copy_metrics = |||
@@ -40,7 +40,6 @@ local utils = import 'templates/utils.libsonnet';
         self.scriptPath,
         '--num_cores=%d' % config.paramsOverride.tpuCores,
         'examples/pytorch/image-pretraining/run_mae.py',
-        '--model_name=%s' % config.paramsOverride.model_name,
         '--dataset_name=cifar10',
         '--remove_unused_columns=False',
         '--label_names=pixel_values',
@@ -65,8 +64,6 @@ local utils = import 'templates/utils.libsonnet';
         '--output_dir=MAE',
         '--overwrite_output_dir=true',
         '--logging_dir=./tensorboard-metrics',
-        '--task_name=MAE',
-        '--overwrite_cache=true',
         '--tpu_metrics_debug=true',
       ],
     },
@@ -133,7 +130,7 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local pjrt = tpuVm + experimental.PjRt {
-    modelName: 'hf-mae-pjrt',
+    modelName: 'hf-vit-mae-pjrt',
   },
   local v2_8 = {
     accelerator: tpus.v2_8,
@@ -145,8 +142,7 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_8,
   },
   configs: [
-    hf_mae + v2_8 + hf_vit_mae + timeouts.Hours(2) + pjrt,
-    hf_mae + v3_8 + hf_vit_mae + timeouts.Hours(2) + pjrt,
-    hf_mae + v4_8 + hf_vit_mae + timeouts.Hours(2) + pjrt,
+    hf_mae + v3_8 + hf_vit_mae + timeouts.Hours(2) + tpuVm,
+    hf_mae + v4_8 + hf_vit_mae + timeouts.Hours(2) + tpuVm,
   ],
 }
