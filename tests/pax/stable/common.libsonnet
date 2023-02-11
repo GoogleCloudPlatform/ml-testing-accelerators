@@ -37,8 +37,8 @@ local mixins = import 'templates/mixins.libsonnet';
         fi
 
 
-        python3 .local/lib/python3.8/site-packages/paxml/main.py --exp=%(expPath)s --job_log_dir=%(model_dir)s %(extraFlags)s
-      ||| % { buildDate: config.buildDate, expPath: config.expPath, extraFlags: std.join(' ', config.extraFlags), model_dir: config.model_dir },
+        python3 .local/lib/python3.8/site-packages/paxml/main.py --exp=%(expPath)s --job_log_dir=$(MODEL_DIR) %(extraFlags)s
+      ||| % { buildDate: config.buildDate, expPath: config.expPath, extraFlags: std.join(' ', config.extraFlags) },
 
     },
   Convergence:: mixins.Convergence {
