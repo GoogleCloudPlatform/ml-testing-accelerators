@@ -3,8 +3,8 @@ local mixins = import 'templates/mixins.libsonnet';
 
 {
   Functional:: mixins.Functional {
-    // Run at 2AM PST daily
-    schedule: '0 10 * * *',
+    // Run at 3AM PST daily
+    schedule: '0 11 * * *',
   },
   NightlyPaxTest:: common.PaxTest {
     local config = self,
@@ -25,8 +25,8 @@ local mixins = import 'templates/mixins.libsonnet';
       rm .bash_logout
 
       # check for nightly build
-      gsutil cp gs://pax-on-cloud-tpu-project/wheels/20230207/paxml*.whl .
-      gsutil cp gs://pax-on-cloud-tpu-project/wheels/20230207/praxis*.whl .
+      gsutil cp gs://pax-on-cloud-tpu-project/wheels/%(buildDate)s/paxml*.whl .
+      gsutil cp gs://pax-on-cloud-tpu-project/wheels/%(buildDate)s/praxis*.whl .
 
       if [ -f praxis*.whl -a -f paxml*.whl ]; then
           echo "Nightly builds succeeded."
@@ -55,8 +55,8 @@ local mixins = import 'templates/mixins.libsonnet';
     ||| % { buildDate: config.buildDate, expPath: config.expPath, extraFlags: std.join(' ', config.extraFlags) },
   },
   Convergence:: mixins.Convergence {
-    // Run at 2AM PST daily
-    schedule: '0 10 * * *',
+    // Run at 4AM PST daily
+    schedule: '0 12 * * *',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {

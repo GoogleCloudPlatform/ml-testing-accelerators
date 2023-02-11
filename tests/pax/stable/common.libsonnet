@@ -3,8 +3,8 @@ local mixins = import 'templates/mixins.libsonnet';
 
 {
   Functional:: mixins.Functional {
-    // Run at 2AM PST daily
-    schedule: '0 10 * * *',
+    // Run at 3AM PST daily
+    schedule: '0 11 * * *',
   },
     StablePaxTest:: common.PaxTest {
       local config = self,
@@ -42,8 +42,8 @@ local mixins = import 'templates/mixins.libsonnet';
 
     },
   Convergence:: mixins.Convergence {
-    // Run at 2AM PST daily
-    schedule: '0 10 * * *',
+    // Run at 4AM PST daily
+    schedule: '0 12 * * *',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
