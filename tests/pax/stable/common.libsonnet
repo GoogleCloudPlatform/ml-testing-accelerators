@@ -11,7 +11,6 @@ local mixins = import 'templates/mixins.libsonnet';
     frameworkPrefix: 'pax-stable',
     expPath:: '',
     extraFlags:: [],
-    buildDate:: '$(date +%Y%m%d)',
 
     // PAX tests are structured as bash scripts that run directly on the Cloud
     // TPU VM instead of using docker images
@@ -37,7 +36,7 @@ local mixins = import 'templates/mixins.libsonnet';
 
 
       python3 .local/lib/python3.8/site-packages/paxml/main.py --exp=%(expPath)s --job_log_dir=$(MODEL_DIR) %(extraFlags)s
-    ||| % { buildDate: config.buildDate, expPath: config.expPath, extraFlags: std.join(' ', config.extraFlags) },
+    ||| % { expPath: config.expPath, extraFlags: std.join(' ', config.extraFlags) },
 
   },
   Convergence:: mixins.Convergence {
