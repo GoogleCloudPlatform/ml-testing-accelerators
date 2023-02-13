@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License,
 
+local c4spmd1b_pretraining = import 'c4spmd1b.libsonnet';
 local spmd = import 'lmspmd2b.libsonnet';
 local transformer = import 'lmtransformeradam.libsonnet';
-local c4spmd1b_pretraining = import 'c4spmd1b.libsonnet';
 
 // Add new models here
 std.flattenArrays([
+  c4spmd1b_pretraining.configs,
   spmd.configs,
   transformer.configs,
-  c4spmd1b_pretraining.configs,
 ])
