@@ -14,6 +14,7 @@
 
 local nightly = import 'nightly/targets.jsonnet';
 local stable = import 'stable/targets.jsonnet';
+
 // Add new models here
 std.flattenArrays([
   nightly,

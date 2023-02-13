@@ -12,7 +12,6 @@ local mixins = import 'templates/mixins.libsonnet';
     expPath:: '',
     extraFlags:: [],
     buildDate:: '$(date +%Y%m%d)',
-    model_dir:: $(MODEL_DIR),
 
     // PAX tests are structured as bash scripts that run directly on the Cloud
     // TPU VM instead of using docker images
