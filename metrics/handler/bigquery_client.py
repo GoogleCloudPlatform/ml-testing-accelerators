@@ -15,6 +15,7 @@
 import dataclasses
 import datetime
 import math
+import json
 import typing
 
 from absl import logging
@@ -39,16 +40,12 @@ class JobHistoryRow:
   """Represents a database row containing a test job's status."""
   uuid: str
   test_name: str
-  test_type: str
-  accelerator: str
-  framework_version: str
+  test_info: dict
   job_status: str
   num_failures: int
   job_duration_sec: int
   timestamp: datetime.datetime
   stackdriver_logs_link: str
-  msg_publish_time: typing.Optional[str] = None
-  logs_download_command: typing.Optional[str] = None
   kubernetes_workload_link: typing.Optional[str] = None
 
   @staticmethod
@@ -56,19 +53,18 @@ class JobHistoryRow:
       unique_key: str,
       event: metrics_pb2.TestCompletedEvent
   ):
+    test_type = event.labels.get('mode')
+    accelerator = event.labels.get('accelerator')
+    framework_version = event.labels.get('frameworkVersion'),
     return JobHistoryRow(
       unique_key,
       event.benchmark_id,
-      event.labels.get('mode'),
-      event.labels.get('accelerator'),
-      event.labels.get('frameworkVersion'),
+      json.dumps({'test_type': test_type, 'accelerator': accelerator, 'framework_version': framework_version}),
       PROTO_STATUS_TO_BQ_STATUS[event.status],
       event.num_attempts - 1 if event.status == metrics_pb2.TestCompletedEvent.COMPLETED else event.num_attempts,
       event.duration.seconds,
       event.start_time.ToDatetime(),
       event.debug_info.logs_link,
-      event.start_time.ToDatetime().timestamp() + event.duration.ToTimedelta().total_seconds(),
-      event.debug_info.logs_download_command,
       event.debug_info.details_link,
     )
 
@@ -76,8 +72,6 @@ class JobHistoryRow:
 class MetricHistoryRow:
   """Represents a database row containing a test's metrics."""
   uuid: str
-  test_name: str
-  timestamp: datetime.datetime
   metric_name: str
   metric_value: float
   metric_lower_bound: typing.Optional[float] = None
@@ -91,8 +85,6 @@ class MetricHistoryRow:
   ):
     return MetricHistoryRow(
         unique_key,
-        event.benchmark_id,
-        event.start_time.ToDatetime(),
         point.metric_key,
         point.metric_value,
         point.bounds.lower,
@@ -106,6 +98,7 @@ def _to_bigquery_schema(dataclass: typing.Any) -> typing.List[bigquery.SchemaFie
     int: ("INT64", "REQUIRED"),
     float: ("FLOAT64", "REQUIRED"),
     datetime.datetime: ("TIMESTAMP", "REQUIRED"),
+    dict: ("JSON", "REQUIRED"),
   }
   # Add Optional types to dict
   python_type_to_bq_type.update({
@@ -239,18 +232,18 @@ class BigQueryMetricStore:
       List of MetricHistory containing a metric's history.
     """
     query = """
-        SELECT *
-        FROM `metric_history`
-        WHERE test_name LIKE @benchmark_id AND
-          metric_name LIKE @metric_key AND
-          (metric_lower_bound IS NULL OR metric_value >= metric_lower_bound) AND
-          (metric_upper_bound IS NULL OR metric_value <= metric_upper_bound) AND
-          timestamp >= @min_time AND
-          uuid IN (
-              SELECT uuid
-              FROM `job_history`
-              WHERE test_name LIKE @benchmark_id AND job_status = \"success"\
-          )
+      SELECT *
+      FROM `metric_history`
+      WHERE uuid IN (
+            SELECT uuid
+            FROM `job_history`
+            WHERE test_name LIKE @benchmark_id AMD
+            timestamp >= @min_time AND
+            job_status = \"success"\
+        ) AND
+        metric_name LIKE @metric_key AND
+        (metric_lower_bound IS NULL OR metric_value >= metric_lower_bound) AND
+        (metric_upper_bound IS NULL OR metric_value <= metric_upper_bound)
     """
     job_config = bigquery.QueryJobConfig(
       query_parameters =[

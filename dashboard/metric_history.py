@@ -29,48 +29,53 @@ METRIC_HISTORY_TABLE_NAME = os.environ['METRIC_HISTORY_TABLE_NAME']
 # For a given test_name, find the history of metrics for that test.
 QUERY = f"""
 SELECT
-  metrics.test_name,
+  job.test_name,
   metrics.metric_name,
-  SAFE_CAST(DATE(metrics.timestamp, 'US/Pacific') AS STRING) AS run_date,
+  SAFE_CAST(DATE(job.timestamp, 'US/Pacific') AS STRING) AS run_date,
   metrics.metric_value,
   metrics.metric_lower_bound,
   metrics.metric_upper_bound,
   job.job_status,
-  job.stackdriver_logs_link AS logs_link,
-  job.logs_download_command
+  logs_link,
 FROM (
-  SELECT
-    x.test_name,
-    x.metric_name,
-    x.timestamp,
-    x.metric_value,
-    x.metric_lower_bound,
-    x.metric_upper_bound,
-    x.uuid
-  FROM (
-    SELECT
+  SELECT 
+    test_name,
+    job_status,
+    timestamp,
+    FIRST_VALUE (timestamp) OVER (
+        PARTITION BY
+            SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING)
+        ORDER BY 
+            timestamp
+    ) AS first_time,
+    logs_link,
+    uuid
+  FROM 
+  (
+    SELECT 
+      uuid,
       test_name,
-      metric_name,
-      SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
-      min(timestamp) as min_timestamp
-    FROM
-      `{METRIC_HISTORY_TABLE_NAME}`
-    WHERE
-      test_name = @test_name AND
-      (metric_name NOT LIKE '%%__Percentile_%%' OR metric_name LIKE '%%__Percentile_99%%') AND
+      job_status,
+      timestamp,
+      stackdriver_logs_link AS logs_link
+    FROM `{JOB_HISTORY_TABLE_NAME}`
+    WHERE 
+      test_name LIKE @test_name  AND 
       timestamp >= @cutoff_timestamp
-    GROUP BY
-      test_name, metric_name, run_date
-  ) AS y
-  INNER JOIN `{METRIC_HISTORY_TABLE_NAME}` AS x
-  ON
-    y.test_name = x.test_name AND
-    y.metric_name = x.metric_name AND
-    y.min_timestamp = x.timestamp
+  )
+) AS job
+INNER JOIN (
+  SELECT
+    uuid,
+    metric_name,
+    metric_value,
+    metric_lower_bound,
+    metric_upper_bound,
+  FROM `{METRIC_HISTORY_TABLE_NAME}`
+  WHERE (metric_name NOT LIKE '%%__Percentile_%%' OR metric_name LIKE '%%__Percentile_99%%')
 ) AS metrics
-INNER JOIN `{JOB_HISTORY_TABLE_NAME}` AS job
-ON
-  metrics.uuid = job.uuid
+ON metrics.uuid = job.uuid
+AND job.timestamp = job.first_time
 ORDER BY
   run_date DESC
 """

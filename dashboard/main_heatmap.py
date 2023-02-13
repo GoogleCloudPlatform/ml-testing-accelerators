@@ -34,51 +34,73 @@ JOB_HISTORY_TABLE_NAME = os.environ['JOB_HISTORY_TABLE_NAME']
 METRIC_HISTORY_TABLE_NAME = os.environ['METRIC_HISTORY_TABLE_NAME']
 
 JOB_STATUS_QUERY = f"""
-SELECT
-  x.test_name,
-  x.job_status,
-  SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
-  x.stackdriver_logs_link AS logs_link,
-  x.logs_download_command AS logs_download_command,
-  x.kubernetes_workload_link AS workload_link,
-  x.uuid
-FROM (
-  SELECT
+SELECT 
+  test_name,
+  job_status,
+  SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) as run_date,
+  logs_link,
+  workload_link,
+  uuid
+FROM
+(SELECT 
     test_name,
-    SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
-    max(farm_fingerprint(uuid)) as max_uuid,
-  FROM
-    `{JOB_HISTORY_TABLE_NAME}`
-  WHERE
+    job_status,
+    timestamp,
+    FIRST_VALUE (timestamp) OVER (
+        PARTITION BY
+            test_name, SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING)
+        ORDER BY 
+            timestamp
+    ) AS first_time,
+    logs_link,
+    workload_link,
+    uuid
+  FROM 
+  (
+    SELECT 
+      uuid,
+      test_name,
+      job_status,
+      timestamp,
+      stackdriver_logs_link AS logs_link,
+      kubernetes_workload_link AS workload_link
+    FROM `{JOB_HISTORY_TABLE_NAME}`
+    WHERE
     test_name like @test_name_prefix AND
     timestamp >= @cutoff_timestamp
-  GROUP BY
-    test_name, run_date
-) AS y
-INNER JOIN
-  `{JOB_HISTORY_TABLE_NAME}` AS x
-ON
-  y.test_name = x.test_name AND
-  y.max_uuid = farm_fingerprint(x.uuid)
-ORDER BY
-  run_date DESC
+  )
+  ORDER BY
+    timestamp DESC
+)
+WHERE timestamp = first_time
 """
+
+
 
 METRIC_STATUS_QUERY = f"""
 SELECT
-  test_name,
-  SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
-  metric_name,
-  metric_value,
-  metric_upper_bound,
-  metric_lower_bound
-FROM
-  `{METRIC_HISTORY_TABLE_NAME}`
-WHERE
-  test_name LIKE @test_name_prefix AND
-  (metric_lower_bound IS NOT NULL OR metric_upper_bound IS NOT NULL) AND
-  (metric_value < metric_lower_bound OR metric_value > metric_upper_bound) AND
+  job.test_name,
+  SAFE_CAST(DATE(job.timestamp, 'US/Pacific') AS STRING) AS run_date,
+  metrics.metric_name,
+  metrics.metric_value,
+  metrics.metric_upper_bound,
+  metrics.metric_lower_bound
+FROM (SELECT *
+  FROM `{METRIC_HISTORY_TABLE_NAME}`
+  WHERE (metric_lower_bound IS NOT NULL OR metric_upper_bound IS NOT NULL) AND
+  (metric_value <= metric_lower_bound OR metric_value >= metric_upper_bound)
+  ) AS metrics
+INNER JOIN
+  (SELECT 
+    test_name,
+    timestamp,
+    uuid,
+  FROM `{JOB_HISTORY_TABLE_NAME}`
+  WHERE test_name like @test_name_prefix AND 
   timestamp >= @cutoff_timestamp
+  ) AS job
+ON
+  metrics.uuid = job.uuid
 LIMIT 1000
 """
 
