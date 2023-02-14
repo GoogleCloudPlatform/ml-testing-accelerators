@@ -82,7 +82,7 @@ local utils = import 'templates/utils.libsonnet';
         '--overwrite_cache=true',
         '--tpu_metrics_debug=true',
         '--per_device_train_batch_size=%d ' % config.paramsOverride.per_device_train_batch_size,
-        '--per_device_eval_batch_size=%d ' % config.paramsOverride.per_device_train_batch_size,
+        '--per_device_eval_batch_size=%d ' % config.paramsOverride.per_device_eval_batch_size,
       ],
     },
     command: utils.scriptCommand(
