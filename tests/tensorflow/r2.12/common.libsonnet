@@ -13,6 +13,7 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
+local experimental = import 'experimental.libsonnet';
 local metrics = import 'templates/metrics.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 
@@ -25,6 +26,15 @@ local mixins = import 'templates/mixins.libsonnet';
       softwareVersion: '2.12.0',
     },
     imageTag: 'r2.12.0',
+  },
+  tpuVm:: experimental.TensorFlowTpuVmMixin {
+    local config = self,
+    tpuSettings+: {
+      softwareVersion: if config.accelerator.replicas == 1 then
+        'tpu-vm-tf-2.11.0'
+      else
+        'tpu-vm-tf-2.11.0-pod',
+    },
   },
   TfVisionTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
     scriptConfig+: {
