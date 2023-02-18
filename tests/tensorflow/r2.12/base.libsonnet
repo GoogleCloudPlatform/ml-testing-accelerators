@@ -138,7 +138,10 @@ local volumes = import 'templates/volumes.libsonnet';
 
               softwareVersion=%(softwareVersion)s
               if [[ ${softwareVersion: -3} == "pod" ]]; then
-                 gcloud alpha compute tpus tpu-vm ssh  ${tpu_name} --project=${project} --zone=${zone} --worker=all --command="sudo systemctl daemon-reload && sudo systemctl restart tpu-runtime"
+                 yes '' | gcloud compute config-ssh
+                 sleep %(sleepTime)d
+                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:tf-2.12.0\"/' /etc/systemd/system/tpu-runtime.service"
+                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart tpu-runtime"
               fi
               sleep %(sleepTime)d
             ||| % tpuCreateSettings),
