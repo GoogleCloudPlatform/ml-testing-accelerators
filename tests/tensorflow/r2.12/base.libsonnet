@@ -106,7 +106,7 @@ local volumes = import 'templates/volumes.libsonnet';
                   accelerator_type: %(acceleratorName)s,
                   runtime_version: %(softwareVersion)s,
                   network_config: {enable_external_ips: true},
-                  boot_disk: {source_image: 'projects/cloud-tpu-v2-images-dev/global/images/tpu-vm-tf-2-12-0-20230213'},
+                  boot_disk: {source_image: 'projects/cloud-tpu-v2-images-dev/global/images/tpu-vm-tf-2-12-0-20230218'},
                   metadata: {
                     'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
                     'startup-script': %(startupScript)s,
