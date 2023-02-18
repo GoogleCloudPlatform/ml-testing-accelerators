@@ -13,6 +13,7 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
+local experimental = import 'experimental.libsonnet';
 local metrics = import 'templates/metrics.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 
@@ -26,6 +27,15 @@ local mixins = import 'templates/mixins.libsonnet';
     },
     imageTag: 'r2.12.0',
   },
+  tpuVm:: experimental.TensorFlowTpuVmMixin {
+    local config = self,
+    tpuSettings+: {
+      softwareVersion: if config.accelerator.replicas == 1 then
+        'tpu-vm-tf-2.11.0'
+      else
+        'tpu-vm-tf-2.11.0-pod',
+    },
+  },
   TfVisionTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
     scriptConfig+: {
       runnerPath: 'official/vision/train.py',
@@ -36,7 +46,7 @@ local mixins = import 'templates/mixins.libsonnet';
       runnerPath: 'official/nlp/train.py',
     },
   },
-  local functional_schedule = '0 7 * * *',
+  local functional_schedule = '0 3 * * *',
   Functional:: mixins.Functional {
     schedule:
       if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' || self.accelerator.name == 'v4-8' then
@@ -64,7 +74,7 @@ local mixins = import 'templates/mixins.libsonnet';
   },
   // Override default schedule for Functional.
   RunNightly:: {
-    schedule: functional_schedule,
+    schedule: '0 5 * * *',
   },
   Convergence:: mixins.Convergence {
     metricConfig+: {
