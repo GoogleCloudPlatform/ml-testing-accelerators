@@ -135,7 +135,6 @@ local volumes = import 'templates/volumes.libsonnet';
               gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(networkEndpoints[0].ipAddress)" > /scripts/tpu_ip
               gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --flatten="networkEndpoints[]" --format="csv[no-heading](networkEndpoints.ipAddress)" > /scripts/all_tpu_ips
 
-
               softwareVersion=%(softwareVersion)s
               if [[ ${softwareVersion: -3} == "pod" ]]; then
                  yes '' | gcloud compute config-ssh
@@ -143,6 +142,7 @@ local volumes = import 'templates/volumes.libsonnet';
                  gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:tf-2.12.0\"/' /etc/systemd/system/tpu-runtime.service"
                  gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart tpu-runtime"
               fi
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --worker=all --command "python3 -c 'import tensorflow as tf; print(tf.__version__)'"
               sleep %(sleepTime)d
             ||| % tpuCreateSettings),
             env: [
