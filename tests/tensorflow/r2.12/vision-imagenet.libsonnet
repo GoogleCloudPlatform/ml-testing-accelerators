@@ -36,7 +36,7 @@ local utils = import 'templates/utils.libsonnet';
     modelName: 'vision-resnetrs',
     scriptConfig+: {
       experiment: 'resnet_rs_imagenet',
-      configFiles: ['/usr/share/tpu/models/official/vision/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml'],
+      configFiles: ['/usr/share/models/official/vision/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml'],
     },
   },
   local functional = common.Functional {

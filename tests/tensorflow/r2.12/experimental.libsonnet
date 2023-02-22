@@ -43,7 +43,7 @@ local mixins = import 'templates/mixins.libsonnet';
                 set -x
                 set -u
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
-                  'pip install -r /usr/share/tpu/models/official/requirements.txt'
+                  'pip install -r /usr/share/models/official/requirements.txt'
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
                   'pip install tensorflow-recommenders --no-deps'
                 ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \

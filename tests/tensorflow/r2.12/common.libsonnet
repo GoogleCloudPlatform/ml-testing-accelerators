@@ -100,12 +100,12 @@ local mixins = import 'templates/mixins.libsonnet';
   },
   TfVisionTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
     scriptConfig+: {
-      runnerPath: '/usr/share/tpu/models/official/vision/train.py',
+      runnerPath: '/usr/share/models/official/vision/train.py',
     },
   },
   TfNlpTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
     scriptConfig+: {
-      runnerPath: '/usr/share/tpu/models/official/nlp/train.py',
+      runnerPath: '/usr/share/models/official/nlp/train.py',
     },
   },
   local functional_schedule = '0 3 * * *',

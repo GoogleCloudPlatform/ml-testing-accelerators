@@ -92,7 +92,7 @@ local tpus = import 'templates/tpus.libsonnet';
     },
     command: [
       'python3',
-      '/usr/share/tpu/models/official/recommendation/ranking/train.py',
+      '/usr/share/models/official/recommendation/ranking/train.py',
       '--params_override=%s' % (std.manifestYamlDoc(self.paramsOverride) + '\n'),
       '--model_dir=$(MODEL_DIR)',
     ],
