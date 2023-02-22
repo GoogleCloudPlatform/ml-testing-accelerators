@@ -23,9 +23,70 @@ local mixins = import 'templates/mixins.libsonnet';
 
     frameworkPrefix: 'tf-r2.12.0',
     tpuSettings+: {
-      softwareVersion: '2.12.0',
+      softwareVersion: '2.11.0',
     },
     imageTag: 'r2.12.0',
+    podTemplate+:: {
+      spec+: {
+        initContainerMap+:: {
+          'tpu-version': {
+            image: config.podTemplate.spec.containerMap.train.image,
+            env+: [
+              {
+                name: 'TPU_NAME',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: "metadata.annotations['name.cloud-tpus.google.com/train']",
+                  },
+                },
+              },
+              {
+                name: 'POD_UID',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'metadata.uid',
+                  },
+                },
+              },
+            ],
+            local tpuCreateSettings = {
+              acceleratorName: std.escapeStringBash(config.accelerator.name),
+              softwareVersion: std.escapeStringBash(config.tpuSettings.softwareVersion),
+              startupScript: std.escapeStringBash(config.tpuSettings.tpuVmStartupScript),
+              sleepTime: config.tpuSettings.tpuVmCreateSleepSeconds,
+              testName: std.strReplace(config.testName, '.', '-'),
+            },
+            command: [
+              'python3',
+              '-c',
+              |||
+                import importlib_metadata
+                import os
+                import re
+                import tensorflow as tf
+                import urllib
+                import json
+                import cloud_tpu_client
+                import sys
+                print('python version: ' + str(sys.version))
+                print('tf_version: ' + str(tf.__version__))
+                print(str(tf.__file__))
+                ctc = cloud_tpu_client.Client(tpu=os.path.basename('$(TPU_NAME)'), zone=os.path.dirname('$(TPU_NAME)'))
+                ctc.wait_for_healthy()
+                ctc.configure_tpu_version('2.12.0', restart_type='always')
+                ctc.wait_for_healthy()
+                _VERSION_SWITCHER_ENDPOINT = 'http://{}:8475/requestversion'
+                url = _VERSION_SWITCHER_ENDPOINT.format(ctc.network_endpoints()[0]['ipAddress'])
+                req = urllib.request.Request(url)
+                resp = urllib.request.urlopen(req)
+                version_details = json.loads(resp.read())
+                print(version_details)
+              |||,
+            ],
+          },
+        },
+      },
+    },
   },
   tpuVm:: experimental.TensorFlowTpuVmMixin {
     local config = self,
