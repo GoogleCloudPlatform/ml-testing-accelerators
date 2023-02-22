@@ -41,7 +41,7 @@ local mixins = import 'templates/mixins.libsonnet';
 
       pip install git+https://github.com/google/jax.git
       pip install --pre -U jaxlib -f https://storage.googleapis.com/jax-releases/jaxlib_nightly_releases.html
-      pip install -U libtpu-nightly -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+      pip install --no-index -U libtpu-nightly -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
 
       num_devices=`python3 -c "import jax; print(jax.device_count())"`
       echo "num_devices: $num_devices"
