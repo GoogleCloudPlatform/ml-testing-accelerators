@@ -41,6 +41,4 @@ std.flattenArrays([
   pythonOperations.configs,
   resnet50_mp.configs,
   stableDif.configs,
-  wav2vec2.configs,
-  unet3d.configs,
 ])
