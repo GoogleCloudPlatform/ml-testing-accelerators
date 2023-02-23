@@ -60,9 +60,7 @@ local mixins = import 'templates/mixins.libsonnet';
               'python3',
               '-c',
               |||
-                import importlib_metadata
                 import os
-                import re
                 import tensorflow as tf
                 import urllib
                 import json
@@ -96,6 +94,16 @@ local mixins = import 'templates/mixins.libsonnet';
       else
         'tpu-vm-tf-2.11.0-pod',
     },
+    podTemplate+:: {
+      spec+: {
+        initContainerMap+:: {
+          'tpu-version': {
+            image: 'google/cloud-sdk',
+            command: null,
+          },
+        },
+      }
+    },
   },
   TfVisionTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
     scriptConfig+: {
@@ -107,13 +115,9 @@ local mixins = import 'templates/mixins.libsonnet';
       runnerPath: 'official/nlp/train.py',
     },
   },
-  local functional_schedule = '0 3 * * *',
+  local functional_schedule = '0 4/8 * * *',
   Functional:: mixins.Functional {
-    schedule:
-      if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' || self.accelerator.name == 'v4-8' then
-        functional_schedule
-      else
-        null,
+    schedule: functional_schedule,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
