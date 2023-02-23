@@ -13,6 +13,7 @@
 // limitations under the License,
 
 local c4spmd1b_pretraining = import 'c4spmd1b.libsonnet';
+local lmcloudspmdadam = import 'lmcloudspmdadam.libsonnet';
 local spmd = import 'lmspmd2b.libsonnet';
 local transformer = import 'lmtransformeradam.libsonnet';
 
@@ -21,4 +22,5 @@ std.flattenArrays([
   c4spmd1b_pretraining.configs,
   spmd.configs,
   transformer.configs,
+  lmcloudspmdadam.configs,
 ])
