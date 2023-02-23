@@ -10,7 +10,11 @@ local tpus = import 'templates/tpus.libsonnet';
   local v4_8 = {
     accelerator: tpus.v4_8,
   },
+  local v4_16 = {
+    accelerator: tpus.v4_16,
+  },
   configs: [
     lmtransformeradam + v4_8,
+    lmtransformeradam + v4_16,
   ],
 }
