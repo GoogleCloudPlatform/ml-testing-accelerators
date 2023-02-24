@@ -23,7 +23,7 @@ local utils = import 'templates/utils.libsonnet';
     git clone https://github.com/huggingface/transformers.git
     cd transformers && pip install .
     git log -1
-    pip install datasets evaluate sklearn
+    pip install datasets evaluate scikit-learn
     pip install -r examples/pytorch/_tests_requirements.txt
   |||,
   local command_copy_metrics = |||
