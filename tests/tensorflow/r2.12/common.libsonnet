@@ -115,7 +115,7 @@ local mixins = import 'templates/mixins.libsonnet';
       runnerPath: 'official/nlp/train.py',
     },
   },
-  local functional_schedule = '0 3/8 * * *',
+  local functional_schedule = '0 3 * * *',
   Functional:: mixins.Functional {
     schedule: functional_schedule,
     metricConfig+: {
