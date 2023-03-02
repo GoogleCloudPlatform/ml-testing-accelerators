@@ -109,7 +109,7 @@ local tpus = import 'templates/tpus.libsonnet';
         python3 -c 'import jaxlib; print("jaxlib version:", jaxlib.__version__)'
 
         echo "Installing latest libtpu-nightly..."
-        pip install libtpu-nightly \
+        pip install libtpu-nightly --no-index --pre \
           -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
       |||,
     },
