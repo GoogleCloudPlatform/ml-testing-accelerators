@@ -48,7 +48,7 @@ local mixins = import 'templates/mixins.libsonnet';
   },
   local functional_schedule = '0 4 * * *',
   Functional:: mixins.Functional {
-    schedule: null, 
+    schedule: null,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
