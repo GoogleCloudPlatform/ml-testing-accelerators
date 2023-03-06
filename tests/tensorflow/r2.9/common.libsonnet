@@ -50,9 +50,9 @@ local mixins = import 'templates/mixins.libsonnet';
       runnerPath: 'official/nlp/train.py',
     },
   },
-  local functional_schedule = '0 21 * * *',
+  local functional_schedule = null,
   Functional:: mixins.Functional {
-    schedule: null,
+    schedule: functional_schedule,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {

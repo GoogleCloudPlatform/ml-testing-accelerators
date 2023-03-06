@@ -139,9 +139,10 @@ local mixins = import 'templates/mixins.libsonnet';
   },
   // Override default schedule for Functional.
   RunNightly:: {
-    schedule: '0 5 * * 2,6',
+    schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
+    schedule: '0 5 * * 2,6',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
