@@ -16,7 +16,6 @@ local hf_bart = import 'hf-bart.libsonnet';
 local hf_glue = import 'hf-glue.libsonnet';
 local hf_vit = import 'hf-vit.libsonnet';
 local imagenet = import 'imagenet.libsonnet';
-local mnist = import 'mnist.libsonnet';
 local wmt = import 'wmt.libsonnet';
 
 // Add new models here
@@ -26,5 +25,4 @@ std.flattenArrays([
   hf_glue.configs,
   imagenet.configs,
   wmt.configs,
-  mnist.configs,
 ])

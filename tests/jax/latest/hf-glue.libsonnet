@@ -36,7 +36,9 @@ local utils = import 'templates/utils.libsonnet';
         --logging_dir ${OUTPUT_DIR} \
         --per_device_train_batch_size 4 \
         %(extraFlags)s
-      gsutil -m cp -r ${OUTPUT_DIR} $(MODEL_DIR)
+
+      # Upload files from worker 0, and ignore CommandException for the rest workers in TPU pod
+      gsutil -m cp -r ${OUTPUT_DIR} $(MODEL_DIR) || exit 0
     ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
   },
 
@@ -96,10 +98,13 @@ local utils = import 'templates/utils.libsonnet';
   local v4_8 = {
     accelerator: tpus.v4_8,
   },
+  local v4_32 = {
+    accelerator: tpus.v4_32,
+  },
 
   configs: [
-    hf_bert_common + mnli + convergence + v4 + v4_8 + timeouts.Hours(10),
-    hf_bert_common + mrpc + convergence + v4 + v4_8 + timeouts.Hours(1),
+    hf_bert_common + mnli + convergence + v4 + v4_32,
+    hf_bert_common + mrpc + convergence + v4 + v4_32,
     hf_bert_common + mnli + functional + v4 + v4_8,
     hf_bert_common + mrpc + functional + v4 + v4_8,
 

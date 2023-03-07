@@ -23,7 +23,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local convergence = mixins.Convergence {
     extraConfig:: 'default.py',
-    extraFlags+:: ['--config.reverse_translation=True', '--config.per_device_batch_size=32'],
+    extraFlags+:: ['--config.reverse_translation=True', '--config.per_device_batch_size=32', '--config.num_train_steps=70000'],
   },
   local profile = mixins.Functional {
     mode: 'profile',
@@ -32,6 +32,9 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
+  },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
   },
   local v2_8 = {
     accelerator: tpus.v2_8,
@@ -48,7 +51,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   configs: [
     wmt + functional + v2_8,
-    wmt + convergence + v3_8 + timeouts.Hours(20),
+    wmt + convergence + v3_32,
     wmt_profiling + profile + v3_8 + timeouts.Minutes(40),
   ],
 }
