@@ -23,7 +23,7 @@ local mixins = import 'templates/mixins.libsonnet';
 
     frameworkPrefix: 'tf-r2.12.0',
     tpuSettings+: {
-      softwareVersion: '2.11.0',
+      softwareVersion: '2.12.0',
     },
     imageTag: 'r2.12.0',
     podTemplate+:: {
@@ -90,9 +90,9 @@ local mixins = import 'templates/mixins.libsonnet';
     local config = self,
     tpuSettings+: {
       softwareVersion: if config.accelerator.replicas == 1 then
-        'tpu-vm-tf-2.11.0'
+        'tpu-vm-tf-2.12.0'
       else
-        'tpu-vm-tf-2.11.0-pod',
+        'tpu-vm-tf-2.12.0-pod',
     },
     podTemplate+:: {
       spec+: {
