@@ -95,7 +95,7 @@ local volumes = import 'templates/volumes.libsonnet';
         'tpu-vm-v4-base',
       tpuVmPytorchSetup: |||
         sudo pip3 uninstall --yes torch torch_xla torchvision numpy
-        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-2.0-cp38-cp38-linux_x86_64.whl
+        sudo pip3 install torch==2.0 --index-url https://download.pytorch.org/whl/test/cpu
         sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-2.0-cp38-cp38-linux_x86_64.whl
         sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-2.0-cp38-cp38-linux_x86_64.whl
         sudo pip3 install https://storage.googleapis.com/cloud-tpu-tpuvm-artifacts/wheels/libtpu-nightly/libtpu_nightly-0.1.dev20220930-py3-none-any.whl
