@@ -88,6 +88,34 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
+  // DDP converges worse than MP.
+  local convergence_ddp = common.Convergence {
+    local config = self,
+
+    command+: [
+      '--num_epochs=90',
+      '--datadir=/datasets/imagenet',
+    ],
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'Accuracy/test': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 65,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+
 
   local v3_8 = {
     accelerator: tpus.v3_8,
@@ -183,7 +211,7 @@ local tpus = import 'templates/tpus.libsonnet';
     resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt,
     resnet50 + convergence + v4_8 + timeouts.Hours(14) + pjrt,
     resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt + pjrt_ddp,
-    resnet50 + convergence + v4_8 + timeouts.Hours(14) + pjrt + pjrt_ddp,
+    resnet50 + convergence_ddp + v4_8 + timeouts.Hours(14) + pjrt + pjrt_ddp,
     resnet50 + fake_data + v4_32 + timeouts.Hours(2) + pjrt,
     resnet50 + convergence + v4_32 + timeouts.Hours(24) + pjrt,
     // SPMD
