@@ -101,14 +101,12 @@ local tpus = import 'templates/tpus.libsonnet';
 
   local func_tests = [
     hf_bart_common + func + v2_8,
-    hf_bart_common + func + v2_32,
     hf_bart_common + func + v3_8,
-    hf_bart_common + func + v3_32,
     hf_bart_common + func + v4_8,
-    hf_bart_common + func + v4_32,
   ],
 
   local conv_tests = [
+    hf_bart_common + conv + v3_32,
     hf_bart_common + conv + v4_32,
   ],
 
