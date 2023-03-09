@@ -34,7 +34,8 @@ local tpus = import 'templates/tpus.libsonnet';
     extraFlags+:: ['--config.batch_size=$((32*256))'],
   },
   local imagenet = common.runFlaxLatest {
-    modelName:: 'imagenet',
+    folderName:: 'imagenet',
+    modelName:: 'resnet-imagenet',
     extraDeps+:: ['tensorflow-cpu tensorflow-datasets'],
   },
   configs: [

@@ -19,8 +19,8 @@ local tpus = import 'templates/tpus.libsonnet';
 {
   local hf_bart_common = common.JaxTest + common.huggingFace {
     local config = self,
-    frameworkPrefix: 'flax-latest',
-    modelName:: 'hf-bart',
+    frameworkPrefix: 'flax.latest',
+    modelName:: 'bart-wiki.summary',
     extraFlags:: [],
     testScript:: |||
       %(installPackages)s

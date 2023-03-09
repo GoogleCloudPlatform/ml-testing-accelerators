@@ -19,7 +19,7 @@ local tpus = import 'templates/tpus.libsonnet';
   runFlaxLatest:: common.JaxTest + common.jaxlibLatest + common.tpuVmBaseImage {
     local config = self,
 
-    frameworkPrefix: 'flax-latest',
+    frameworkPrefix: 'flax.latest',
     extraDeps:: [],
     extraFlags:: [],
 
@@ -47,17 +47,42 @@ local tpus = import 'templates/tpus.libsonnet';
       git clone https://github.com/google/flax
       cd flax
       pip install -e .
-      cd examples/%(modelName)s
+      cd examples/%(folderName)s
 
       export GCS_BUCKET=$(MODEL_DIR)
       export TFDS_DATA_DIR=$(TFDS_DIR)
 
       python3 main.py --workdir=$(MODEL_DIR)  --config=configs/%(extraConfig)s %(extraFlags)s
     ||| % (self.scriptConfig {
+             folderName: config.folderName,
              modelName: config.modelName,
              extraDeps: std.join(' ', config.extraDeps),
              extraConfig: config.extraConfig,
              extraFlags: std.join(' ', config.extraFlags),
            }),
+  },
+
+  hfBertCommon:: common.JaxTest + common.huggingFace {
+    local config = self,
+    frameworkPrefix: 'flax.latest',
+    modelName:: 'bert-glue',
+    extraFlags:: [],
+    testScript:: |||
+      %(installPackages)s
+      pip install -r examples/flax/text-classification/requirements.txt
+      %(verifySetup)s
+
+      export GCS_BUCKET=$(MODEL_DIR)
+      export OUTPUT_DIR='./bert-glue'
+
+      python3 examples/flax/text-classification/run_flax_glue.py --model_name_or_path bert-base-cased \
+        --output_dir ${OUTPUT_DIR} \
+        --logging_dir ${OUTPUT_DIR} \
+        --per_device_train_batch_size 4 \
+        %(extraFlags)s
+
+      # Upload files from worker 0, and ignore CommandException for the rest workers in TPU pod
+      gsutil -m cp -r ${OUTPUT_DIR} $(MODEL_DIR) || exit 0
+    ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
   },
 }
