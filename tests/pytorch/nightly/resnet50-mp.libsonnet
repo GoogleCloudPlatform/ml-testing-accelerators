@@ -89,13 +89,7 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
   // DDP converges worse than MP.
-  local convergence_ddp = common.Convergence {
-    local config = self,
-
-    command+: [
-      '--num_epochs=90',
-      '--datadir=/datasets/imagenet',
-    ],
+  local convergence_ddp = cconvergence {
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
