@@ -40,7 +40,8 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: tpus.v2_8,
   },
   local wmt = common.runFlaxLatest {
-    modelName:: 'wmt',
+    folderName:: 'wmt',
+    modelName:: 'wmt-wmt17.translate',
     extraDeps+:: ['tensorflow-cpu tensorflow-datasets tensorflow_text sentencepiece'],
   },
   local wmt_profiling = wmt {
