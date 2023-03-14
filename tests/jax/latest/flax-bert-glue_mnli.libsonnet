@@ -77,7 +77,7 @@ local tpus = import 'templates/tpus.libsonnet';
   configs: [
     hf_bert_mnli + convergence + v4_32,
     hf_bert_mnli + functional + v4_8,
-    hf_bert_mnli + functional + v3_8,
+    hf_bert_mnli + functional + v3_8 + timeouts.Minutes(75),
     hf_bert_mnli + functional + v2_8 + timeouts.Minutes(75),
   ],
 }
