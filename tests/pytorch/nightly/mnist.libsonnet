@@ -114,6 +114,8 @@ local utils = import 'templates/utils.libsonnet';
     command+: [
       '--ddp',
       '--pjrt_distributed',
+      // DDP converges worse than MP, override the accuracy target in Python script.
+      '--target_accuracy=97.0',
     ],
   },
 
