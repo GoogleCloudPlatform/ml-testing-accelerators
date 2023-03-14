@@ -70,6 +70,17 @@ In case you want to run multiple tests, you might find it convenient to combine 
 Please be mindful of the resources in the project before running this.
 
 
+### Scheduling jobs for all tests of a given type
+
+If you want to run a group of tests, e.g. all `pt-nightly` tests, you can do so using the `schedule_tests.sh` script. You will need to set the `XLML_TEST_TYPE` based on the root of the test, e.g.
+
+```bash
+XLML_TEST_TYPE=pt-nightly ./scripts/schedule_tests.sh
+```
+
+This should only be done when absolutely necessary, e.g. during release testing.
+
+
 ## Creating a New Test
 
 To create a new test, start by copying a similar file from the same ML framework and version. Update the training commands as necessary, and add that file to the `targets.jsonnet` in the same directory.
