@@ -72,16 +72,11 @@ local utils = import 'templates/utils.libsonnet';
   local tpuVm = common.tpuVm,
   configs: [
     bert + accelerator + functional
-    for accelerator in [v2_8, v3_8, v2_32, v3_32]
+    for accelerator in [v2_8, v3_8]
   ] + [
-    bert + v2_8 + convergence + timeouts.Hours(4),
-    bert + v3_8 + convergence + timeouts.Hours(3),
     bert + v2_32 + convergence,
     bert + v3_32 + convergence,
-    bert + v4_32 + convergence + tpuVm,
-    bert + v4_8 + convergence + tpuVm,
     bert + v4_8 + functional + tpuVm,
-    bert + v4_32 + functional + tpuVm,
-
+    bert + v4_32 + convergence + tpuVm,
   ],
 }

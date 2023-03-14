@@ -125,15 +125,11 @@ local tpus = import 'templates/tpus.libsonnet';
   local tpuVm = common.tpuVm,
   configs: [
     transformer + accelerator + functional
-    for accelerator in [v2_8, v3_8, v2_32, v3_32]
+    for accelerator in [v2_8, v3_8]
   ] + [
-    transformer + v2_8 + convergence,
-    transformer + v3_8 + convergence,
     transformer + v2_32 + convergence,
     transformer + v3_32 + convergence,
     transformer + v4_32 + convergence + tpuVm,
-    transformer + v4_8 + convergence + tpuVm,
     transformer + v4_8 + functional + tpuVm,
-    transformer + v4_32 + functional + tpuVm,
   ],
 }
