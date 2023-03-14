@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Create UUID for job creation / lookup
+uuid=$(uuidgen)
+
 # First, check that the type is set
 if [[ -z "${XLML_TEST_TYPE}" ]]; then
     echo "Please set XLML_TEST_TYPE"
@@ -19,7 +22,9 @@ for region in ${regions[@]}; do
 
         # Finally, parse the jobname from the cronjob and create the new job
         jobName=$(echo "$i" | awk -F/ '{print $2}')
-        echo "Creating $jobName"
-        kubectl create job --from="$i" "$jobName" -n automated
+        echo "Creating $jobName-$uuid"
+        kubectl create job --from="$i" "$jobName-$uuid" -n automated
     done
 done
+
+echo "Find the scheduled jobs by filtering with the uuid: $uuid"
