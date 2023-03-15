@@ -24,7 +24,7 @@ local volumes = import 'templates/volumes.libsonnet';
     tpuSettings+: {
       softwareVersion: 'pytorch-2.0',
     },
-    imageTag: '2.0_3.8',
+    imageTag: 'r2.0_3.8',
   },
   PyTorchTest:: common.PyTorchTest + r2_0 {
     local config = self,
