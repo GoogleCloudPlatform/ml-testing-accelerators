@@ -15,6 +15,7 @@
 local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
+local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
@@ -79,6 +80,27 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
+  // DDP converges worse than MP.
+  local convergence_ddp = convergence {
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'Accuracy/test': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 65,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 
   local v3_8 = {
     accelerator: tpus.v3_8,
@@ -112,10 +134,24 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: gpus.teslaV100 { count: 4 },
   },
 
-  local nosummaries = {
-    flags+:: {
-      modelDir: null,
+  local xrt_ddp = {
+    modelName+: '-torch-ddp',
+    tpuSettings+: {
+      tpuVmExports+: |||
+        export MASTER_ADDR=localhost
+        export MASTER_PORT=12355
+      |||,
     },
+    command+: [
+      '--ddp',
+    ],
+  },
+  local pjrt_ddp = {
+    modelName+: '-ddp',
+    command+: [
+      '--ddp',
+      '--pjrt_distributed',
+    ],
   },
 
   local tpuVm = common.PyTorchTpuVmMixin {
@@ -127,27 +163,32 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local pjrt = tpuVm + experimental.PjRt {
     modelName: 'resnet50-pjrt',
-    command: [
-      'python3',
-      'pytorch/xla/test/pjrt/test_train_pjrt_imagenet.py',
-    ] + super.command[2:],
   },
 
   configs: [
+    // XRT
     resnet50 + functional + v100x4 + timeouts.Hours(1),
-    resnet50 + functional + v3_8 + timeouts.Hours(2) + tpuVm,
-    resnet50 + fake_data + nosummaries + v3_8 + timeouts.Hours(2) + tpuVm,
-    resnet50 + fake_data + nosummaries + v3_8 + timeouts.Hours(2) + pjrt,
-    resnet50 + convergence + nosummaries + v3_8 + timeouts.Hours(24) + tpuVm,
-    resnet50 + convergence + nosummaries + v3_8 + timeouts.Hours(24) + pjrt,
-    resnet50 + functional + v3_32 + timeouts.Hours(1) + tpuVm,
-    resnet50 + convergence + v3_32 + timeouts.Hours(12) + tpuVm,
-    resnet50 + fake_data + nosummaries + v4_8 + timeouts.Hours(2) + tpuVm,
-    resnet50 + fake_data + nosummaries + v4_8 + timeouts.Hours(2) + pjrt,
-    resnet50 + convergence + nosummaries + v4_8 + timeouts.Hours(24) + tpuVm,
-    resnet50 + convergence + nosummaries + v4_8 + timeouts.Hours(24) + pjrt,
-    resnet50 + fake_data + nosummaries + v4_32 + timeouts.Hours(2) + pjrt,
-    resnet50 + convergence + nosummaries + v4_32 + timeouts.Hours(24) + tpuVm,
-    resnet50 + convergence + nosummaries + v4_32 + timeouts.Hours(24) + pjrt,
+    resnet50 + functional + v3_8 + timeouts.Hours(2) + tpuVm + mixins.Experimental,
+    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm,
+    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm + xrt_ddp,
+    resnet50 + convergence + v3_8 + timeouts.Hours(24) + tpuVm,
+    resnet50 + fake_data + v3_32 + timeouts.Hours(1) + tpuVm,
+    resnet50 + functional + v3_32 + timeouts.Hours(1) + tpuVm + mixins.Experimental,
+    resnet50 + convergence + v3_32 + timeouts.Hours(12) + tpuVm + mixins.Experimental,
+    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + tpuVm,
+    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + tpuVm + xrt_ddp + mixins.Experimental,
+    resnet50 + convergence + v4_8 + timeouts.Hours(24) + tpuVm + mixins.Experimental,
+    resnet50 + convergence + v4_32 + timeouts.Hours(24) + tpuVm + mixins.Experimental,
+    // PJRT
+    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt,
+    resnet50 + convergence + v3_8 + timeouts.Hours(24) + pjrt,
+    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt + pjrt_ddp,
+    resnet50 + fake_data + v3_32 + timeouts.Hours(1) + pjrt,
+    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt,
+    resnet50 + convergence + v4_8 + timeouts.Hours(14) + pjrt,
+    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt + pjrt_ddp,
+    resnet50 + convergence_ddp + v4_8 + timeouts.Hours(14) + pjrt + pjrt_ddp,
+    resnet50 + fake_data + v4_32 + timeouts.Hours(2) + pjrt,
+    resnet50 + convergence + v4_32 + timeouts.Hours(24) + pjrt,
   ],
 }

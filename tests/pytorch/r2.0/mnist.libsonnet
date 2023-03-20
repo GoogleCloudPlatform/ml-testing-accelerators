@@ -58,6 +58,27 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  // DDP converges worse than MP.
+  local convergence_ddp = convergence {
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'Accuracy/test': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 97.0,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 
   local v2_8 = {
     accelerator: tpus.v2_8,
@@ -87,21 +108,23 @@ local utils = import 'templates/utils.libsonnet';
   },
   local pjrt = tpuVm + experimental.PjRt {
     modelName+: '-pjrt',
-    command: [
-      'python3',
-      'pytorch/xla/test/pjrt/test_train_pjrt_mnist.py',
-    ] + super.command[2:],
-    // TODO: re-enable TensorBoard summaries when they don't cause a crash
-    flags+:: {
-      modelDir: null,
-    },
+  },
+  local pjrt_ddp = {
+    modelName+: '-ddp',
+    command+: [
+      '--ddp',
+      '--pjrt_distributed',
+      // DDP converges worse than MP, override the accuracy target in Python script.
+      '--target_accuracy=97.0',
+    ],
   },
 
   configs: [
-    mnist + convergence + v2_8 + timeouts.Hours(1),
-    mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm,
+    mnist + convergence + v2_8 + timeouts.Hours(1) + mixins.Experimental,
+    mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm + mixins.Experimental,
     mnist + convergence + v2_8 + timeouts.Hours(1) + pjrt,
-    mnist + convergence + v4_8 + timeouts.Hours(1) + pjrt,
-    mnist + convergence + v100x4 + timeouts.Hours(6),
+    mnist + convergence_ddp + v2_8 + timeouts.Hours(1) + pjrt + pjrt_ddp,
+    mnist + convergence + v4_8 + timeouts.Hours(1) + pjrt + mixins.Experimental,
+    mnist + convergence + v100x4 + timeouts.Hours(6) + mixins.Experimental,
   ],
 }

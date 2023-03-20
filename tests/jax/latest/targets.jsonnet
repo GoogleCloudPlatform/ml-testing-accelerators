@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License,
 
-local hf_bart = import 'hf-bart.libsonnet';
-local hf_glue = import 'hf-glue.libsonnet';
-local hf_vit = import 'hf-vit.libsonnet';
-local imagenet = import 'imagenet.libsonnet';
-local mnist = import 'mnist.libsonnet';
-local wmt = import 'wmt.libsonnet';
+local hf_bart = import 'flax-bart-wiki_summary.libsonnet';
+local hf_bert_mnli = import 'flax-bert-glue_mnli.libsonnet';
+local hf_bert_mrpc = import 'flax-bert-glue_mrpc.libsonnet';
+local resnet = import 'flax-resnet-imagenet.libsonnet';
+local hf_vit = import 'flax-vit-imagenette.libsonnet';
+local wmt = import 'flax-wmt-wmt17_translate.libsonnet';
 
 // Add new models here
 std.flattenArrays([
   hf_bart.configs,
   hf_vit.configs,
-  hf_glue.configs,
-  imagenet.configs,
+  hf_bert_mnli.configs,
+  hf_bert_mrpc.configs,
+  resnet.configs,
   wmt.configs,
-  mnist.configs,
 ])

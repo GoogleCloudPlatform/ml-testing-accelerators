@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
@@ -19,10 +20,10 @@ local utils = import 'templates/utils.libsonnet';
 
 {
   local operations = common.PyTorchTest {
-    modelName: 'python-ops',
+    modelName: 'cpp-ops',
     command: [
       'bash',
-      'pytorch/xla/test/run_tests.sh',
+      'pytorch/xla/test/cpp/run_tests.sh',
     ],
     metricConfig+: {
       sourceMap+:: {
@@ -33,6 +34,18 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  local tpuVm = common.PyTorchTpuVmMixin {
+    tpuSettings+: {
+      tpuVmExports+: |||
+        export XLA_USE_BF16=$(XLA_USE_BF16)
+      |||,
+      tpuVmExtraSetup: |||
+        echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
+        echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
+        pip install cmake
+      |||,
+    },
+  },
   local v2_8 = {
     accelerator: tpus.v2_8,
   },
@@ -41,7 +54,6 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   configs: [
-    operations + v2_8 + common.Functional + timeouts.Hours(6),
-    operations + v3_8 + common.Functional + timeouts.Hours(6),
+    operations + v2_8 + common.Functional + timeouts.Hours(4) + tpuVm,
   ],
 }

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
@@ -25,7 +26,10 @@ local utils = import 'templates/utils.libsonnet';
     isTPUPod:: error 'Must set `isTPUPod`',
     command: utils.scriptCommand(
       |||
+        cd ~
         export PATH=$PATH:/root/google-cloud-sdk/bin
+        export PATH=$PATH:/home/xl-ml-test/.local/bin
+        export TPU_NAME=$(KUBE_GOOGLE_CLOUD_TPU_ENDPOINTS)
         gcloud source repos clone tf2-api-tests --project=xl-ml-test
         cd tf2-api-tests
         pip3 install behave
@@ -37,7 +41,6 @@ local utils = import 'templates/utils.libsonnet';
   local API = common.RunNightly {
     mode: 'api',
     timeout: timeouts.one_hour,
-    // Run at 2AM PST daily
     tpuSettings+: {
       preemptible: true,
     },
@@ -73,6 +76,11 @@ local utils = import 'templates/utils.libsonnet';
     testFeature:: 'preprocessing_layers',
   },
 
+  local upsample = API {
+    mode: 'upsample',
+    testFeature:: 'upsample',
+  },
+
   local save_load_io_device_local = API {
     mode: 'save-load-localhost',
     testFeature:: 'save_and_load_io_device_local_drive',
@@ -102,22 +110,36 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v2_8,
     isTPUPod: false,
   },
+
   local v2_32 = {
     accelerator: tpus.v2_32,
     isTPUPod: true,
   },
 
+  local tpuVm = common.tpuVm,
+
   configs: [
     keras_test + v2_8 + connection,
+    keras_test + v2_8 + connection + tpuVm,
     keras_test + v2_8 + custom_layers,
+    keras_test + v2_8 + custom_layers + tpuVm,
     keras_test + v2_8 + custom_training_loop,
+    keras_test + v2_8 + custom_training_loop + tpuVm,
     keras_test + v2_8 + feature_column + timeouts.Hours(2),
+    keras_test + v2_8 + feature_column + timeouts.Hours(2) + tpuVm,
     keras_test + v2_8 + preprocessing_layers,
+    keras_test + v2_8 + upsample,
+    keras_test + v2_8 + upsample + tpuVm,
     keras_test + v2_8 + rnn,
+    keras_test + v2_8 + rnn + tpuVm,
     keras_test + v2_8 + save_and_load + timeouts.Hours(2),
+    keras_test + v2_8 + save_and_load + timeouts.Hours(2) + tpuVm,
     keras_test + v2_8 + save_load_io_device_local + timeouts.Hours(2),
+    keras_test + v2_8 + save_load_io_device_local + timeouts.Hours(2) + tpuVm,
     keras_test + v2_8 + train_and_evaluate + timeouts.Hours(3),
+    keras_test + v2_8 + train_and_evaluate + timeouts.Hours(3) + tpuVm,
     keras_test + v2_8 + train_validation_dataset,
     keras_test + v2_8 + transfer_learning,
+    keras_test + v2_8 + transfer_learning + tpuVm,
   ],
 }

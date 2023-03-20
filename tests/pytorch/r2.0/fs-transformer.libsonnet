@@ -237,17 +237,7 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   local pjrt = tpuVm + experimental.PjRt {
-    tpuSettings+: {
-      tpuVmExtraSetup+: |||
-        pip3 install tqdm
-        git clone -b tpu --single-branch https://github.com/darisoy/fairseq.git fairseq-pjrt/
-        pip install --editable ./fairseq-pjrt
-      |||,
-    },
     modelName: 'fs-transformer-pjrt',
-    paramsOverride+: {
-      scriptPath: 'fairseq-pjrt/train.py',
-    },
   },
 
   local v3_8 = {
@@ -263,16 +253,16 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_32,
   },
   configs: [
-    transformer + v3_8 + functional_no_save + timeouts.Hours(1),
-    transformer + v3_8 + convergence + timeouts.Hours(25) + tpuVm,
-    transformer + v3_8 + checkpoint_local + timeouts.Hours(2),
-    transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2),
-    transformer + v4_8 + convergence + timeouts.Hours(25) + tpuVm,
-    transformer + v4_8 + functional_no_save + timeouts.Hours(1) + tpuVm,
-    transformer + v3_32 + functional_no_save + timeouts.Hours(1) + tpuVm,
-    transformer + v4_8 + convergence + timeouts.Hours(25) + pjrt,
-    transformer + v4_8 + functional_no_save + timeouts.Hours(1) + pjrt,
-    transformer + v4_32 + convergence + timeouts.Hours(25) + tpuVm,
-    transformer + v4_32 + convergence + timeouts.Hours(25) + pjrt,
+    transformer + v3_8 + functional_no_save + timeouts.Hours(1) + tpuVm + mixins.Experimental,
+    transformer + v3_8 + convergence + timeouts.Hours(25) + tpuVm + mixins.Experimental,
+    transformer + v3_8 + checkpoint_local + timeouts.Hours(2) + tpuVm + mixins.Experimental,
+    transformer + v3_8 + checkpoint_gcs + timeouts.Hours(2) + tpuVm + mixins.Experimental,
+    transformer + v4_8 + convergence + timeouts.Hours(25) + tpuVm + mixins.Experimental,
+    transformer + v4_8 + functional_no_save + timeouts.Hours(1) + tpuVm + mixins.Experimental,
+    transformer + v3_32 + functional_no_save + timeouts.Hours(1) + tpuVm + mixins.Experimental,
+    transformer + v4_8 + convergence + timeouts.Hours(25) + pjrt + mixins.Experimental,
+    transformer + v4_8 + functional_no_save + timeouts.Hours(1) + pjrt + mixins.Experimental,
+    transformer + v4_32 + convergence + timeouts.Hours(25) + tpuVm + mixins.Experimental,
+    transformer + v4_32 + convergence + timeouts.Hours(25) + pjrt + mixins.Experimental,
   ],
 }

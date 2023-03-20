@@ -15,12 +15,15 @@
 local cppOperations = import 'cpp-ops.libsonnet';
 local dlrm = import 'dlrm.libsonnet';
 local fairseqTransformer = import 'fs-transformer.libsonnet';
+local hfFsmt = import 'hf-fsmt.libsonnet';
 local huggingfaceGlue = import 'hf-glue.libsonnet';
 local huggingfaceLanguageModeling = import 'hf-lm.libsonnet';
+local huggingfaceVitMae = import 'hf-mae.libsonnet';
 local mnist = import 'mnist.libsonnet';
 local pythonOperations = import 'python-ops.libsonnet';
 local resnet50_mp = import 'resnet50-mp.libsonnet';
 local fairseqRobertaPretrain = import 'roberta-pre.libsonnet';
+local stableDif = import 'sd-model.libsonnet';
 local unet3d = import 'unet3d.libsonnet';
 local wav2vec2 = import 'wav2vec2.libsonnet';
 
@@ -30,11 +33,12 @@ std.flattenArrays([
   dlrm.configs,
   fairseqRobertaPretrain.configs,
   fairseqTransformer.configs,
+  hfFsmt.configs,
   huggingfaceGlue.configs,
   huggingfaceLanguageModeling.configs,
+  huggingfaceVitMae.configs,
   mnist.configs,
   pythonOperations.configs,
   resnet50_mp.configs,
-  wav2vec2.configs,
-  unet3d.configs,
+  stableDif.configs,
 ])

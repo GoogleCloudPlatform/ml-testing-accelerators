@@ -14,21 +14,14 @@
 
 local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
-local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 {
   local functional = mixins.Functional {
-    extraFlags+:: ['--config.num_train_steps=10', '--config.per_device_batch_size=16'],
+    extraFlags+:: ['--config.num_epochs=1'],
     extraConfig:: 'default.py',
   },
   local convergence = mixins.Convergence {
-    extraConfig:: 'default.py',
-    extraFlags+:: ['--config.reverse_translation=True', '--config.per_device_batch_size=32'],
-  },
-  local profile = mixins.Functional {
-    mode: 'profile',
-    extraFlags+:: ['--config.num_train_steps=40', '--config.per_device_batch_size=16'],
-    extraConfig:: 'default.py',
+    extraConfig:: 'tpu.py',
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
@@ -36,19 +29,17 @@ local tpus = import 'templates/tpus.libsonnet';
   local v2_8 = {
     accelerator: tpus.v2_8,
   },
-  local wmt = common.runFlaxLatest {
-    modelName:: 'wmt',
-    extraDeps+:: ['tensorflow-cpu tensorflow-datasets tensorflow_text sentencepiece'],
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+    extraFlags+:: ['--config.batch_size=$((32*256))'],
   },
-  local wmt_profiling = wmt {
-    local config = self,
-    testScript+:: |||
-      gsutil -q stat $(MODEL_DIR)/plugins/profile/*/*.xplane.pb
-    ||| % (self.scriptConfig {}),
+  local imagenet = common.runFlaxLatest {
+    folderName:: 'imagenet',
+    modelName:: 'resnet-imagenet',
+    extraDeps+:: ['tensorflow-cpu tensorflow-datasets'],
   },
   configs: [
-    wmt + functional + v2_8,
-    wmt + convergence + v3_8 + timeouts.Hours(20),
-    wmt_profiling + profile + v3_8 + timeouts.Minutes(40),
+    imagenet + functional + v2_8,
+    imagenet + convergence + v3_32,
   ],
 }

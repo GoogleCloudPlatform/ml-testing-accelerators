@@ -19,14 +19,14 @@ local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
 {
-  local r1_13 = {
-    frameworkPrefix: 'pt-r1.13',
+  local r2_0 = {
+    frameworkPrefix: 'pt-2.0',
     tpuSettings+: {
-      softwareVersion: 'pytorch-1.13',
+      softwareVersion: 'pytorch-2.0',
     },
-    imageTag: 'r1.13_3.7',
+    imageTag: 'r2.0_3.8',
   },
-  PyTorchTest:: common.PyTorchTest + r1_13 {
+  PyTorchTest:: common.PyTorchTest + r2_0 {
     local config = self,
 
     podTemplate+:: {
@@ -67,7 +67,7 @@ local volumes = import 'templates/volumes.libsonnet';
 
                 ctc = cloud_tpu_client.Client(tpu=os.path.basename('$(TPU_NAME)'), zone=os.path.dirname('$(TPU_NAME)'))
                 ctc.wait_for_healthy()
-                ctc.configure_tpu_version(f'pytorch-nightly-dev{libtpu_date}', restart_type='always')
+                ctc.configure_tpu_version(f'pytorch-2.0-dev{libtpu_date}', restart_type='always')
                 ctc.wait_for_healthy()
               |||,
             ],
@@ -76,10 +76,10 @@ local volumes = import 'templates/volumes.libsonnet';
       },
     },
   },
-  PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest + r1_13,
-  PyTorchGkePodTest:: common.PyTorchGkePodTest + r1_13,
+  PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest + r2_0,
+  PyTorchGkePodTest:: common.PyTorchGkePodTest + r2_0,
   Functional:: mixins.Functional {
-    schedule: null,
+    schedule: '0 7 * * *',
     tpuSettings+: {
       preemptible: false,
     },
@@ -90,15 +90,21 @@ local volumes = import 'templates/volumes.libsonnet';
 
     tpuSettings+: {
       softwareVersion: if config.accelerator.version < 4 then
-        'tpu-vm-pt-1.13'
+        'tpu-vm-base'
       else
-        'tpu-vm-v4-pt-1.13',
+        'tpu-vm-v4-base',
       tpuVmPytorchSetup: |||
-        # No need to check out the PyTorch repository, but check out PT/XLA at
-        # pytorch/xla anyway
-        mkdir pytorch
+        sudo pip3 uninstall --yes torch torch_xla torchvision numpy
+        sudo pip3 install torch==2.0.0
+        sudo pip3 install torchvision==0.15.1
+        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-2.0-cp38-cp38-linux_x86_64.whl
+        sudo pip3 install numpy
+        sudo pip3 install mkl mkl-include cloud-tpu-client
+        sudo apt-get -y update
+        sudo apt-get install -y libomp5
+        git clone https://github.com/pytorch/pytorch.git -b release/2.0
         cd pytorch
-        git clone https://github.com/pytorch/xla.git -b r1.13
+        git clone https://github.com/pytorch/xla.git -b r2.0
       |||,
     },
     podTemplate+:: {
@@ -115,7 +121,7 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   GpuMixin:: {
     local config = self,
-    imageTag+: '_cuda_11.2',
+    imageTag+: '_cuda_11.7',
 
     podTemplate+:: {
       spec+: {
@@ -133,6 +139,5 @@ local volumes = import 'templates/volumes.libsonnet';
     },
   },
 
-  // DEPRECATED: Use PyTorchTpuVmMixin instead
-  tpu_vm_1_13_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
+  tpu_vm_r2_0_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
 }

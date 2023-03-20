@@ -58,6 +58,27 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  // DDP converges worse than MP.
+  local convergence_ddp = convergence {
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'Accuracy/test': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 97.0,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 
   local v2_8 = {
     accelerator: tpus.v2_8,
@@ -93,6 +114,8 @@ local utils = import 'templates/utils.libsonnet';
     command+: [
       '--ddp',
       '--pjrt_distributed',
+      // DDP converges worse than MP, override the accuracy target in Python script.
+      '--target_accuracy=97.0',
     ],
   },
 
@@ -100,7 +123,7 @@ local utils = import 'templates/utils.libsonnet';
     mnist + convergence + v2_8 + timeouts.Hours(1) + mixins.Experimental,
     mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm + mixins.Experimental,
     mnist + convergence + v2_8 + timeouts.Hours(1) + pjrt,
-    mnist + convergence + v2_8 + timeouts.Hours(1) + pjrt + pjrt_ddp,
+    mnist + convergence_ddp + v2_8 + timeouts.Hours(1) + pjrt + pjrt_ddp,
     mnist + convergence + v4_8 + timeouts.Hours(1) + pjrt + mixins.Experimental,
     mnist + convergence + v100x4 + timeouts.Hours(6) + mixins.Experimental,
   ],

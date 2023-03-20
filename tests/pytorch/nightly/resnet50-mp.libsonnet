@@ -22,14 +22,22 @@ local tpus = import 'templates/tpus.libsonnet';
 {
   local resnet50 = common.PyTorchTest {
     modelName: 'resnet50-mp',
+    trainScript: 'pytorch/xla/test/test_train_mp_imagenet.py',
+    batch_size: null,
     command: [
       'python3',
-      'pytorch/xla/test/test_train_mp_imagenet.py',
+      self.trainScript,
       '--model=resnet50',
       '--log_steps=200',
-    ] + if self.flags.modelDir != null then [
-      '--logdir=%s' % self.flags.modelDir,
-    ] else [],
+    ] + (
+      if self.flags.modelDir != null then [
+        '--logdir=%s' % self.flags.modelDir,
+      ] else []
+    ) + (
+      if self.batch_size != null then [
+        '--batch_size=%s' % self.batch_size,
+      ] else []
+    ),
     flags:: {
       modelDir: '$(MODEL_DIR)',
     },
@@ -80,6 +88,28 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
+  // DDP converges worse than MP.
+  local convergence_ddp = convergence {
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'Accuracy/test': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 65,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+
 
   local v3_8 = {
     accelerator: tpus.v3_8,
@@ -90,11 +120,11 @@ local tpus = import 'templates/tpus.libsonnet';
   local v4_8 = {
     accelerator: tpus.v4_8,
     // Keep same global batch size as v3
-    command+: ['--batch_size=256'],
+    batch_size: 256,
   },
   local v4_32 = {
     accelerator: tpus.v4_32,
-    command+: ['--batch_size=256'],
+    batch_size: 256,
   },
 
   local gpu = common.GpuMixin {
@@ -143,6 +173,15 @@ local tpus = import 'templates/tpus.libsonnet';
   local pjrt = tpuVm + experimental.PjRt {
     modelName: 'resnet50-pjrt',
   },
+  local spmd(sharding) = pjrt {
+    // Include sharding spec in the test name
+    modelName: std.join('-', ['resnet50-spmd'] + sharding),
+    trainScript: 'pytorch/xla/test/spmd/test_train_spmd_imagenet.py',
+    command+: ['--sharding=' + std.join(',', sharding)],
+    // Keep the same global batch size. In SPMD, the global batch size is
+    // divided across all devices.
+    batch_size: self.accelerator.size * 128,
+  },
 
   configs: [
     // XRT
@@ -166,8 +205,11 @@ local tpus = import 'templates/tpus.libsonnet';
     resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt,
     resnet50 + convergence + v4_8 + timeouts.Hours(14) + pjrt,
     resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt + pjrt_ddp,
-    resnet50 + convergence + v4_8 + timeouts.Hours(14) + pjrt + pjrt_ddp,
+    resnet50 + convergence_ddp + v4_8 + timeouts.Hours(14) + pjrt + pjrt_ddp,
     resnet50 + fake_data + v4_32 + timeouts.Hours(2) + pjrt,
     resnet50 + convergence + v4_32 + timeouts.Hours(24) + pjrt,
+    // SPMD
+    resnet50 + functional + v4_8 + timeouts.Hours(2) + spmd(['batch']),
+    resnet50 + functional + v4_8 + timeouts.Hours(2) + spmd(['spatial']),
   ],
 }

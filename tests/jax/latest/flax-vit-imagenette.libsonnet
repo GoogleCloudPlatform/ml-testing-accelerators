@@ -19,8 +19,8 @@ local tpus = import 'templates/tpus.libsonnet';
 {
   local hf_vit_common = common.JaxTest + common.huggingFace {
     local config = self,
-    frameworkPrefix: 'flax-latest',
-    modelName:: 'hf-vit',
+    frameworkPrefix: 'flax.latest',
+    modelName:: 'vit-imagenette',
     extraFlags:: [],
     testScript:: |||
       %(installPackages)s
@@ -101,14 +101,12 @@ local tpus = import 'templates/tpus.libsonnet';
 
   local func_tests = [
     hf_vit_common + func + v2 + v2_8,
-    hf_vit_common + func + v2 + v2_32,
     hf_vit_common + func + v3 + v3_8,
-    hf_vit_common + func + v3 + v3_32,
     hf_vit_common + func + v4 + v4_8,
-    hf_vit_common + func + v4 + v4_32,
   ],
 
   local conv_tests = [
+    hf_vit_common + conv + v3 + v3_32,
     hf_vit_common + conv + v4 + v4_32,
   ],
 

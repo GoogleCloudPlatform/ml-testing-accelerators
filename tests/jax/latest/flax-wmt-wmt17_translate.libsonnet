@@ -14,33 +14,45 @@
 
 local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 {
   local functional = mixins.Functional {
-    extraFlags+:: ['--config.num_epochs=1'],
+    extraFlags+:: ['--config.num_train_steps=10', '--config.per_device_batch_size=16'],
     extraConfig:: 'default.py',
   },
   local convergence = mixins.Convergence {
+    extraConfig:: 'default.py',
+    extraFlags+:: ['--config.reverse_translation=True', '--config.per_device_batch_size=32', '--config.num_train_steps=70000'],
+  },
+  local profile = mixins.Functional {
+    mode: 'profile',
+    extraFlags+:: ['--config.num_train_steps=40', '--config.per_device_batch_size=16'],
     extraConfig:: 'default.py',
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
   },
+  local v3_32 = {
+    accelerator: tpus.v3_32,
+  },
   local v2_8 = {
     accelerator: tpus.v2_8,
   },
-  local v3_32 = {
-    accelerator: tpus.v3_32,
-    extraFlags+:: ['--config.batch_size=$((32*256))'],
+  local wmt = common.runFlaxLatest {
+    folderName:: 'wmt',
+    modelName:: 'wmt-wmt17.translate',
+    extraDeps+:: ['tensorflow-cpu tensorflow-datasets tensorflow_text sentencepiece'],
   },
-  local mnist = common.runFlaxLatest {
-    extraDeps+:: ['tensorflow-cpu tensorflow-datasets'],
-    modelName:: 'mnist',
+  local wmt_profiling = wmt {
+    local config = self,
+    testScript+:: |||
+      gsutil -q stat $(MODEL_DIR)/plugins/profile/*/*.xplane.pb
+    ||| % (self.scriptConfig {}),
   },
   configs: [
-    mnist + functional + v2_8,
-    mnist + convergence + v3_8,
-    mnist + functional + v3_32,
-    mnist + convergence + v3_32,
+    wmt + functional + v2_8,
+    wmt + convergence + v3_32,
+    wmt_profiling + profile + v3_8 + timeouts.Minutes(40),
   ],
 }

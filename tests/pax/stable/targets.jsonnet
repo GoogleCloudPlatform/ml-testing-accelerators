@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License,
 
-local nightly = import 'nightly/targets.jsonnet';
-local stable = import 'stable/targets.jsonnet';
+local spmd = import 'lmspmd2b.libsonnet';
+local transformer = import 'lmtransformeradam.libsonnet';
 
 // Add new models here
 std.flattenArrays([
-  nightly,
-  stable,
+  spmd.configs,
+  transformer.configs,
 ])
