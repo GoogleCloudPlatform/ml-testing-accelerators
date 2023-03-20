@@ -29,43 +29,45 @@ import numpy as np
 # For a given list of test_names and metric_names, find the history of metrics.
 QUERY = """
 SELECT
-  metrics.test_name,
+  job.test_name,
   metrics.metric_name,
-  SAFE_CAST(DATE(metrics.timestamp, 'US/Pacific') AS STRING) AS run_date,
+  SAFE_CAST(DATE(job.timestamp, 'US/Pacific') AS STRING) AS run_date,
   metrics.metric_value,
   job.job_status,
   job.stackdriver_logs_link AS logs_link,
-  job.logs_download_command,
   job.uuid
 FROM (
+  SELECT 
+    metric_name,
+    metric_value,
+    metric_lower_bound,
+    metric_upper_bound,
+    uuid,
+    ROW_NUMBER() OVER (
+      PARTITION BY
+          test_name, metric_name, DATE(timestamp, 'US/Pacific')
+      ORDER BY 
+          timestamp DESC
+    ) as r_number
+  FROM `{metric_table_name}`
+  WHERE
+    DATE(timestamp) >= DATE('{cutoff_date}') AND
+    {test_name_where_clause} AND
+    {metric_name_where_clause}
+  QUALIFY r_number = 1
+  ) AS metrics
+INNER JOIN (
   SELECT
-    x.test_name,
-    x.metric_name,
-    x.timestamp,
-    x.metric_value,
-    x.uuid
-  FROM (
-    SELECT
-      test_name,
-      metric_name,
-      SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
-      max(farm_fingerprint(uuid)) as max_uuid
-    FROM
-      `{metric_table_name}`
-    WHERE
-      timestamp > '{cutoff_date}' AND
-      {test_name_where_clause} AND
-      {metric_name_where_clause}
-    GROUP BY
-      test_name, metric_name, run_date
-  ) AS y
-  INNER JOIN `{metric_table_name}` AS x
-  ON
-    y.test_name = x.test_name AND
-    y.metric_name = x.metric_name AND
-    y.max_uuid = farm_fingerprint(x.uuid)
-) AS metrics
-INNER JOIN `{job_table_name}` AS job
+    uuid,
+    test_name,
+    timestamp,
+    job_status,
+    stackdriver_logs_link,
+  FROM `{job_table_name}`
+  WHERE 
+    {test_name_where_clause} AND
+    timestamp >= TIMESTAMP('{cutoff_date}')
+) AS job
 ON
   metrics.uuid = job.uuid
 ORDER BY
@@ -113,6 +115,8 @@ def get_query(test_names, metric_names):
   return query
 
 def fetch_data(test_names, metric_names):
+  print('test_names: ' + str(test_names))
+  print('metric_names: ' + str(metric_names))
   if not test_names or not metric_names:
     raise ValueError('Neither test_names nor metric_names can be empty.')
   dataframe = utils.run_query(

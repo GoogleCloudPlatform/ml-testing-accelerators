@@ -29,46 +29,45 @@ METRIC_HISTORY_TABLE_NAME = os.environ['METRIC_HISTORY_TABLE_NAME']
 # For a given test_name, find the history of metrics for that test.
 QUERY = f"""
 SELECT
-  metrics.test_name,
+  job.test_name,
   metrics.metric_name,
-  SAFE_CAST(DATE(metrics.timestamp, 'US/Pacific') AS STRING) AS run_date,
+  SAFE_CAST(DATE(job.timestamp, 'US/Pacific') AS STRING) AS run_date,
   metrics.metric_value,
   metrics.metric_lower_bound,
   metrics.metric_upper_bound,
   job.job_status,
   job.stackdriver_logs_link AS logs_link,
-  job.logs_download_command
 FROM (
-  SELECT
-    x.test_name,
-    x.metric_name,
-    x.timestamp,
-    x.metric_value,
-    x.metric_lower_bound,
-    x.metric_upper_bound,
-    x.uuid
-  FROM (
-    SELECT
-      test_name,
-      metric_name,
-      SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
-      min(timestamp) as min_timestamp
-    FROM
-      `{METRIC_HISTORY_TABLE_NAME}`
-    WHERE
-      test_name = @test_name AND
-      (metric_name NOT LIKE '%%__Percentile_%%' OR metric_name LIKE '%%__Percentile_99%%') AND
-      timestamp >= @cutoff_timestamp
-    GROUP BY
-      test_name, metric_name, run_date
-  ) AS y
-  INNER JOIN `{METRIC_HISTORY_TABLE_NAME}` AS x
-  ON
-    y.test_name = x.test_name AND
-    y.metric_name = x.metric_name AND
-    y.min_timestamp = x.timestamp
+  SELECT 
+    metric_name,
+    metric_value,
+    metric_lower_bound,
+    metric_upper_bound,
+    uuid,
+    ROW_NUMBER() OVER (
+      PARTITION BY
+          test_name, DATE(timestamp, 'US/Pacific')
+      ORDER BY 
+          timestamp DESC
+    ) as r_number
+  FROM `{METRIC_HISTORY_TABLE_NAME}`
+  WHERE
+    DATE(timestamp) >= DATE(@cutoff_timestamp) AND 
+    test_name LIKE @test_name
+  QUALIFY r_number = 1
 ) AS metrics
-INNER JOIN `{JOB_HISTORY_TABLE_NAME}` AS job
+INNER JOIN (
+  SELECT
+    uuid,
+    test_name,
+    timestamp,
+    job_status,
+    stackdriver_logs_link
+  FROM `{JOB_HISTORY_TABLE_NAME}`
+  WHERE
+    test_name LIKE @test_name  AND
+    timestamp >= TIMESTAMP(@cutoff_timestamp)
+  ) AS job
 ON
   metrics.uuid = job.uuid
 ORDER BY
