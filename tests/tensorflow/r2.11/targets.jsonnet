@@ -14,7 +14,6 @@
 
 local dlrm = import 'dlrm.libsonnet';
 local keras_api = import 'keras-api.libsonnet';
-local mnist = import 'mnist.libsonnet';
 local nlp_mnli = import 'nlp-mnli.libsonnet';
 local nlp_wmt = import 'nlp-wmt.libsonnet';
 local vision_coco = import 'vision-coco.libsonnet';
@@ -24,7 +23,6 @@ local vision_imagenet = import 'vision-imagenet.libsonnet';
 std.flattenArrays([
   dlrm.configs,
   keras_api.configs,
-  mnist.configs,
   nlp_mnli.configs,
   nlp_wmt.configs,
   vision_imagenet.configs,

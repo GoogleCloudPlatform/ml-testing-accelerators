@@ -241,10 +241,6 @@ local tpus = import 'templates/tpus.libsonnet';
   configs: [
     dlrm + functional + v3_8,
     dlrm + functional + cross_interaction + v2_8,
-    dlrm + convergence + v3_8,
-    dlrm + convergence + cross_interaction + v3_8,
-    dlrm + functional + v3_32,
-    dlrm + functional + cross_interaction + v2_32,
     dlrm + convergence + cross_interaction + v3_32,
     dlrm + convergence + v3_32,
     dlrm + functional + v100,
@@ -254,10 +250,8 @@ local tpus = import 'templates/tpus.libsonnet';
     dlrm + convergence + v100x4,
     dlrm + functional + v2_8 + tpuVm,
     dlrm + functional + cross_interaction + v2_8 + tpuVm,
-    dlrm + convergence + v3_8 + tpuVm,
     dlrm + convergence + v2_32 + tpuVm,
-    dlrm + functional + v3_32 + tpuVm,
     dlrm + functional + v4_8 + tpuVm,
-    dlrm + functional + cross_interaction + v4_32 + tpuVm,
+    dlrm + convergence + cross_interaction + v4_32 + tpuVm,
   ],
 }
