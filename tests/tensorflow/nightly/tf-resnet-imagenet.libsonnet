@@ -15,28 +15,14 @@
 local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
-local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local imagenet = {
-    scriptConfig+: {
-      trainFilePattern: '$(IMAGENET_DIR)/train*',
-      evalFilePattern: '$(IMAGENET_DIR)/valid*',
-    },
-  },
-  local resnet = common.TfVisionTest + imagenet {
-    modelName: 'vision-resnet',
+  local resnet = common.TfVisionTest + common.imagenet {
+    modelName: 'resnet-imagenet',
     scriptConfig+: {
       experiment: 'resnet_imagenet',
-    },
-  },
-  local resnet_rs = common.TfVisionTest + imagenet {
-    modelName: 'vision-resnetrs',
-    scriptConfig+: {
-      experiment: 'resnet_rs_imagenet',
-      configFiles: ['official/vision/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml'],
     },
   },
   local functional = common.Functional {
@@ -80,18 +66,15 @@ local utils = import 'templates/utils.libsonnet';
   local v4_32 = {
     accelerator: tpus.v4_32,
   },
-  local tpuVm = common.tpuVm,
+  local tpuVm = experimental.TensorFlowTpuVmMixin,
 
   local functionalTests = [
-    benchmark + accelerator + functional
-    for benchmark in [resnet, resnet_rs]
-    for accelerator in [v2_8, v3_8]
+    resnet + v2_8 + functional,
+    resnet + v3_8 + functional,
   ],
   local convergenceTests = [
     resnet + v2_32 + convergence + tpuVm,
     resnet + v3_32 + convergence + tpuVm,
-    resnet_rs + v2_32 + convergence + tpuVm + timeouts.Hours(15),
-    resnet_rs + v3_32 + convergence + tpuVm + timeouts.Hours(15),
   ],
   configs: functionalTests + convergenceTests + [
     resnet + v4_8 + functional + tpuVm,

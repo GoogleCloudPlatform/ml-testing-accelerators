@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,32 +20,31 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local bert = common.TfNlpTest {
-    modelName: 'nlp-bert-mnli',
+  local tpu_common = {
+    local config = self,
     scriptConfig+: {
-      experiment: 'bert/sentence_prediction_text',
-      configFiles: [
-        'official/nlp/configs/experiments/glue_mnli_text.yaml',
-      ],
       paramsOverride+: {
         task+: {
-          init_checkpoint+: '$(TF_NLP_BERT_DIR)/uncased_L-12_H-768_A-12/bert_model.ckpt',
-          train_data+: {
-            vocab_file: '$(TF_NLP_BERT_DIR)/uncased_L-12_H-768_A-12/vocab.txt',
-          },
           validation_data+: {
-            vocab_file: '$(TF_NLP_BERT_DIR)/uncased_L-12_H-768_A-12/vocab.txt',
+            global_batch_size: 8 * config.accelerator.replicas,
           },
         },
       },
+    },
+  },
+  local retinanet = common.TfVisionTest + common.coco {
+    modelName: 'retinanet-coco',
+    scriptConfig+: {
+      experiment: 'retinanet_resnetfpn_coco',
     },
   },
   local functional = common.Functional {
     scriptConfig+: {
       paramsOverride+: {
         trainer+: {
-          train_steps: 2000,
-          validation_interval: 1000,
+          train_steps: 400,
+          validation_interval: 200,
+          validation_steps: 100,
         },
       },
     },
@@ -53,21 +52,43 @@ local utils = import 'templates/utils.libsonnet';
   local convergence = common.Convergence,
   local v2_8 = {
     accelerator: tpus.v2_8,
+    scriptConfig+: {
+      paramsOverride+: {
+        task+: {
+          train_data+: {
+            global_batch_size: 64,
+          },
+        },
+      },
+    },
   },
-  local v3_8 = {
+  local v3_8 = tpu_common {
     accelerator: tpus.v3_8,
   },
-  local v2_32 = {
+  local v2_32 = tpu_common {
     accelerator: tpus.v2_32,
   },
-  local v3_32 = {
+  local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
   },
-  configs: [
-    bert + accelerator + functional
-    for accelerator in [v2_8, v3_8]
-  ] + [
-    bert + v2_32 + convergence,
-    bert + v3_32 + convergence,
+  local v4_8 = tpu_common {
+    accelerator: tpus.v4_8,
+  },
+  local v4_32 = tpu_common {
+    accelerator: tpus.v4_32,
+  },
+  local tpuVm = experimental.TensorFlowTpuVmMixin,
+
+  local functionalTests = [
+    retinanet + v2_8 + functional,
+    retinanet + v3_8 + functional,
+  ],
+  local convergenceTests = [
+    retinanet + v2_32 + convergence + timeouts.Hours(15),
+    retinanet + v3_32 + convergence + timeouts.Hours(15),
+  ],
+  configs: functionalTests + convergenceTests + [
+    retinanet + v4_8 + functional + tpuVm,
+    retinanet + v4_32 + convergence + tpuVm,
   ],
 }

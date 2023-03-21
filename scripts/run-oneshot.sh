@@ -12,7 +12,7 @@ help()
   echo
   echo "Syntax: ./scripts/run-oneshot.sh [-a|d|f|h|t]"
   echo "-d | --dryrun        Dryrun. If set, then the test does not run and only prints commands."
-  echo "-t | --test          The name of the test, e.g. `tf-nightly-classifier-resnet-func-v4-8-1vm`."
+  echo "-t | --test          The name of the test, e.g. `tf.nightly-resnet-imagenet-func-v2-8`."
   echo "-h | --help          Print this help."
 }
 

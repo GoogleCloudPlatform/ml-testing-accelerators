@@ -18,7 +18,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
 {
   local transformer = common.TfNlpTest {
-    modelName: 'nlp-wmt-transformer',
+    modelName: 'wmt-wmt14.translate',
     scriptConfig+: {
       experiment: 'wmt_transformer/large',
       paramsOverride+: {

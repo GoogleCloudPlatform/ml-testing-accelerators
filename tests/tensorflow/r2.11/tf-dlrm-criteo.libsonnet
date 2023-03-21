@@ -20,82 +20,15 @@ local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  local dlrm = common.ModelGardenTest {
-    modelName: 'ranking-dlrm',
-    paramsOverride:: {
-      runtime: {
-        distribution_strategy: error 'Must set `runtime.distribution_strategy`',
-      },
-      task: {
-        train_data: {
-          input_path: '$(CRITEO_DATA_DIR)/train/*',
-          global_batch_size: 16384,
-        },
-        validation_data: {
-          input_path: '$(CRITEO_DATA_DIR)/eval/*',
-          global_batch_size: 16384,
-        },
-        model: {
-          num_dense_features: 13,
-          bottom_mlp: [512, 256, 64],
-          embedding_dim: 64,
-          top_mlp: [1024, 1024, 512, 256, 1],
+  local dlrm = common.TfRankingTest {
+    modelName: 'dlrm-criteo',
+    paramsOverride+:: {
+      task+: {
+        model+: {
           interaction: 'dot',
-          vocab_sizes: [
-            39884406,
-            39043,
-            17289,
-            7420,
-            20263,
-            3,
-            7120,
-            1543,
-            63,
-            38532951,
-            2953546,
-            403346,
-            10,
-            2208,
-            11938,
-            155,
-            4,
-            976,
-            14,
-            39979771,
-            25641295,
-            39664984,
-            585935,
-            12972,
-            108,
-            36,
-          ],
         },
       },
-      trainer: {
-        use_orbit: true,
-        validation_interval: 90000,
-        checkpoint_interval: 270000,
-        validation_steps: 5440,
-        train_steps: 256054,
-        optimizer_config: {
-          embedding_optimizer: 'SGD',
-          lr_config: {
-            decay_exp: 1.6,
-            decay_start_steps: 150000,
-            decay_steps: 136054,
-            learning_rate: 30,
-            warmup_steps: 8000,
-          },
-        },
-      },
-
     },
-    command: [
-      'python3',
-      'official/recommendation/ranking/train.py',
-      '--params_override=%s' % (std.manifestYamlDoc(self.paramsOverride) + '\n'),
-      '--model_dir=$(MODEL_DIR)',
-    ],
   },
   local functional = common.Functional {
     command+: [
@@ -132,19 +65,6 @@ local tpus = import 'templates/tpus.libsonnet';
         model+: {
           bottom_mlp: [512, 256, 8],
           embedding_dim: 8,
-        },
-      },
-    },
-  },
-
-  local cross_interaction = {
-    modelName: 'ranking-dcn',
-    local config = self,
-
-    paramsOverride+:: {
-      task+: {
-        model+: {
-          interaction: 'cross',
         },
       },
     },
@@ -236,22 +156,17 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
-  local tpuVm = experimental.TensorFlowTpuVmMixin,
+  local tpuVm = common.tpuVm,
 
   configs: [
     dlrm + functional + v3_8,
-    dlrm + functional + cross_interaction + v2_8,
-    dlrm + convergence + cross_interaction + v3_32,
     dlrm + convergence + v3_32,
     dlrm + functional + v100,
     dlrm + functional + v100x4,
     dlrm + convergence + v100,
-    dlrm + convergence + cross_interaction + v100,
     dlrm + convergence + v100x4,
     dlrm + functional + v2_8 + tpuVm,
-    dlrm + functional + cross_interaction + v2_8 + tpuVm,
     dlrm + convergence + v2_32 + tpuVm,
     dlrm + functional + v4_8 + tpuVm,
-    dlrm + convergence + cross_interaction + v4_32 + tpuVm,
   ],
 }

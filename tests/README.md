@@ -22,12 +22,10 @@ To list all of the correctly configured tests, you can run
 ```bash
 $ ./scripts/list-tests.sh
 + jsonnet -J . -S tests/list_tests.jsonnet
-flax-latest-imagenet-conv-v3-32-1vm
-flax-latest-imagenet-conv-v3-8-1vm
-flax-latest-imagenet-func-v2-8-1vm
-flax-latest-imagenet-func-v3-32-1vm
-flax-latest-vit-conv-v3-8-1vm
-flax-latest-vit-func-v2-8-1vm
+flax.latest-resnet-imagenet-conv-v3-32
+flax.latest-resnet-imagenet-func-v2-8
+flax.latest-vit-imagenette-conv-v3-32
+flax.latest-vit-imagenette-conv-v4-32
 ...
 ```
 
@@ -40,7 +38,7 @@ correctly, or to extract the correct name to run a one shot test.
 To manually run one shot tests, first [connect to a cluster](https://console.cloud.google.com/kubernetes/list) and then run the following:
 
 ```bash
-export TEST_NAME=tf-nightly-mnist-func-v2-8
+export TEST_NAME=tf.nightly-resnet-imagenet-func-v2-8
 jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$TEST_NAME | kubectl create -f -
 ```
 
@@ -50,7 +48,7 @@ For convenience, the steps of connecting to a cluster and running a one shot
 test have been combined into a single script as follows:
 
 ```bash
-export TEST_NAME=tf-nightly-mnist-func-v2-8
+export TEST_NAME=tf.nightly-resnet-imagenet-func-v2-8
 ./scripts/run-oneshot.sh -t $TEST_NAME
 ```
 

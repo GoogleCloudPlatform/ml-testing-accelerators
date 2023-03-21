@@ -20,31 +20,32 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local imagenet = {
+  local bert = common.TfNlpTest {
+    modelName: 'bert-glue.mnli',
     scriptConfig+: {
-      trainFilePattern: '$(IMAGENET_DIR)/train*',
-      evalFilePattern: '$(IMAGENET_DIR)/valid*',
-    },
-  },
-  local resnet = common.TfVisionTest + imagenet {
-    modelName: 'vision-resnet',
-    scriptConfig+: {
-      experiment: 'resnet_imagenet',
-    },
-  },
-  local resnet_rs = common.TfVisionTest + imagenet {
-    modelName: 'vision-resnetrs',
-    scriptConfig+: {
-      experiment: 'resnet_rs_imagenet',
-      configFiles: ['official/vision/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml'],
+      experiment: 'bert/sentence_prediction_text',
+      configFiles: [
+        'official/nlp/configs/experiments/glue_mnli_text.yaml',
+      ],
+      paramsOverride+: {
+        task+: {
+          init_checkpoint+: '$(TF_NLP_BERT_DIR)/uncased_L-12_H-768_A-12/bert_model.ckpt',
+          train_data+: {
+            vocab_file: '$(TF_NLP_BERT_DIR)/uncased_L-12_H-768_A-12/vocab.txt',
+          },
+          validation_data+: {
+            vocab_file: '$(TF_NLP_BERT_DIR)/uncased_L-12_H-768_A-12/vocab.txt',
+          },
+        },
+      },
     },
   },
   local functional = common.Functional {
     scriptConfig+: {
       paramsOverride+: {
-        trainer: {
-          train_steps: 320,
-          validation_interval: 320,
+        trainer+: {
+          train_steps: 2000,
+          validation_interval: 1000,
         },
       },
     },
@@ -52,18 +53,6 @@ local utils = import 'templates/utils.libsonnet';
   local convergence = common.Convergence,
   local v2_8 = {
     accelerator: tpus.v2_8,
-    scriptConfig+: {
-      paramsOverride+: {
-        task+: {
-          train_data+: {
-            global_batch_size: 1024,
-          },
-          validation_data+: {
-            global_batch_size: 1024,
-          },
-        },
-      },
-    },
   },
   local v3_8 = {
     accelerator: tpus.v3_8,
@@ -81,20 +70,13 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_32,
   },
   local tpuVm = common.tpuVm,
-
-  local functionalTests = [
-    benchmark + accelerator + functional
-    for benchmark in [resnet, resnet_rs]
+  configs: [
+    bert + accelerator + functional
     for accelerator in [v2_8, v3_8]
-  ],
-  local convergenceTests = [
-    resnet + v2_32 + convergence + tpuVm,
-    resnet + v3_32 + convergence + tpuVm,
-    resnet_rs + v2_32 + convergence + tpuVm + timeouts.Hours(15),
-    resnet_rs + v3_32 + convergence + tpuVm + timeouts.Hours(15),
-  ],
-  configs: functionalTests + convergenceTests + [
-    resnet + v4_8 + functional + tpuVm,
-    resnet + v4_32 + convergence + tpuVm,
+  ] + [
+    bert + v2_32 + convergence,
+    bert + v3_32 + convergence,
+    bert + v4_8 + functional + tpuVm,
+    bert + v4_32 + convergence + tpuVm,
   ],
 }
