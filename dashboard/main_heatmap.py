@@ -34,34 +34,42 @@ JOB_HISTORY_TABLE_NAME = os.environ['JOB_HISTORY_TABLE_NAME']
 METRIC_HISTORY_TABLE_NAME = os.environ['METRIC_HISTORY_TABLE_NAME']
 
 JOB_STATUS_QUERY = f"""
-SELECT
-  x.test_name,
-  x.job_status,
-  SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
-  x.stackdriver_logs_link AS logs_link,
-  x.logs_download_command AS logs_download_command,
-  x.kubernetes_workload_link AS workload_link,
-  x.uuid
+SELECT 
+  test_name,
+  job_status,
+  SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) as run_date,
+  logs_link,
+  workload_link,
+  uuid
 FROM (
   SELECT
     test_name,
-    SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING) AS run_date,
-    max(farm_fingerprint(uuid)) as max_uuid,
-  FROM
-    `{JOB_HISTORY_TABLE_NAME}`
-  WHERE
-    test_name like @test_name_prefix AND
-    timestamp >= @cutoff_timestamp
-  GROUP BY
-    test_name, run_date
-) AS y
-INNER JOIN
-  `{JOB_HISTORY_TABLE_NAME}` AS x
-ON
-  y.test_name = x.test_name AND
-  y.max_uuid = farm_fingerprint(x.uuid)
-ORDER BY
-  run_date DESC
+    job_status,
+    timestamp,
+    FIRST_VALUE (timestamp) OVER (
+        PARTITION BY
+            test_name, SAFE_CAST(DATE(timestamp, 'US/Pacific') AS STRING)
+        ORDER BY 
+            timestamp
+    ) AS first_time,
+    logs_link,
+    workload_link,
+    uuid
+  FROM (
+    SELECT 
+      uuid,
+      test_name,
+      job_status,
+      timestamp,
+      stackdriver_logs_link AS logs_link,
+      kubernetes_workload_link AS workload_link
+    FROM `{JOB_HISTORY_TABLE_NAME}`
+    WHERE
+      test_name like @test_name_prefix AND
+      timestamp >= @cutoff_timestamp
+  )
+)
+WHERE timestamp = first_time
 """
 
 METRIC_STATUS_QUERY = f"""
