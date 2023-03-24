@@ -23,7 +23,7 @@ local mixins = import 'templates/mixins.libsonnet';
 
     frameworkPrefix: 'tf-r2.11.1',
     tpuSettings+: {
-      softwareVersion: '2.11.1',
+      softwareVersion: '2.11.0',
     },
     imageTag: 'r2.11.1',
     podTemplate+:: if config.accelerator.type == 'tpu' then
