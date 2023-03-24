@@ -98,38 +98,11 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
-  local v4_8 = {
-    accelerator: tpus.v4_8,
-    scriptConfig+: {
-      paramsOverride+: {
-        task+: {
-          train_data+: {
-            global_batch_size: 6144,
-          },
-        },
-      },
-    },
-  },
-  local v4_32 = {
-    accelerator: tpus.v4_32,
-    scriptConfig+: {
-      paramsOverride+: {
-        task+: {
-          train_data+: {
-            global_batch_size: 24576,
-          },
-        },
-      },
-    },
-  },
-  local tpuVm = common.tpuVm,
   configs: [
     transformer + accelerator + functional
     for accelerator in [v2_8, v3_8]
   ] + [
     transformer + v2_32 + convergence,
     transformer + v3_32 + convergence,
-    transformer + v4_32 + convergence + tpuVm,
-    transformer + v4_8 + functional + tpuVm,
   ],
 }
