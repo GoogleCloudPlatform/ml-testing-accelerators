@@ -20,7 +20,8 @@ local tpus = import 'templates/tpus.libsonnet';
 {
   // FSMT = FairSeq MachineTranslation
   // Model doc: https://huggingface.co/docs/transformers/model_doc/fsmt
-  local fsmt = common.PyTorchTest {
+  local fsmt = self.fsmt,
+  fsmt:: common.PyTorchTest {
     modelName: 'hf-fsmt',
     volumeMap+: {
       datasets: common.datasetsVolume,
@@ -32,18 +33,21 @@ local tpus = import 'templates/tpus.libsonnet';
     ],
   },
 
-  local functional = common.Functional {
+  local functional = self.functional,
+  functional:: common.Functional {
     command+: [
       '--short_data',
     ],
   },
   local convergence = common.Convergence,
 
-  local v4_8 = {
+  local v4_8 = self.v4_8,
+  v4_8:: {
     accelerator: tpus.v4_8,
   },
 
-  local pjrt = common.PyTorchTpuVmMixin + experimental.PjRt {
+  local pjrt = self.pjrt,
+  pjrt:: common.PyTorchTpuVmMixin + experimental.PjRt {
     modelName+: '-pjrt',
     tpuSettings+: {
       tpuVmExtraSetup: |||

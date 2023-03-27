@@ -20,7 +20,8 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local bert = common.TfNlpTest {
+  local bert = self.bert,
+  bert:: common.TfNlpTest {
     modelName: 'nlp-bert-mnli',
     scriptConfig+: {
       experiment: 'bert/sentence_prediction_text',
@@ -40,7 +41,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local functional = common.Functional {
+  local functional = self.functional,
+  functional:: common.Functional {
     scriptConfig+: {
       paramsOverride+: {
         trainer+: {
@@ -51,16 +53,20 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local convergence = common.Convergence,
-  local v2_8 = {
+  local v2_8 = self.v2_8,
+  v2_8:: {
     accelerator: tpus.v2_8,
   },
-  local v3_8 = {
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
   },
-  local v2_32 = {
+  local v2_32 = self.v2_32,
+  v2_32:: {
     accelerator: tpus.v2_32,
   },
-  local v3_32 = {
+  local v3_32 = self.v3_32,
+  v3_32:: {
     accelerator: tpus.v3_32,
   },
   configs: [

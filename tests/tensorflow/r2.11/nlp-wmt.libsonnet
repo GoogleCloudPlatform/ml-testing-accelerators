@@ -17,7 +17,8 @@ local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  local transformer = common.TfNlpTest {
+  local transformer = self.transformer,
+  transformer:: common.TfNlpTest {
     modelName: 'nlp-wmt-transformer',
     scriptConfig+: {
       experiment: 'wmt_transformer/large',
@@ -28,7 +29,8 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
-  local functional = common.Functional {
+  local functional = self.functional,
+  functional:: common.Functional {
     scriptConfig+: {
       paramsOverride+: {
         trainer+: {
@@ -38,7 +40,8 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
-  local convergence = common.Convergence {
+  local convergence = self.convergence,
+  convergence:: common.Convergence {
     local config = self,
     scriptConfig+: {
       paramsOverride+: {
@@ -49,7 +52,8 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  local v2_8 = {
+  local v2_8 = self.v2_8,
+  v2_8:: {
     accelerator: tpus.v2_8,
     scriptConfig+: {
       paramsOverride+: {
@@ -62,7 +66,8 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  local v3_8 = {
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
     scriptConfig+: {
       paramsOverride+: {
@@ -74,7 +79,8 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
-  local v2_32 = {
+  local v2_32 = self.v2_32,
+  v2_32:: {
     accelerator: tpus.v2_32,
     scriptConfig+: {
       paramsOverride+: {
@@ -86,7 +92,8 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
-  local v3_32 = {
+  local v3_32 = self.v3_32,
+  v3_32:: {
     accelerator: tpus.v3_32,
     scriptConfig+: {
       paramsOverride+: {

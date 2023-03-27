@@ -20,7 +20,8 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local keras_test = common.ModelGardenTest {
+  local keras_test = self.keras_test,
+  keras_test:: common.ModelGardenTest {
     testFeature:: error 'Must override `testFeature`',
     modelName: 'keras-api',
     isTPUPod:: error 'Must set `isTPUPod`',
@@ -38,7 +39,8 @@ local utils = import 'templates/utils.libsonnet';
     ),
   },
 
-  local API = common.RunNightly {
+  local API = self.API,
+  API:: common.RunNightly {
     mode: 'api',
     timeout: timeouts.one_hour,
     tpuSettings+: {
@@ -46,72 +48,86 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
 
-  local connection = API {
+  local connection = self.connection,
+  connection:: API {
     mode: 'connection',
     testFeature:: 'aaa_connection',
   },
 
-  local custom_layers = API {
+  local custom_layers = self.custom_layers,
+  custom_layers:: API {
     mode: 'custom-layers',
     testFeature:: 'custom_layers_model',
   },
 
-  local custom_training_loop = API {
+  local custom_training_loop = self.custom_training_loop,
+  custom_training_loop:: API {
     mode: 'ctl',
     testFeature:: 'custom_training_loop',
   },
 
-  local feature_column = API {
+  local feature_column = self.feature_column,
+  feature_column:: API {
     mode: 'feature-column',
     testFeature:: 'feature_column',
   },
 
-  local rnn = API {
+  local rnn = self.rnn,
+  rnn:: API {
     mode: 'rnn',
     testFeature:: 'rnn',
   },
 
-  local preprocessing_layers = API {
+  local preprocessing_layers = self.preprocessing_layers,
+  preprocessing_layers:: API {
     mode: 'preprocess-layers',
     testFeature:: 'preprocessing_layers',
   },
 
-  local upsample = API {
+  local upsample = self.upsample,
+  upsample:: API {
     mode: 'upsample',
     testFeature:: 'upsample',
   },
 
-  local save_load_io_device_local = API {
+  local save_load_io_device_local = self.save_load_io_device_local,
+  save_load_io_device_local:: API {
     mode: 'save-load-localhost',
     testFeature:: 'save_and_load_io_device_local_drive',
   },
 
-  local save_and_load = API {
+  local save_and_load = self.save_and_load,
+  save_and_load:: API {
     mode: 'save-and-load',
     testFeature:: 'save_and_load.feature',
   },
 
-  local train_and_evaluate = API {
+  local train_and_evaluate = self.train_and_evaluate,
+  train_and_evaluate:: API {
     mode: 'train-and-evaluate',
     testFeature:: 'train_and_evaluate',
   },
 
-  local train_validation_dataset = API {
+  local train_validation_dataset = self.train_validation_dataset,
+  train_validation_dataset:: API {
     mode: 'train-eval-dataset',
     testFeature:: 'train_validation_dataset',
   },
 
-  local transfer_learning = API {
+  local transfer_learning = self.transfer_learning,
+  transfer_learning:: API {
     mode: 'transfer-learning',
     testFeature:: 'transfer_learning',
   },
 
-  local v2_8 = {
+  local v2_8 = self.v2_8,
+  v2_8:: {
     accelerator: tpus.v2_8,
     isTPUPod: false,
   },
 
-  local v2_32 = {
+  local v2_32 = self.v2_32,
+  v2_32:: {
     accelerator: tpus.v2_32,
     isTPUPod: true,
   },

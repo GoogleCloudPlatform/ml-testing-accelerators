@@ -42,7 +42,8 @@ local utils = import 'templates/utils.libsonnet';
   local command_copy_metrics = |||
     gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
   |||,
-  local roberta_base_fine = common.Convergence {
+  local roberta_base_fine = self.roberta_base_fine,
+  roberta_base_fine:: common.Convergence {
     modelName: 'hf-mlm-roberta-b-fine',
     command: utils.scriptCommand(
       |||
@@ -73,7 +74,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local bert_base_fine = common.Convergence {
+  local bert_base_fine = self.bert_base_fine,
+  bert_base_fine:: common.Convergence {
     modelName: 'hf-mlm-bert-b-fine',
     command: utils.scriptCommand(
       |||
@@ -104,7 +106,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local roberta_base_pre = common.Convergence {
+  local roberta_base_pre = self.roberta_base_pre,
+  roberta_base_pre:: common.Convergence {
     modelName: 'hf-mlm-roberta-b-pre',
     command: utils.scriptCommand(
       |||
@@ -135,7 +138,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local bert_base_pre = common.Convergence {
+  local bert_base_pre = self.bert_base_pre,
+  bert_base_pre:: common.Convergence {
     modelName: 'hf-mlm-bert-b-pre',
     command: utils.scriptCommand(
       |||
@@ -166,7 +170,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local hf_lm = common.PyTorchTest {
+  local hf_lm = self.hf_lm,
+  hf_lm:: common.PyTorchTest {
     modelName: 'hf-lm',
     podTemplate+:: {
       spec+: {
@@ -183,7 +188,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local tpuVm = common.PyTorchTpuVmMixin {
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=$(XLA_USE_BF16)
@@ -195,10 +201,12 @@ local utils = import 'templates/utils.libsonnet';
       |||,
     },
   },
-  local v2_8 = {
+  local v2_8 = self.v2_8,
+  v2_8:: {
     accelerator: tpus.v2_8,
   },
-  local v3_8 = {
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
   },
   configs: [
