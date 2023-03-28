@@ -34,7 +34,8 @@ local utils = import 'templates/utils.libsonnet';
     --config-dir fairseq/examples/wav2vec/config/pretraining   \
     --config-name wav2vec2_large_librivox_tpu.yaml \
   |||,
-  local w2v2 = common.PyTorchTest {
+  local w2v2 = self.w2v2,
+  w2v2:: common.PyTorchTest {
     modelName: 'w2v2',
 
     volumeMap+: {
@@ -43,12 +44,14 @@ local utils = import 'templates/utils.libsonnet';
     cpu: '9.0',
     memory: '30Gi',
   },
-  local func = common.Functional {
+  local func = self.func,
+  func:: common.Functional {
     command: utils.scriptCommand(
       command_common % 500
     ),
   },
-  local conv = common.Convergence {
+  local conv = self.conv,
+  conv:: common.Convergence {
     command: utils.scriptCommand(
       (command_common % 50000) + |||
         2>&1 | tee training_logs.txt
@@ -62,7 +65,8 @@ local utils = import 'templates/utils.libsonnet';
 
     ),
   },
-  local tpuVm = common.PyTorchTpuVmMixin {
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=$(XLA_USE_BF16)
@@ -76,7 +80,8 @@ local utils = import 'templates/utils.libsonnet';
       |||,
     },
   },
-  local v3_8 = {
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
   },
   configs: [

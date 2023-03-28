@@ -21,7 +21,8 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local mnist = common.PyTorchTest {
+  local mnist = self.mnist,
+  mnist:: common.PyTorchTest {
     modelName: 'mnist',
     volumeMap+: {
       datasets: common.datasetsVolume,
@@ -38,7 +39,8 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
 
-  local convergence = common.Convergence {
+  local convergence = self.convergence,
+  convergence:: common.Convergence {
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -59,7 +61,8 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   // DDP converges worse than MP.
-  local convergence_ddp = convergence {
+  local convergence_ddp = self.convergence_ddp,
+  convergence_ddp:: convergence {
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -80,13 +83,16 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
 
-  local v2_8 = {
+  local v2_8 = self.v2_8,
+  v2_8:: {
     accelerator: tpus.v2_8,
   },
-  local v4_8 = {
+  local v4_8 = self.v4_8,
+  v4_8:: {
     accelerator: tpus.v4_8,
   },
-  local gpu = common.GpuMixin {
+  local gpu = self.gpu,
+  gpu:: common.GpuMixin {
     // Disable XLA metrics report on GPU
     command+: [
       '--nometrics_debug',
@@ -95,21 +101,25 @@ local utils = import 'templates/utils.libsonnet';
       modelDir: null,
     },
   },
-  local v100x4 = gpu {
+  local v100x4 = self.v100x4,
+  v100x4:: gpu {
     accelerator: gpus.teslaV100 { count: 4 },
   },
 
-  local tpuVm = common.PyTorchTpuVmMixin {
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExtraSetup: |||
         pip install tensorboardX google-cloud-storage
       |||,
     },
   },
-  local pjrt = tpuVm + experimental.PjRt {
+  local pjrt = self.pjrt,
+  pjrt:: tpuVm + experimental.PjRt {
     modelName+: '-pjrt',
   },
-  local pjrt_ddp = {
+  local pjrt_ddp = self.pjrt_ddp,
+  pjrt_ddp:: {
     modelName+: '-ddp',
     command+: [
       '--ddp',

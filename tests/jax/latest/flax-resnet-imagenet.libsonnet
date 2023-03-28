@@ -16,24 +16,30 @@ local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 {
-  local functional = mixins.Functional {
+  local functional = self.functional,
+  functional:: mixins.Functional {
     extraFlags+:: ['--config.num_epochs=1'],
     extraConfig:: 'default.py',
   },
-  local convergence = mixins.Convergence {
+  local convergence = self.convergence,
+  convergence:: mixins.Convergence {
     extraConfig:: 'tpu.py',
   },
-  local v3_8 = {
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
   },
-  local v2_8 = {
+  local v2_8 = self.v2_8,
+  v2_8:: {
     accelerator: tpus.v2_8,
   },
-  local v3_32 = {
+  local v3_32 = self.v3_32,
+  v3_32:: {
     accelerator: tpus.v3_32,
     extraFlags+:: ['--config.batch_size=$((32*256))'],
   },
-  local imagenet = common.runFlaxLatest {
+  local imagenet = self.imagenet,
+  imagenet:: common.runFlaxLatest {
     folderName:: 'imagenet',
     modelName:: 'resnet-imagenet',
     extraDeps+:: ['tensorflow-cpu tensorflow-datasets'],

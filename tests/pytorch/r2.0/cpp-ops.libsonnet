@@ -19,7 +19,8 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local operations = common.PyTorchTest {
+  local operations = self.operations,
+  operations:: common.PyTorchTest {
     modelName: 'cpp-ops',
     command: [
       'bash',
@@ -34,7 +35,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local tpuVm = common.PyTorchTpuVmMixin {
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=$(XLA_USE_BF16)
@@ -46,10 +48,12 @@ local utils = import 'templates/utils.libsonnet';
       |||,
     },
   },
-  local v2_8 = {
+  local v2_8 = self.v2_8,
+  v2_8:: {
     accelerator: tpus.v2_8,
   },
-  local v3_8 = {
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
   },
 

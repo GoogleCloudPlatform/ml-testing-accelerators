@@ -16,7 +16,8 @@ local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 
 {
-  local compilationCacheTest = common.JaxTest + mixins.Functional {
+  local compilationCacheTest = self.compilationCacheTest,
+  compilationCacheTest:: common.JaxTest + mixins.Functional {
     modelName: 'compilation-cache-test',
 
     testScript:: |||
