@@ -98,14 +98,6 @@ PASS_FAIL_GRID_MODAL_STRING = """
       workload_link_html_element = `<br/><br/><a href="${workload_link}" target="_blank">Kubernetes Workload</a>`;
     }
 
-    var logs_download_html = '';
-    var logs_download_command = source.data['logs_download_command'][cb_data.source.selected.indices];
-    // String will be 'NaN' if no command exists.
-    if (logs_download_command.length > 3) {
-      var text_to_copy = `<input type="text" value="${logs_download_command}" id="textToCopy">`;
-      var copy_button = `<button onclick="function copyToClipboard(){var copyText = document.getElementById('textToCopy');copyText.select();copyText.setSelectionRange(0, 9999);document.execCommand('copy');} copyToClipboard();">Copy to clipboard</button>`;
-      logs_download_html = `<br/><br/><p>Command to download full logs:</p>${text_to_copy} &nbsp ${copy_button}`;
-    }
     modal_ele.innerHTML=`
       <div id="myModal" class="modal">
         <div class="modal-content">
@@ -114,7 +106,6 @@ PASS_FAIL_GRID_MODAL_STRING = """
           ${metrics_link_html}
           ${logs_link_html_element}
           ${workload_link_html_element}
-          ${logs_download_html}
         </div>
       </div>
     `;
@@ -136,21 +127,12 @@ METRICS_HISTORY_MODAL_STRING = """
     var link_to_logs = source.data['logs_link'][cb_data.source.selected.indices];
     var logs_link_html_element = `<a href="${link_to_logs}" target="_blank">Logs in Stackdriver</a>`;
 
-    var logs_download_html = '';
-    var logs_download_command = source.data['logs_download_command'][cb_data.source.selected.indices];
-    // String will be 'NaN' if no command exists.
-    if (logs_download_command.length > 3) {
-      var text_to_copy = `<input type="text" value="${logs_download_command}" id="textToCopy">`;
-      var copy_button = `<button onclick="function copyToClipboard(){var copyText = document.getElementById('textToCopy');copyText.select();copyText.setSelectionRange(0, 9999);document.execCommand('copy');} copyToClipboard();">Copy to clipboard</button>`;
-      logs_download_html = `<br/><br/><p>Command to download full logs:</p>${text_to_copy} &nbsp ${copy_button}`;
-    }
     modal_ele.innerHTML=`
       <div id="myModal" class="modal">
         <div class="modal-content">
           <span class="close">&times;</span>
           ${modal_header}
           ${logs_link_html_element}
-          ${logs_download_html}
         </div>
       </div>
     `;
