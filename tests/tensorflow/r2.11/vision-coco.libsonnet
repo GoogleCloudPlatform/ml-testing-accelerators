@@ -71,7 +71,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local convergence = common.Convergence,
+  local convergence = self.convergence,
+  convergence:: common.Convergence,
   local v2_8 = self.v2_8,
   v2_8:: {
     accelerator: tpus.v2_8,
@@ -105,7 +106,8 @@ local utils = import 'templates/utils.libsonnet';
   v4_32:: tpu_common {
     accelerator: tpus.v4_32,
   },
-  local tpuVm = common.tpuVm,
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.tpuVm,
 
   local functionalTests = [
     benchmark + accelerator + functional

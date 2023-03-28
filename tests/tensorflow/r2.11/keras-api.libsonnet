@@ -132,7 +132,8 @@ local utils = import 'templates/utils.libsonnet';
     isTPUPod: true,
   },
 
-  local tpuVm = common.tpuVm,
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.tpuVm,
 
   configs: [
     keras_test + v2_8 + connection,

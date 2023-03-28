@@ -132,7 +132,8 @@ local utils = import 'templates/utils.libsonnet';
     isTPUPod: true,
   },
 
-  local tpuVm = experimental.TensorFlowTpuVmMixin,
+  local tpuVm = self.tpuVm,
+  tpuVm:: experimental.TensorFlowTpuVmMixin,
 
   configs: [
     keras_test + v2_8 + connection,

@@ -250,7 +250,8 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
-  local tpuVm = common.tpuVm,
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.tpuVm,
 
   configs: [
     dlrm + functional + v3_8,
