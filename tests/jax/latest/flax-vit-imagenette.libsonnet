@@ -17,7 +17,8 @@ local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  local hf_vit_common = common.JaxTest + common.huggingFace {
+  local hf_vit_common = self.hf_vit_common,
+  hf_vit_common:: common.JaxTest + common.huggingFace {
     local config = self,
     frameworkPrefix: 'flax.latest',
     modelName:: 'vit-imagenette',
@@ -44,10 +45,12 @@ local tpus = import 'templates/tpus.libsonnet';
     ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
   },
 
-  local func = mixins.Functional {
+  local func = self.func,
+  func:: mixins.Functional {
     extraFlags+:: ['--model_type vit', '--num_train_epochs 5'],
   },
-  local conv = mixins.Convergence {
+  local conv = self.conv,
+  conv:: mixins.Convergence {
     extraFlags+:: ['--model_name_or_path google/vit-base-patch16-224-in21k', '--num_train_epochs 30'],
 
     metricConfig+: {
@@ -70,32 +73,41 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  local v2 = common.tpuVmBaseImage {
+  local v2 = self.v2,
+  v2:: common.tpuVmBaseImage {
     extraFlags+:: ['--per_device_train_batch_size 32', '--per_device_eval_batch_size 32'],
   },
-  local v3 = common.tpuVmBaseImage {
+  local v3 = self.v3,
+  v3:: common.tpuVmBaseImage {
     extraFlags+:: ['--per_device_train_batch_size 32', '--per_device_eval_batch_size 32'],
   },
-  local v4 = common.tpuVmV4Base {
+  local v4 = self.v4,
+  v4:: common.tpuVmV4Base {
     extraFlags+:: ['--per_device_train_batch_size 64', '--per_device_eval_batch_size 64'],
   },
 
-  local v2_8 = {
+  local v2_8 = self.v2_8,
+  v2_8:: {
     accelerator: tpus.v2_8,
   },
-  local v2_32 = {
+  local v2_32 = self.v2_32,
+  v2_32:: {
     accelerator: tpus.v2_32,
   },
-  local v3_8 = {
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
   },
-  local v3_32 = {
+  local v3_32 = self.v3_32,
+  v3_32:: {
     accelerator: tpus.v3_32,
   },
-  local v4_8 = {
+  local v4_8 = self.v4_8,
+  v4_8:: {
     accelerator: tpus.v4_8,
   },
-  local v4_32 = {
+  local v4_32 = self.v4_32,
+  v4_32:: {
     accelerator: tpus.v4_32,
   },
 

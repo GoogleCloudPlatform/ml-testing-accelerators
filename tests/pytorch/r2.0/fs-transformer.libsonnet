@@ -20,7 +20,8 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local transformer = common.PyTorchTest {
+  local transformer = self.transformer,
+  transformer:: common.PyTorchTest {
     local config = self,
 
     modelName: 'fs-transformer',
@@ -89,13 +90,15 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   // Run the test over a small subset of the data.
-  local base_functional = common.Functional {
+  local base_functional = self.base_functional,
+  base_functional:: common.Functional {
     paramsOverride+:: {
       logSteps: 10,
       inputShape: ['128x64'],
     },
   },
-  local checkpoint_local = base_functional {
+  local checkpoint_local = self.checkpoint_local,
+  checkpoint_local:: base_functional {
     modelName: 'fs-checkpoint-local',
     paramsOverride+:: {
       trainSubset: 'test',
@@ -114,7 +117,8 @@ local utils = import 'templates/utils.libsonnet';
       ]
     ),
   },
-  local checkpoint_gcs = base_functional {
+  local checkpoint_gcs = self.checkpoint_gcs,
+  checkpoint_gcs:: base_functional {
     modelName: 'fs-checkpoint-gcs',
     paramsOverride+:: {
       trainSubset: 'test',
@@ -147,7 +151,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local functional_no_save = base_functional {
+  local functional_no_save = self.functional_no_save,
+  functional_no_save:: base_functional {
     local config = self,
     paramsOverride+:: {
       trainSubset: 'valid',
@@ -160,7 +165,8 @@ local utils = import 'templates/utils.libsonnet';
     command: self.paramsOverride.trainCommand,
   },
 
-  local convergence = common.Convergence {
+  local convergence = self.convergence,
+  convergence:: common.Convergence {
     local config = self,
 
     paramsOverride+:: {
@@ -221,7 +227,8 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
 
-  local tpuVm = common.PyTorchTpuVmMixin {
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=$(XLA_USE_BF16)
@@ -236,20 +243,25 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
 
-  local pjrt = tpuVm + experimental.PjRt {
+  local pjrt = self.pjrt,
+  pjrt:: tpuVm + experimental.PjRt {
     modelName: 'fs-transformer-pjrt',
   },
 
-  local v3_8 = {
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
   },
-  local v3_32 = {
+  local v3_32 = self.v3_32,
+  v3_32:: {
     accelerator: tpus.v3_32,
   },
-  local v4_8 = {
+  local v4_8 = self.v4_8,
+  v4_8:: {
     accelerator: tpus.v4_8,
   },
-  local v4_32 = {
+  local v4_32 = self.v4_32,
+  v4_32:: {
     accelerator: tpus.v4_32,
   },
   configs: [

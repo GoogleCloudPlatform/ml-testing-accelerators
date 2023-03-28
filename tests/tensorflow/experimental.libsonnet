@@ -42,11 +42,11 @@ local mixins = import 'templates/mixins.libsonnet';
               |||
                 set -x
                 set -u
-                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                gcloud alpha compute tpus tpu-vm ssh xl-ml-test@$(cat /scripts/tpu_name) --zone=$(cat /scripts/zone) --ssh-key-file=/scripts/id_rsa --strict-host-key-checking=no --internal-ip --command \
                   'pip install -r /usr/share/tpu/models/official/requirements.txt'
-                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                gcloud alpha compute tpus tpu-vm ssh xl-ml-test@$(cat /scripts/tpu_name) --zone=$(cat /scripts/zone) --ssh-key-file=/scripts/id_rsa --strict-host-key-checking=no --internal-ip --command \
                   'pip install tensorflow-recommenders --no-deps'
-                ssh -i scripts/id_rsa -o StrictHostKeyChecking=no xl-ml-test@$(cat /scripts/tpu_ip) \
+                gcloud alpha compute tpus tpu-vm ssh xl-ml-test@$(cat /scripts/tpu_name) --zone=$(cat /scripts/zone) --ssh-key-file=/scripts/id_rsa --strict-host-key-checking=no --internal-ip --command \
                   'cd /usr/share/tpu/models; %(env)s '%(testCommand)s
                 exit_code=$?
                 bash /scripts/cleanup.sh

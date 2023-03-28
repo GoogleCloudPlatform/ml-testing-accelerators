@@ -20,7 +20,8 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local roberta = common.PyTorchTest {
+  local roberta = self.roberta,
+  roberta:: common.PyTorchTest {
     local config = self,
 
     modelName: 'roberta-pre',
@@ -82,7 +83,8 @@ local utils = import 'templates/utils.libsonnet';
     cpu: '9.0',
     memory: '30Gi',
   },
-  local functional = common.Functional {
+  local functional = self.functional,
+  functional:: common.Functional {
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -96,13 +98,15 @@ local utils = import 'templates/utils.libsonnet';
       wpsTarget: 10000,
     },
   },
-  local convergence = common.Convergence {
+  local convergence = self.convergence,
+  convergence:: common.Convergence {
     paramsOverride+: {
       maxEpoch: 5,
       wpsTarget: 19000,
     },
   },
-  local tpuVm = common.PyTorchTpuVmMixin {
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExtraSetup: |||
         git clone --recursive https://github.com/pytorch-tpu/examples.git tpu-examples/
@@ -111,10 +115,12 @@ local utils = import 'templates/utils.libsonnet';
       |||,
     },
   },
-  local v3_8 = {
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
   },
-  local v3_32 = {
+  local v3_32 = self.v3_32,
+  v3_32:: {
     accelerator: tpus.v3_32,
   },
   configs: [

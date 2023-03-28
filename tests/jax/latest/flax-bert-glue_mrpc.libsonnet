@@ -17,17 +17,20 @@ local latest_common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 {
-  local hf_bert_mrpc = latest_common.hfBertCommon {
+  local hf_bert_mrpc = self.hf_bert_mrpc,
+  hf_bert_mrpc:: latest_common.hfBertCommon {
     modelName+: '.mrpc',
     extraFlags+: ['--task_name mrpc', '--max_seq_length 128', '--eval_steps 100'],
   },
 
-  local functional = mixins.Functional {
+  local functional = self.functional,
+  functional:: mixins.Functional {
     extraFlags+: ['--num_train_epochs 1'],
     extraConfig:: 'default.py',
   },
 
-  local convergence = mixins.Convergence {
+  local convergence = self.convergence,
+  convergence:: mixins.Convergence {
     extraConfig:: 'default.py',
     extraFlags+: ['--num_train_epochs 3', '--learning_rate 2e-5', '--eval_steps 500'],
     metricConfig+: {
@@ -50,26 +53,33 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  local v2 = common.tpuVmBaseImage {
+  local v2 = self.v2,
+  v2:: common.tpuVmBaseImage {
     extraFlags+:: ['--per_device_train_batch_size 4', '--per_device_eval_batch_size 4'],
   },
-  local v3 = common.tpuVmBaseImage {
+  local v3 = self.v3,
+  v3:: common.tpuVmBaseImage {
     extraFlags+:: ['--per_device_train_batch_size 4', '--per_device_eval_batch_size 4'],
   },
-  local v4 = common.tpuVmV4Base {
+  local v4 = self.v4,
+  v4:: common.tpuVmV4Base {
     extraFlags+:: ['--per_device_train_batch_size 8', '--per_device_eval_batch_size 8'],
   },
 
-  local v2_8 = v2 {
+  local v2_8 = self.v2_8,
+  v2_8:: v2 {
     accelerator: tpus.v2_8,
   },
-  local v3_8 = v3 {
+  local v3_8 = self.v3_8,
+  v3_8:: v3 {
     accelerator: tpus.v3_8,
   },
-  local v4_8 = v4 {
+  local v4_8 = self.v4_8,
+  v4_8:: v4 {
     accelerator: tpus.v4_8,
   },
-  local v4_32 = v4 {
+  local v4_32 = self.v4_32,
+  v4_32:: v4 {
     accelerator: tpus.v4_32,
   },
 

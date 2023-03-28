@@ -19,7 +19,8 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local sd_model = common.PyTorchTest {
+  local sd_model = self.sd_model,
+  sd_model:: common.PyTorchTest {
     local config = self,
     modelName: 'sd-model',
     paramsOverride:: {
@@ -34,7 +35,8 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: self.paramsOverride.trainCommand,
   },
-  local tpuVm = common.PyTorchTpuVmMixin {
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExports+: |||
         export XRT_TPU_CONFIG="localservice;0;localhost:51011"
@@ -71,7 +73,8 @@ local utils = import 'templates/utils.libsonnet';
       |||,
     },
   },
-  local v4_8 = {
+  local v4_8 = self.v4_8,
+  v4_8:: {
     accelerator: tpus.v4_8,
   },
   configs: [

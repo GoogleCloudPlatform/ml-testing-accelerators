@@ -20,7 +20,8 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local dlrm = common.PyTorchTest {
+  local dlrm = self.dlrm,
+  dlrm:: common.PyTorchTest {
     local config = self,
 
     modelName: 'dlrm',
@@ -60,7 +61,8 @@ local utils = import 'templates/utils.libsonnet';
     cpu: '9.0',
     memory: '30Gi',
   },
-  local dlrm_convergence = common.PyTorchTest {
+  local dlrm_convergence = self.dlrm_convergence,
+  dlrm_convergence:: common.PyTorchTest {
     modelName: 'dlrm-convergence',
 
     volumeMap+: {
@@ -81,7 +83,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local one_core = common.Functional {
+  local one_core = self.one_core,
+  one_core:: common.Functional {
     modelName: 'dlrm-onecore',
     paramsOverride+:: {
       miniBatchSize: 256,
@@ -96,7 +99,8 @@ local utils = import 'templates/utils.libsonnet';
       ||| % utils.toCommandString(self.paramsOverride.trainCommand),
     ),
   },
-  local seq_fwd = common.Functional {
+  local seq_fwd = self.seq_fwd,
+  seq_fwd:: common.Functional {
     modelName: 'dlrm-seq-fwd',
     paramsOverride+:: {
       miniBatchSize: 2048,
@@ -110,7 +114,8 @@ local utils = import 'templates/utils.libsonnet';
       ||| % utils.toCommandString(self.paramsOverride.trainCommand),
     ),
   },
-  local mp_fwd = common.Functional {
+  local mp_fwd = self.mp_fwd,
+  mp_fwd:: common.Functional {
     modelName: 'dlrm-mp-fwd',
     paramsOverride+:: {
       miniBatchSize: 2048,
@@ -123,7 +128,8 @@ local utils = import 'templates/utils.libsonnet';
       ||| % utils.toCommandString(self.paramsOverride.trainCommand),
     ),
   },
-  local mp_dp_fwd = common.Functional {
+  local mp_dp_fwd = self.mp_dp_fwd,
+  mp_dp_fwd:: common.Functional {
     modelName: 'dlrm-mpdp-fwd',
     paramsOverride+:: {
       miniBatchSize: 2048,
@@ -138,7 +144,8 @@ local utils = import 'templates/utils.libsonnet';
     ),
   },
 
-  local criteo_kaggle = common.Convergence {
+  local criteo_kaggle = self.criteo_kaggle,
+  criteo_kaggle:: common.Convergence {
     paramsOverride+:: {
       miniBatchSize: 128,
       archSparseFeatureSize: 16,
@@ -173,7 +180,8 @@ local utils = import 'templates/utils.libsonnet';
     ),
   },
 
-  local tpuVm = common.PyTorchTpuVmMixin {
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExtraSetup: |||
         pip3 install tqdm scikit-learn tensorboardX google-cloud-storage
@@ -186,17 +194,21 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
 
-  local pjrt = tpuVm + experimental.PjRt {
+  local pjrt = self.pjrt,
+  pjrt:: tpuVm + experimental.PjRt {
     modelName: 'dlrm-pjrt',
   },
 
-  local v3_8 = {
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
   },
-  local v4_8 = {
+  local v4_8 = self.v4_8,
+  v4_8:: {
     accelerator: tpus.v4_8,
   },
-  local v4_32 = {
+  local v4_32 = self.v4_32,
+  v4_32:: {
     accelerator: tpus.v4_32,
   },
   configs: [
