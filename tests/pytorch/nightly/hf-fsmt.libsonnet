@@ -41,7 +41,6 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local convergence = self.convergence,
   convergence:: common.Convergence,
-  convergence:: common.Convergence,
 
   local v4_8 = self.v4_8,
   v4_8:: {
