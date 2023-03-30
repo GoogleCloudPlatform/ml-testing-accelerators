@@ -10,9 +10,10 @@ local tpus = import 'templates/tpus.libsonnet';
   local lmspmd2b_ckpt = lmspmd2b {
     modelName:: 'lmspmd2b-ckpt',
     testScript+: |||
-    gsutil -m cp "$(PAX_DIR)/lmcloudspmd2B/pax-nightly-lmspmd2b-func-v4-8-1vm-run1/\DIR*" $(MODEL_DIR) 
-    |||
+      gsutil -m cp "$(PAX_DIR)/lmcloudspmd2B/pax-nightly-lmspmd2b-func-v4-8-1vm-run1/\DIR*" $(MODEL_DIR)
+    |||,
   },
+
   local v4_8 = {
     accelerator: tpus.v4_8,
   },
