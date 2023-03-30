@@ -38,4 +38,4 @@ data:
   XLNET_CHECKPOINT_DIR: gs://cloud-tpu-checkpoints/xlnet/keras_xlnet
   XLNET_IMDB_DIR: gs://xl-ml-test-us-central2/data/xlnet-imdb
   XLNET_SQUAD_DIR: gs://xl-ml-test-us-central2/data/xlnet-squad
-  PAX_LMCLOUDSPMD2B_CKPT_DIR: gs://xl-ml-test-us-central2/data/pax-lmcloudspmd2B
+  PAX_DIR: gs://xl-ml-test-us-central2/data/pax
