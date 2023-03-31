@@ -24,7 +24,7 @@ validate()
     exit
   fi
 
-  region=us-central2
+  region=$(jsonnet -J . -S tests/get_cluster.jsonnet --tla-str test=$test_name)
 
   echo "Args:"
   echo "Test name:   " $test_name
@@ -83,7 +83,7 @@ run()
     temp_file=$(mktemp)
     jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$test_name > $temp_file
 
-    job_name=$(kubectl create -f $temp_file -n automated -o name)
+    job_name=$(kubectl create -f $temp_file -o name)
 
     echo "GKE job name: ${job_name#job.batch/}"
     kubectl wait --for=condition=ready --timeout=10m pod -l job-name=${job_name#job.batch/}

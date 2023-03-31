@@ -9,6 +9,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
   local lmspmd2b_ckpt = common.NightlyPaxTest + common.Functional {
     local config = self,
+    expPath:: 'tasks.lm.params.lm_cloud.LmCloudSpmd2BLimitSteps',
     modelName:: 'lmspmd2b-ckpt',
 
     // PAX tests are structured as bash scripts that run directly on the Cloud
@@ -21,7 +22,7 @@ local tpus = import 'templates/tpus.libsonnet';
       # .bash_logout sometimes causes a spurious bad exit code, remove it.
       rm .bash_logout
 
-      gsutil -m cp "$(PAX_DIR)/lmcloudspmd2B/pax-nightly-lmspmd2b-func-v4-8-1vm-run1/\*" $(MODEL_DIR)
+      gsutil -m cp -r "$(PAX_DIR)/lmcloudspmd2B/pax-nightly-lmspmd2b-func-v4-8-1vm-run1/*" $(MODEL_DIR)
 
       # check for nightly build
       gsutil cp gs://pax-on-cloud-tpu-project/wheels/%(buildDate)s/paxml*.whl .
