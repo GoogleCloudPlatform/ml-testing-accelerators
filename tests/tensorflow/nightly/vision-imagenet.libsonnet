@@ -108,5 +108,6 @@ local utils = import 'templates/utils.libsonnet';
   configs: functionalTests + convergenceTests + [
     resnet + v4_8 + functional + tpuVm,
     resnet + v4_32 + convergence + tpuVm,
+    resnet_rs + v4lite_4 + functional + tpuVm,
   ],
 }

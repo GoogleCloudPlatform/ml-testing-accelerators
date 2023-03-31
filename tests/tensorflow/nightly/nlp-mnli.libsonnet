@@ -62,6 +62,10 @@ local utils = import 'templates/utils.libsonnet';
   v3_8:: {
     accelerator: tpus.v3_8,
   },
+  local v4lite_4 = self.v4lite_4,
+  v4lite_4:: {
+    accelerator: tpus.v4lite_4,
+  },
   local v2_32 = self.v2_32,
   v2_32:: {
     accelerator: tpus.v2_32,
@@ -70,11 +74,13 @@ local utils = import 'templates/utils.libsonnet';
   v3_32:: {
     accelerator: tpus.v3_32,
   },
+  local tpuVm = experimental.TensorFlowTpuVmMixin,
   configs: [
     bert + accelerator + functional
     for accelerator in [v2_8, v3_8]
   ] + [
     bert + v2_32 + convergence,
     bert + v3_32 + convergence,
+    bert + v4lite_4 + functional + tpuVm,
   ],
 }
