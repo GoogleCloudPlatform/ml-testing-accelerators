@@ -40,7 +40,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
       python3 .local/lib/python3.8/site-packages/paxml/main.py --exp=%(expPath)s --job_log_dir=$(MODEL_DIR) %(extraFlags)s
     ||| % { expPath: config.expPath, extraFlags: std.join(' ', config.extraFlags) },
-  },  
+  },
   local v4_8 = {
     accelerator: tpus.v4_8,
   },
