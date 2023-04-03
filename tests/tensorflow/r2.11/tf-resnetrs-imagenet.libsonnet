@@ -27,7 +27,8 @@ local utils = import 'templates/utils.libsonnet';
       configFiles: ['official/vision/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml'],
     },
   },
-  local functional = common.Functional {
+  local functional = self.functional,
+  functional:: common.Functional {
     scriptConfig+: {
       paramsOverride+: {
         trainer: {
@@ -37,8 +38,10 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local convergence = common.Convergence,
-  local v2_8 = {
+  local convergence = self.convergence,
+  convergence:: common.Convergence,
+  local v2_8 = self.v2_8,
+  v2_8:: {
     accelerator: tpus.v2_8,
     scriptConfig+: {
       paramsOverride+: {
@@ -53,22 +56,28 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local v3_8 = {
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
   },
-  local v2_32 = {
+  local v2_32 = self.v2_32,
+  v2_32:: {
     accelerator: tpus.v2_32,
   },
-  local v3_32 = {
+  local v3_32 = self.v3_32,
+  v3_32:: {
     accelerator: tpus.v3_32,
   },
-  local v4_8 = {
+  local v4_8 = self.v4_8,
+  v4_8:: {
     accelerator: tpus.v4_8,
   },
-  local v4_32 = {
+  local v4_32 = self.v4_32,
+  v4_32:: {
     accelerator: tpus.v4_32,
   },
-  local tpuVm = common.tpuVm,
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.tpuVm,
 
   local functionalTests = [
     resnet_rs + v2_8 + functional,

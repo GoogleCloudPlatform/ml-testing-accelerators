@@ -20,7 +20,8 @@ local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  local resnet50 = common.PyTorchTest {
+  local resnet50 = self.resnet50,
+  resnet50:: common.PyTorchTest {
     modelName: 'resnet50-mp',
     command: [
       'python3',
@@ -41,19 +42,22 @@ local tpus = import 'templates/tpus.libsonnet';
     memory: '400Gi',
   },
 
-  local fake_data = common.Functional {
+  local fake_data = self.fake_data,
+  fake_data:: common.Functional {
     mode: 'fake',
     command+: [
       '--fake_data',
     ],
   },
-  local functional = common.Functional {
+  local functional = self.functional,
+  functional:: common.Functional {
     command+: [
       '--num_epochs=2',
       '--datadir=/datasets/imagenet-mini',
     ],
   },
-  local convergence = common.Convergence {
+  local convergence = self.convergence,
+  convergence:: common.Convergence {
     local config = self,
 
     command+: [
@@ -81,7 +85,8 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
   // DDP converges worse than MP.
-  local convergence_ddp = convergence {
+  local convergence_ddp = self.convergence_ddp,
+  convergence_ddp:: convergence {
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -102,23 +107,28 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  local v3_8 = {
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
   },
-  local v3_32 = {
+  local v3_32 = self.v3_32,
+  v3_32:: {
     accelerator: tpus.v3_32,
   },
-  local v4_8 = {
+  local v4_8 = self.v4_8,
+  v4_8:: {
     accelerator: tpus.v4_8,
     // Keep same global batch size as v3
     command+: ['--batch_size=256'],
   },
-  local v4_32 = {
+  local v4_32 = self.v4_32,
+  v4_32:: {
     accelerator: tpus.v4_32,
     command+: ['--batch_size=256'],
   },
 
-  local gpu = common.GpuMixin {
+  local gpu = self.gpu,
+  gpu:: common.GpuMixin {
     cpu: '7.0',
     memory: '40Gi',
 
@@ -130,11 +140,13 @@ local tpus = import 'templates/tpus.libsonnet';
       modelDir: null,
     },
   },
-  local v100x4 = gpu {
+  local v100x4 = self.v100x4,
+  v100x4:: gpu {
     accelerator: gpus.teslaV100 { count: 4 },
   },
 
-  local xrt_ddp = {
+  local xrt_ddp = self.xrt_ddp,
+  xrt_ddp:: {
     modelName+: '-torch-ddp',
     tpuSettings+: {
       tpuVmExports+: |||
@@ -146,7 +158,8 @@ local tpus = import 'templates/tpus.libsonnet';
       '--ddp',
     ],
   },
-  local pjrt_ddp = {
+  local pjrt_ddp = self.pjrt_ddp,
+  pjrt_ddp:: {
     modelName+: '-ddp',
     command+: [
       '--ddp',
@@ -154,14 +167,16 @@ local tpus = import 'templates/tpus.libsonnet';
     ],
   },
 
-  local tpuVm = common.PyTorchTpuVmMixin {
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExtraSetup: |||
         pip install tensorboardX google-cloud-storage
       |||,
     },
   },
-  local pjrt = tpuVm + experimental.PjRt {
+  local pjrt = self.pjrt,
+  pjrt:: tpuVm + experimental.PjRt {
     modelName: 'resnet50-pjrt',
   },
 

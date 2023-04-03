@@ -29,7 +29,8 @@ local utils = import 'templates/utils.libsonnet';
   local command_copy_metrics = |||
     gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
   |||,
-  local bert_base_cased = common.Convergence {
+  local bert_base_cased = self.bert_base_cased,
+  bert_base_cased:: common.Convergence {
     modelName: 'hf-glue-bert-b-c',
     paramsOverride+:: {
       model_name_or_path: 'bert-base-cased',
@@ -55,7 +56,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local hf_glue = common.PyTorchTest {
+  local hf_glue = self.hf_glue,
+  hf_glue:: common.PyTorchTest {
     local config = self,
     modelName: 'hf-glue',
     paramsOverride:: {
@@ -87,9 +89,9 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: utils.scriptCommand(
       |||
-        %s 
-        %s 
-        %s 
+        %s
+        %s
+        %s
       ||| % [
         command_common,
         utils.toCommandString(self.paramsOverride.trainCommand),
@@ -111,7 +113,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local xlnet_large_cased = common.Convergence {
+  local xlnet_large_cased = self.xlnet_large_cased,
+  xlnet_large_cased:: common.Convergence {
     modelName: 'hf-glue-xlnet-l-c',
     paramsOverride+:: {
       model_name_or_path: 'xlnet-large-cased',
@@ -137,7 +140,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local roberta_large = common.Convergence {
+  local roberta_large = self.roberta_large,
+  roberta_large:: common.Convergence {
     modelName: 'hf-glue-roberta-l',
     paramsOverride+:: {
       model_name_or_path: 'roberta-large',
@@ -163,7 +167,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local distilbert_base_uncased = common.Convergence {
+  local distilbert_base_uncased = self.distilbert_base_uncased,
+  distilbert_base_uncased:: common.Convergence {
     modelName: 'hf-glue-distilbert-b-uc',
     paramsOverride+:: {
       model_name_or_path: 'distilbert-base-uncased',
@@ -189,7 +194,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local tpuVm = common.PyTorchTpuVmMixin {
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=$(XLA_USE_BF16)
@@ -199,16 +205,20 @@ local utils = import 'templates/utils.libsonnet';
       |||,
     },
   },
-  local pjrt = tpuVm + experimental.PjRt {
+  local pjrt = self.pjrt,
+  pjrt:: tpuVm + experimental.PjRt {
     modelName: 'hf-glue-pjrt',
   },
-  local v2_8 = {
+  local v2_8 = self.v2_8,
+  v2_8:: {
     accelerator: tpus.v2_8,
   },
-  local v3_8 = {
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
   },
-  local v4_8 = {
+  local v4_8 = self.v4_8,
+  v4_8:: {
     accelerator: tpus.v4_8,
   },
   configs: [
