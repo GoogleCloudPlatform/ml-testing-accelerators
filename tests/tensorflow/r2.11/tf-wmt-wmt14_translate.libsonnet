@@ -17,9 +17,8 @@ local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  local transformer = self.transformer,
-  transformer:: common.TfNlpTest {
-    modelName: 'nlp-wmt-transformer',
+  local transformer = common.TfNlpTest {
+    modelName: 'wmt-wmt14.translate',
     scriptConfig+: {
       experiment: 'wmt_transformer/large',
       paramsOverride+: {

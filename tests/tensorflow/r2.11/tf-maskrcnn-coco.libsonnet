@@ -20,20 +20,7 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local coco = self.coco,
-  coco:: {
-    scriptConfig+: {
-      trainFilePattern: '$(COCO_DIR)/train*',
-      evalFilePattern: '$(COCO_DIR)/val*',
-      paramsOverride+: {
-        task+: {
-          annotation_file: '$(COCO_DIR)/instances_val2017.json',
-        },
-      },
-    },
-  },
-  local tpu_common = self.tpu_common,
-  tpu_common:: {
+  local tpu_common = {
     local config = self,
     scriptConfig+: {
       paramsOverride+: {
@@ -45,22 +32,13 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local retinanet = self.retinanet,
-  retinanet:: common.TfVisionTest + coco {
-    modelName: 'vision-retinanet',
-    scriptConfig+: {
-      experiment: 'retinanet_resnetfpn_coco',
-    },
-  },
-  local maskrcnn = self.maskrcnn,
-  maskrcnn:: common.TfVisionTest + coco {
-    modelName: 'vision-maskrcnn',
+  local maskrcnn = common.TfVisionTest + common.coco {
+    modelName: 'maskrcnn-coco',
     scriptConfig+: {
       experiment: 'maskrcnn_resnetfpn_coco',
     },
   },
-  local functional = self.functional,
-  functional:: common.Functional {
+  local functional = common.Functional {
     scriptConfig+: {
       paramsOverride+: {
         trainer+: {
@@ -71,10 +49,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local convergence = self.convergence,
-  convergence:: common.Convergence,
-  local v2_8 = self.v2_8,
-  v2_8:: {
+  local convergence = common.Convergence,
+  local v2_8 = {
     accelerator: tpus.v2_8,
     scriptConfig+: {
       paramsOverride+: {
@@ -86,43 +62,32 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local v3_8 = self.v3_8,
-  v3_8:: tpu_common {
+  local v3_8 = tpu_common {
     accelerator: tpus.v3_8,
   },
-  local v2_32 = self.v2_32,
-  v2_32:: tpu_common {
+  local v2_32 = tpu_common {
     accelerator: tpus.v2_32,
   },
-  local v3_32 = self.v3_32,
-  v3_32:: tpu_common {
+  local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
   },
-  local v4_8 = self.v4_8,
-  v4_8:: tpu_common {
+  local v4_8 = tpu_common {
     accelerator: tpus.v4_8,
   },
-  local v4_32 = self.v4_32,
-  v4_32:: tpu_common {
+  local v4_32 = tpu_common {
     accelerator: tpus.v4_32,
   },
-  local tpuVm = self.tpuVm,
-  tpuVm:: common.tpuVm,
+  local tpuVm = common.tpuVm,
 
   local functionalTests = [
-    benchmark + accelerator + functional
-    for benchmark in [retinanet, maskrcnn]
-    for accelerator in [v2_8, v3_8]
+    maskrcnn + v2_8 + functional,
+    maskrcnn + v3_8 + functional,
   ],
   local convergenceTests = [
-    retinanet + v2_32 + convergence + timeouts.Hours(15),
-    retinanet + v3_32 + convergence + timeouts.Hours(15),
     maskrcnn + v2_32 + convergence + timeouts.Hours(15),
     maskrcnn + v3_32 + convergence + timeouts.Hours(15),
   ],
   configs: functionalTests + convergenceTests + [
-    retinanet + v4_8 + functional + tpuVm,
-    retinanet + v4_32 + convergence + tpuVm,
     maskrcnn + v4_8 + functional + tpuVm,
     maskrcnn + v4_32 + convergence + tpuVm,
   ],

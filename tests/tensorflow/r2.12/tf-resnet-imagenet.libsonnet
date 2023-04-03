@@ -20,34 +20,18 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local bert = self.bert,
-  bert:: common.TfNlpTest {
-    modelName: 'nlp-bert-mnli',
+  local resnet = common.TfVisionTest + common.imagenet {
+    modelName: 'resnet-imagenet',
     scriptConfig+: {
-      experiment: 'bert/sentence_prediction_text',
-      configFiles: [
-        'official/nlp/configs/experiments/glue_mnli_text.yaml',
-      ],
-      paramsOverride+: {
-        task+: {
-          init_checkpoint+: '$(TF_NLP_BERT_DIR)/uncased_L-12_H-768_A-12/bert_model.ckpt',
-          train_data+: {
-            vocab_file: '$(TF_NLP_BERT_DIR)/uncased_L-12_H-768_A-12/vocab.txt',
-          },
-          validation_data+: {
-            vocab_file: '$(TF_NLP_BERT_DIR)/uncased_L-12_H-768_A-12/vocab.txt',
-          },
-        },
-      },
+      experiment: 'resnet_imagenet',
     },
   },
-  local functional = self.functional,
-  functional:: common.Functional {
+  local functional = common.Functional {
     scriptConfig+: {
       paramsOverride+: {
-        trainer+: {
-          train_steps: 2000,
-          validation_interval: 1000,
+        trainer: {
+          train_steps: 320,
+          validation_interval: 320,
         },
       },
     },
@@ -57,6 +41,18 @@ local utils = import 'templates/utils.libsonnet';
   local v2_8 = self.v2_8,
   v2_8:: {
     accelerator: tpus.v2_8,
+    scriptConfig+: {
+      paramsOverride+: {
+        task+: {
+          train_data+: {
+            global_batch_size: 1024,
+          },
+          validation_data+: {
+            global_batch_size: 1024,
+          },
+        },
+      },
+    },
   },
   local v3_8 = self.v3_8,
   v3_8:: {
@@ -70,11 +66,27 @@ local utils = import 'templates/utils.libsonnet';
   v3_32:: {
     accelerator: tpus.v3_32,
   },
-  configs: [
-    bert + accelerator + functional
-    for accelerator in [v2_8, v3_8]
-  ] + [
-    bert + v2_32 + convergence,
-    bert + v3_32 + convergence,
+  local v4_8 = self.v4_8,
+  v4_8:: {
+    accelerator: tpus.v4_8,
+  },
+  local v4_32 = self.v4_32,
+  v4_32:: {
+    accelerator: tpus.v4_32,
+  },
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.tpuVm,
+
+  local functionalTests = [
+    resnet + v2_8 + functional,
+    resnet + v3_8 + functional,
+  ],
+  local convergenceTests = [
+    resnet + v2_32 + convergence + tpuVm,
+    resnet + v3_32 + convergence + tpuVm,
+  ],
+  configs: functionalTests + convergenceTests + [
+    resnet + v4_8 + functional + tpuVm,
+    resnet + v4_32 + convergence + tpuVm,
   ],
 }

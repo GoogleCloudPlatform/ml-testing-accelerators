@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,35 +20,31 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local imagenet = self.imagenet,
-  imagenet:: {
-    scriptConfig+: {
-      trainFilePattern: '$(IMAGENET_DIR)/train*',
-      evalFilePattern: '$(IMAGENET_DIR)/valid*',
-    },
-  },
-  local resnet = self.resnet,
-  resnet:: common.TfVisionTest + imagenet {
-    modelName: 'vision-resnet',
-    scriptConfig+: {
-      experiment: 'resnet_imagenet',
-    },
-  },
-  local resnet_rs = self.resnet_rs,
-  resnet_rs:: common.TfVisionTest + imagenet {
-    modelName: 'vision-resnetrs',
-    scriptConfig+: {
-      experiment: 'resnet_rs_imagenet',
-      configFiles: ['official/vision/configs/experiments/image_classification/imagenet_resnetrs50_i160.yaml'],
-    },
-  },
-  local functional = self.functional,
-  functional:: common.Functional {
+  local tpu_common = {
+    local config = self,
     scriptConfig+: {
       paramsOverride+: {
-        trainer: {
-          train_steps: 320,
-          validation_interval: 320,
+        task+: {
+          validation_data+: {
+            global_batch_size: 8 * config.accelerator.replicas,
+          },
+        },
+      },
+    },
+  },
+  local retinanet = common.TfVisionTest + common.coco {
+    modelName: 'retinanet-coco',
+    scriptConfig+: {
+      experiment: 'retinanet_resnetfpn_coco',
+    },
+  },
+  local functional = common.Functional {
+    scriptConfig+: {
+      paramsOverride+: {
+        trainer+: {
+          train_steps: 400,
+          validation_interval: 200,
+          validation_steps: 100,
         },
       },
     },
@@ -62,51 +58,45 @@ local utils = import 'templates/utils.libsonnet';
       paramsOverride+: {
         task+: {
           train_data+: {
-            global_batch_size: 1024,
-          },
-          validation_data+: {
-            global_batch_size: 1024,
+            global_batch_size: 64,
           },
         },
       },
     },
   },
   local v3_8 = self.v3_8,
-  v3_8:: {
+  v3_8:: tpu_common {
     accelerator: tpus.v3_8,
   },
   local v2_32 = self.v2_32,
-  v2_32:: {
+  v2_32:: tpu_common {
     accelerator: tpus.v2_32,
   },
   local v3_32 = self.v3_32,
-  v3_32:: {
+  v3_32:: tpu_common {
     accelerator: tpus.v3_32,
   },
   local v4_8 = self.v4_8,
-  v4_8:: {
+  v4_8:: tpu_common {
     accelerator: tpus.v4_8,
   },
   local v4_32 = self.v4_32,
-  v4_32:: {
+  v4_32:: tpu_common {
     accelerator: tpus.v4_32,
   },
   local tpuVm = self.tpuVm,
   tpuVm:: common.tpuVm,
 
   local functionalTests = [
-    benchmark + accelerator + functional
-    for benchmark in [resnet, resnet_rs]
-    for accelerator in [v2_8, v3_8]
+    retinanet + v2_8 + functional,
+    retinanet + v3_8 + functional,
   ],
   local convergenceTests = [
-    resnet + v2_32 + convergence + tpuVm,
-    resnet + v3_32 + convergence + tpuVm,
-    resnet_rs + v2_32 + convergence + tpuVm + timeouts.Hours(15),
-    resnet_rs + v3_32 + convergence + tpuVm + timeouts.Hours(15),
+    retinanet + v2_32 + convergence + timeouts.Hours(15),
+    retinanet + v3_32 + convergence + timeouts.Hours(15),
   ],
   configs: functionalTests + convergenceTests + [
-    resnet + v4_8 + functional + tpuVm,
-    resnet + v4_32 + convergence + tpuVm,
+    retinanet + v4_8 + functional + tpuVm,
+    retinanet + v4_32 + convergence + tpuVm,
   ],
 }
