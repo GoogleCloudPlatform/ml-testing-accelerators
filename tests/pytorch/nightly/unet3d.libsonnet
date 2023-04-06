@@ -20,7 +20,7 @@ local utils = import 'templates/utils.libsonnet';
 
 {
   local command_common = |||
-    git clone https://github.com/pytorch-tpu/training.git unet3d_test 
+    git clone https://github.com/pytorch-tpu/training.git unet3d_test
     pip3 install -r unet3d_test/image_segmentation/pytorch/requirements.txt
     pip3 install tqdm
 
@@ -45,7 +45,8 @@ local utils = import 'templates/utils.libsonnet';
     --debug \
     --device xla
   |||,
-  local unet3d = common.PyTorchTest {
+  local unet3d = self.unet3d,
+  unet3d:: common.PyTorchTest {
     modelName: 'unet3d',
 
     volumeMap+: {
@@ -54,7 +55,8 @@ local utils = import 'templates/utils.libsonnet';
     cpu: '9.0',
     memory: '30Gi',
   },
-  local conv = common.Convergence {
+  local conv = self.conv,
+  conv:: common.Convergence {
     command: utils.scriptCommand(
       |||
         %(command_common)s \
@@ -68,10 +70,12 @@ local utils = import 'templates/utils.libsonnet';
       ||| % command_common
     ),
   },
-  local v3_8 = {
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
   },
-  local tpuVm = common.PyTorchTpuVmMixin {
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.PyTorchTpuVmMixin {
 
     tpuSettings+: {
 

@@ -17,34 +17,42 @@ local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 {
-  local functional = mixins.Functional {
+  local functional = self.functional,
+  functional:: mixins.Functional {
     extraFlags+:: ['--config.num_train_steps=10', '--config.per_device_batch_size=16'],
     extraConfig:: 'default.py',
   },
-  local convergence = mixins.Convergence {
+  local convergence = self.convergence,
+  convergence:: mixins.Convergence {
     extraConfig:: 'default.py',
     extraFlags+:: ['--config.reverse_translation=True', '--config.per_device_batch_size=32', '--config.num_train_steps=70000'],
   },
-  local profile = mixins.Functional {
+  local profile = self.profile,
+  profile:: mixins.Functional {
     mode: 'profile',
     extraFlags+:: ['--config.num_train_steps=40', '--config.per_device_batch_size=16'],
     extraConfig:: 'default.py',
   },
-  local v3_8 = {
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
   },
-  local v3_32 = {
+  local v3_32 = self.v3_32,
+  v3_32:: {
     accelerator: tpus.v3_32,
   },
-  local v2_8 = {
+  local v2_8 = self.v2_8,
+  v2_8:: {
     accelerator: tpus.v2_8,
   },
-  local wmt = common.runFlaxLatest {
+  local wmt = self.wmt,
+  wmt:: common.runFlaxLatest {
     folderName:: 'wmt',
     modelName:: 'wmt-wmt17.translate',
     extraDeps+:: ['tensorflow-cpu tensorflow-datasets tensorflow_text sentencepiece'],
   },
-  local wmt_profiling = wmt {
+  local wmt_profiling = self.wmt_profiling,
+  wmt_profiling:: wmt {
     local config = self,
     testScript+:: |||
       gsutil -q stat $(MODEL_DIR)/plugins/profile/*/*.xplane.pb

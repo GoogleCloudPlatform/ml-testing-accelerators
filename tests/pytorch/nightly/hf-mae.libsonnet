@@ -29,7 +29,8 @@ local utils = import 'templates/utils.libsonnet';
   local command_copy_metrics = |||
     gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
   |||,
-  local hf_mae = common.PyTorchTest {
+  local hf_mae = self.hf_mae,
+  hf_mae:: common.PyTorchTest {
     local config = self,
     modelName: 'hf-mae',
     paramsOverride:: {
@@ -69,9 +70,9 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: utils.scriptCommand(
       |||
-        %s 
-        %s 
-        %s 
+        %s
+        %s
+        %s
       ||| % [
         command_common,
         utils.toCommandString(self.paramsOverride.trainCommand),
@@ -93,7 +94,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local hf_vit_mae = common.Convergence {
+  local hf_vit_mae = self.hf_vit_mae,
+  hf_vit_mae:: common.Convergence {
     modelName: 'hf-vit-mae',
     paramsOverride+:: {
       model_name: 'vit-mae',
@@ -119,7 +121,8 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local tpuVm = common.PyTorchTpuVmMixin {
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=$(XLA_USE_BF16)
@@ -129,16 +132,20 @@ local utils = import 'templates/utils.libsonnet';
       |||,
     },
   },
-  local pjrt = tpuVm + experimental.PjRt {
+  local pjrt = self.pjrt,
+  pjrt:: tpuVm + experimental.PjRt {
     modelName: 'hf-vit-mae-pjrt',
   },
-  local v2_8 = {
+  local v2_8 = self.v2_8,
+  v2_8:: {
     accelerator: tpus.v2_8,
   },
-  local v3_8 = {
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
   },
-  local v4_8 = {
+  local v4_8 = self.v4_8,
+  v4_8:: {
     accelerator: tpus.v4_8,
   },
   configs: [

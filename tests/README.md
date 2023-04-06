@@ -22,12 +22,10 @@ To list all of the correctly configured tests, you can run
 ```bash
 $ ./scripts/list-tests.sh
 + jsonnet -J . -S tests/list_tests.jsonnet
-flax-latest-imagenet-conv-v3-32-1vm
-flax-latest-imagenet-conv-v3-8-1vm
-flax-latest-imagenet-func-v2-8-1vm
-flax-latest-imagenet-func-v3-32-1vm
-flax-latest-vit-conv-v3-8-1vm
-flax-latest-vit-func-v2-8-1vm
+flax.latest-resnet-imagenet-conv-v3-32
+flax.latest-resnet-imagenet-func-v2-8
+flax.latest-vit-imagenette-conv-v3-32
+flax.latest-vit-imagenette-conv-v4-32
 ...
 ```
 
@@ -40,7 +38,7 @@ correctly, or to extract the correct name to run a one shot test.
 To manually run one shot tests, first [connect to a cluster](https://console.cloud.google.com/kubernetes/list) and then run the following:
 
 ```bash
-export TEST_NAME=tf-nightly-mnist-func-v2-8
+export TEST_NAME=tf.nightly-resnet-imagenet-func-v2-8
 jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$TEST_NAME | kubectl create -f -
 ```
 
@@ -50,7 +48,7 @@ For convenience, the steps of connecting to a cluster and running a one shot
 test have been combined into a single script as follows:
 
 ```bash
-export TEST_NAME=tf-nightly-mnist-func-v2-8
+export TEST_NAME=tf.nightly-resnet-imagenet-func-v2-8
 ./scripts/run-oneshot.sh -t $TEST_NAME
 ```
 
@@ -68,6 +66,17 @@ In case you want to run multiple tests, you might find it convenient to combine 
 ```
 
 Please be mindful of the resources in the project before running this.
+
+
+### Scheduling jobs for all tests of a given type
+
+If you want to run a group of tests, e.g. all `pt-nightly` tests, you can do so using the `schedule_tests.sh` script. You will need to set the `XLML_TEST_TYPE` based on the root of the test, e.g.
+
+```bash
+XLML_TEST_TYPE=pt-nightly ./scripts/schedule_tests.sh
+```
+
+This should only be done when absolutely necessary, e.g. during release testing.
 
 
 ## Creating a New Test
