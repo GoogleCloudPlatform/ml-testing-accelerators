@@ -12,42 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local common = import '../common.libsonnet';
+local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
     local tpu_embedding_pjit = self.tpu_embedding_pjit,
-    tpu_embedding_pjit:: tpu_embedding_common {
+    tpu_embedding_pjit:: common.tpuEmbeddingCommon {
         local config = self,
         frameworkPrefix: 'jax.tpu.embedding',
         modelName: 'pjit',
         extraFlags:: [],
-        testScript: |||
+        testCommand: |||
             source ~/jax-tpu-embedding/jax_tpu_embedding/scripts/export_tpu_pod_env.sh && PYTHONPATH=$PYTHONPATH:~/jax-tpu-embedding python3 ~/jax-tpu-embedding/jax_tpu_embedding/examples/singlehost_pjit_example.py
         |||,
     },
     local tpu_embedding_pmap = self.tpu_embedding_pmap,
-    tpu_embedding_pmap:: tpu_embedding_common {
+    tpu_embedding_pmap:: common.tpuEmbeddingCommon {
         local config = self,
         frameworkPrefix: 'jax.tpu.embedding',
         modelName: 'pmap',
         extraFlags:: [],
-        testScript: |||
+        testCommand: |||
             source ~/jax-tpu-embedding/jax_tpu_embedding/scripts/export_tpu_pod_env.sh && PYTHONPATH=$PYTHONPATH:~/jax-tpu-embedding python3 ~/jax-tpu-embedding/jax_tpu_embedding/examples/pmap_example.py
-        |||,
-    },
-    local tpu_embedding_common = self.tpu_embedding_common,
-    tpu_embedding_common:: common.JaxTest {
-        local config = self,
-        frameworkPrefix: 'jax.tpu.embedding',
-        extraFlags:: [],
-        testScript:: |||
-            pip install --upgrade 'jax[tpu]==0.4.4' -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
-            pip install flax==0.6.7
-            gsutil cp gs://cloud-tpu-tpuvm-artifacts/tensorflow/20230214/tf_nightly-2.13.0-cp38-cp38-linux_x86_64.whl .
-            pip install tf_nightly-2.13.0-cp38-cp38-linux_x86_64.whl
-            git clone https://github.com/jax-ml/jax-tpu-embedding.git
         |||,
     },
     local func = self.func,
