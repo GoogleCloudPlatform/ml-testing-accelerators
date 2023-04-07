@@ -41,10 +41,7 @@ local volumes = import 'templates/volumes.libsonnet';
     tpuSettings+: {
       local tpuSettings = self,
 
-      softwareVersion: if config.accelerator.version == 4 then
-        'v2-nightly-tpuv4'
-      else
-        'v2-nightly',
+      softwareVersion: 'v2-nightly',
 
       // Startup script in TPU VM metadata.
       tpuVmStartupScript: 'echo Running startup script',
