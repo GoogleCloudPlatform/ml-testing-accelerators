@@ -87,17 +87,17 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   tpuEmbeddingCommon:: common.JaxTest {
-        local config = self,
-        frameworkPrefix: 'jax.tpu.embedding',
-        extraFlags:: [],
-        testCommand:: error 'Must define `testCommand`',
-        testScript:: |||
-            pip install --upgrade 'jax[tpu]==0.4.4' -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
-            pip install flax==0.6.7
-            gsutil cp gs://cloud-tpu-tpuvm-artifacts/tensorflow/20230214/tf_nightly-2.13.0-cp38-cp38-linux_x86_64.whl .
-            pip install tf_nightly-2.13.0-cp38-cp38-linux_x86_64.whl
-            git clone https://github.com/jax-ml/jax-tpu-embedding.git
-            %(testCommand)s
-        ||| % config.testCommand,
-    },
+    local config = self,
+    frameworkPrefix: 'jax.tpu.embedding',
+    extraFlags:: [],
+    testCommand:: error 'Must define `testCommand`',
+    testScript:: |||
+      pip install --upgrade 'jax[tpu]==0.4.4' -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+      pip install flax==0.6.7
+      gsutil cp gs://cloud-tpu-tpuvm-artifacts/tensorflow/20230214/tf_nightly-2.13.0-cp38-cp38-linux_x86_64.whl .
+      pip install tf_nightly-2.13.0-cp38-cp38-linux_x86_64.whl
+      git clone https://github.com/jax-ml/jax-tpu-embedding.git
+      %(testCommand)s
+    ||| % config.testCommand,
+  },
 }
