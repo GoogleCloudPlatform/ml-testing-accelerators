@@ -15,6 +15,7 @@
 local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
@@ -74,7 +75,7 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_32,
   },
   local tpuVm = self.tpuVm,
-  tpuVm:: experimental.TensorFlowTpuVmMixin,
+  tpuVm:: common.tpuVm,
 
   local functionalTests = [
     resnet + v2_8 + functional,

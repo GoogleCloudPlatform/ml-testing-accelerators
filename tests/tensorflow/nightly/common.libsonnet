@@ -13,6 +13,7 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
+local experimental = import 'experimental.libsonnet';
 local metrics = import 'templates/metrics.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 
@@ -25,6 +26,87 @@ local mixins = import 'templates/mixins.libsonnet';
       softwareVersion: 'nightly',
     },
     imageTag: 'nightly',
+    podTemplate+:: if config.accelerator.type == 'tpu' then
+      {
+        spec+: {
+          initContainerMap+:: {
+            'tpu-version': {
+              image: config.podTemplate.spec.containerMap.train.image,
+              env+: [
+                {
+                  name: 'TPU_NAME',
+                  valueFrom: {
+                    fieldRef: {
+                      fieldPath: "metadata.annotations['name.cloud-tpus.google.com/train']",
+                    },
+                  },
+                },
+                {
+                  name: 'POD_UID',
+                  valueFrom: {
+                    fieldRef: {
+                      fieldPath: 'metadata.uid',
+                    },
+                  },
+                },
+              ],
+              local tpuCreateSettings = {
+                acceleratorName: std.escapeStringBash(config.accelerator.name),
+                softwareVersion: std.escapeStringBash(config.tpuSettings.softwareVersion),
+                startupScript: std.escapeStringBash(config.tpuSettings.tpuVmStartupScript),
+                sleepTime: config.tpuSettings.tpuVmCreateSleepSeconds,
+                testName: std.strReplace(config.testName, '.', '-'),
+              },
+              command: [
+                'python3',
+                '-c',
+                |||
+                  import os
+                  import tensorflow as tf
+                  import urllib
+                  import json
+                  import cloud_tpu_client
+                  import sys
+                  print('python version: ' + str(sys.version))
+                  print('tf_version: ' + str(tf.__version__))
+                  print(str(tf.__file__))
+                  ctc = cloud_tpu_client.Client(tpu=os.path.basename('$(TPU_NAME)'), zone=os.path.dirname('$(TPU_NAME)'))
+                  ctc.wait_for_healthy()
+                  ctc.configure_tpu_version('nightly', restart_type='always')
+                  ctc.wait_for_healthy()
+                  _VERSION_SWITCHER_ENDPOINT = 'http://{}:8475/requestversion'
+                  url = _VERSION_SWITCHER_ENDPOINT.format(ctc.network_endpoints()[0]['ipAddress'])
+                  req = urllib.request.Request(url)
+                  resp = urllib.request.urlopen(req)
+                  version_details = json.loads(resp.read())
+                  print(version_details)
+                |||,
+              ],
+            },
+          },
+        },
+      }
+    else
+      {},
+  },
+  tpuVm:: experimental.TensorFlowTpuVmMixin {
+    local config = self,
+    tpuSettings+: {
+      softwareVersion: if config.accelerator.replicas == 1 then
+        'v2-nightly'
+      else
+        'v2-nightly-pod',
+    },
+    podTemplate+:: {
+      spec+: {
+        initContainerMap+:: {
+          'tpu-version': {
+            image: 'google/cloud-sdk',
+            command: null,
+          },
+        },
+      },
+    },
   },
   TfVisionTest:: self.ModelGardenTest + common.TfNlpVisionMixin {
     scriptConfig+: {
@@ -129,11 +211,7 @@ local mixins = import 'templates/mixins.libsonnet';
   },
   local functional_schedule = '0 9 * * 3',
   Functional:: mixins.Functional {
-    schedule:
-      if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' || self.accelerator.name == 'v4-8' then
-        functional_schedule
-      else
-        null,
+    schedule: functional_schedule,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -158,6 +236,7 @@ local mixins = import 'templates/mixins.libsonnet';
     schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
+    schedule: '0 5 * * 0,4',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {

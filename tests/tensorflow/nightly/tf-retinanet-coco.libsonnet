@@ -39,11 +39,13 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local functional = common.Functional {
-    paramsOverride+: {
-      trainer+: {
-        train_steps: 400,
-        validation_interval: 200,
-        validation_steps: 100,
+    scriptConfig+: {
+      paramsOverride+: {
+        trainer+: {
+          train_steps: 400,
+          validation_interval: 200,
+          validation_steps: 100,
+        },
       },
     },
   },
@@ -83,7 +85,7 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_32,
   },
   local tpuVm = self.tpuVm,
-  tpuVm:: experimental.TensorFlowTpuVmMixin,
+  tpuVm:: common.tpuVm,
 
   local functionalTests = [
     retinanet + v2_8 + functional,

@@ -94,6 +94,18 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
+  local v2_32 = tpu_common {
+    accelerator: tpus.v2_32,
+    paramsOverride+:: {
+      task+: {
+        model+: {
+          bottom_mlp: [512, 256, 64],
+          embedding_dim: 64,
+        },
+      },
+    },
+  },
+
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
     paramsOverride+:: {
@@ -117,7 +129,7 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
-  local tpuVm = experimental.TensorFlowTpuVmMixin,
+  local tpuVm = common.tpuVm,
 
   configs: [
     dcn + functional + v2_8,
