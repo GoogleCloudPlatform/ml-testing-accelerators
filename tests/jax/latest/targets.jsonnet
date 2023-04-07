@@ -18,6 +18,7 @@ local hf_bert_mrpc = import 'flax-bert-glue_mrpc.libsonnet';
 local resnet = import 'flax-resnet-imagenet.libsonnet';
 local hf_vit = import 'flax-vit-imagenette.libsonnet';
 local wmt = import 'flax-wmt-wmt17_translate.libsonnet';
+local tpu_embedding = import 'tpu-embedding.libsonnet';
 
 // Add new models here
 std.flattenArrays([
@@ -27,4 +28,5 @@ std.flattenArrays([
   hf_bert_mrpc.configs,
   resnet.configs,
   wmt.configs,
+  tpu_embedding.configs,
 ])
