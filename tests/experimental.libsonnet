@@ -40,9 +40,6 @@ local volumes = import 'templates/volumes.libsonnet';
 
     tpuSettings+: {
       local tpuSettings = self,
-
-      softwareVersion: 'v2-nightly',
-
       // Startup script in TPU VM metadata.
       tpuVmStartupScript: 'echo Running startup script',
 
@@ -93,33 +90,49 @@ local volumes = import 'templates/volumes.libsonnet';
               gcloud alpha compute tpus tpu-vm delete -q ${tpu_name} --zone=${zone}
               " > /scripts/cleanup.sh
 
-              echo "xl-ml-test:$(cat /scripts/id_rsa.pub)" > ssh-keys.txt
-              echo %(startupScript)s > startup-script.txt
+              curl -X POST \
+                -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+                -H "Content-Type: application/json" \
+                -d "{
+                  accelerator_type: %(acceleratorName)s,
+                  runtime_version: %(softwareVersion)s,
+                  network_config: {enable_external_ips: true},
+                  boot_disk: {source_image: 'projects/cloud-tpu-v2-images-dev/global/images/family/tpu-vm-tf-nightly'},
+                  metadata: {
+                    'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
+                    'startup-script': %(startupScript)s,
+                    'tensorflow-docker-url': 'gcr.io/cloud-tpu-v2-images-dev/grpc_tpu_worker:nightly'
+                  }
+                }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
 
-              # Retry every 30 seconds for 10 minutes
-              for i in {1..20}; do
-                set +e
-                gcloud alpha compute tpus tpu-vm create ${tpu_name} \
-                  --accelerator-type=%(acceleratorName)s \
-                  --version=%(softwareVersion)s  \
-                  --metadata-from-file='ssh-keys=ssh-keys.txt,startup-script=startup-script.txt' \
-                  --labels='test-name=%(testName)s' \
-                  --zone=${zone}
-
-                exit_code=$?
-                set -e
-                test $exit_code = 0 && break || sleep 30;
+              echo "Waiting for TPU Pod ${tpu_name} to become ready..."
+              timeout 10m bash -c -- "
+              while [[ \${health:-NONE} != READY ]];
+                do sleep 60 && \
+                health=\$(gcloud \
+                  --project=${project} \
+                  compute \
+                  tpus \
+                  describe \
+                  ${tpu_name} \
+                  --zone=${zone} \
+                  --format='value(state)') && \
+                echo 'Waiting for ready TPU (current state \${health:-NONE})...';
               done
-
-              if [ $exit_code -ne 0 ]; then
-                exit $exit_code
-              fi
+              "
 
               echo ${zone} > /scripts/zone
               echo ${tpu_name} > /scripts/tpu_name
               gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(networkEndpoints[0].ipAddress)" > /scripts/tpu_ip
               gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --flatten="networkEndpoints[]" --format="csv[no-heading](networkEndpoints.ipAddress)" > /scripts/all_tpu_ips
 
+              softwareVersion=%(softwareVersion)s
+              if [[ ${softwareVersion: -3} == "pod" ]]; then
+                 yes '' | gcloud compute config-ssh
+                 sleep %(sleepTime)d
+                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:tf-2.12.0\"/' /etc/systemd/system/tpu-runtime.service"
+                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart tpu-runtime"
+              fi
               sleep %(sleepTime)d
             ||| % tpuCreateSettings),
             env: [

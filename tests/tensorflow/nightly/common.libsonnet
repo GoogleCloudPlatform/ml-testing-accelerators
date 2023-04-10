@@ -13,7 +13,7 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
-local experimental = import 'experimental.libsonnet';
+local experimental = import '../experimental.libsonnet';
 local metrics = import 'templates/metrics.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 
@@ -69,6 +69,8 @@ local mixins = import 'templates/mixins.libsonnet';
                   import sys
                   print('python version: ' + str(sys.version))
                   print('tf_version: ' + str(tf.__version__))
+                  #TODO(chandrasekhard):
+                  # Add extra condition to fail if it picks stale image
                   print(str(tf.__file__))
                   ctc = cloud_tpu_client.Client(tpu=os.path.basename('$(TPU_NAME)'), zone=os.path.dirname('$(TPU_NAME)'))
                   ctc.wait_for_healthy()
