@@ -13,7 +13,9 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
+local utils = import 'templates/utils.libsonnet';
 local experimental = import '../experimental.libsonnet';
+local volumes = import 'templates/volumes.libsonnet';
 local metrics = import 'templates/metrics.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
 
@@ -102,6 +104,91 @@ local mixins = import 'templates/mixins.libsonnet';
     podTemplate+:: {
       spec+: {
         initContainerMap+:: {
+	  'create-tpu': {
+	    image: 'google/cloud-sdk',
+            local tpuCreateSettings = {
+              acceleratorName: std.escapeStringBash(config.accelerator.name),
+              softwareVersion: std.escapeStringBash(config.tpuSettings.softwareVersion),
+              startupScript: std.escapeStringBash(config.tpuSettings.tpuVmStartupScript),
+              sleepTime: config.tpuSettings.tpuVmCreateSleepSeconds,
+              testName: std.strReplace(config.testName, '.', '-'),
+            },
+	    command: utils.scriptCommand(|||
+              project=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google")
+              zone=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google" | awk -F'/' '{print $4}')
+              tpu_name=tpu-${POD_UID}
+              ssh-keygen -t rsa -f /scripts/id_rsa -q -N ""
+              echo "
+                gcloud alpha compute tpus tpu-vm delete -q ${tpu_name} --zone=${zone}
+              " > /scripts/cleanup.sh
+
+              curl -X POST \
+                -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+                -H "Content-Type: application/json" \
+                -d "{
+                  accelerator_type: %(acceleratorName)s,
+                  runtime_version: %(softwareVersion)s,
+                  network_config: {enable_external_ips: true},
+                  boot_disk: {source_image: 'projects/cloud-tpu-v2-images-dev/global/images/family/tpu-vm-tf-nightly'},
+                  metadata: {
+                    'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
+                    'startup-script': %(startupScript)s,
+                    'tensorflow-docker-url': 'gcr.io/cloud-tpu-v2-images-dev/grpc_tpu_worker:nightly'
+                  }
+              }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
+              echo "Waiting for TPU Pod ${tpu_name} to become ready..."
+              timeout 10m bash -c -- "
+              while [[ \${health:-NONE} != READY ]];
+                do sleep 60 && \
+                health=\$(gcloud \
+                  --project=${project} \
+                  compute \
+                  tpus \
+                  describe \
+                  ${tpu_name} \
+                  --zone=${zone} \
+                  --format='value(state)') && \
+                echo 'Waiting for ready TPU (current state \${health:-NONE})...';
+              done
+              "
+              echo ${zone} > /scripts/zone
+              echo ${tpu_name} > /scripts/tpu_name
+              gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(networkEndpoints[0].ipAddress)" > /scripts/tpu_ip
+              gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --flatten="networkEndpoints[]" --format="csv[no-heading](networkEndpoints.ipAddress)" > /scripts/all_tpu_ips
+              softwareVersion=%(softwareVersion)s
+              if [[ ${softwareVersion: -3} == "pod" ]]; then
+                 yes '' | gcloud compute config-ssh
+                 sleep %(sleepTime)d
+                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:nightly\"/' /etc/systemd/system/tpu-runtime.service"
+                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart tpu-runtime"
+              fi
+              sleep %(sleepTime)d
+            ||| % tpuCreateSettings),
+	    env+: [
+	      {
+                name: 'TPU_NAME',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: "metadata.annotations['name.cloud-tpus.google.com/train']",
+                  },
+                },
+              },
+              {
+                name: 'POD_UID',
+                valueFrom: {
+                  fieldRef: {
+                    fieldPath: 'metadata.uid',
+                  },
+                },
+              },
+            ],
+            volumeMounts: [
+              {
+                mountPath: '/scripts',
+                name: 'scripts',
+              },
+            ],
+	  },
           'tpu-version': {
             image: 'google/cloud-sdk',
             command: null,
