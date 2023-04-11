@@ -18,10 +18,10 @@ local base = import 'base.libsonnet';
   TpuSpec:: base.BaseAccelerator {
     local tpu = self,
 
-    name: 'v%(versionName)s-%(size)d' % tpu,
+    name: 'v%(version)d%(variant)s-%(size)d' % tpu,
     type: 'tpu',
     version: error 'Must override `version`',
-    versionName: error 'Must override `versionName`',
+    variant: error 'Must override `variant`',
     size: error 'Must override `size`',
     numCores: if tpu.version <= 3 then 8 else 4,
     replicas: tpu.size / 8,  // Each TPU replica has 8 cores
@@ -64,11 +64,11 @@ local base = import 'base.libsonnet';
     },
   },
 
-  v2_8: self.TpuSpec { versionName: '2', version: 2, size: 8 },
-  v3_8: self.TpuSpec { versionName: '3', version: 3, size: 8 },
-  v2_32: self.TpuSpec { versionName: '2', version: 2, size: 32 },
-  v3_32: self.TpuSpec { versionName: '3', version: 3, size: 32 },
-  v4_8: self.TpuSpec { versionName: '4', version: 4, size: 8 },
-  v4_16: self.TpuSpec { versionName: '4', version: 4, size: 16 },
-  v4_32: self.TpuSpec { versionName: '4', version: 4, size: 32 },
+  v2_8: self.TpuSpec { version: 2, variant: '', size: 8 },
+  v3_8: self.TpuSpec { version: 3, variant: '', size: 8 },
+  v2_32: self.TpuSpec { version: 2, variant: '', size: 32 },
+  v3_32: self.TpuSpec { version: 3, variant: '', size: 32 },
+  v4_8: self.TpuSpec { version: 4, variant: '', size: 8 },
+  v4_16: self.TpuSpec { version: 4, variant: '', size: 16 },
+  v4_32: self.TpuSpec { version: 4, variant: '', size: 32 },
 }
