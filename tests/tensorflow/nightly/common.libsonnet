@@ -13,11 +13,11 @@
 // limitations under the License.
 
 local common = import '../common.libsonnet';
-local utils = import 'templates/utils.libsonnet';
 local experimental = import '../experimental.libsonnet';
-local volumes = import 'templates/volumes.libsonnet';
 local metrics = import 'templates/metrics.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
+local utils = import 'templates/utils.libsonnet';
+local volumes = import 'templates/volumes.libsonnet';
 
 {
   ModelGardenTest:: common.ModelGardenTest {
@@ -104,8 +104,8 @@ local mixins = import 'templates/mixins.libsonnet';
     podTemplate+:: {
       spec+: {
         initContainerMap+:: {
-	  'create-tpu': {
-	    image: 'google/cloud-sdk',
+          'create-tpu': {
+            image: 'google/cloud-sdk',
             local tpuCreateSettings = {
               acceleratorName: std.escapeStringBash(config.accelerator.name),
               softwareVersion: std.escapeStringBash(config.tpuSettings.softwareVersion),
@@ -113,7 +113,7 @@ local mixins = import 'templates/mixins.libsonnet';
               sleepTime: config.tpuSettings.tpuVmCreateSleepSeconds,
               testName: std.strReplace(config.testName, '.', '-'),
             },
-	    command: utils.scriptCommand(|||
+            command: utils.scriptCommand(|||
               project=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/project/project-id" -H "Metadata-Flavor: Google")
               zone=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google" | awk -F'/' '{print $4}')
               tpu_name=tpu-${POD_UID}
@@ -164,8 +164,8 @@ local mixins = import 'templates/mixins.libsonnet';
               fi
               sleep %(sleepTime)d
             ||| % tpuCreateSettings),
-	    env+: [
-	      {
+            env+: [
+              {
                 name: 'TPU_NAME',
                 valueFrom: {
                   fieldRef: {
@@ -188,7 +188,7 @@ local mixins = import 'templates/mixins.libsonnet';
                 name: 'scripts',
               },
             ],
-	  },
+          },
           'tpu-version': {
             image: 'google/cloud-sdk',
             command: null,
@@ -301,9 +301,9 @@ local mixins = import 'templates/mixins.libsonnet';
   local functional_schedule = '0 9 * * 3',
   Functional:: mixins.Functional {
     schedule: if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' || self.accelerator.name == 'v4-8' then
-        functional_schedule
-      else
-        null,
+      functional_schedule
+    else
+      null,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {

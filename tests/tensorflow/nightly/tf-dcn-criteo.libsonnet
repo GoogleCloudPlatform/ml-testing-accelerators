@@ -105,7 +105,7 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
-  
+
   local v3_32 = tpu_common {
     accelerator: tpus.v3_32,
     paramsOverride+:: {
