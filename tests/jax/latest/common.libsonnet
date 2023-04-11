@@ -86,18 +86,17 @@ local tpus = import 'templates/tpus.libsonnet';
     ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
   },
 
-  tpuEmbeddingCommon:: common.JaxTest {
+  tpuEmbeddingCommon:: common.JaxTest + common.jaxlibLatest {
     local config = self,
     frameworkPrefix: 'jax.tpu.embedding',
     extraFlags:: [],
     testCommand:: error 'Must define `testCommand`',
     testScript:: |||
-      pip install --upgrade 'jax[tpu]==0.4.4' -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
-      pip install flax==0.6.7
-      gsutil cp gs://cloud-tpu-tpuvm-artifacts/tensorflow/20230214/tf_nightly-2.13.0-cp38-cp38-linux_x86_64.whl .
-      pip install tf_nightly-2.13.0-cp38-cp38-linux_x86_64.whl
+      %(installLatestJax)s
+      pip install --upgrade git+https://github.com/google/flax.git
       git clone https://github.com/jax-ml/jax-tpu-embedding.git
+      %(printDiagnostics)s
       %(testCommand)s
-    ||| % config.testCommand,
+    ||| % (self.scriptConfig { testCommand: config.testCommand }),
   },
 }

@@ -129,7 +129,7 @@ local tpus = import 'templates/tpus.libsonnet';
           -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
       |||,
       installLatestJax: |||
-        pip install jax[tpu] \
+        pip install --upgrade jax[tpu] \
           -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
       |||,
       maybeBuildJaxlib: '',
