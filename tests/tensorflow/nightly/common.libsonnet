@@ -300,7 +300,10 @@ local mixins = import 'templates/mixins.libsonnet';
   },
   local functional_schedule = '0 9 * * 3',
   Functional:: mixins.Functional {
-    schedule: functional_schedule,
+    schedule: if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' || self.accelerator.name == 'v4-8' then
+        functional_schedule
+      else
+        null,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
