@@ -41,6 +41,9 @@ local volumes = import 'templates/volumes.libsonnet';
     tpuSettings+: {
       local tpuSettings = self,
       // Startup script in TPU VM metadata.
+
+      softwareVersion: 'v2-nightly',
+
       tpuVmStartupScript: 'echo Running startup script',
 
       // Amount of time to sleep after TPU is READY.
