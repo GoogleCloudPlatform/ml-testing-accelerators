@@ -104,8 +104,7 @@ local volumes = import 'templates/volumes.libsonnet';
     podTemplate+:: {
       spec+: {
         initContainerMap+:: {
-          'create-tpu': {
-            image: 'google/cloud-sdk',
+          'create-tpu'+: {
             local tpuCreateSettings = {
               acceleratorName: std.escapeStringBash(config.accelerator.name),
               softwareVersion: std.escapeStringBash(config.tpuSettings.softwareVersion),
@@ -129,6 +128,7 @@ local volumes = import 'templates/volumes.libsonnet';
                   accelerator_type: %(acceleratorName)s,
                   runtime_version: %(softwareVersion)s,
                   network_config: {enable_external_ips: true},
+                  labels: {test_name: '%(testName)s' },
                   boot_disk: {source_image: 'projects/cloud-tpu-v2-images-dev/global/images/family/tpu-vm-tf-nightly'},
                   metadata: {
                     'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
@@ -164,30 +164,6 @@ local volumes = import 'templates/volumes.libsonnet';
               fi
               sleep %(sleepTime)d
             ||| % tpuCreateSettings),
-            env+: [
-              {
-                name: 'TPU_NAME',
-                valueFrom: {
-                  fieldRef: {
-                    fieldPath: "metadata.annotations['name.cloud-tpus.google.com/train']",
-                  },
-                },
-              },
-              {
-                name: 'POD_UID',
-                valueFrom: {
-                  fieldRef: {
-                    fieldPath: 'metadata.uid',
-                  },
-                },
-              },
-            ],
-            volumeMounts: [
-              {
-                mountPath: '/scripts',
-                name: 'scripts',
-              },
-            ],
           },
           'tpu-version': {
             image: 'google/cloud-sdk',
