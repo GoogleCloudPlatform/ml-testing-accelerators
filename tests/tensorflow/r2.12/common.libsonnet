@@ -209,7 +209,7 @@ local mixins = import 'templates/mixins.libsonnet';
       },
     },
   },
-  local functional_schedule = '0 3 * * *',
+  local functional_schedule = null,
   Functional:: mixins.Functional {
     schedule: functional_schedule,
     metricConfig+: {
@@ -236,7 +236,7 @@ local mixins = import 'templates/mixins.libsonnet';
     schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
-    schedule: '0 5 * * 0,4',
+    schedule: null,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
