@@ -201,6 +201,8 @@ local utils = import 'templates/utils.libsonnet';
       |||,
     },
   },
+  // create a new config for tpuvm, but modified it to run on tpuvm
+  // without functionalization by `export XLA_DISABLE_FUNCTIONALIZATION=1`
   local tpuVm_debug = self.tpuVm,
   tpuVm:: common.PyTorchTpuVmMixin {
     tpuSettings+: {
@@ -224,6 +226,7 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
   },
   configs: [
+    // only test pt-nightly-hf-mlm-roberta-b-pre-conv-v2-8-1vm without functionalization
     hf_lm + v2_8 + roberta_base_pre + timeouts.Hours(5) + tpuVm_debug,
     hf_lm + v3_8 + roberta_base_fine + timeouts.Hours(3) + tpuVm,
     hf_lm + v3_8 + bert_base_pre + timeouts.Hours(6) + tpuVm,
