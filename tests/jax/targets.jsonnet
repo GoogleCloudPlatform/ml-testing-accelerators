@@ -13,10 +13,10 @@
 // limitations under the License.
 
 local compilationCacheTest = import 'compilation-cache.libsonnet';
-local tpu_embedding = import 'tpu-embedding.libsonnet';
 local latest = import 'latest/targets.jsonnet';
 local nightly = import 'nightly/targets.jsonnet';
 local podTest = import 'pod-test.libsonnet';
+local tpu_embedding = import 'tpu-embedding.libsonnet';
 
 std.flattenArrays([
   podTest.configs,
