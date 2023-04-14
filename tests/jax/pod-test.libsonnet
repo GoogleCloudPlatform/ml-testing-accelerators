@@ -17,7 +17,8 @@ local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  local podTest = common.JaxTest + mixins.Functional {
+  local podTest = self.podTest,
+  podTest:: common.JaxTest + mixins.Functional {
     modelName: 'pod-%s-%s' % [self.jaxlibVersion, self.tpuSettings.softwareVersion],
 
     testScript:: |||
@@ -44,7 +45,8 @@ local tpus = import 'templates/tpus.libsonnet';
     ||| % self.scriptConfig,
   },
 
-  local v2_32 = {
+  local v2_32 = self.v2_32,
+  v2_32:: {
     accelerator: tpus.v2_32,
   },
 

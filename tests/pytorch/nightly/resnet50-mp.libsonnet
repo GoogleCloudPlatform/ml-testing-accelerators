@@ -20,16 +20,25 @@ local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  local resnet50 = common.PyTorchTest {
+  local resnet50 = self.resnet50,
+  resnet50:: common.PyTorchTest {
     modelName: 'resnet50-mp',
+    trainScript: 'pytorch/xla/test/test_train_mp_imagenet.py',
+    batch_size: null,
     command: [
       'python3',
-      'pytorch/xla/test/test_train_mp_imagenet.py',
+      self.trainScript,
       '--model=resnet50',
       '--log_steps=200',
-    ] + if self.flags.modelDir != null then [
-      '--logdir=%s' % self.flags.modelDir,
-    ] else [],
+    ] + (
+      if self.flags.modelDir != null then [
+        '--logdir=%s' % self.flags.modelDir,
+      ] else []
+    ) + (
+      if self.batch_size != null then [
+        '--batch_size=%s' % self.batch_size,
+      ] else []
+    ),
     flags:: {
       modelDir: '$(MODEL_DIR)',
     },
@@ -41,19 +50,22 @@ local tpus = import 'templates/tpus.libsonnet';
     memory: '400Gi',
   },
 
-  local fake_data = common.Functional {
+  local fake_data = self.fake_data,
+  fake_data:: common.Functional {
     mode: 'fake',
     command+: [
       '--fake_data',
     ],
   },
-  local functional = common.Functional {
+  local functional = self.functional,
+  functional:: common.Functional {
     command+: [
       '--num_epochs=2',
       '--datadir=/datasets/imagenet-mini',
     ],
   },
-  local convergence = common.Convergence {
+  local convergence = self.convergence,
+  convergence:: common.Convergence {
     local config = self,
 
     command+: [
@@ -80,24 +92,52 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
+  // DDP converges worse than MP.
+  local convergence_ddp = self.convergence_ddp,
+  convergence_ddp:: convergence {
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'Accuracy/test': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'GREATER',
+                  value: 65,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 
-  local v3_8 = {
+
+  local v3_8 = self.v3_8,
+  v3_8:: {
     accelerator: tpus.v3_8,
   },
-  local v3_32 = {
+  local v3_32 = self.v3_32,
+  v3_32:: {
     accelerator: tpus.v3_32,
   },
-  local v4_8 = {
+  local v4_8 = self.v4_8,
+  v4_8:: {
     accelerator: tpus.v4_8,
     // Keep same global batch size as v3
-    command+: ['--batch_size=256'],
+    batch_size: 256,
   },
-  local v4_32 = {
+  local v4_32 = self.v4_32,
+  v4_32:: {
     accelerator: tpus.v4_32,
-    command+: ['--batch_size=256'],
+    batch_size: 256,
   },
 
-  local gpu = common.GpuMixin {
+  local gpu = self.gpu,
+  gpu:: common.GpuMixin {
     cpu: '7.0',
     memory: '40Gi',
 
@@ -109,60 +149,83 @@ local tpus = import 'templates/tpus.libsonnet';
       modelDir: null,
     },
   },
-  local v100x4 = gpu {
+  local v100x4 = self.v100x4,
+  v100x4:: gpu {
     accelerator: gpus.teslaV100 { count: 4 },
   },
 
-  local torch_ddp = {
+  local xrt_ddp = self.xrt_ddp,
+  xrt_ddp:: {
     modelName+: '-torch-ddp',
-    command+: [
-      '--ddp',
-    ],
-  },
-  local xla_ddp = {
-    modelName+: '-xla-ddp',
     tpuSettings+: {
       tpuVmExports+: |||
-        export PJRT_INIT_TORCH_DISTRIBUTED=1
+        export MASTER_ADDR=localhost
+        export MASTER_PORT=12355
       |||,
     },
     command+: [
       '--ddp',
-      '--ddp_pjrt',
+    ],
+  },
+  local pjrt_ddp = self.pjrt_ddp,
+  pjrt_ddp:: {
+    modelName+: '-ddp',
+    command+: [
+      '--ddp',
+      '--pjrt_distributed',
     ],
   },
 
-  local tpuVm = common.PyTorchTpuVmMixin {
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExtraSetup: |||
         pip install tensorboardX google-cloud-storage
       |||,
     },
   },
-  local pjrt = tpuVm + experimental.PjRt {
+  local pjrt = self.pjrt,
+  pjrt:: tpuVm + experimental.PjRt {
     modelName: 'resnet50-pjrt',
+  },
+  local spmd(sharding) = self.spmd(sharding),
+  spmd(sharding):: pjrt {
+    // Include sharding spec in the test name
+    modelName: std.join('-', ['resnet50-spmd'] + sharding),
+    trainScript: 'pytorch/xla/test/spmd/test_train_spmd_imagenet.py',
+    command+: ['--sharding=' + std.join(',', sharding)],
+    // Keep the same global batch size. In SPMD, the global batch size is
+    // divided across all devices.
+    batch_size: self.accelerator.size * 128,
   },
 
   configs: [
+    // XRT
     resnet50 + functional + v100x4 + timeouts.Hours(1),
     resnet50 + functional + v3_8 + timeouts.Hours(2) + tpuVm + mixins.Experimental,
     resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm,
-    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm + torch_ddp,
-    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt,
-    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt + xla_ddp,
+    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm + xrt_ddp,
     resnet50 + convergence + v3_8 + timeouts.Hours(24) + tpuVm,
-    resnet50 + convergence + v3_8 + timeouts.Hours(24) + pjrt,
+    resnet50 + fake_data + v3_32 + timeouts.Hours(1) + tpuVm,
     resnet50 + functional + v3_32 + timeouts.Hours(1) + tpuVm + mixins.Experimental,
-    resnet50 + convergence + v3_32 + timeouts.Hours(12) + tpuVm,
+    resnet50 + convergence + v3_32 + timeouts.Hours(12) + tpuVm + mixins.Experimental,
     resnet50 + fake_data + v4_8 + timeouts.Hours(2) + tpuVm,
-    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + tpuVm + torch_ddp + mixins.Experimental,
-    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt,
-    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt + torch_ddp + mixins.Experimental,
-    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt + xla_ddp,
+    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + tpuVm + xrt_ddp + mixins.Experimental,
     resnet50 + convergence + v4_8 + timeouts.Hours(24) + tpuVm + mixins.Experimental,
-    resnet50 + convergence + v4_8 + timeouts.Hours(24) + pjrt + mixins.Experimental,
-    resnet50 + fake_data + v4_32 + timeouts.Hours(2) + pjrt + mixins.Experimental,
     resnet50 + convergence + v4_32 + timeouts.Hours(24) + tpuVm + mixins.Experimental,
-    resnet50 + convergence + v4_32 + timeouts.Hours(24) + pjrt + mixins.Experimental,
+    // PJRT
+    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt,
+    resnet50 + convergence + v3_8 + timeouts.Hours(24) + pjrt,
+    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt + pjrt_ddp,
+    resnet50 + fake_data + v3_32 + timeouts.Hours(1) + pjrt,
+    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt,
+    resnet50 + convergence + v4_8 + timeouts.Hours(14) + pjrt,
+    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + pjrt + pjrt_ddp,
+    resnet50 + convergence_ddp + v4_8 + timeouts.Hours(14) + pjrt + pjrt_ddp,
+    resnet50 + fake_data + v4_32 + timeouts.Hours(2) + pjrt,
+    resnet50 + convergence + v4_32 + timeouts.Hours(24) + pjrt,
+    // SPMD
+    resnet50 + functional + v4_8 + timeouts.Hours(2) + spmd(['batch']),
+    resnet50 + functional + v4_8 + timeouts.Hours(2) + spmd(['spatial']),
   ],
 }

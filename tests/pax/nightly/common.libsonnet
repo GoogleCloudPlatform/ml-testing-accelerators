@@ -3,11 +3,12 @@ local mixins = import 'templates/mixins.libsonnet';
 
 {
   Functional:: mixins.Functional {
-    // Run at 2AM PST daily
-    schedule: '0 10 * * *',
+    // Run at 3AM PST daily
+    schedule: '0 11 * * *',
   },
   NightlyPaxTest:: common.PaxTest {
     local config = self,
+    frameworkPrefix: 'pax-nightly',
     expPath:: '',
     extraFlags:: [],
     buildDate:: '$(date +%Y%m%d)',
@@ -38,13 +39,9 @@ local mixins = import 'templates/mixins.libsonnet';
       pip install paxml*.whl
       sudo pip uninstall --yes jax jaxlib libtpu-nightly
 
-      # need to install chex from source, since pip version is currently incompatible with latest JAX
-      pip install -U git+https://github.com/deepmind/chex.git
-
       pip install git+https://github.com/google/jax.git
       pip install --pre -U jaxlib -f https://storage.googleapis.com/jax-releases/jaxlib_nightly_releases.html
-      pip install -U libtpu-nightly -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
-      pip install protobuf==3.15
+      pip install --no-index -U libtpu-nightly -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
 
       num_devices=`python3 -c "import jax; print(jax.device_count())"`
       echo "num_devices: $num_devices"
@@ -53,7 +50,29 @@ local mixins = import 'templates/mixins.libsonnet';
           exit 1
       fi
 
-      python3 .local/lib/python3.8/site-packages/paxml/main.py --exp=%(expPath)s --job_log_dir=logs %(extraFlags)s
+      python3 .local/lib/python3.8/site-packages/paxml/main.py --exp=%(expPath)s --job_log_dir=$(MODEL_DIR) %(extraFlags)s
     ||| % { buildDate: config.buildDate, expPath: config.expPath, extraFlags: std.join(' ', config.extraFlags) },
+  },
+  Convergence:: mixins.Convergence {
+    // Run at 4AM PST daily
+    schedule: '0 12 * * *',
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'Metrics/log_pplx': {
+              FINAL: {
+                inclusive_bounds: true,
+                fixed_value: {
+                  comparison: 'LESS',
+                  value: 3.0,
+                },
+                wait_for_n_data_points: 0,
+              },
+            },
+          },
+        },
+      },
+    },
   },
 }

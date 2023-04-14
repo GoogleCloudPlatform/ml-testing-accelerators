@@ -12,23 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG image_version=nightly
+ARG image_version="nightly"
+
 FROM tensorflow/tensorflow:${image_version}-gpu
 
-ARG model_garden_branch=master
+ARG image_version
+ARG model_garden_branch="master"
+ARG tensorflow_text_version="nightly"
 
 RUN apt-get update && apt-get install -y --no-install-recommends git
-
 RUN pip3 install cloud-tpu-client pyyaml
-
-ARG tensorflow_text_version=nightly
 
 # HACKs: Remove this once they are added to the Model Garden requirements
 RUN pip3 install tensorflow-recommenders --no-deps
-RUN if [[ "${image_version}" == "nightly" || "${tensorflow_text_version}" == "nightly" || "${tensorflow_text_version}" == *"dev"* ]]; then \
-    pip3 install tensorflow-text-nightly --no-deps; \
+RUN if [ ${image_version} = "nightly" ] \
+    || [ ${tensorflow_text_version} = "nightly" ] \
+    || [ echo ${tensorflow_text_version} | grep -q "dev" ]; then \
+        pip3 install tensorflow-text-nightly --no-deps; \
     else \
-    pip3 install tensorflow-text==${tensorflow_text_version} --no-deps; \
+        pip3 install tensorflow-text==${tensorflow_text_version} --no-deps; \
     fi
 
 # Checkout tensorflow/models at HEAD
@@ -50,3 +52,4 @@ ENV PATH "/google-cloud-sdk/bin/:${PATH}"
 
 WORKDIR /garden
 ENTRYPOINT ["/entrypoint.sh"]
+

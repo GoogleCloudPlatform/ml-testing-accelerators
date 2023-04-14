@@ -86,6 +86,9 @@ local utils = import 'templates/utils.libsonnet';
 
                 cat > workersetup.sh << TEST_SCRIPT_EOF
                 sudo apt-get -y update
+                // Ensure lock is released after udpate
+                sudo kill -9 $(lsof /var/lib/dpkg/lock-frontend | awk '{print $2}')
+                sudo dpkg --configure -a
                 sudo apt-get -y install nfs-common
                 sudo mkdir /datasets && sudo mount $(PYTORCH_DATA_LOCATION) /datasets
 
@@ -118,7 +121,7 @@ local utils = import 'templates/utils.libsonnet';
   PjRt:: {
     tpuSettings+: {
       tpuVmExports: |||
-        export PJRT_DEVICE=TPU
+        export PJRT_DEVICE=TPU_C_API
       |||,
       tpuVmXlaDistPrefix: null,
       tpuVmMainCommandWorkers: 'all',

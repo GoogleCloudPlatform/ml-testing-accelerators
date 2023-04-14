@@ -22,6 +22,7 @@ local tpus = import 'templates/tpus.libsonnet';
     'us-central1': [],
     'us-central2': [
       tpus.v4_8,
+      tpus.v4_16,
       tpus.v4_32,
     ],
     'europe-west4': [

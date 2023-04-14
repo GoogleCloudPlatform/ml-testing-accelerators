@@ -18,9 +18,10 @@ local base = import 'base.libsonnet';
   TpuSpec:: base.BaseAccelerator {
     local tpu = self,
 
-    name: 'v%(version)d-%(size)d' % tpu,
+    name: 'v%(version)d%(variant)s-%(size)d' % tpu,
     type: 'tpu',
     version: error 'Must override `version`',
+    variant: '',
     size: error 'Must override `size`',
     numCores: if tpu.version <= 3 then 8 else 4,
     replicas: tpu.size / 8,  // Each TPU replica has 8 cores
@@ -68,5 +69,6 @@ local base = import 'base.libsonnet';
   v2_32: self.TpuSpec { version: 2, size: 32 },
   v3_32: self.TpuSpec { version: 3, size: 32 },
   v4_8: self.TpuSpec { version: 4, size: 8 },
+  v4_16: self.TpuSpec { version: 4, size: 16 },
   v4_32: self.TpuSpec { version: 4, size: 32 },
 }
