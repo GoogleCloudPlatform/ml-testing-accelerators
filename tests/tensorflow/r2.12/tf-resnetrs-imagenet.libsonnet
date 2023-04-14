@@ -62,7 +62,8 @@ local utils = import 'templates/utils.libsonnet';
   local v3_32 = {
     accelerator: tpus.v3_32,
   },
-  local tpuVm = experimental.TensorFlowTpuVmMixin,
+  local tpuVm = self.tpuVm,
+  tpuVm:: common.tpuVm,
 
   local functionalTests = [
     resnet_rs + v2_8 + functional,
