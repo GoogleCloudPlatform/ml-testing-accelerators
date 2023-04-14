@@ -85,18 +85,4 @@ local tpus = import 'templates/tpus.libsonnet';
       gsutil -m cp -r ${OUTPUT_DIR} $(MODEL_DIR) || exit 0
     ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
   },
-
-  tpuEmbeddingCommon:: common.JaxTest + common.jaxlibLatest {
-    local config = self,
-    frameworkPrefix: 'jax.tpu.embedding',
-    extraFlags:: [],
-    testCommand:: error 'Must define `testCommand`',
-    testScript:: |||
-      %(installLatestJax)s
-      pip install --upgrade git+https://github.com/google/flax.git
-      git clone https://github.com/jax-ml/jax-tpu-embedding.git
-      %(printDiagnostics)s
-      %(testCommand)s
-    ||| % (self.scriptConfig { testCommand: config.testCommand }),
-  },
 }
