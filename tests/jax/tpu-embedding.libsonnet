@@ -20,7 +20,7 @@ local tpus = import 'templates/tpus.libsonnet';
   local tpu_embedding = self.tpu_embedding,
   tpu_embedding:: common.JaxTest {
     local config = self,
-    frameworkPrefix: 'jax.tpu.embedding',
+    frameworkPrefix: 'tpu-embedding',
     extraFlags:: [],
     testCommand:: error 'Must define `testCommand`',
     testScript:: |||
@@ -35,7 +35,6 @@ local tpus = import 'templates/tpus.libsonnet';
   local tpu_embedding_pjit = self.tpu_embedding_pjit,
   tpu_embedding_pjit:: tpu_embedding {
     local config = self,
-    frameworkPrefix: 'jax.tpu.embedding',
     modelName: 'pjit',
     extraFlags:: [],
     testCommand: |||
@@ -45,7 +44,6 @@ local tpus = import 'templates/tpus.libsonnet';
   local tpu_embedding_pmap = self.tpu_embedding_pmap,
   tpu_embedding_pmap:: tpu_embedding {
     local config = self,
-    frameworkPrefix: 'jax.tpu.embedding',
     modelName: 'pmap',
     extraFlags:: [],
     testCommand: |||
@@ -64,10 +62,9 @@ local tpus = import 'templates/tpus.libsonnet';
   v3_8:: {
     accelerator: tpus.v3_8,
   },
-  local func_tests = [
+
+  configs: [
     tpu_embedding_pjit + func + v4_8,
     tpu_embedding_pmap + func + v3_8,
   ],
-
-  configs: func_tests,
 }
