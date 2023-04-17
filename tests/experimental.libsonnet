@@ -96,7 +96,8 @@ local volumes = import 'templates/volumes.libsonnet';
               echo "xl-ml-test:$(cat /scripts/id_rsa.pub)" > ssh-keys.txt
               echo %(startupScript)s > startup-script.txt
 
-              # Retry every 30 seconds for 10 minutes
+              # Retry every 30 seconds for up to 10 minutes
+              start_time="$(date -u +%%s)"
               for i in {1..20}; do
                 set +e
                 gcloud alpha compute tpus tpu-vm create ${tpu_name} \
@@ -108,7 +109,13 @@ local volumes = import 'templates/volumes.libsonnet';
 
                 exit_code=$?
                 set -e
-                test $exit_code = 0 && break || sleep 30;
+
+                current_time="$(date -u +%%s)"
+                elapsed_seconds=$(($current_time-$start_time))
+                # Break if command passed or 10-minute limit reached
+                test $exit_code = 0 && break
+                test "$elapsed_seconds > 600" && break
+                sleep 30
               done
 
               if [ $exit_code -ne 0 ]; then
