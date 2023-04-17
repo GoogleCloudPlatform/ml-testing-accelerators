@@ -14,11 +14,12 @@
 
 local compilationCacheTest = import 'compilation-cache.libsonnet';
 local latest = import 'latest/targets.jsonnet';
-local nightly = import 'nightly/targets.jsonnet';
 local podTest = import 'pod-test.libsonnet';
+local tpuEmbedding = import 'tpu-embedding.libsonnet';
 
 std.flattenArrays([
   podTest.configs,
   compilationCacheTest.configs,
+  tpuEmbedding.configs,
   latest,
 ])
