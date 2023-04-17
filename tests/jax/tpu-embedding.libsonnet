@@ -20,7 +20,7 @@ local tpus = import 'templates/tpus.libsonnet';
   local tpu_embedding = self.tpu_embedding,
   tpu_embedding:: common.JaxTest {
     local config = self,
-    frameworkPrefix: 'tpu-embedding',
+    frameworkPrefix: 'jax-tpu-embedding',
     extraFlags:: [],
     testCommand:: error 'Must define `testCommand`',
     testScript:: |||
