@@ -46,7 +46,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
       git clone https://github.com/google/flax
       cd flax
-      pip install -e .
+      pip install --upgrade git+https://github.com/google/flax.git
       cd examples/%(folderName)s
 
       export GCS_BUCKET=$(MODEL_DIR)
