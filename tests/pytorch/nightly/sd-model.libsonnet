@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
-local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
@@ -22,15 +22,20 @@ local utils = import 'templates/utils.libsonnet';
   local sd_model = self.sd_model,
   sd_model:: common.PyTorchTest {
     local config = self,
-    modelName: 'sd-model',
+    modelName: 'lightning-sd-model',
     paramsOverride:: {
-      scriptPath: 'main_ll_profile.py',
+      scriptPath: 'stable-diffusion/main_tpu.py',
       trainCommand: [
         'python3',
         self.scriptPath,
         '--train',
         '--no-test',
-        '--base=configs/latent-diffusion/cin-ldm-vq-f8-ss-ep2.yaml',
+        '--base=stable-diffusion/configs/latent-diffusion/cin-ldm-vq-f8-ss.yaml',
+        '--',
+        'data.params.batch_size=32',
+        'lightning.trainer.max_epochs=5',
+        'model.params.first_stage_config.params.ckpt_path=stable-diffusion/models/first_stage_models/vq-f8/model.ckpt',
+        'lightning.trainer.enable_checkpointing=False',
       ],
     },
     command: self.paramsOverride.trainCommand,
@@ -39,24 +44,26 @@ local utils = import 'templates/utils.libsonnet';
   tpuVm:: common.PyTorchTpuVmMixin {
     tpuSettings+: {
       tpuVmExports+: |||
-        export XRT_TPU_CONFIG="localservice;0;localhost:51011"
-        export TPU_NUM_DEVICES=4
         cd stable-diffusion/
       |||,
       tpuVmExtraSetup: |||
-        git clone https://github.com/ssusie/stable-diffusion.git
+        git clone https://github.com/gkroiz/stable-diffusion.git
         cd stable-diffusion
         pip install transformers==4.19.2 diffusers invisible-watermark
         pip install -e .
-        pip install pytorch-lightning==1.4.2 torchmetrics==0.6.0
+        pip install torchmetrics==0.7.0
+        pip install https://github.com/PyTorchLightning/pytorch-lightning/archive/master.zip
         pip install lmdb einops omegaconf
         pip install taming-transformers clip kornia==0.6 albumentations==0.4.3
+        pip install starlette==0.22.0 && pip install tensorboard
         sudo apt-get update -y && sudo apt-get install libgl1 -y
-        wget https://github.com/CompVis/taming-transformers/blob/master/taming/modules/vqvae/quantize.py
-        mv quantize.py ~/.local/lib/python3.8/site-packages/taming/modules/vqvae/
+        # wget -nv https://github.com/CompVis/taming-transformers/blob/master/taming/modules/vqvae/quantize.py
+        pip install -e git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers
+        echo w | pip install -e git+https://github.com/openai/CLIP.git@main#egg=clip
+        # mv quantize.py ~/.local/lib/python3.8/site-packages/taming/modules/vqvae/
 
         # Setup data
-        wget https://s3.amazonaws.com/fast-ai-imageclas/imagenette2.tgz
+        wget -nv https://s3.amazonaws.com/fast-ai-imageclas/imagenette2.tgz
         tar -xf  imagenette2.tgz
         mkdir -p ~/.cache/autoencoders/data/ILSVRC2012_train/data
         mkdir -p ~/.cache/autoencoders/data/ILSVRC2012_validation/data
@@ -64,20 +71,30 @@ local utils = import 'templates/utils.libsonnet';
         mv imagenette2/val/* ~/.cache/autoencoders/data/ILSVRC2012_validation/data
 
         # Get first stage model
-        wget -O models/first_stage_models/vq-f8/model.zip https://ommer-lab.com/files/latent-diffusion/vq-f8.zip
+        wget -nv -O models/first_stage_models/vq-f8/model.zip https://ommer-lab.com/files/latent-diffusion/vq-f8.zip
         cd  models/first_stage_models/vq-f8/
         unzip -o model.zip
         cd ~/stable-diffusion/
-        mv device_parser.py ~/.local/lib/python3.8/site-packages/pytorch_lightning/utilities/device_parser.py
+
+        # Fix syntax error
+        sed -i 's/from torch._six import string_classes/string_classes = (str, bytes)/g' src/taming-transformers/taming/data/utils.py
+
+        # Remove Checkpointing
+        sed -i 's/trainer_kwargs\["callbacks"\]/# trainer_kwargs\["callbacks"\]/g' main_tpu.py
+
         echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
       |||,
     },
+  },
+  local pjrt = self.pjrt,
+  pjrt:: tpuVm + experimental.PjRt {
+    modelName+: '-pjrt',
   },
   local v4_8 = self.v4_8,
   v4_8:: {
     accelerator: tpus.v4_8,
   },
   configs: [
-    sd_model + v4_8 + common.Functional + timeouts.Hours(25) + tpuVm + mixins.Experimental,
+    sd_model + v4_8 + common.Functional + timeouts.Hours(25) + pjrt,
   ],
 }
