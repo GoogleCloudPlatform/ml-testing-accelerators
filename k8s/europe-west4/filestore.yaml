@@ -1,0 +1,66 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: filestore-storage
+provisioner: filestore.csi.storage.gke.io
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+parameters:
+  tier: standard
+  network: default
+allowedTopologies:
+- matchLabelExpressions:
+  - key: topology.gke.io/zone
+    values:
+    - europe-west4-a
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: storage
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: filestore-datasets
+  namespace: storage
+spec:
+  accessModes:
+  - ReadWriteMany
+  storageClassName: filestore-storage
+  resources:
+    requests:
+      storage: 1Ti
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: filestore-sync
+  namespace: storage
+spec:
+  schedule: "5 * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          containers:
+          - name: sync
+            image: google/cloud-sdk
+            command:
+            - gsutil
+            - -m
+            - rsync
+            - -d
+            - -r
+            - gs://xl-ml-test-filestore
+            - /filestore
+            volumeMounts:
+            - name: filestore
+              mountPath: /filestore
+          volumes:
+          - name: filestore
+            persistentVolumeClaim:
+              claimName: filestore-datasets
+          restartPolicy: Never
