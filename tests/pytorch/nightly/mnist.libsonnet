@@ -91,20 +91,6 @@ local utils = import 'templates/utils.libsonnet';
   v4_8:: {
     accelerator: tpus.v4_8,
   },
-  local gpu = self.gpu,
-  gpu:: common.GpuMixin {
-    // Disable XLA metrics report on GPU
-    command+: [
-      '--nometrics_debug',
-    ],
-    flags+: {
-      modelDir: null,
-    },
-  },
-  local v100x4 = self.v100x4,
-  v100x4:: gpu {
-    accelerator: gpus.teslaV100 { count: 4 },
-  },
 
   local tpuVm = self.tpuVm,
   tpuVm:: common.PyTorchTpuVmMixin {
@@ -135,6 +121,5 @@ local utils = import 'templates/utils.libsonnet';
     mnist + convergence + v2_8 + timeouts.Hours(1) + pjrt,
     mnist + convergence_ddp + v2_8 + timeouts.Hours(1) + pjrt + pjrt_ddp,
     mnist + convergence + v4_8 + timeouts.Hours(1) + pjrt + mixins.Experimental,
-    mnist + convergence + v100x4 + timeouts.Hours(6) + mixins.Experimental,
   ],
 }

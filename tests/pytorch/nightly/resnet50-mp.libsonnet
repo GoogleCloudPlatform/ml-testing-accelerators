@@ -42,12 +42,6 @@ local tpus = import 'templates/tpus.libsonnet';
     flags:: {
       modelDir: '$(MODEL_DIR)',
     },
-    volumeMap+: {
-      datasets: common.datasetsVolume,
-    },
-
-    cpu: '90.0',
-    memory: '400Gi',
   },
 
   local fake_data = self.fake_data,
@@ -63,6 +57,9 @@ local tpus = import 'templates/tpus.libsonnet';
       '--num_epochs=2',
       '--datadir=/datasets/imagenet-mini',
     ],
+    volumeMap+: {
+      datasets: common.datasetsVolume,
+    },
   },
   local convergence = self.convergence,
   convergence:: common.Convergence {
@@ -90,6 +87,9 @@ local tpus = import 'templates/tpus.libsonnet';
           },
         },
       },
+    },
+    volumeMap+: {
+      datasets: common.datasetsVolume,
     },
   },
   // DDP converges worse than MP.
@@ -201,7 +201,6 @@ local tpus = import 'templates/tpus.libsonnet';
 
   configs: [
     // XRT
-    resnet50 + functional + v100x4 + timeouts.Hours(1),
     resnet50 + functional + v3_8 + timeouts.Hours(2) + tpuVm + mixins.Experimental,
     resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm,
     resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm + xrt_ddp,
@@ -214,6 +213,7 @@ local tpus = import 'templates/tpus.libsonnet';
     resnet50 + convergence + v4_8 + timeouts.Hours(24) + tpuVm + mixins.Experimental,
     resnet50 + convergence + v4_32 + timeouts.Hours(24) + tpuVm + mixins.Experimental,
     // PJRT
+    resnet50 + fake_data + v100x4 + timeouts.Hours(1),
     resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt,
     resnet50 + convergence + v3_8 + timeouts.Hours(24) + pjrt,
     resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt + pjrt_ddp,
