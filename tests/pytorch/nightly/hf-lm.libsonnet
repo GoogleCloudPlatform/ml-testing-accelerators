@@ -196,6 +196,7 @@ local utils = import 'templates/utils.libsonnet';
       |||,
       tpuVmExtraSetup: |||
         pip install tensorboardX google-cloud-storage
+        pip install --upgrade accelerate
         echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
         echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
       |||,
