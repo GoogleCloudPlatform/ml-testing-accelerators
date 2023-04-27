@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local timeouts = import 'templates/timeouts.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
-local timeouts = import 'templates/timeouts.libsonnet';
 
 {
   BaseTpuVmTest:: {
