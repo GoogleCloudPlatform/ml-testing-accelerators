@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local timeouts = import 'templates/timeouts.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
@@ -157,6 +158,7 @@ local volumes = import 'templates/volumes.libsonnet';
     // Disable retries
     jobTemplate+:: {
       spec+: {
+        activeDeadlineSeconds: std.max(2 * config.timeout, 24 * timeouts.one_hour),
         backoffLimit: 0,
       },
     },
@@ -168,6 +170,7 @@ local volumes = import 'templates/volumes.libsonnet';
     // Pass TPU VM name to test container
     podTemplate+:: {
       spec+: {
+        activeDeadlineSeconds: config.timeout,
         containerMap+:: {
           train+: {
             image: 'google/cloud-sdk',
