@@ -94,7 +94,7 @@ local volumes = import 'templates/volumes.libsonnet';
       else
         'tpu-vm-v4-base',
       tpuVmPytorchSetup: |||
-        sudo apt install -y libopenblas-base
+        sudo apt install -y libopenblas-base libsndfile-dev
         pip install --user \
           https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp38-cp38-linux_x86_64.whl \
           https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-nightly-cp38-cp38-linux_x86_64.whl \
