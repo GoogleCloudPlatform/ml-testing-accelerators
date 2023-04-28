@@ -16,6 +16,7 @@ local cppOperations = import 'cpp-ops.libsonnet';
 local fairseqTransformer = import 'fs-transformer.libsonnet';
 local hfFsmt = import 'hf-fsmt.libsonnet';
 local huggingfaceGlue = import 'hf-glue.libsonnet';
+local huggingfaceGPT2 = import 'hf-llm.libsonnet';
 local huggingfaceLanguageModeling = import 'hf-lm.libsonnet';
 local huggingfaceVitMae = import 'hf-mae.libsonnet';
 local mnist = import 'mnist.libsonnet';
@@ -35,6 +36,7 @@ std.flattenArrays([
   huggingfaceGlue.configs,
   huggingfaceLanguageModeling.configs,
   huggingfaceVitMae.configs,
+  huggingfaceGPT2.configs,
   mnist.configs,
   pythonOperations.configs,
   resnet50_mp.configs,
