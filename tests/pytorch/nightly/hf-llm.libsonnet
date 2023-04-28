@@ -21,7 +21,6 @@ local utils = import 'templates/utils.libsonnet';
 {
   local command_common = |||
     cd transformers
-    git checkout ebdb185befaa821304d461ed6aa20a17e4dc3aa2
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
     export PJRT_DEVICE=TPU_C_API
     export PT_XLA_DEBUG=0
@@ -29,7 +28,7 @@ local utils = import 'templates/utils.libsonnet';
   |||,
 
   local command_copy_metrics = |||
-    gsutil -m cp -r /tmp/test-clm/* $(MODEL_DIR)
+    gsutil -m cp -r /tmp/test-clm/*.json $(MODEL_DIR)
   |||,
 
   local gpt2_model = self.gpt2_model,
@@ -126,8 +125,8 @@ local utils = import 'templates/utils.libsonnet';
         pip install .
         git log -1
         pip install datasets evaluate scikit-learn
-        gsutil cp -r gs://xl-ml-test-filestore/gp2/my_config_*.json examples/pytorch/language-modeling/
-        gsutil cp gs://xl-ml-test-filestore/gp2/fsdp_config.json examples/pytorch/language-modeling/
+        gsutil cp -r gs://cloud-tpu-tpuvm-artifacts/config/xl-ml-test/pytorch/gpt2/my_config_*.json examples/pytorch/language-modeling/
+        gsutil cp gs://cloud-tpu-tpuvm-artifacts/config/xl-ml-test/pytorch/gpt2/fsdp_config.json examples/pytorch/language-modeling/
       |||,
     },
   },
@@ -143,6 +142,6 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   configs: [
-    gpt2_model + v4_8 + config_2B + timeouts.Hours(5) + pjrt,
+    gpt2_model + v4_8 + config_2B + timeouts.Hours(1) + pjrt,
   ],
 }
