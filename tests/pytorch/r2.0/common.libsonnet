@@ -79,12 +79,14 @@ local volumes = import 'templates/volumes.libsonnet';
   PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest + r2_0,
   PyTorchGkePodTest:: common.PyTorchGkePodTest + r2_0,
   Functional:: mixins.Functional {
-    schedule: '0 7 * * *',
+    schedule: '0 7 * * 2',
     tpuSettings+: {
       preemptible: false,
     },
   },
-  Convergence:: mixins.Convergence,
+  Convergence:: mixins.Convergence {
+    schedule: null,
+  },
   PyTorchTpuVmMixin:: experimental.PyTorchTpuVmMixin {
     local config = self,
 

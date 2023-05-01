@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local timeouts = import 'templates/timeouts.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
@@ -41,10 +42,7 @@ local volumes = import 'templates/volumes.libsonnet';
     tpuSettings+: {
       local tpuSettings = self,
 
-      softwareVersion: if config.accelerator.version == 4 then
-        'v2-nightly-tpuv4'
-      else
-        'v2-nightly',
+      softwareVersion: 'v2-nightly',
 
       // Startup script in TPU VM metadata.
       tpuVmStartupScript: 'echo Running startup script',
@@ -99,7 +97,8 @@ local volumes = import 'templates/volumes.libsonnet';
               echo "xl-ml-test:$(cat /scripts/id_rsa.pub)" > ssh-keys.txt
               echo %(startupScript)s > startup-script.txt
 
-              # Retry every 30 seconds for 10 minutes
+              # Retry every 30 seconds for up to 10 minutes
+              start_time="$(date -u +%%s)"
               for i in {1..20}; do
                 set +e
                 gcloud alpha compute tpus tpu-vm create ${tpu_name} \
@@ -111,7 +110,13 @@ local volumes = import 'templates/volumes.libsonnet';
 
                 exit_code=$?
                 set -e
-                test $exit_code = 0 && break || sleep 30;
+
+                current_time="$(date -u +%%s)"
+                elapsed_seconds=$(($current_time-$start_time))
+                # Break if command passed or 10-minute limit reached
+                test $exit_code = 0 && break
+                test "$elapsed_seconds > 600" && break
+                sleep 30
               done
 
               if [ $exit_code -ne 0 ]; then
@@ -153,6 +158,7 @@ local volumes = import 'templates/volumes.libsonnet';
     // Disable retries
     jobTemplate+:: {
       spec+: {
+        activeDeadlineSeconds: std.max(2 * config.timeout, 24 * timeouts.one_hour),
         backoffLimit: 0,
       },
     },
@@ -164,6 +170,7 @@ local volumes = import 'templates/volumes.libsonnet';
     // Pass TPU VM name to test container
     podTemplate+:: {
       spec+: {
+        activeDeadlineSeconds: config.timeout,
         containerMap+:: {
           train+: {
             image: 'google/cloud-sdk',

@@ -17,4 +17,4 @@ kind: ConfigMap
 metadata:
   name: pytorch-nfs-ip
 data:
-  PYTORCH_DATA_LOCATION: 10.182.107.26:/pytorch_datasets
+  PYTORCH_DATA_LOCATION: 172.28.11.122:/vol1

@@ -13,7 +13,6 @@
 // limitations under the License.
 
 local cppOperations = import 'cpp-ops.libsonnet';
-local dlrm = import 'dlrm.libsonnet';
 local fairseqTransformer = import 'fs-transformer.libsonnet';
 local hfFsmt = import 'hf-fsmt.libsonnet';
 local huggingfaceGlue = import 'hf-glue.libsonnet';
@@ -30,7 +29,6 @@ local wav2vec2 = import 'wav2vec2.libsonnet';
 // Add new models here
 std.flattenArrays([
   cppOperations.configs,
-  dlrm.configs,
   fairseqRobertaPretrain.configs,
   fairseqTransformer.configs,
   hfFsmt.configs,

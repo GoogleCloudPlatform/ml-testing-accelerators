@@ -69,12 +69,7 @@ run()
   set -x
   cd -
 
-  if [ $region == "us-central2" ]
-  then
-    CLUSTER="xl-ml-test-$region"
-  else
-    CLUSTER="oneshots-$region"
-  fi
+  CLUSTER="xl-ml-test-$region"
 
   which jsonnet &> /dev/null
   if [ -z "$dryrun" ]

@@ -59,6 +59,6 @@ local tpus = import 'templates/tpus.libsonnet';
 
   configs: [
     fsmt + functional + v4_8 + pjrt + timeouts.Hours(1),
-    fsmt + convergence + v4_8 + pjrt,
+    fsmt + convergence + v4_8 + pjrt + timeouts.Hours(12),
   ],
 }

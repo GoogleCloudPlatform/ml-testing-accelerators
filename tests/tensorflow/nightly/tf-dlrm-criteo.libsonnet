@@ -168,7 +168,7 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
   local tpuVm = self.tpuVm,
-  tpuVm:: experimental.TensorFlowTpuVmMixin,
+  tpuVm:: common.tpuVm,
 
   configs: [
     dlrm + functional + v3_8,

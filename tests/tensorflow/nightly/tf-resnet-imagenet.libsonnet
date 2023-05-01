@@ -74,7 +74,7 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_32,
   },
   local tpuVm = self.tpuVm,
-  tpuVm:: experimental.TensorFlowTpuVmMixin,
+  tpuVm:: common.tpuVm,
 
   local functionalTests = [
     resnet + v2_8 + functional,
