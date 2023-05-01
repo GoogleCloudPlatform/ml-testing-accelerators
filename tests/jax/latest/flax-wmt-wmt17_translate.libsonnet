@@ -31,6 +31,7 @@ local tpus = import 'templates/tpus.libsonnet';
   profile:: mixins.Functional {
     mode: 'profile',
     extraFlags+:: ['--config.num_train_steps=40', '--config.per_device_batch_size=16'],
+    extraDeps+:: ['protobuf==3.20.*'],
     extraConfig:: 'default.py',
   },
   local v3_8 = self.v3_8,
@@ -56,11 +57,15 @@ local tpus = import 'templates/tpus.libsonnet';
     local config = self,
     testScript+:: |||
       gsutil -q stat $(MODEL_DIR)/plugins/profile/*/*.xplane.pb
+      gsutil cp -r $(MODEL_DIR)/plugins /tmp/
+      pip uninstall tensorboard_plugin_profile
+      pip install tbp-nightly
+      python3 ~/.local/lib/python3.*/site-packages/tensorboard_plugin_profile/integration_tests/tpu/tensorflow/tpu_tf2_keras_test.py --log_directory=/tmp/
     ||| % (self.scriptConfig {}),
   },
   configs: [
     wmt + functional + v2_8,
     wmt + convergence + v3_32,
-    wmt_profiling + profile + v3_8 + timeouts.Minutes(40),
+    wmt_profiling + profile + v3_8 + timeouts.Hours(1),
   ],
 }
