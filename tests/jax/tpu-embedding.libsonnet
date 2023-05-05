@@ -26,8 +26,8 @@ local tpus = import 'templates/tpus.libsonnet';
     testScript:: |||
       pip install --upgrade 'jax[tpu]==0.4.4' -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
       pip install flax==0.6.7
-      gsutil cp gs://cloud-tpu-tpuvm-artifacts/tensorflow/20230214/tf_nightly-2.13.0-cp38-cp38-linux_x86_64.whl .
-      pip install tf_nightly-2.13.0-cp38-cp38-linux_x86_64.whl
+      gsutil cp gs://cloud-tpu-v2-images-dev-artifacts/tensorflow/tf-nightly/latest/tf_nightly-*.whl .
+      pip install tf_nightly-*.whl
       git clone https://github.com/jax-ml/jax-tpu-embedding.git
       %(testCommand)s
     ||| % config.testCommand,

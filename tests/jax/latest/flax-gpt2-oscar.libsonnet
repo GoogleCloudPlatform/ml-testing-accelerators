@@ -60,7 +60,7 @@ local tpus = import 'templates/tpus.libsonnet';
   func:: mixins.Functional,
 
   local v4 = self.v4,
-  v4:: common.tpuVmV4Base {
+  v4:: common.tpuVmBaseImage {
     extraFlags+:: ['--per_device_train_batch_size=64', '--per_device_eval_batch_size=64'],
   },
 

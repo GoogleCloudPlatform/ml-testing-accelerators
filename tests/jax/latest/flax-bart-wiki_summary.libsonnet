@@ -98,12 +98,12 @@ local tpus = import 'templates/tpus.libsonnet';
     extraFlags+:: ['--per_device_train_batch_size 16', '--per_device_eval_batch_size 16'],
   },
   local v4_8 = self.v4_8,
-  v4_8:: common.tpuVmV4Base {
+  v4_8:: common.tpuVmBaseImage {
     accelerator: tpus.v4_8,
     extraFlags+:: ['--per_device_train_batch_size 64', '--per_device_eval_batch_size 64'],
   },
   local v4_32 = self.v4_32,
-  v4_32:: common.tpuVmV4Base {
+  v4_32:: common.tpuVmBaseImage {
     accelerator: tpus.v4_32,
     extraFlags+:: ['--per_device_train_batch_size 32', '--per_device_eval_batch_size 32'],
   },
