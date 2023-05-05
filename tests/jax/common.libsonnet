@@ -114,10 +114,6 @@ local utils = import 'templates/utils.libsonnet';
               sleep %(sleepTime)d
             ||| % tpuCreateSettings),
           },
-          'tpu-version': {
-            image: 'google/cloud-sdk',
-            command: null,
-          },
         },
       },
     },
