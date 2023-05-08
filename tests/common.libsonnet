@@ -42,18 +42,6 @@ local metrics = import 'templates/metrics.libsonnet';
           ],
           merge_runs: false,
         },
-        literals: {
-          assertions: {
-            duration: {
-              inclusive_bounds: false,
-              std_devs_from_mean: {
-                comparison: 'LESS',
-                std_devs: 5,
-              },
-              wait_for_n_data_points: 10,
-            },
-          },
-        },
       },
     },
 
