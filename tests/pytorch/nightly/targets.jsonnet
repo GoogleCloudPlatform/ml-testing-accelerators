@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local accelerate = import 'accelerate-smoke.libsonnet';
 local cppOperations = import 'cpp-ops.libsonnet';
 local fairseqTransformer = import 'fs-transformer.libsonnet';
 local hfFsmt = import 'hf-fsmt.libsonnet';
@@ -29,6 +30,7 @@ local wav2vec2 = import 'wav2vec2.libsonnet';
 
 // Add new models here
 std.flattenArrays([
+  accelerate.configs,
   cppOperations.configs,
   fairseqRobertaPretrain.configs,
   fairseqTransformer.configs,
