@@ -1,4 +1,5 @@
 local common = import 'common.libsonnet';
+local experimental = import '../experimental.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
@@ -12,7 +13,8 @@ local tpus = import 'templates/tpus.libsonnet';
     ],
   },
   local tpuVm = self.tpuVm,
-  tpuVm:: common.PyTorchTpuVmMixin {
+  tpuVm:: common.PyTorchTpuVmMixin + experimental.PjRt {
+    local config = self,
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=$(XLA_USE_BF16)
@@ -22,7 +24,8 @@ local tpus = import 'templates/tpus.libsonnet';
         git clone https://github.com/huggingface/accelerate.git
         pip install -e accelerate
 
-        cat > ~/.cache/huggingface/accelerate/default_config.yaml << 'TEST_SCRIPT_EOF
+        mkdir -p ~/.cache/huggingface/accelerate/
+        cat > ~/.cache/huggingface/accelerate/default_config.yaml << 'HF_CONFIG_EOF'
         compute_environment: LOCAL_MACHINE
         distributed_type: TPU
         downcast_bf16: 'no'
@@ -37,12 +40,10 @@ local tpus = import 'templates/tpus.libsonnet';
         tpu_use_cluster: false
         tpu_use_sudo: false
         use_cpu: false
-        echo ' >> ~/.bash_profile
-        echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
-        TEST_SCRIPT_EOF
+        HF_CONFIG_EOF
 
-        echo ~/.cache/huggingface/accelerate/default_config.yaml
-      |||,
+        accelerate env
+      ||| % [config.accelerator.numCores],
     },
   },
   local v2_8 = self.v2_8,
