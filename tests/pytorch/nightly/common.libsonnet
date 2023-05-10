@@ -137,6 +137,39 @@ local volumes = import 'templates/volumes.libsonnet';
     },
   },
 
+  Accelerate:: {
+    local config = self,
+    tpuSettings+: {
+      tpuVmExports+: |||
+        export PATH=~/.local/bin:$PATH
+      |||,
+      tpuVmExtraSetup: |||
+        git clone https://github.com/huggingface/accelerate.git
+        pip install -e accelerate
+
+        mkdir -p ~/.cache/huggingface/accelerate/
+        cat > ~/.cache/huggingface/accelerate/default_config.yaml << 'HF_CONFIG_EOF'
+        compute_environment: LOCAL_MACHINE
+        distributed_type: TPU
+        downcast_bf16: 'no'
+        machine_rank: 0
+        main_training_function: main
+        mixed_precision: 'no'
+        num_machines: 1
+        num_processes: %d
+        rdzv_backend: static
+        same_network: true
+        tpu_env: []
+        tpu_use_cluster: false
+        tpu_use_sudo: false
+        use_cpu: false
+        HF_CONFIG_EOF
+
+        .local/bin/accelerate env
+      ||| % [config.accelerator.numCores],
+    },
+  },
+
   // DEPRECATED: Use PyTorchTpuVmMixin instead
   tpu_vm_nightly_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
 }
