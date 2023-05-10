@@ -9,7 +9,8 @@ for zone in ${zones[@]}; do
   cluster=xl-ml-test-$region
   gcloud container clusters get-credentials $cluster --region $region --project xl-ml-test
 
-  # Don't delete any TPUs for pods that are currently running
+  # Save the UID of any pod that might be using a TPU so we
+  # don't delete any in-use TPUs.
   pods_to_save=$(mktemp)
   for namespace in default automated; do
     for status in Running Pending; do
@@ -17,12 +18,9 @@ for zone in ${zones[@]}; do
         | tr ' ' '\n' \
           >> $pods_to_save
       # Ensure there is a newline between outputs
-      echo "" >> $pods_to_save
+      sed -ie '$a\' $pods_to_save
     done
   done
-
-  # Strip empty lines that could confuse grep
-  sed -i -ne/./p $pods_to_save
 
   leaks=$(
     gcloud compute tpus tpu-vm list --zone $zone --project=xl-ml-test --format="value(name)" \
