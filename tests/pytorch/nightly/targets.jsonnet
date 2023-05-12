@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local accelerate = import 'accelerate-smoke.libsonnet';
 local fairseqTransformer = import 'fs-transformer.libsonnet';
+local huggingfaceDiffusers = import 'hf-diffusers.libsonnet';
 local hfFsmt = import 'hf-fsmt.libsonnet';
 local huggingfaceGlue = import 'hf-glue.libsonnet';
 local huggingfaceGPT2 = import 'hf-llm.libsonnet';
@@ -24,8 +26,9 @@ local stableDif = import 'sd-model.libsonnet';
 
 // Add new models here
 std.flattenArrays([
-  fairseqTransformer.configs,
+  accelerate.configs,
   hfFsmt.configs,
+  huggingfaceDiffusers.configs,
   huggingfaceGlue.configs,
   huggingfaceLanguageModeling.configs,
   huggingfaceVitMae.configs,
