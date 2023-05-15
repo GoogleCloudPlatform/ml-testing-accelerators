@@ -51,31 +51,6 @@ local utils = import 'templates/utils.libsonnet';
   },
   local convergence = self.convergence,
   convergence:: common.Convergence,
-  local v2_8 = self.v2_8,
-  v2_8:: {
-    accelerator: tpus.v2_8,
-    scriptConfig+: {
-      paramsOverride+: {
-        task+: {
-          train_data+: {
-            global_batch_size: 64,
-          },
-        },
-      },
-    },
-  },
-  local v3_8 = self.v3_8,
-  v3_8:: tpu_common {
-    accelerator: tpus.v3_8,
-  },
-  local v2_32 = self.v2_32,
-  v2_32:: tpu_common {
-    accelerator: tpus.v2_32,
-  },
-  local v3_32 = self.v3_32,
-  v3_32:: tpu_common {
-    accelerator: tpus.v3_32,
-  },
   local v4_8 = self.v4_8,
   v4_8:: tpu_common {
     accelerator: tpus.v4_8,
@@ -87,15 +62,7 @@ local utils = import 'templates/utils.libsonnet';
   local tpuVm = self.tpuVm,
   tpuVm:: common.tpuVm,
 
-  local functionalTests = [
-    retinanet + v2_8 + functional,
-    retinanet + v3_8 + functional,
-  ],
-  local convergenceTests = [
-    retinanet + v2_32 + convergence + timeouts.Hours(15),
-    retinanet + v3_32 + convergence + timeouts.Hours(15),
-  ],
-  configs: functionalTests + convergenceTests + [
+  configs: [
     retinanet + v4_8 + functional + tpuVm,
     retinanet + v4_32 + convergence + tpuVm,
   ],

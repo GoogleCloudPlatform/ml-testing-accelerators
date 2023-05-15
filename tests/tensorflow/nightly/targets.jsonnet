@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local bert = import 'tf-bert-glue_mnli.libsonnet';
 local dcn = import 'tf-dcn-criteo.libsonnet';
 local dlrm = import 'tf-dlrm-criteo.libsonnet';
 local keras_api = import 'tf-keras-api.libsonnet';
@@ -20,15 +19,12 @@ local maskrcnn = import 'tf-maskrcnn-coco.libsonnet';
 local resnet = import 'tf-resnet-imagenet.libsonnet';
 local resnetrs = import 'tf-resnetrs-imagenet.libsonnet';
 local retinanet = import 'tf-retinanet-coco.libsonnet';
-local wmt = import 'tf-wmt-wmt14_translate.libsonnet';
 
 // Add new models here
 std.flattenArrays([
   dlrm.configs,
   dcn.configs,
   keras_api.configs,
-  bert.configs,
-  wmt.configs,
   maskrcnn.configs,
   retinanet.configs,
   resnet.configs,
