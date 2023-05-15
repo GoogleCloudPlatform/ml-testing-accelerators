@@ -140,7 +140,7 @@ local tpus = import 'templates/tpus.libsonnet';
     local config = self,
 
     tpuSettings+: {
-      softwareVersion: 'tpu-vm-base',
+      softwareVersion: 'tpu-ubuntu2204-base',
     },
     scriptConfig+: {
       testEnvWorkarounds: |||
@@ -159,7 +159,7 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: tpus.v4_8,
 
     tpuSettings+: {
-      softwareVersion: 'tpu-vm-v4-base',
+      softwareVersion: 'tpu-ubuntu2204-base',
     },
     scriptConfig+: {
       testEnvWorkarounds: |||
