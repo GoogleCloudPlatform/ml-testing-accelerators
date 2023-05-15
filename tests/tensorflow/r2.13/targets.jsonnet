@@ -12,13 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local nightly = import 'nightly/targets.jsonnet';
-local r2_12 = import 'r2.12/targets.jsonnet';
-local r3_13 = import 'r2.13/targets.jsonnet';
+local dcn = import 'tf-dcn-criteo.libsonnet';
+local dlrm = import 'tf-dlrm-criteo.libsonnet';
+local keras_api = import 'tf-keras-api.libsonnet';
+local maskrcnn = import 'tf-maskrcnn-coco.libsonnet';
+local resnet = import 'tf-resnet-imagenet.libsonnet';
+local resnetrs = import 'tf-resnetrs-imagenet.libsonnet';
+local retinanet = import 'tf-retinanet-coco.libsonnet';
 
-// Add new versions here
+// Add new models here
 std.flattenArrays([
-  nightly,
-  r2_12,
-  r3_13,
+  dlrm.configs,
+  dcn.configs,
+  keras_api.configs,
+  maskrcnn.configs,
+  retinanet.configs,
+  resnet.configs,
+  resnetrs.configs,
 ])
