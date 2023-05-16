@@ -52,6 +52,27 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
+  local gpu_common = {
+    local config = self,
+
+    paramsOverride+:: {
+      runtime+: {
+        distribution_strategy: 'mirrored',
+        num_gpus: config.accelerator.count,
+      },
+      task+: {
+        model+: {
+          bottom_mlp: [512, 256, 8],
+          embedding_dim: 8,
+        },
+      },
+    },
+  },
+
+  local v100 = gpu_common {
+    accelerator: gpus.teslaV100,
+  },
+
   local tpu_common = {
     paramsOverride+:: {
       runtime+: {
@@ -87,6 +108,7 @@ local tpus = import 'templates/tpus.libsonnet';
   local tpuVm = common.tpuVm,
 
   configs: [
+    dcn + convergence + v100,
     dcn + functional + v2_8 + tpuVm,
     dcn + convergence + v4_32 + tpuVm,
   ],
