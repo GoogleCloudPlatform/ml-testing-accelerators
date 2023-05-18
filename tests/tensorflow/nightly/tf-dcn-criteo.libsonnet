@@ -94,30 +94,6 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  local v2_32 = tpu_common {
-    accelerator: tpus.v2_32,
-    paramsOverride+:: {
-      task+: {
-        model+: {
-          bottom_mlp: [512, 256, 64],
-          embedding_dim: 64,
-        },
-      },
-    },
-  },
-
-  local v3_32 = tpu_common {
-    accelerator: tpus.v3_32,
-    paramsOverride+:: {
-      task+: {
-        model+: {
-          bottom_mlp: [512, 256, 128],
-          embedding_dim: 128,
-        },
-      },
-    },
-  },
-
   local v4_32 = tpu_common {
     accelerator: tpus.v4_32,
     paramsOverride+:: {
@@ -132,8 +108,6 @@ local tpus = import 'templates/tpus.libsonnet';
   local tpuVm = common.tpuVm,
 
   configs: [
-    dcn + functional + v2_8,
-    dcn + convergence + v3_32,
     dcn + convergence + v100,
     dcn + functional + v2_8 + tpuVm,
     dcn + convergence + v4_32 + tpuVm,

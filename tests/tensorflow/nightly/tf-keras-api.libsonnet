@@ -78,12 +78,6 @@ local utils = import 'templates/utils.libsonnet';
     testFeature:: 'rnn',
   },
 
-  local preprocessing_layers = self.preprocessing_layers,
-  preprocessing_layers:: API {
-    mode: 'preprocess-layers',
-    testFeature:: 'preprocessing_layers',
-  },
-
   local upsample = self.upsample,
   upsample:: API {
     mode: 'upsample',
@@ -108,12 +102,6 @@ local utils = import 'templates/utils.libsonnet';
     testFeature:: 'train_and_evaluate',
   },
 
-  local train_validation_dataset = self.train_validation_dataset,
-  train_validation_dataset:: API {
-    mode: 'train-eval-dataset',
-    testFeature:: 'train_validation_dataset',
-  },
-
   local transfer_learning = self.transfer_learning,
   transfer_learning:: API {
     mode: 'transfer-learning',
@@ -136,27 +124,15 @@ local utils = import 'templates/utils.libsonnet';
   tpuVm:: common.tpuVm,
 
   configs: [
-    keras_test + v2_8 + connection,
     keras_test + v2_8 + connection + tpuVm,
-    keras_test + v2_8 + custom_layers,
     keras_test + v2_8 + custom_layers + tpuVm,
-    keras_test + v2_8 + custom_training_loop,
     keras_test + v2_8 + custom_training_loop + tpuVm,
-    keras_test + v2_8 + feature_column + timeouts.Hours(2),
     keras_test + v2_8 + feature_column + timeouts.Hours(2) + tpuVm,
-    keras_test + v2_8 + preprocessing_layers,
-    keras_test + v2_8 + upsample,
     keras_test + v2_8 + upsample + tpuVm,
-    keras_test + v2_8 + rnn,
     keras_test + v2_8 + rnn + tpuVm,
-    keras_test + v2_8 + save_and_load + timeouts.Hours(2),
     keras_test + v2_8 + save_and_load + timeouts.Hours(2) + tpuVm,
-    keras_test + v2_8 + save_load_io_device_local + timeouts.Hours(2),
     keras_test + v2_8 + save_load_io_device_local + timeouts.Hours(2) + tpuVm,
-    keras_test + v2_8 + train_and_evaluate + timeouts.Hours(3),
     keras_test + v2_8 + train_and_evaluate + timeouts.Hours(3) + tpuVm,
-    keras_test + v2_8 + train_validation_dataset,
-    keras_test + v2_8 + transfer_learning,
     keras_test + v2_8 + transfer_learning + tpuVm,
   ],
 }
