@@ -197,4 +197,32 @@ local tpus = import 'templates/tpus.libsonnet';
       |||,
     },
   },
+  huggingFaceDiffuser:: {
+    scriptConfig+: {
+      installPackages: |||
+        set -x
+        set -u
+        set -e
+
+        # .bash_logout sometimes causes a spurious bad exit code, remove it.
+        rm .bash_logout
+
+        pip install --upgrade pip
+        git clone https://github.com/huggingface/diffusers.git
+        cd diffusers && pip install .
+        pip install -U -r examples/text_to_image/requirements_flax.txt
+        export PATH=$PATH:$HOME/.local/bin
+
+        pip install jax[tpu] -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+      |||,
+      verifySetup: |||
+        python3 -c 'import flax; print("flax version:", flax.__version__)'
+        num_devices=`python3 -c "import jax; print(jax.device_count())"`
+        if [ "$num_devices" = "1" ]; then
+          echo "No TPU devices detected"
+          exit 1
+        fi
+      |||,
+    },
+  },
 }

@@ -19,6 +19,7 @@ local hf_gpt2 = import 'flax-gpt2-oscar.libsonnet';
 local resnet = import 'flax-resnet-imagenet.libsonnet';
 local hf_vit = import 'flax-vit-imagenette.libsonnet';
 local wmt = import 'flax-wmt-wmt17_translate.libsonnet';
+local hf_sd = import 'flax-sd-pokemon.libsonnet';
 
 // Add new models here
 std.flattenArrays([
@@ -29,4 +30,5 @@ std.flattenArrays([
   hf_gpt2.configs,
   resnet.configs,
   wmt.configs,
+  hf_sd.configs,
 ])
