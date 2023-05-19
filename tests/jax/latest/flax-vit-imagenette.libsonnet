@@ -18,7 +18,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
 {
   local hf_vit_common = self.hf_vit_common,
-  hf_vit_common:: common.JaxTest + common.huggingFace {
+  hf_vit_common:: common.JaxTest + common.huggingFaceTransformer {
     local config = self,
     frameworkPrefix: 'flax.latest',
     modelName:: 'vit-imagenette',

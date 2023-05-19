@@ -19,7 +19,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
 {
   local hf_gpt2_common = self.hf_gpt2_common,
-  hf_gpt2_common:: common.JaxTest + common.huggingFace {
+  hf_gpt2_common:: common.JaxTest + common.huggingFaceTransformer {
     local config = self,
     frameworkPrefix: 'flax.latest',
     modelName:: 'gpt2-oscar',

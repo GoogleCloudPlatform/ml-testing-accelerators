@@ -168,7 +168,7 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  huggingFace:: {
+  huggingFaceTransformer:: {
     scriptConfig+: {
       installPackages: |||
         set -x

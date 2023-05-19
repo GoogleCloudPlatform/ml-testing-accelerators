@@ -62,7 +62,7 @@ local tpus = import 'templates/tpus.libsonnet';
            }),
   },
 
-  hfBertCommon:: common.JaxTest + common.huggingFace {
+  hfBertCommon:: common.JaxTest + common.huggingFaceTransformer {
     local config = self,
     frameworkPrefix: 'flax.latest',
     modelName:: 'bert-glue',

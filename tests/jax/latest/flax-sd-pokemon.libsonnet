@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -84,12 +84,17 @@ local tpus = import 'templates/tpus.libsonnet';
     accelerator: tpus.v4_8,
   },
 
+  local v4_32 = self.v4_32,
+  v4_32:: v4 {
+    accelerator: tpus.v4_32,
+  },
+
   local func_tests = [
     hf_sd_common + func + v4_8,
   ],
 
   local conv_tests = [
-    hf_sd_common + conv + v4 + v4_8,
+    hf_sd_common + conv + v4_32,
   ],
 
   configs: func_tests + conv_tests,
