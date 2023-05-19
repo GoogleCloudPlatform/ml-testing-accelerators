@@ -85,7 +85,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   local func_tests = [
-    hf_sd_common + func  + v4_8,
+    hf_sd_common + func + v4_8,
   ],
 
   local conv_tests = [
