@@ -17,7 +17,7 @@ local hf_bert_mnli = import 'flax-bert-glue_mnli.libsonnet';
 local hf_bert_mrpc = import 'flax-bert-glue_mrpc.libsonnet';
 local hf_gpt2 = import 'flax-gpt2-oscar.libsonnet';
 local resnet = import 'flax-resnet-imagenet.libsonnet';
-local ht_sd = import 'flax-sd-pokemon.libsonnet';
+local hf_sd = import 'flax-sd-pokemon.libsonnet';
 local hf_vit = import 'flax-vit-imagenette.libsonnet';
 local wmt = import 'flax-wmt-wmt17_translate.libsonnet';
 
