@@ -23,6 +23,7 @@ local utils = import 'templates/utils.libsonnet';
     cd transformers && pip install .
     git log -1
     pip install datasets evaluate scikit-learn
+    pip install transformers[torch]
     python3 examples/pytorch/xla_spawn.py \
       --num_cores 8 \
       examples/pytorch/language-modeling/run_mlm.py \
