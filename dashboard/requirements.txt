@@ -1,6 +1,6 @@
 absl-py==0.9.0
 bokeh==2.3.2
-tornado==5.1.1
+tornado==6.3.2
 pandas==1.1.5
 pandas-gbq==0.13.1
 google-api-python-client==1.8.0
