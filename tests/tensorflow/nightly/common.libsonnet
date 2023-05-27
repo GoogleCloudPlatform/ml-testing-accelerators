@@ -20,6 +20,25 @@ local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
 {
+  HuggingFaceTransformer:: common.ModelGardenTest {
+    local config = self,
+
+    frameworkPrefix: 'tf.nightly',
+    tpuSettings+: {
+      softwareVersion: 'nightly',
+    },
+    imageTag: 'nightly',
+    script: {
+      initialSetup:
+        |||
+          cd /tmp
+          git clone https://github.com/huggingface/transformers.git
+          cd transformers
+          pip install .
+          pip install -r examples/tensorflow/_tests_requirements.txt
+        |||,
+    },
+  },
   ModelGardenTest:: common.ModelGardenTest {
     local config = self,
 
