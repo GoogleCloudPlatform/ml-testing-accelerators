@@ -20,6 +20,7 @@ local maskrcnn = import 'tf-maskrcnn-coco.libsonnet';
 local resnet = import 'tf-resnet-imagenet.libsonnet';
 local resnetrs = import 'tf-resnetrs-imagenet.libsonnet';
 local retinanet = import 'tf-retinanet-coco.libsonnet';
+local vit = import 'tf-vit-beans.libsonnet';
 local wmt = import 'tf-wmt-wmt14_translate.libsonnet';
 
 // Add new models here
@@ -33,4 +34,5 @@ std.flattenArrays([
   retinanet.configs,
   resnet.configs,
   resnetrs.configs,
+  vit.configs,
 ])
