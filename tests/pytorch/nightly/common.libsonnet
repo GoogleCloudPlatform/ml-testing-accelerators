@@ -98,8 +98,8 @@ local volumes = import 'templates/volumes.libsonnet';
         sudo apt install -y libopenblas-base
         pip install --user \
           https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp38-cp38-linux_x86_64.whl \
-          https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-nightly-cp38-cp38-linux_x86_64.whl \
           'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp38-cp38-linux_x86_64.whl'
+        pip3 install --user --pre --no-deps torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
         git clone --depth=1 https://github.com/pytorch/pytorch.git
         cd pytorch
         git clone https://github.com/pytorch/xla.git
