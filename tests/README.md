@@ -38,7 +38,7 @@ correctly, or to extract the correct name to run a one shot test.
 To manually run one shot tests, first [connect to a cluster](https://console.cloud.google.com/kubernetes/list) and then run the following:
 
 ```bash
-export TEST_NAME=tf.nightly-resnet-imagenet-func-v2-8
+export TEST_NAME=tf.nightly-vit-beans-func-v4-8-1vm
 jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$TEST_NAME | kubectl create -f -
 ```
 
@@ -48,7 +48,7 @@ For convenience, the steps of connecting to a cluster and running a one shot
 test have been combined into a single script as follows:
 
 ```bash
-export TEST_NAME=tf.nightly-resnet-imagenet-func-v2-8
+export TEST_NAME=tf.nightly-vit-beans-func-v4-8-1vm
 ./scripts/run-oneshot.sh -t $TEST_NAME
 ```
 
