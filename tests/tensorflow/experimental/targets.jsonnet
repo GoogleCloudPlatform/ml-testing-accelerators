@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,15 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local experimental = import 'experimental/targets.jsonnet';
-local nightly = import 'nightly/targets.jsonnet';
-local r2_12 = import 'r2.12/targets.jsonnet';
-local r3_13 = import 'r2.13/targets.jsonnet';
+local dcn = import 'tf-dcn-criteo.libsonnet';
+local t5 = import 'tf-t5-wmt16.libsonnet';
+local vit = import 'tf-vit-beans.libsonnet';
 
-// Add new versions here
+// Add new models here
 std.flattenArrays([
-  experimental,
-  nightly,
-  r2_12,
-  r3_13,
+  dcn.configs,
+  vit.configs,
+  t5.configs,
 ])
