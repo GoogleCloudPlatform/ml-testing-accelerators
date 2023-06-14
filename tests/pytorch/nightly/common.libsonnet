@@ -120,7 +120,24 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   GpuMixin:: {
     local config = self,
-    imageTag+: '_cuda_11.8',
+
+    # TODO: merge common setup with PyTorchTpuVmMixin
+    entrypoint: [
+      'bash',
+      '-cxue',
+      |||
+        git clone --depth=1 https://github.com/pytorch/pytorch.git
+        cd pytorch
+        git clone https://github.com/pytorch/xla.git
+        cd ..
+
+        # Run whatever is in `command` here
+        "${@:0}"
+      |||,
+    ],
+
+    image: 'us-central1-docker.pkg.dev/tpu-pytorch-releases/docker/xla',
+    imageTag: 'nightly_3.8_cuda_11.8',
 
     podTemplate+:: {
       spec+: {
@@ -130,6 +147,7 @@ local volumes = import 'templates/volumes.libsonnet';
         containerMap+:: {
           train+: {
             envMap+: {
+              PJRT_DEVICE: 'GPU',
               GPU_NUM_DEVICES: '%d' % config.accelerator.count,
             },
           },
