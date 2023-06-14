@@ -42,7 +42,7 @@ export TEST_NAME=tf.nightly-dlrm-criteo-conv-v100-x1
 jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$TEST_NAME | kubectl create -f -
 ```
 
-The above command will generate a job id such as `job.batch/tf.nightly-dlrm-criteo-conv-v100-x1`. To find the detail of the test, search in [GoogleCloud->Kubernetes->workload in the project `xl-ml-test`](https://console.cloud.google.com/kubernetes/workload/overview?mods=allow_workbench_image_override&project=xl-ml-test) with the job id `tf.nightly-dlrm-criteo-conv-v100-x1`.
+The above command will generate a job id such as `job.batch/tf.nightly-dlrm-criteo-conv-v100-x1-gz8ww`. To find the detail of the test, search in [GoogleCloud->Kubernetes->workload in the project `xl-ml-test`](https://console.cloud.google.com/kubernetes/workload/overview?mods=allow_workbench_image_override&project=xl-ml-test) with the job id `tf.nightly-dlrm-criteo-conv-v100-x1-gz8ww`.
 
 For convenience, the steps of connecting to a cluster and running a one shot
 test have been combined into a single script as follows:
