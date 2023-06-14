@@ -16,22 +16,20 @@ local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
 local gpus = import 'templates/gpus.libsonnet';
 local mixins = import 'templates/mixins.libsonnet';
-local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  local dlrm = common.TfRankingTest {
-    modelName: 'dlrm-criteo',
+  local dcn = common.TfRankingTest {
+    modelName: 'dcn-criteo',
     paramsOverride+:: {
       task+: {
         model+: {
-          interaction: 'dot',
+          interaction: 'cross',
         },
       },
     },
   },
-  local functional = self.functional,
-  functional:: common.Functional {
+  local functional = common.Functional {
     command+: [
       '--mode=train',
     ],
@@ -41,8 +39,7 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
-  local convergence = self.convergence,
-  convergence:: common.Convergence {
+  local convergence = common.Convergence {
     local config = self,
 
     command+: [
@@ -55,8 +52,7 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  local gpu_common = self.gpu_common,
-  gpu_common:: {
+  local gpu_common = {
     local config = self,
 
     paramsOverride+:: {
@@ -76,13 +72,8 @@ local tpus = import 'templates/tpus.libsonnet';
   local v100 = gpu_common {
     accelerator: gpus.teslaV100,
   },
-  local v100x4 = self.v100x4,
-  v100x4:: v100 {
-    accelerator: gpus.teslaV100 { count: 4 },
-  },
 
-  local tpu_common = self.tpu_common,
-  tpu_common:: {
+  local tpu_common = {
     paramsOverride+:: {
       runtime+: {
         distribution_strategy: 'tpu',
@@ -91,8 +82,7 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  local v2_8 = self.v2_8,
-  v2_8:: tpu_common {
+  local v2_8 = tpu_common {
     accelerator: tpus.v2_8,
     paramsOverride+:: {
       task+: {
@@ -104,8 +94,7 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  local v2_32 = self.v2_32,
-  v2_32:: tpu_common {
+  local v2_32 = tpu_common {
     accelerator: tpus.v2_32,
     paramsOverride+:: {
       task+: {
@@ -117,20 +106,19 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  local v4_8 = self.v4_8,
-  v4_8:: tpu_common {
-    accelerator: tpus.v4_8,
+  local v3_32 = tpu_common {
+    accelerator: tpus.v3_32,
     paramsOverride+:: {
       task+: {
         model+: {
-          bottom_mlp: [512, 256, 64],
-          embedding_dim: 64,
+          bottom_mlp: [512, 256, 128],
+          embedding_dim: 128,
         },
       },
     },
   },
-  local v4_32 = self.v4_32,
-  v4_32:: tpu_common {
+
+  local v4_32 = tpu_common {
     accelerator: tpus.v4_32,
     paramsOverride+:: {
       task+: {
@@ -141,16 +129,10 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
-  local tpuVm = self.tpuVm,
-  tpuVm:: common.tpuVm,
+  local tpuVm = common.tpuVm,
 
   configs: [
-    dlrm + functional + v100,
-    dlrm + functional + v100x4,
-    dlrm + convergence + v100,
-    dlrm + convergence + v100x4,
-    dlrm + functional + v2_8 + tpuVm,
-    dlrm + convergence + v2_32 + tpuVm,
-    dlrm + functional + v4_8 + tpuVm,
+    dcn + functional + v2_8 + tpuVm,
+    dcn + convergence + v4_32 + tpuVm,
   ],
 }

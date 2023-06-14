@@ -69,11 +69,13 @@ local utils = import 'templates/utils.libsonnet';
   v3_32:: {
     accelerator: tpus.v3_32,
   },
+  local tpuVm = common.tpuVm,
+
   configs: [
-    bert + accelerator + functional
+    bert + accelerator + functional + tpuVm
     for accelerator in [v2_8, v3_8]
   ] + [
-    bert + v2_32 + convergence,
-    bert + v3_32 + convergence,
+    bert + v2_32 + convergence + tpuVm,
+    bert + v3_32 + convergence + tpuVm,
   ],
 }

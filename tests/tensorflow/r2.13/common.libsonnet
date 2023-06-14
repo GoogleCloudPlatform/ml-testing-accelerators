@@ -20,33 +20,14 @@ local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
 {
-  HuggingFaceTransformer:: common.ModelGardenTest {
-    local config = self,
-
-    frameworkPrefix: 'tf.nightly',
-    tpuSettings+: {
-      softwareVersion: 'nightly',
-    },
-    imageTag: 'nightly',
-    script: {
-      initialSetup:
-        |||
-          cd /tmp
-          git clone https://github.com/huggingface/transformers.git
-          cd transformers
-          pip install .
-          pip install -r examples/tensorflow/_tests_requirements.txt
-        |||,
-    },
-  },
   ModelGardenTest:: common.ModelGardenTest {
     local config = self,
 
-    frameworkPrefix: 'tf.nightly',
+    frameworkPrefix: 'tf-r2.13.0',
     tpuSettings+: {
-      softwareVersion: 'nightly',
+      softwareVersion: '2.13.0',
     },
-    imageTag: 'nightly',
+    imageTag: 'r2.13.0',
     podTemplate+:: if config.accelerator.type == 'tpu' then
       {
         spec+: {
@@ -116,9 +97,9 @@ local volumes = import 'templates/volumes.libsonnet';
     local config = self,
     tpuSettings+: {
       softwareVersion: if config.accelerator.replicas == 1 then
-        'v2-nightly'
+        'tpu-vm-tf-2.12.0'
       else
-        'v2-nightly-pod',
+        'tpu-vm-tf-2.12.0-pod',
     },
     podTemplate+:: {
       spec+: {
@@ -148,11 +129,11 @@ local volumes = import 'templates/volumes.libsonnet';
                   runtime_version: %(softwareVersion)s,
                   network_config: {enable_external_ips: true},
                   labels: {test_name: '%(testName)s' },
-                  boot_disk: {source_image: 'projects/cloud-tpu-v2-images-dev/global/images/family/tpu-vm-tf-nightly'},
+                  boot_disk: {source_image: 'projects/cloud-tpu-v2-images-dev/global/images/family/tpu-vm-tf-2-13-0'},
                   metadata: {
                     'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
                     'startup-script': %(startupScript)s,
-                    'tensorflow-docker-url': 'gcr.io/cloud-tpu-v2-images-dev/grpc_tpu_worker:nightly'
+                    'tensorflow-docker-url': 'gcr.io/cloud-tpu-v2-images-dev/grpc_tpu_worker:tf-2.13.0'
                   }
               }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
               echo "Waiting for TPU Pod ${tpu_name} to become ready..."
@@ -178,7 +159,7 @@ local volumes = import 'templates/volumes.libsonnet';
 
               softwareVersion=%(softwareVersion)s
               if [[ ${softwareVersion: -3} == "pod" ]]; then
-                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:nightly\"/' /etc/systemd/system/tpu-runtime.service"
+                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:tf-2.13.0\"/' /etc/systemd/system/tpu-runtime.service"
                  gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart tpu-runtime"
               fi
             ||| % tpuCreateSettings),
@@ -294,10 +275,7 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   local functional_schedule = '0 9 * * *',
   Functional:: mixins.Functional {
-    schedule: if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' || self.accelerator.name == 'v4-8' then
-      functional_schedule
-    else
-      null,
+    schedule: functional_schedule,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
@@ -322,7 +300,7 @@ local volumes = import 'templates/volumes.libsonnet';
     schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
-    schedule: '0 5 * * 0,2,4',
+    schedule: '0 0 * * 0,2,4',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {

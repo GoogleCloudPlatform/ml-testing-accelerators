@@ -36,6 +36,7 @@ local utils = import 'templates/utils.libsonnet';
         'lightning.trainer.max_epochs=5',
         'model.params.first_stage_config.params.ckpt_path=stable-diffusion/models/first_stage_models/vq-f8/model.ckpt',
         'lightning.trainer.enable_checkpointing=False',
+        'lightning.strategy.sync_module_states=False',
       ],
     },
     command: self.paramsOverride.trainCommand,
@@ -47,7 +48,7 @@ local utils = import 'templates/utils.libsonnet';
         cd stable-diffusion/
       |||,
       tpuVmExtraSetup: |||
-        git clone https://github.com/gkroiz/stable-diffusion.git
+        git clone https://github.com/pytorch-tpu/stable-diffusion.git
         cd stable-diffusion
         pip install transformers==4.19.2 diffusers invisible-watermark
         pip install -e .

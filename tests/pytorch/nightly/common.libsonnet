@@ -94,11 +94,13 @@ local volumes = import 'templates/volumes.libsonnet';
       else
         'tpu-vm-v4-base',
       tpuVmPytorchSetup: |||
+        pip3 install setuptools==62.1.0
         sudo apt install -y libopenblas-base libsndfile-dev
         pip install --user \
           https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp38-cp38-linux_x86_64.whl \
-          https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-nightly-cp38-cp38-linux_x86_64.whl \
           'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp38-cp38-linux_x86_64.whl'
+        pip3 install --user --pre --no-deps torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+        pip3 install pillow
         git clone --depth=1 https://github.com/pytorch/pytorch.git
         cd pytorch
         git clone https://github.com/pytorch/xla.git
@@ -133,6 +135,39 @@ local volumes = import 'templates/volumes.libsonnet';
           },
         },
       },
+    },
+  },
+
+  Accelerate:: {
+    local config = self,
+    tpuSettings+: {
+      tpuVmExports+: |||
+        export PATH=~/.local/bin:$PATH
+      |||,
+      tpuVmExtraSetup: |||
+        git clone https://github.com/huggingface/accelerate.git
+        pip install -e accelerate
+
+        mkdir -p ~/.cache/huggingface/accelerate/
+        cat > ~/.cache/huggingface/accelerate/default_config.yaml << 'HF_CONFIG_EOF'
+        compute_environment: LOCAL_MACHINE
+        distributed_type: TPU
+        downcast_bf16: 'no'
+        machine_rank: 0
+        main_training_function: main
+        mixed_precision: 'no'
+        num_machines: 1
+        num_processes: %d
+        rdzv_backend: static
+        same_network: true
+        tpu_env: []
+        tpu_use_cluster: false
+        tpu_use_sudo: false
+        use_cpu: false
+        HF_CONFIG_EOF
+
+        .local/bin/accelerate env
+      ||| % [config.accelerator.numCores],
     },
   },
 

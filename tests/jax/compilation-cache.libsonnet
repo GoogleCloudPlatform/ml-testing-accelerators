@@ -48,7 +48,6 @@ local mixins = import 'templates/mixins.libsonnet';
       from jax.experimental.compilation_cache import compilation_cache as cc
       from jax import pmap, lax
       from jax._src.config import config
-      from jax._src.util import prod
       import numpy as np
 
       config.update('jax_persistent_cache_min_compile_time_secs', 0)

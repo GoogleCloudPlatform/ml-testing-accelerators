@@ -78,6 +78,12 @@ local utils = import 'templates/utils.libsonnet';
     testFeature:: 'rnn',
   },
 
+  local preprocessing_layers = self.preprocessing_layers,
+  preprocessing_layers:: API {
+    mode: 'preprocess-layers',
+    testFeature:: 'preprocessing_layers',
+  },
+
   local upsample = self.upsample,
   upsample:: API {
     mode: 'upsample',
@@ -100,6 +106,12 @@ local utils = import 'templates/utils.libsonnet';
   train_and_evaluate:: API {
     mode: 'train-and-evaluate',
     testFeature:: 'train_and_evaluate',
+  },
+
+  local train_validation_dataset = self.train_validation_dataset,
+  train_validation_dataset:: API {
+    mode: 'train-eval-dataset',
+    testFeature:: 'train_validation_dataset',
   },
 
   local transfer_learning = self.transfer_learning,

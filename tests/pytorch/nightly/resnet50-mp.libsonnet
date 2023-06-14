@@ -197,6 +197,11 @@ local tpus = import 'templates/tpus.libsonnet';
     // Keep the same global batch size. In SPMD, the global batch size is
     // divided across all devices.
     batch_size: self.accelerator.size * 128,
+    tpuSettings+: {
+      tpuVmExports+: |||
+        export XLA_USE_SPMD=1
+      |||,
+    },
   },
 
   configs: [

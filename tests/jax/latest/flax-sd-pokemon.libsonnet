@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,41 +17,42 @@ local mixins = import 'templates/mixins.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
-  local hf_vit_common = self.hf_vit_common,
-  hf_vit_common:: common.JaxTest + common.huggingFaceTransformer {
+  local hf_sd_common = self.hf_sd_common,
+  hf_sd_common:: common.JaxTest + common.huggingFaceDiffuser {
     local config = self,
     frameworkPrefix: 'flax.latest',
-    modelName:: 'vit-imagenette',
+    modelName:: 'sd-pokemon',
     extraFlags:: [],
     testScript:: |||
       %(installPackages)s
-      pip install -r examples/flax/vision/requirements.txt
+      pip install -U -r examples/text_to_image/requirements_flax.txt
       %(verifySetup)s
 
-      wget https://s3.amazonaws.com/fast-ai-imageclas/imagenette2.tgz
-      tar -xvzf imagenette2.tgz
-
       export GCS_BUCKET=$(MODEL_DIR)
-      python3 examples/flax/vision/run_image_classification.py \
-        --output_dir './vit-imagenette' \
-        --train_dir='imagenette2/train' \
-        --validation_dir='imagenette2/val' \
-        --learning_rate 1e-3 \
-        --preprocessing_num_workers 32 \
+      export MODEL_NAME="duongna/stable-diffusion-v1-4-flax"
+      export dataset_name="lambdalabs/pokemon-blip-captions"
+      python3 examples/text_to_image/train_text_to_image_flax.py \
+        --pretrained_model_name_or_path=$MODEL_NAME \
+        --dataset_name=$dataset_name \
+        --resolution=512 --center_crop --random_flip \
+        --train_batch_size=8 \
+        --num_train_epochs=10 \
+        --learning_rate=1e-05 \
+        --max_grad_norm=1 \
+        --output_dir="./sd-pokemon-model" \
+        --cache_dir /tmp \
         %(extraFlags)s
 
-      # Ignore CommandException for the rest workers in TPU pod
-      gsutil -m cp -r ./vit-imagenette $(MODEL_DIR) || exit 0
     ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
   },
 
   local func = self.func,
   func:: mixins.Functional {
-    extraFlags+:: ['--model_type vit', '--num_train_epochs 5'],
+    extraFlags+:: ['--num_train_epochs 1'],
   },
   local conv = self.conv,
   conv:: mixins.Convergence {
-    extraFlags+:: ['--model_name_or_path google/vit-base-patch16-224-in21k', '--num_train_epochs 30'],
+    extraFlags+:: [],
 
     metricConfig+: {
       sourceMap+:: {
@@ -73,53 +74,27 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  local v2 = self.v2,
-  v2:: common.tpuVmBaseImage {
-    extraFlags+:: ['--per_device_train_batch_size 32', '--per_device_eval_batch_size 32'],
-  },
-  local v3 = self.v3,
-  v3:: common.tpuVmBaseImage {
-    extraFlags+:: ['--per_device_train_batch_size 32', '--per_device_eval_batch_size 32'],
-  },
   local v4 = self.v4,
   v4:: common.tpuVmV4Base {
-    extraFlags+:: ['--per_device_train_batch_size 64', '--per_device_eval_batch_size 64'],
+    extraFlags+:: [],
   },
 
-  local v2_8 = self.v2_8,
-  v2_8:: {
-    accelerator: tpus.v2_8,
-  },
-  local v2_32 = self.v2_32,
-  v2_32:: {
-    accelerator: tpus.v2_32,
-  },
-  local v3_8 = self.v3_8,
-  v3_8:: {
-    accelerator: tpus.v3_8,
-  },
-  local v3_32 = self.v3_32,
-  v3_32:: {
-    accelerator: tpus.v3_32,
-  },
   local v4_8 = self.v4_8,
-  v4_8:: {
+  v4_8:: v4 {
     accelerator: tpus.v4_8,
   },
+
   local v4_32 = self.v4_32,
-  v4_32:: {
+  v4_32:: v4 {
     accelerator: tpus.v4_32,
   },
 
   local func_tests = [
-    hf_vit_common + func + v2 + v2_8,
-    hf_vit_common + func + v3 + v3_8,
-    hf_vit_common + func + v4 + v4_8,
+    hf_sd_common + func + v4_8,
   ],
 
   local conv_tests = [
-    hf_vit_common + conv + v3 + v3_32,
-    hf_vit_common + conv + v4 + v4_32,
+    hf_sd_common + conv + v4_32,
   ],
 
   configs: func_tests + conv_tests,

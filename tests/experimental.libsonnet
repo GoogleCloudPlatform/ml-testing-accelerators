@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local timeouts = import 'templates/timeouts.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
@@ -90,7 +91,8 @@ local volumes = import 'templates/volumes.libsonnet';
               ssh-keygen -t rsa -f /scripts/id_rsa -q -N ""
 
               echo "
-              gcloud alpha compute tpus tpu-vm delete -q ${tpu_name} --zone=${zone}
+              gcloud alpha compute tpus tpu-vm delete -q --async ${tpu_name} --zone=${zone}
+              sleep 60
               " > /scripts/cleanup.sh
 
               echo "xl-ml-test:$(cat /scripts/id_rsa.pub)" > ssh-keys.txt
@@ -114,7 +116,7 @@ local volumes = import 'templates/volumes.libsonnet';
                 elapsed_seconds=$(($current_time-$start_time))
                 # Break if command passed or 10-minute limit reached
                 test $exit_code = 0 && break
-                test "$elapsed_seconds > 600" && break
+                test $elapsed_seconds -gt 600 && break
                 sleep 30
               done
 
@@ -157,6 +159,7 @@ local volumes = import 'templates/volumes.libsonnet';
     // Disable retries
     jobTemplate+:: {
       spec+: {
+        activeDeadlineSeconds: std.max(2 * config.timeout, 24 * timeouts.one_hour),
         backoffLimit: 0,
       },
     },
@@ -168,6 +171,7 @@ local volumes = import 'templates/volumes.libsonnet';
     // Pass TPU VM name to test container
     podTemplate+:: {
       spec+: {
+        activeDeadlineSeconds: config.timeout,
         containerMap+:: {
           train+: {
             image: 'google/cloud-sdk',

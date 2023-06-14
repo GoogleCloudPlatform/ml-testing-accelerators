@@ -104,11 +104,13 @@ local tpus = import 'templates/tpus.libsonnet';
       },
     },
   },
+  local tpuVm = common.tpuVm,
+
   configs: [
-    transformer + accelerator + functional
+    transformer + accelerator + functional + tpuVm
     for accelerator in [v2_8, v3_8]
   ] + [
-    transformer + v2_32 + convergence,
-    transformer + v3_32 + convergence,
+    transformer + v2_32 + convergence + tpuVm,
+    transformer + v3_32 + convergence + tpuVm,
   ],
 }
