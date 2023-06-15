@@ -23,7 +23,6 @@ local utils = import 'templates/utils.libsonnet';
     cd transformers && pip install .
     git log -1
     pip install datasets evaluate scikit-learn
-    pip install transformers[torch]
     python3 examples/pytorch/xla_spawn.py \
       --num_cores 8 \
       examples/pytorch/language-modeling/run_mlm.py \
@@ -201,7 +200,7 @@ local utils = import 'templates/utils.libsonnet';
         echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
       |||,
     },
-  },
+  } + common.Accelerate,
   local v2_8 = self.v2_8,
   v2_8:: {
     accelerator: tpus.v2_8,
