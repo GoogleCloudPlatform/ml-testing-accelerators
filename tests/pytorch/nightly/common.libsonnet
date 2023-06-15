@@ -91,7 +91,7 @@ local volumes = import 'templates/volumes.libsonnet';
     tpuSettings+: {
       softwareVersion: 'tpu-ubuntu2204-base',
       tpuVmPytorchSetup: |||
-        pip3 install setuptools==62.1.0
+        pip3 install -U setuptools
         sudo apt install -y libopenblas-base
         pip install --user \
           https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl \
@@ -143,7 +143,7 @@ local volumes = import 'templates/volumes.libsonnet';
       |||,
       tpuVmExtraSetup: |||
         git clone https://github.com/huggingface/accelerate.git
-        pip install -e accelerate
+        pip install --user ./accelerate
 
         mkdir -p ~/.cache/huggingface/accelerate/
         cat > ~/.cache/huggingface/accelerate/default_config.yaml << 'HF_CONFIG_EOF'
