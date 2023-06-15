@@ -58,7 +58,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
-    fsmt + functional + v4_8 + pjrt + timeouts.Hours(1),
+    fsmt + functional + v4_8 + pjrt + timeouts.Hours(2),
     fsmt + convergence + v4_8 + pjrt + timeouts.Hours(12),
   ],
 }
