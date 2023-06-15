@@ -24,7 +24,8 @@ local utils = import 'templates/utils.libsonnet';
     cd transformers && pip install .
     git log -1
     pip install datasets evaluate scikit-learn
-    pip install -r examples/pytorch/_tests_requirements.txt
+    sed '/torchvision/d' examples/pytorch/_tests_requirements.txt > no_vision_require.txt
+    pip install -r no_vision_require.txt
   |||,
   local command_copy_metrics = |||
     gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
