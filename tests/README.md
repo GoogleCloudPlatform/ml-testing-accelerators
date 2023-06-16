@@ -38,17 +38,17 @@ correctly, or to extract the correct name to run a one shot test.
 To manually run one shot tests, first [connect to a cluster](https://console.cloud.google.com/kubernetes/list) and then run the following:
 
 ```bash
-export TEST_NAME=tf.nightly-resnet-imagenet-func-v2-8
+export TEST_NAME=tf.nightly-dlrm-criteo-conv-v100-x1
 jsonnet tests/oneshot.jsonnet -J . -S --tla-str test=$TEST_NAME | kubectl create -f -
 ```
 
-The above command will generate a job id such as `job.batch/pt-nightly-unet3d-conv-v3-8-1vm-gz8ww`. To find the detail of the test, search in [GoogleCloud->Kubernetes->workload in the project `xl-ml-test`](https://console.cloud.google.com/kubernetes/workload/overview?mods=allow_workbench_image_override&project=xl-ml-test) with the job id `pt-nightly-unet3d-conv-v3-8-1vm-gz8ww`.
+The above command will generate a job id such as `job.batch/tf.nightly-dlrm-criteo-conv-v100-x1-gz8ww`. To find the detail of the test, search in [GoogleCloud->Kubernetes->workload in the project `xl-ml-test`](https://console.cloud.google.com/kubernetes/workload/overview?mods=allow_workbench_image_override&project=xl-ml-test) with the job id `tf.nightly-dlrm-criteo-conv-v100-x1-gz8ww`.
 
 For convenience, the steps of connecting to a cluster and running a one shot
 test have been combined into a single script as follows:
 
 ```bash
-export TEST_NAME=tf.nightly-resnet-imagenet-func-v2-8
+export TEST_NAME=tf.nightly-dlrm-criteo-conv-v100-x1
 ./scripts/run-oneshot.sh -t $TEST_NAME
 ```
 

@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,25 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local bert = import 'tf-bert-glue_mnli.libsonnet';
 local dcn = import 'tf-dcn-criteo.libsonnet';
-local dlrm = import 'tf-dlrm-criteo.libsonnet';
-local keras_api = import 'tf-keras-api.libsonnet';
-local maskrcnn = import 'tf-maskrcnn-coco.libsonnet';
-local resnet = import 'tf-resnet-imagenet.libsonnet';
-local resnetrs = import 'tf-resnetrs-imagenet.libsonnet';
-local retinanet = import 'tf-retinanet-coco.libsonnet';
-local wmt = import 'tf-wmt-wmt14_translate.libsonnet';
+local t5 = import 'tf-t5-wmt16.libsonnet';
+local vit = import 'tf-vit-beans.libsonnet';
 
 // Add new models here
 std.flattenArrays([
-  bert.configs,
-  dlrm.configs,
   dcn.configs,
-  keras_api.configs,
-  maskrcnn.configs,
-  retinanet.configs,
-  resnet.configs,
-  resnetrs.configs,
-  wmt.configs,
+  vit.configs,
+  t5.configs,
 ])

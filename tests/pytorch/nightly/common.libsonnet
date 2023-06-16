@@ -89,17 +89,15 @@ local volumes = import 'templates/volumes.libsonnet';
     local config = self,
 
     tpuSettings+: {
-      softwareVersion: if config.accelerator.version < 4 then
-        'tpu-vm-base'
-      else
-        'tpu-vm-v4-base',
+      softwareVersion: 'tpu-ubuntu2204-base',
       tpuVmPytorchSetup: |||
-        pip3 install setuptools==62.1.0
+        pip3 install -U setuptools
         sudo apt install -y libopenblas-base
         pip install --user \
-          https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp38-cp38-linux_x86_64.whl \
-          https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torchvision-nightly-cp38-cp38-linux_x86_64.whl \
-          'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp38-cp38-linux_x86_64.whl'
+          https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl \
+          'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl'
+        pip3 install --user --pre --no-deps torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+        pip3 install pillow
         git clone --depth=1 https://github.com/pytorch/pytorch.git
         cd pytorch
         git clone https://github.com/pytorch/xla.git
@@ -145,7 +143,7 @@ local volumes = import 'templates/volumes.libsonnet';
       |||,
       tpuVmExtraSetup: |||
         git clone https://github.com/huggingface/accelerate.git
-        pip install -e accelerate
+        pip install --user ./accelerate
 
         mkdir -p ~/.cache/huggingface/accelerate/
         cat > ~/.cache/huggingface/accelerate/default_config.yaml << 'HF_CONFIG_EOF'
