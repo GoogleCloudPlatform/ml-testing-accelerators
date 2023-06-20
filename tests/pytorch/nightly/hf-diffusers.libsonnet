@@ -52,7 +52,9 @@ local tpus = import 'templates/tpus.libsonnet';
         pip install .
 
         cd examples/text_to_image
-        pip install -r requirements.txt
+        sed '/accelerate/d' requirements.txt > clean_requirements.txt
+        sed '/torchvision/d' requirements.txt > clean_requirements.txt
+        pip install -r clean_requirements.txt
       |||,
     },
   },
