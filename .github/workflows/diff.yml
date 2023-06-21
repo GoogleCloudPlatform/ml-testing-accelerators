@@ -38,6 +38,7 @@ jobs:
     - name: Show git diff summary
       run: |
         # New files need to be added before git diff will recognize them.
+        git add --force -N k8s/*/gen/*.yaml
         git add -N k8s/
         git fetch origin gen
         git diff origin/gen --compact-summary -- k8s/ || true
