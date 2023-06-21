@@ -104,7 +104,8 @@ local volumes = import 'templates/volumes.libsonnet';
         sudo pip3 install mkl mkl-include cloud-tpu-client
         sudo apt-get -y update
         sudo apt-get install -y libomp5 
-        sudo apt-get install -y libsndfile-dev // for huggingface tests.
+        # for huggingface tests
+        sudo apt-get install -y libsndfile-dev
         git clone https://github.com/pytorch/pytorch.git -b release/2.0
         cd pytorch
         git clone https://github.com/pytorch/xla.git -b r2.0
