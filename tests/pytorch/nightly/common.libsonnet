@@ -92,7 +92,8 @@ local volumes = import 'templates/volumes.libsonnet';
       softwareVersion: 'tpu-ubuntu2204-base',
       tpuVmPytorchSetup: |||
         pip3 install -U setuptools
-        sudo apt install -y libopenblas-base libsndfile-dev
+        sudo apt install -y libopenblas-base 
+        sudo apt install -y libsndfile-dev // for huggingface tests.
         pip install --user \
           https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl \
           'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl'
