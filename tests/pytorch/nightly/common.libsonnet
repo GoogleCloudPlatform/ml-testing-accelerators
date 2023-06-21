@@ -95,6 +95,8 @@ local volumes = import 'templates/volumes.libsonnet';
         # `unattended-upgr` blocks us from installing apt dependencies
         systemctl stop unattended-upgrades
         sudo apt install -y libopenblas-base
+        # for huggingface tests
+        sudo apt install -y libsndfile-dev
         pip install --user \
           https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl \
           'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl'
