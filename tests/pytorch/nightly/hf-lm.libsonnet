@@ -188,6 +188,7 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  // update config for tpuvm to run without functionalization by `export XLA_DISABLE_FUNCTIONALIZATION=1`
   local tpuVm = self.tpuVm,
   tpuVm:: common.PyTorchTpuVmMixin {
     tpuSettings+: {
@@ -198,6 +199,7 @@ local utils = import 'templates/utils.libsonnet';
         pip install tensorboardX google-cloud-storage
         echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
         echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
+        echo 'export XLA_DISABLE_FUNCTIONALIZATION=1' >> ~/.bash_profile
       |||,
     },
   },
@@ -210,6 +212,7 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
   },
   configs: [
+    // want to test pt-nightly-hf-mlm-roberta-b-pre-conv-v2-8-1vm without functionalization
     hf_lm + v2_8 + roberta_base_pre + timeouts.Hours(5) + tpuVm,
     hf_lm + v3_8 + roberta_base_fine + timeouts.Hours(3) + tpuVm,
     hf_lm + v3_8 + bert_base_pre + timeouts.Hours(6) + tpuVm,
