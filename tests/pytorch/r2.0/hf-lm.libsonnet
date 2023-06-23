@@ -37,7 +37,7 @@ local utils = import 'templates/utils.libsonnet';
       --logging_steps 30 \
       --save_steps 3000 \
       --overwrite_cache \
-      --tpu_metrics_debug \
+      --debug tpu_metrics_debug \
   |||,
   local command_copy_metrics = |||
     gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
