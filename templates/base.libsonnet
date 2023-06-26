@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local timeouts = import 'timeouts.libsonnet';
 local volumes = import 'volumes.libsonnet';
 
 {
@@ -235,6 +236,7 @@ local volumes = import 'volumes.libsonnet';
           spec+: {
             // Don't retry oneshot jobs.
             backoffLimit: 0,
+            ttlSecondsAfterFinished: timeouts.one_hour * 24 * 7,
           },
         },
       },
