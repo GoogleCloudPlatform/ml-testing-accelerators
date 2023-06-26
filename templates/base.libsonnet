@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+local timeouts = import 'timeouts.libsonnet';
 local volumes = import 'volumes.libsonnet';
 
 {
@@ -225,6 +226,7 @@ local volumes = import 'volumes.libsonnet';
         // Try 2 times before giving up.
         backoffLimit: 1,
         activeDeadlineSeconds: config.timeout,
+        ttlSecondsAfterFinished: timeouts.one_hour * 24 * 7,
         template: config.podTemplate,
       },
     },
