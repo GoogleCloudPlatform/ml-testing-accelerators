@@ -21,7 +21,7 @@ local utils = import 'templates/utils.libsonnet';
 {
   local command_common = |||
     cd transformers
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib/
+    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/
     export PJRT_DEVICE=TPU_C_API
     export PT_XLA_DEBUG=0
     export USE_TORCH=ON
