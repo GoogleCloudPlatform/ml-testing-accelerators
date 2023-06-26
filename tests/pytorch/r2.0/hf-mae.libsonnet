@@ -65,7 +65,7 @@ local utils = import 'templates/utils.libsonnet';
         '--output_dir=MAE',
         '--overwrite_output_dir=true',
         '--logging_dir=./tensorboard-metrics',
-        '--tpu_metrics_debug=true',
+        '--debug=tpu_metrics_debug',
       ],
     },
     command: utils.scriptCommand(

@@ -83,7 +83,7 @@ local utils = import 'templates/utils.libsonnet';
         '--logging_steps=30',
         '--save_steps=3000',
         '--overwrite_cache=true',
-        '--tpu_metrics_debug=true',
+        '--debug=tpu_metrics_debug',
         '--per_device_train_batch_size=%d ' % config.paramsOverride.per_device_train_batch_size,
         '--per_device_eval_batch_size=%d ' % config.paramsOverride.per_device_eval_batch_size,
       ],
