@@ -33,9 +33,8 @@ jobs:
         scripts/gen-tests.sh
     
     - name: Git Commit/Push Changes
-      run: |
-        git add --force -N k8s/*/gen/*.yaml
-        git add -N k8s/
-        git commit -m "Automatically updated using GitHub Actions"
-        git push -f origin gen
-
+      uses: actions-x/commit@v5
+      with:
+        branch: gen
+        files: k8s/
+        force: true

@@ -1,4 +1,2 @@
 bazel-*
 **/__pycache__
-
-k8s/*/gen/*.yaml
