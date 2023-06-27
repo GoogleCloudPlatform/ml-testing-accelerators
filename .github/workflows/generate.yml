@@ -33,12 +33,8 @@ jobs:
         scripts/gen-tests.sh
     
     - name: Git Commit/Push Changes
-      run: |
-        # Add the generated tests using the most recent authors name/email
-        git config --global user.name "`git log -1 --pretty=format:'%an'`"
-        git config --global user.email "`git log -1 --pretty=format:'%ae'`"
-        git add --force k8s/*/gen/*.yaml
-        git add k8s/
-        git commit -m "Automatically updated using GitHub Actions"
-        git push -f origin gen
-
+      uses: actions-x/commit@v5
+      with:
+        branch: gen
+        files: k8s/
+        force: true
