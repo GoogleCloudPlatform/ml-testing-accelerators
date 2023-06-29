@@ -45,9 +45,6 @@ local utils = import 'templates/utils.libsonnet';
   pjrt:: common.PyTorchTpuVmMixin {
     modelName+: '-pjrt',
     tpuSettings+: {
-      tpuVmExports+: |||
-        cd stable-diffusion/
-      |||,
       tpuVmExtraSetup: |||
         git clone https://github.com/pytorch-tpu/stable-diffusion.git
         cd stable-diffusion
