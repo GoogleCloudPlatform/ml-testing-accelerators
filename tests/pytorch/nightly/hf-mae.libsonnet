@@ -122,6 +122,7 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
+  // TODO: Remove after 2.1 release cut
   local xrt = self.xrt,
   xrt:: common.XrtTpuVmMixin {
     tpuSettings+: {

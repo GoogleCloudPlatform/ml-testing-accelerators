@@ -186,6 +186,7 @@ local tpus = import 'templates/tpus.libsonnet';
       |||,
     },
   },
+  // TODO: Remove after 2.1 release cut
   local xrt = self.xrt,
   xrt:: common.XrtTpuVmMixin + tpuVm,
   local pjrt = self.pjrt,

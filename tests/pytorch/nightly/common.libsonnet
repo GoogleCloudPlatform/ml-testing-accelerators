@@ -113,6 +113,8 @@ local volumes = import 'templates/volumes.libsonnet';
       },
     },
   },
+
+  // TODO: Remove after 2.1 release cut
   XrtTpuVmMixin:: experimental.PyTorchTpuVmMixin {
     local config = self,
 
