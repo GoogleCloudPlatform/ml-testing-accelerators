@@ -41,8 +41,9 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: self.paramsOverride.trainCommand,
   },
-  local tpuVm = self.tpuVm,
-  tpuVm:: common.PyTorchTpuVmMixin {
+  local pjrt = self.pjrt,
+  pjrt:: common.PyTorchTpuVmMixin {
+    modelName+: '-pjrt',
     tpuSettings+: {
       tpuVmExports+: |||
         cd stable-diffusion/
@@ -86,10 +87,6 @@ local utils = import 'templates/utils.libsonnet';
         echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
       |||,
     },
-  },
-  local pjrt = self.pjrt,
-  pjrt:: tpuVm + experimental.PjRt {
-    modelName+: '-pjrt',
   },
   local v4_8 = self.v4_8,
   v4_8:: {

@@ -13,7 +13,7 @@ local tpus = import 'templates/tpus.libsonnet';
     ],
   },
   local pjrt = self.pjrt,
-  pjrt:: common.PyTorchTpuVmMixin + experimental.PjRt + common.Accelerate,
+  pjrt:: common.PyTorchTpuVmMixin + common.Accelerate,
 
   local v2_8 = self.v2_8,
   v2_8:: {

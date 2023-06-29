@@ -107,8 +107,9 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
 
-  local tpuVm = self.tpuVm,
-  tpuVm:: common.PyTorchTpuVmMixin {
+  local pjrt = self.pjrt,
+  pjrt:: common.PyTorchTpuVmMixin {
+    modelName+: '-pjrt',
     tpuSettings+: {
       tpuVmExports+: |||
         cd transformers/
@@ -134,11 +135,6 @@ local utils = import 'templates/utils.libsonnet';
   local v4_8 = self.v4_8,
   v4_8:: {
     accelerator: tpus.v4_8,
-  },
-
-  local pjrt = self.pjrt,
-  pjrt:: tpuVm + experimental.PjRt {
-    modelName+: '-pjrt',
   },
 
   configs: [

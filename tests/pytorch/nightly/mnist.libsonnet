@@ -106,17 +106,14 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: gpus.teslaV100 { count: 4 },
   },
 
-  local tpuVm = self.tpuVm,
-  tpuVm:: common.PyTorchTpuVmMixin {
+  local pjrt = self.pjrt,
+  pjrt:: common.PyTorchTpuVmMixin {
+    modelName+: '-pjrt',
     tpuSettings+: {
       tpuVmExtraSetup: |||
         pip install tensorboardX google-cloud-storage
       |||,
     },
-  },
-  local pjrt = self.pjrt,
-  pjrt:: tpuVm + experimental.PjRt {
-    modelName+: '-pjrt',
   },
   local pjrt_ddp = self.pjrt_ddp,
   pjrt_ddp:: {
@@ -130,11 +127,7 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   configs: [
-    mnist + convergence + v2_8 + timeouts.Hours(1) + mixins.Experimental,
-    mnist + convergence + v2_8 + timeouts.Hours(1) + tpuVm + mixins.Experimental,
     mnist + convergence + v2_8 + timeouts.Hours(1) + pjrt,
     mnist + convergence_ddp + v2_8 + timeouts.Hours(1) + pjrt + pjrt_ddp,
-    mnist + convergence + v4_8 + timeouts.Hours(1) + pjrt + mixins.Experimental,
-    mnist + convergence + v100x4 + timeouts.Hours(6) + mixins.Experimental,
   ],
 }
