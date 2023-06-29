@@ -23,7 +23,7 @@ local volumes = import 'templates/volumes.libsonnet';
   HuggingFaceTransformer:: common.ModelGardenTest {
     local config = self,
 
-    frameworkPrefix: 'tf.nightly',
+    frameworkPrefix: 'tf.nightly-se',
     tpuSettings+: {
       softwareVersion: 'nightly',
     },
@@ -42,7 +42,7 @@ local volumes = import 'templates/volumes.libsonnet';
   ModelGardenTest:: common.ModelGardenTest {
     local config = self,
 
-    frameworkPrefix: 'tf.nightly',
+    frameworkPrefix: 'tf.nightly-se',
     tpuSettings+: {
       softwareVersion: 'nightly',
     },
