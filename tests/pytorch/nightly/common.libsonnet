@@ -121,7 +121,7 @@ local volumes = import 'templates/volumes.libsonnet';
       tpuVmPytorchSetup: |||
         pip3 install -U setuptools
         # `unattended-upgr` blocks us from installing apt dependencies
-        systemctl stop unattended-upgrades
+        sudo systemctl stop unattended-upgrades
         sudo apt install -y libopenblas-base
         # for huggingface tests
         sudo apt install -y libsndfile-dev
