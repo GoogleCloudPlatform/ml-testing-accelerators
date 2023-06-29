@@ -179,16 +179,18 @@ local tpus = import 'templates/tpus.libsonnet';
     ],
   },
 
-  local tpuVm = self.tpuVm,
-  tpuVm:: common.PyTorchTpuVmMixin {
+  local tpuVm = {
     tpuSettings+: {
       tpuVmExtraSetup: |||
         pip install tensorboardX google-cloud-storage
       |||,
     },
   },
+  // TODO: Remove after 2.1 release cut
+  local xrt = self.xrt,
+  xrt:: common.XrtTpuVmMixin + tpuVm,
   local pjrt = self.pjrt,
-  pjrt:: tpuVm + experimental.PjRt {
+  pjrt:: common.PyTorchTpuVmMixin + tpuVm {
     modelName: 'resnet50-pjrt',
   },
   local spmd(sharding) = self.spmd(sharding),
@@ -210,17 +212,11 @@ local tpus = import 'templates/tpus.libsonnet';
   configs: [
     // XRT
     resnet50 + functional + v100x4 + timeouts.Hours(1),
-    resnet50 + functional + v3_8 + timeouts.Hours(2) + tpuVm + mixins.Experimental,
-    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm,
-    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + tpuVm + xrt_ddp,
-    resnet50 + convergence + v3_8 + timeouts.Hours(24) + tpuVm,
-    resnet50 + fake_data + v3_32 + timeouts.Hours(1) + tpuVm,
-    resnet50 + functional + v3_32 + timeouts.Hours(1) + tpuVm + mixins.Experimental,
-    resnet50 + convergence + v3_32 + timeouts.Hours(12) + tpuVm + mixins.Experimental,
-    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + tpuVm,
-    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + tpuVm + xrt_ddp + mixins.Experimental,
-    resnet50 + convergence + v4_8 + timeouts.Hours(24) + tpuVm + mixins.Experimental,
-    resnet50 + convergence + v4_32 + timeouts.Hours(24) + tpuVm + mixins.Experimental,
+    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + xrt,
+    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + xrt + xrt_ddp,
+    resnet50 + convergence + v3_8 + timeouts.Hours(24) + xrt,
+    resnet50 + fake_data + v3_32 + timeouts.Hours(1) + xrt,
+    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + xrt,
     // PJRT
     resnet50 + fake_data + v2_8 + timeouts.Hours(3) + pjrt,
     resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt,

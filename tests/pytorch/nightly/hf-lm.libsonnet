@@ -188,8 +188,9 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local tpuVm = self.tpuVm,
-  tpuVm:: common.PyTorchTpuVmMixin {
+  // TODO: Remove after 2.1 release cut
+  local xrt = self.xrt,
+  xrt:: common.XrtTpuVmMixin {
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=$(XLA_USE_BF16)
@@ -210,9 +211,9 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v3_8,
   },
   configs: [
-    hf_lm + v2_8 + roberta_base_pre + timeouts.Hours(5) + tpuVm,
-    hf_lm + v3_8 + roberta_base_fine + timeouts.Hours(3) + tpuVm,
-    hf_lm + v3_8 + bert_base_pre + timeouts.Hours(6) + tpuVm,
-    hf_lm + v3_8 + bert_base_fine + timeouts.Hours(5) + tpuVm,
+    hf_lm + v2_8 + roberta_base_pre + timeouts.Hours(5) + xrt,
+    hf_lm + v3_8 + roberta_base_fine + timeouts.Hours(3) + xrt,
+    hf_lm + v3_8 + bert_base_pre + timeouts.Hours(6) + xrt,
+    hf_lm + v3_8 + bert_base_fine + timeouts.Hours(5) + xrt,
   ],
 }

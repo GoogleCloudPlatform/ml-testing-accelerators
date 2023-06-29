@@ -195,19 +195,18 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local tpuVm = self.tpuVm,
-  tpuVm:: common.PyTorchTpuVmMixin {
+  local tpuVm = {
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=$(XLA_USE_BF16)
       |||,
-      tpuVmExtraSetup: |||
-        echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
-      |||,
     },
   },
+  // TODO: Remove after 2.1 release cut
+  local xrt = self.xrt,
+  xrt:: common.XrtTpuVmMixin + tpuVm,
   local pjrt = self.pjrt,
-  pjrt:: tpuVm + experimental.PjRt {
+  pjrt:: common.PyTorchTpuVmMixin + tpuVm {
     modelName: 'hf-glue-pjrt',
   },
   local v2_8 = self.v2_8,
@@ -223,11 +222,11 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_8,
   },
   configs: [
-    hf_glue + v2_8 + bert_base_cased + timeouts.Hours(2) + tpuVm,
-    hf_glue + v3_8 + xlnet_large_cased + timeouts.Hours(5) + tpuVm,
-    hf_glue + v3_8 + roberta_large + timeouts.Hours(8) + tpuVm,
-    hf_glue + v3_8 + distilbert_base_uncased + timeouts.Hours(2) + tpuVm,
-    hf_glue + v4_8 + roberta_large + timeouts.Hours(6) + tpuVm,
+    hf_glue + v2_8 + bert_base_cased + timeouts.Hours(2) + xrt,
+    hf_glue + v3_8 + xlnet_large_cased + timeouts.Hours(5) + xrt,
+    hf_glue + v3_8 + roberta_large + timeouts.Hours(8) + xrt,
+    hf_glue + v3_8 + distilbert_base_uncased + timeouts.Hours(2) + xrt,
+    hf_glue + v4_8 + roberta_large + timeouts.Hours(6) + xrt,
     hf_glue + v4_8 + distilbert_base_uncased + timeouts.Hours(2) + pjrt,
   ],
 }

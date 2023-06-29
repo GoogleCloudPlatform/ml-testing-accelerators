@@ -122,8 +122,9 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local tpuVm = self.tpuVm,
-  tpuVm:: common.PyTorchTpuVmMixin {
+  // TODO: Remove after 2.1 release cut
+  local xrt = self.xrt,
+  xrt:: common.XrtTpuVmMixin {
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=$(XLA_USE_BF16)
@@ -132,10 +133,6 @@ local utils = import 'templates/utils.libsonnet';
         echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
       |||,
     },
-  },
-  local pjrt = self.pjrt,
-  pjrt:: tpuVm + experimental.PjRt {
-    modelName: 'hf-vit-mae-pjrt',
   },
   local v2_8 = self.v2_8,
   v2_8:: {
@@ -150,7 +147,7 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_8,
   },
   configs: [
-    hf_mae + v3_8 + hf_vit_mae + timeouts.Hours(2) + tpuVm,
-    hf_mae + v4_8 + hf_vit_mae + timeouts.Hours(2) + tpuVm,
+    hf_mae + v3_8 + hf_vit_mae + timeouts.Hours(2) + xrt,
+    hf_mae + v4_8 + hf_vit_mae + timeouts.Hours(2) + xrt,
   ],
 }

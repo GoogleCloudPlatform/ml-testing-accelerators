@@ -48,7 +48,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   local pjrt = self.pjrt,
-  pjrt:: common.PyTorchTpuVmMixin + experimental.PjRt {
+  pjrt:: common.PyTorchTpuVmMixin {
     modelName+: '-pjrt',
     tpuSettings+: {
       tpuVmExtraSetup: |||

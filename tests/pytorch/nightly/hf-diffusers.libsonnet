@@ -40,7 +40,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   local pjrt = self.pjrt,
-  pjrt:: common.PyTorchTpuVmMixin + experimental.PjRt + common.Accelerate {
+  pjrt:: common.PyTorchTpuVmMixin + common.Accelerate {
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=1

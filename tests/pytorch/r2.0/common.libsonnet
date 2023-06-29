@@ -76,8 +76,6 @@ local volumes = import 'templates/volumes.libsonnet';
       },
     },
   },
-  PyTorchXlaDistPodTest:: common.PyTorchXlaDistPodTest + r2_0,
-  PyTorchGkePodTest:: common.PyTorchGkePodTest + r2_0,
   Functional:: mixins.Functional {
     schedule: '0 7 * * 2',
     tpuSettings+: {
@@ -103,7 +101,7 @@ local volumes = import 'templates/volumes.libsonnet';
         sudo pip3 install numpy
         sudo pip3 install mkl mkl-include cloud-tpu-client
         sudo apt-get -y update
-        sudo apt-get install -y libomp5 
+        sudo apt-get install -y libomp5
         # for huggingface tests
         sudo apt-get install -y libsndfile-dev
         git clone https://github.com/pytorch/pytorch.git -b release/2.0
