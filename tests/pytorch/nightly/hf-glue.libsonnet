@@ -205,7 +205,7 @@ local utils = import 'templates/utils.libsonnet';
   local xrt = self.xrt,
   xrt:: common.XrtTpuVmMixin + tpuVm,
   local pjrt = self.pjrt,
-  pjrt:: common.PyTorchTpuVmMixin +tpuVm {
+  pjrt:: common.PyTorchTpuVmMixin + tpuVm {
     modelName: 'hf-glue-pjrt',
   },
   local v2_8 = self.v2_8,
