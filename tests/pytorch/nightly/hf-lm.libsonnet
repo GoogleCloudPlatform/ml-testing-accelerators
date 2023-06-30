@@ -201,7 +201,7 @@ local utils = import 'templates/utils.libsonnet';
         echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
       |||,
     },
-  },
+  } + common.Accelerate,
   local v2_8 = self.v2_8,
   v2_8:: {
     accelerator: tpus.v2_8,
