@@ -236,7 +236,7 @@ local mixins = import 'templates/mixins.libsonnet';
     schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
-    schedule: '0 11 * * *',
+    schedule: '0 11 * * 0,2,4',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
