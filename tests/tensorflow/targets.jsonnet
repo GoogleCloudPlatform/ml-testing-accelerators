@@ -14,6 +14,7 @@
 
 local experimental = import 'experimental/targets.jsonnet';
 local nightly = import 'nightly/targets.jsonnet';
+local nightly-se = import 'nightly-se/targets.jsonnet';
 local r2_12 = import 'r2.12/targets.jsonnet';
 local r3_13 = import 'r2.13/targets.jsonnet';
 
@@ -21,6 +22,7 @@ local r3_13 = import 'r2.13/targets.jsonnet';
 std.flattenArrays([
   experimental,
   nightly,
+  nightly-se,
   r2_12,
   r3_13,
 ])
