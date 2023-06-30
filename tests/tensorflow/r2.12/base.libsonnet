@@ -106,11 +106,11 @@ local volumes = import 'templates/volumes.libsonnet';
                   accelerator_type: %(acceleratorName)s,
                   runtime_version: %(softwareVersion)s,
                   network_config: {enable_external_ips: true},
-                  boot_disk: {source_image: 'projects/cloud-tpu-v2-images-dev/global/images/tpu-vm-tf-2-12-0-20230308'},
+                  boot_disk: {source_image: 'projects/cloud-tpu-v2-images-dev/global/images/family/tpu-vm-tf-2-12-1'},
                   metadata: {
                     'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
                     'startup-script': %(startupScript)s,
-                    'tensorflow-docker-url': 'gcr.io/cloud-tpu-v2-images-dev/grpc_tpu_worker:tf-2.12.0'
+                    'tensorflow-docker-url': 'gcr.io/cloud-tpu-v2-images-dev/grpc_tpu_worker:tf-2.12.1'
                   }
                 }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
 
@@ -139,7 +139,7 @@ local volumes = import 'templates/volumes.libsonnet';
               if [[ ${softwareVersion: -3} == "pod" ]]; then
                  yes '' | gcloud compute config-ssh
                  sleep %(sleepTime)d
-                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:tf-2.12.0\"/' /etc/systemd/system/tpu-runtime.service"
+                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:tf-2.12.1\"/' /etc/systemd/system/tpu-runtime.service"
                  gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart tpu-runtime"
               fi
               sleep %(sleepTime)d

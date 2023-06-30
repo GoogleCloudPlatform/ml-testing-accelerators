@@ -21,11 +21,11 @@ local mixins = import 'templates/mixins.libsonnet';
   ModelGardenTest:: common.ModelGardenTest {
     local config = self,
 
-    frameworkPrefix: 'tf.r2.12.0',
+    frameworkPrefix: 'tf.r2.12.1',
     tpuSettings+: {
-      softwareVersion: '2.12.0',
+      softwareVersion: '2.12.1',
     },
-    imageTag: 'r2.12.0',
+    imageTag: 'r2.12.1',
     podTemplate+:: if config.accelerator.type == 'tpu' then
       {
         spec+: {
@@ -72,7 +72,7 @@ local mixins = import 'templates/mixins.libsonnet';
                   print(str(tf.__file__))
                   ctc = cloud_tpu_client.Client(tpu=os.path.basename('$(TPU_NAME)'), zone=os.path.dirname('$(TPU_NAME)'))
                   ctc.wait_for_healthy()
-                  ctc.configure_tpu_version('2.12.0', restart_type='always')
+                  ctc.configure_tpu_version('2.12.1', restart_type='always')
                   ctc.wait_for_healthy()
                   _VERSION_SWITCHER_ENDPOINT = 'http://{}:8475/requestversion'
                   url = _VERSION_SWITCHER_ENDPOINT.format(ctc.network_endpoints()[0]['ipAddress'])
@@ -209,7 +209,7 @@ local mixins = import 'templates/mixins.libsonnet';
       },
     },
   },
-  local functional_schedule = null,
+  local functional_schedule = '0 5 * * *',
   Functional:: mixins.Functional {
     schedule: functional_schedule,
     metricConfig+: {
@@ -236,7 +236,7 @@ local mixins = import 'templates/mixins.libsonnet';
     schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
-    schedule: null,
+    schedule: '0 11 * * 0,2,4',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
