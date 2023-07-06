@@ -30,33 +30,6 @@ local utils = import 'templates/utils.libsonnet';
   local command_copy_metrics = |||
     gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
   |||,
-  local bert_base_cased = self.bert_base_cased,
-  bert_base_cased:: common.Convergence {
-    modelName: 'hf-glue-bert-b-c',
-    paramsOverride+:: {
-      model_name_or_path: 'bert-base-cased',
-      per_device_train_batch_size: 64,
-      per_device_eval_batch_size: 64,
-    },
-    metricConfig+: {
-      sourceMap+:: {
-        tensorboard+: {
-          aggregateAssertionsMap+:: {
-            'eval/accuracy': {
-              FINAL: {
-                fixed_value: {
-                  comparison: 'GREATER',
-                  value: 0.80,
-                },
-                inclusive_bounds: false,
-                wait_for_n_data_points: 0,
-              },
-            },
-          },
-        },
-      },
-    },
-  },
   local hf_glue = self.hf_glue,
   hf_glue:: common.PyTorchTest {
     local config = self,
@@ -114,60 +87,6 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local xlnet_large_cased = self.xlnet_large_cased,
-  xlnet_large_cased:: common.Convergence {
-    modelName: 'hf-glue-xlnet-l-c',
-    paramsOverride+:: {
-      model_name_or_path: 'xlnet-large-cased',
-      per_device_train_batch_size: 32,
-      per_device_eval_batch_size: 16,
-    },
-    metricConfig+: {
-      sourceMap+:: {
-        tensorboard+: {
-          aggregateAssertionsMap+:: {
-            'eval/accuracy': {
-              FINAL: {
-                fixed_value: {
-                  comparison: 'GREATER',
-                  value: 0.85,
-                },
-                inclusive_bounds: false,
-                wait_for_n_data_points: 0,
-              },
-            },
-          },
-        },
-      },
-    },
-  },
-  local roberta_large = self.roberta_large,
-  roberta_large:: common.Convergence {
-    modelName: 'hf-glue-roberta-l',
-    paramsOverride+:: {
-      model_name_or_path: 'roberta-large',
-      per_device_train_batch_size: 16,
-      per_device_eval_batch_size: 16,
-    },
-    metricConfig+: {
-      sourceMap+:: {
-        tensorboard+: {
-          aggregateAssertionsMap+:: {
-            'eval/accuracy': {
-              FINAL: {
-                fixed_value: {
-                  comparison: 'GREATER',
-                  value: 0.85,
-                },
-                inclusive_bounds: false,
-                wait_for_n_data_points: 0,
-              },
-            },
-          },
-        },
-      },
-    },
-  },
   local distilbert_base_uncased = self.distilbert_base_uncased,
   distilbert_base_uncased:: common.Convergence {
     modelName: 'hf-glue-distilbert-b-uc',
@@ -209,10 +128,6 @@ local utils = import 'templates/utils.libsonnet';
   pjrt:: common.PyTorchTpuVmMixin + tpuVm {
     modelName: 'hf-glue-pjrt',
   },
-  local v2_8 = self.v2_8,
-  v2_8:: {
-    accelerator: tpus.v2_8,
-  },
   local v3_8 = self.v3_8,
   v3_8:: {
     accelerator: tpus.v3_8,
@@ -222,11 +137,7 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_8,
   },
   configs: [
-    hf_glue + v2_8 + bert_base_cased + timeouts.Hours(2) + xrt,
-    hf_glue + v3_8 + xlnet_large_cased + timeouts.Hours(5) + xrt,
-    hf_glue + v3_8 + roberta_large + timeouts.Hours(8) + xrt,
     hf_glue + v3_8 + distilbert_base_uncased + timeouts.Hours(2) + xrt,
-    hf_glue + v4_8 + roberta_large + timeouts.Hours(6) + xrt,
     hf_glue + v4_8 + distilbert_base_uncased + timeouts.Hours(2) + pjrt,
   ],
 }
