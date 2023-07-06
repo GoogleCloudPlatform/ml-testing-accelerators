@@ -17,6 +17,7 @@ local dlrm = import 'dlrm.libsonnet';
 local fairseqTransformer = import 'fs-transformer.libsonnet';
 local hfFsmt = import 'hf-fsmt.libsonnet';
 local huggingfaceGlue = import 'hf-glue.libsonnet';
+local huggingfaceVitMae = import 'hf-mae.libsonnet';
 local mnist = import 'mnist.libsonnet';
 local pythonOperations = import 'python-ops.libsonnet';
 local resnet50_mp = import 'resnet50-mp.libsonnet';
@@ -33,6 +34,7 @@ std.flattenArrays([
   fairseqTransformer.configs,
   hfFsmt.configs,
   huggingfaceGlue.configs,
+  huggingfaceVitMae.configs,
   mnist.configs,
   pythonOperations.configs,
   resnet50_mp.configs,
