@@ -18,8 +18,6 @@ local huggingfaceDiffusers = import 'hf-diffusers.libsonnet';
 local hfFsmt = import 'hf-fsmt.libsonnet';
 local huggingfaceGlue = import 'hf-glue.libsonnet';
 local huggingfaceGPT2 = import 'hf-llm.libsonnet';
-local huggingfaceLanguageModeling = import 'hf-lm.libsonnet';
-local huggingfaceVitMae = import 'hf-mae.libsonnet';
 local mnist = import 'mnist.libsonnet';
 local resnet50_mp = import 'resnet50-mp.libsonnet';
 local stableDif = import 'sd-model.libsonnet';
@@ -30,8 +28,6 @@ std.flattenArrays([
   hfFsmt.configs,
   huggingfaceDiffusers.configs,
   huggingfaceGlue.configs,
-  huggingfaceLanguageModeling.configs,
-  huggingfaceVitMae.configs,
   huggingfaceGPT2.configs,
   mnist.configs,
   resnet50_mp.configs,
