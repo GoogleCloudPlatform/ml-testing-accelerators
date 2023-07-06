@@ -58,9 +58,11 @@ local tpus = import 'templates/tpus.libsonnet';
     testScript+:: |||
       gsutil -q stat $(MODEL_DIR)/plugins/profile/*/*.xplane.pb
       gsutil cp -r $(MODEL_DIR)/plugins /tmp/
-      pip uninstall tensorboard_plugin_profile
-      pip install tbp-nightly
-      python3 ~/.local/lib/python3.*/site-packages/tensorboard_plugin_profile/integration_tests/tpu/tensorflow/tpu_tf2_keras_test.py --log_directory=/tmp/
+      python3 -m pip uninstall tensorboard_plugin_profile
+      python3 -m pip install tbp-nightly
+      git clone https://github.com/tensorflow/profiler.git
+      python3 profiler/plugin/tensorboard_plugin_profile/integration_tests/tpu/tensorflow/tpu_tf2_keras_test.py --log_directory=/tmp/
+      rm -rf profiler
     ||| % (self.scriptConfig {}),
   },
   configs: [
