@@ -98,6 +98,6 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_8,
   },
   configs: [
-    sd_model + v4_8 + common.Functional + timeouts.Hours(25) + pjrt,
+    sd_model + v4_8 + common.Functional + timeouts.Hours(3) + pjrt,
   ],
 }
