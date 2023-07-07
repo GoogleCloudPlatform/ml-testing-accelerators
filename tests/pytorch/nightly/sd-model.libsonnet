@@ -46,20 +46,28 @@ local utils = import 'templates/utils.libsonnet';
     modelName+: '-pjrt',
     tpuSettings+: {
       tpuVmExtraSetup: |||
+        pip install https://github.com/Lightning-AI/lightning/archive/refs/heads/master.zip -U
         git clone https://github.com/pytorch-tpu/stable-diffusion.git
         cd stable-diffusion
-        pip install transformers==4.19.2 diffusers invisible-watermark
         pip install -e .
-        pip install torchmetrics==0.7.0
-        pip install https://github.com/PyTorchLightning/pytorch-lightning/archive/master.zip
-        pip install lmdb einops omegaconf
-        pip install taming-transformers clip kornia==0.6 albumentations==0.4.3
-        pip install starlette==0.22.0 && pip install tensorboard
+        pip install -r requirements.txt
+
+        # update starlette version
+        pip uninstall -y starlette
+        pip install starlette==0.27.0
+
         sudo apt-get update -y && sudo apt-get install libgl1 -y
         # wget -nv https://github.com/CompVis/taming-transformers/blob/master/taming/modules/vqvae/quantize.py
         pip install -e git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers
         echo w | pip install -e git+https://github.com/openai/CLIP.git@main#egg=clip
         # mv quantize.py ~/.local/lib/python3.8/site-packages/taming/modules/vqvae/
+
+        # taming-transformers and CLIP override existing torch and torchvision so we need to reinstall
+        pip uninstall -y torch torchvision
+        pip install --user \
+          https://storage.googleapis.com/pytorch-xla-releases/wheels/xrt/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl \
+          'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/xrt/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl'
+        pip3 install --user --pre --no-deps torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
 
         # Setup data
         wget -nv https://s3.amazonaws.com/fast-ai-imageclas/imagenette2.tgz
@@ -90,6 +98,6 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_8,
   },
   configs: [
-    sd_model + v4_8 + common.Functional + timeouts.Hours(25) + pjrt,
+    sd_model + v4_8 + common.Functional + timeouts.Hours(3) + pjrt,
   ],
 }
