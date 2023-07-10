@@ -9,6 +9,10 @@ local mixins = import 'templates/mixins.libsonnet';
   NightlyPaxTest:: common.PaxTest {
     local config = self,
     frameworkPrefix: 'pax-nightly',
+    tpuSettings+: {
+      softwareVersion: 'tpu-ubuntu2204-base',
+      tpuVmCreateSleepSeconds: 60,
+    },
     expPath:: '',
     extraFlags:: [],
     buildDate:: '$(date +%Y%m%d)',
