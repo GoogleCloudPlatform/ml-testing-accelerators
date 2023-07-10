@@ -50,7 +50,7 @@ local tpus = import 'templates/tpus.libsonnet';
   wmt:: common.runFlaxLatest {
     folderName:: 'wmt',
     modelName:: 'wmt-wmt17.translate',
-    extraDeps+:: ['tensorflow-cpu tensorflow-datasets tensorflow_text sentencepiece'],
+    extraDeps+:: ['tf-nightly-cpu tensorflow-datasets tensorflow-text-nightly sentencepiece'],
   },
   local wmt_profiling = self.wmt_profiling,
   wmt_profiling:: wmt {
