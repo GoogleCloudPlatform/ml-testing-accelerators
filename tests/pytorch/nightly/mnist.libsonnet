@@ -41,8 +41,8 @@ local utils = import 'templates/utils.libsonnet';
 
   local fake_data = self.fake_data,
   fake_data:: common.Functional {
-    command+: ['--fake_data']
-  }
+    command+: ['--fake_data'],
+  },
 
   local convergence = self.convergence,
   convergence:: common.Convergence {
