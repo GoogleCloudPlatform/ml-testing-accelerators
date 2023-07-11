@@ -39,6 +39,11 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
 
+  local fake_data = self.fake_data,
+  fake_data:: common.Functional {
+    command+: ['--fake_data'],
+  },
+
   local convergence = self.convergence,
   convergence:: common.Convergence {
     metricConfig+: {
@@ -128,6 +133,7 @@ local utils = import 'templates/utils.libsonnet';
 
   configs: [
     mnist + convergence + v2_8 + timeouts.Hours(1) + pjrt,
+    mnist + fake_data + v2_8 + timeouts.Hours(1) + pjrt + mixins.Experimental,
     mnist + convergence_ddp + v2_8 + timeouts.Hours(1) + pjrt + pjrt_ddp,
   ],
 }
