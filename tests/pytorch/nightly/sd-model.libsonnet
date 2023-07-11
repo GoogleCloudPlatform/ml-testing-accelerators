@@ -46,16 +46,15 @@ local utils = import 'templates/utils.libsonnet';
     modelName+: '-pjrt',
     tpuSettings+: {
       tpuVmExtraSetup: |||
-        pip install https://github.com/Lightning-AI/lightning/archive/refs/heads/master.zip -U
         git clone https://github.com/pytorch-tpu/stable-diffusion.git
         cd stable-diffusion
+        pip install transformers==4.19.2 diffusers invisible-watermark
         pip install -e .
-        pip install -r requirements.txt
-
-        # update starlette version
-        pip uninstall -y starlette
-        pip install starlette==0.27.0
-
+        pip install torchmetrics==0.7.0
+        pip install https://github.com/Lightning-AI/lightning/archive/refs/heads/master.zip -U
+        pip install lmdb einops omegaconf
+        pip install taming-transformers clip kornia==0.6 albumentations==0.4.3
+        pip install starlette==0.27.0 && pip install tensorboard
         sudo apt-get update -y && sudo apt-get install libgl1 -y
         # wget -nv https://github.com/CompVis/taming-transformers/blob/master/taming/modules/vqvae/quantize.py
         pip install -e git+https://github.com/CompVis/taming-transformers.git@master#egg=taming-transformers
