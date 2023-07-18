@@ -17,7 +17,7 @@ local mixins = import 'templates/mixins.libsonnet';
 
 {
   local compilationCacheTest = self.compilationCacheTest,
-  compilationCacheTest:: common.JaxTest + mixins.Functional {
+  compilationCacheTest:: common.JaxTest + common.tpuVmBaseImage + mixins.Functional {
     modelName: 'compilation-cache-test',
 
     testScript:: |||
@@ -29,8 +29,6 @@ local mixins = import 'templates/mixins.libsonnet';
       rm .bash_logout
 
       pip install --upgrade pip
-      pip install --upgrade numpy==1.18.5 scipy wheel future six cython pytest \
-          absl-py opt-einsum msgpack
 
       %(installLocalJax)s
       %(maybeBuildJaxlib)s
