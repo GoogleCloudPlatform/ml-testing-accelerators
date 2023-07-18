@@ -86,7 +86,7 @@ local utils = import 'templates/utils.libsonnet';
 
   local save_load_io_device_local = self.save_load_io_device_local,
   save_load_io_device_local:: API {
-    mode: 'save-load-localhost',
+    mode: 'save-load-local',
     testFeature:: 'save_and_load_io_device_local_drive',
   },
 
@@ -98,7 +98,7 @@ local utils = import 'templates/utils.libsonnet';
 
   local train_and_evaluate = self.train_and_evaluate,
   train_and_evaluate:: API {
-    mode: 'train-and-evaluate',
+    mode: 'train-and-eval',
     testFeature:: 'train_and_evaluate',
   },
 
