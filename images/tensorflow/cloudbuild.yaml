@@ -26,7 +26,7 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'gcr.io/$PROJECT_ID/tensorflow:$_VERSION']
 images: ['gcr.io/$PROJECT_ID/tensorflow:$_VERSION']
-timeout: 2400s  # 40 minutes TODO (ericlefort) revert this back to 20 minutes once TF team updates the base image to Ubuntu 22.04
+timeout: 1200s  # 20 minutes
 substitutions:
   _VERSION: 'latest'
   _BASE_IMAGE_VERSION: 'nightly'

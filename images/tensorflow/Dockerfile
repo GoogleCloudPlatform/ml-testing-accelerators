@@ -20,18 +20,6 @@ ARG image_version
 ARG model_garden_branch="master"
 ARG tensorflow_text_version="nightly"
 
-# TODO (ericlefort) remove this once the base image gets updated to 22.04
-# Keep track of the full set of dependencies in 3.8 and reinstall them on 3.10
-RUN pip3 freeze > requirements.txt
-RUN apt-get install software-properties-common && apt-get update && add-apt-repository ppa:deadsnakes/ppa
-RUN apt-get update && apt-get install -y --no-install-recommends git python3.10 python3.10-distutils python3.10-dev libcairo2-dev
-RUN cd /usr/bin &&  unlink python3 && ln -s /usr/bin/python3.10 python3
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.10
-RUN cat requirements.txt | xargs -n 1 pip3 install
-RUN rm requirements.txt
-
-RUN pip3 install cloud-tpu-client pyyaml
-
 # HACKs: Remove this once they are added to the Model Garden requirements
 RUN pip3 install tensorflow-recommenders --no-deps
 RUN if [ ${image_version} = "nightly" ] \
@@ -47,6 +35,8 @@ WORKDIR /
 RUN curl -L https://github.com/tensorflow/models/archive/${model_garden_branch}.tar.gz | tar zx
 RUN mv models-${model_garden_branch} garden/
 
+RUN pip3 install cloud-tpu-client
+RUN pip3 install "Cython<3.0" "pyyaml<6" --no-build-isolation
 RUN pip3 install -r /garden/official/requirements.txt
 ENV PYTHONPATH /garden
 
