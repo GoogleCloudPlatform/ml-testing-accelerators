@@ -42,7 +42,7 @@ local tpus = import 'templates/tpus.libsonnet';
           echo "No TPU devices detected"
           exit 1
       fi
-      python3 .local/lib/python3.8/site-packages/paxml/main.py --exp=%(expPath)s --job_log_dir=$(MODEL_DIR) %(extraFlags)s
+      python3 .local/lib/python3.10/site-packages/paxml/main.py --exp=%(expPath)s --job_log_dir=$(MODEL_DIR) %(extraFlags)s
     ||| % { buildDate: config.buildDate, expPath: config.expPath, extraFlags: std.join(' ', config.extraFlags) },
   },
 
