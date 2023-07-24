@@ -65,6 +65,7 @@ local mixins = import 'templates/mixins.libsonnet';
                   import tensorflow as tf
                   import urllib
                   import json
+                  os.system('pip3 install cloud_tpu_client')
                   import cloud_tpu_client
                   import sys
                   print('python version: ' + str(sys.version))
