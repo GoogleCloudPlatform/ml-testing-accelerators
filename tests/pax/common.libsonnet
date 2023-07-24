@@ -21,6 +21,7 @@ local tpus = import 'templates/tpus.libsonnet';
     local config = self,
 
     frameworkPrefix: 'pax',
+    image: null,
     accelerator: tpus.v4_8,
     tpuSettings+: {
       softwareVersion: 'tpu-vm-v4-base',
