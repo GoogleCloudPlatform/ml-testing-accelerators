@@ -15,14 +15,12 @@
 local experimental = import 'experimental/targets.jsonnet';
 local nightly_se = import 'nightly-se/targets.jsonnet';
 local nightly = import 'nightly/targets.jsonnet';
-local r2_12 = import 'r2.12/targets.jsonnet';
-local r3_13 = import 'r2.13/targets.jsonnet';
+local r2_13 = import 'r2.13/targets.jsonnet';
 
 // Add new versions here
 std.flattenArrays([
   experimental,
   nightly,
   nightly_se,
-  r2_12,
-  r3_13,
+  r2_13,
 ])
