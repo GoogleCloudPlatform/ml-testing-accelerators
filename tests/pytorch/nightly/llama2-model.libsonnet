@@ -108,7 +108,7 @@ local utils = import 'templates/utils.libsonnet';
   },
   local llama2_google_next_inference = self.llama2_google_next_inference,
   llama2_google_next_inference:: common.PyTorchTpuVmMixin {
-    modelName+: '-llama2-google-next-inference',
+    modelName+: '-next-infer',
     tpuSettings+: {
       tpuVmExtraSetup: |||
         git clone -b llama2-google-next-inference https://github.com/pytorch-tpu/llama.git
