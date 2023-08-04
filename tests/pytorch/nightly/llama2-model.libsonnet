@@ -28,8 +28,8 @@ local utils = import 'templates/utils.libsonnet';
       trainCommand: [
         'torchrun --nproc_per_node 1',
         self.scriptPath,
-        '--ckpt_dir llama-2-7b/',
-        '--tokenizer_path tokenizer.model',
+        '--ckpt_dir llama_2_model/llama-2-13b-dummy/',
+        '--tokenizer_path llama_2_model/tokenizer.model',
         '--max_seq_len 128 --max_batch_size 4',
       ],
     },
@@ -44,8 +44,8 @@ local utils = import 'templates/utils.libsonnet';
       trainCommand: [
         'torchrun --nproc_per_node 1',
         self.scriptPath,
-        '--ckpt_dir llama-2-7b-chat/',
-        '--tokenizer_path tokenizer.model',
+        '--ckpt_dir llama_2_model/llama-2-13b-dummy/',
+        '--tokenizer_path llama_2_model/tokenizer.model',
         '--max_seq_len 512 --max_batch_size 4',
       ],
     },
@@ -60,8 +60,8 @@ local utils = import 'templates/utils.libsonnet';
       trainCommand: [
         'torchrun --nproc_per_node MP',
         self.scriptPath,
-        '--ckpt_dir $TARGET_FOLDER/model_size',
-        '--tokenizer_path $TARGET_FOLDER/tokenizer.model',
+        '--ckpt_dir llama_2_model/llama-2-13b-dummy/',
+        '--tokenizer_path llama_2_model/tokenizer.model',
       ],
     },
     command: self.paramsOverride.trainCommand,
@@ -75,7 +75,26 @@ local utils = import 'templates/utils.libsonnet';
       trainCommand: [
         'python3',
         self.scriptPath,
-        '--tokenizer_path $TOKENIZER_PATH',
+        '--tokenizer_path llama_2_model/tokenizer.model',
+        '--ckpt_dir llama_2_model/tokenizer.model',
+        '--max_seq_len 256',
+        '--max_batch_size 1',
+        '--temperature 0.8',
+        '--mp True',
+      ],
+    },
+    command: self.paramsOverride.trainCommand,
+  },
+  local llama2-stable-quant = self.llama2-stable-quant,
+  llama2-stable-quant:: common.PyTorchTest {
+    local config = self,
+    modelName: 'llama2-model',
+    paramsOverride:: {
+      scriptPath: 'example_xla.py',
+      trainCommand: [
+        'python3',
+        self.scriptPath,
+        '--tokenizer_path llama_2_model/tokenizer.model',
         '--max_seq_len 256',
         '--max_batch_size 1',
         '--temperature 0.8',
@@ -96,6 +115,10 @@ local utils = import 'templates/utils.libsonnet';
         cd llama
         pip install -r requirements.txt
         pip install -e .
+        # prepare data
+        wget https://storage.mtls.cloud.google.com/manfei_bucket/LLaMA2/llama_2_model.zip
+        sudo apt-get install unzip
+        unzip llama_2_model.zip
       |||,
     },
   },
@@ -108,6 +131,10 @@ local utils = import 'templates/utils.libsonnet';
         cd llama
         pip install -r requirements.txt
         pip install -e .
+        # prepare data
+        wget https://storage.mtls.cloud.google.com/manfei_bucket/LLaMA2/llama_2_model.zip
+        sudo apt-get install unzip
+        unzip llama_2_model.zip
       |||,
     },
   },
@@ -118,9 +145,9 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   configs: [
-    // llama2-google-next-inference-pretrained-models + v4_8 + common.Functional + timeouts.Hours(3) + google-next-inference,
+    llama2-google-next-inference-pretrained-models + v4_8 + common.Functional + timeouts.Hours(3) + google-next-inference,
     // llama2-google-next-inference-fine-tuned-chat-models + v4_8 + common.Functional + timeouts.Hours(3) + google-next-inference,
-    // llama2-stable-tokenizer + v4_8 + common.Functional + timeouts.Hours(3) + stable,
-    // llama2-stable-quant + v4_8 + common.Functional + timeouts.Hours(3) + stable,
+    llama2-stable-tokenizer + v4_8 + common.Functional + timeouts.Hours(3) + stable,
+    llama2-stable-quant + v4_8 + common.Functional + timeouts.Hours(3) + stable,
   ],
 }
