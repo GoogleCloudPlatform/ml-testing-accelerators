@@ -88,7 +88,7 @@ local utils = import 'templates/utils.libsonnet';
   local llama2_stable_quant_without_download = self.llama2_stable_quant_without_download,
   llama2_stable_quant_without_download:: common.PyTorchTest {
     local config = self,
-    modelName: 'llama2-quant-without',
+    modelName: 'llama2-quant-wo',
     paramsOverride:: {
       scriptPath: 'example_xla.py',
       trainCommand: [
