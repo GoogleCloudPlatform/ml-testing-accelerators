@@ -38,7 +38,7 @@ local utils = import 'templates/utils.libsonnet';
   local llama2_google_next_inference_fine_tuned_chat_models = self.llama2_google_next_inference_fine_tuned_chat_models,
   llama2_google_next_inference_fine_tuned_chat_models:: common.PyTorchTest {
     local config = self,
-    modelName: 'llama2-model',
+    modelName: 'llama2-model-chat',
     paramsOverride:: {
       scriptPath: 'example_chat_completion.py',
       trainCommand: [
@@ -54,7 +54,7 @@ local utils = import 'templates/utils.libsonnet';
   local llama2_stable_tokenizer = self.llama2_stable_tokenizer,
   llama2_stable_tokenizer:: common.PyTorchTest {
     local config = self,
-    modelName: 'llama2-model',
+    modelName: 'llama2-model-tokenizer',
     paramsOverride:: {
       scriptPath: 'example.py',
       trainCommand: [
@@ -69,7 +69,7 @@ local utils = import 'templates/utils.libsonnet';
   local llama2_stable_quant = self.llama2_stable_quant,
   llama2_stable_quant:: common.PyTorchTest {
     local config = self,
-    modelName: 'llama2-model',
+    modelName: 'llama2-model-quant',
     paramsOverride:: {
       scriptPath: 'example_xla.py',
       trainCommand: [
@@ -88,7 +88,7 @@ local utils = import 'templates/utils.libsonnet';
   local llama2_stable_quant_without_download = self.llama2_stable_quant_without_download,
   llama2_stable_quant_without_download:: common.PyTorchTest {
     local config = self,
-    modelName: 'llama2-model',
+    modelName: 'llama2-model-quant-without',
     paramsOverride:: {
       scriptPath: 'example_xla.py',
       trainCommand: [
