@@ -19,8 +19,8 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local llama2-google-next-inference-pretrained-models = self.llama2-google-next-inference-pretrained-models,
-  llama2-google-next-inference-pretrained-models:: common.PyTorchTest {
+  local llama2_google_next_inference_pretrained_models = self.llama2_google_next_inference_pretrained_models,
+  llama2_google_next_inference_pretrained_models:: common.PyTorchTest {
     local config = self,
     modelName: 'llama2-model',
     paramsOverride:: {
@@ -35,8 +35,8 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: self.paramsOverride.trainCommand,
   },
-  local llama2-google-next-inference-fine-tuned-chat-models = self.llama2-google-next-inference-fine-tuned-chat-models,
-  llama2-google-next-inference-fine-tuned-chat-models:: common.PyTorchTest {
+  local llama2_google_next_inference_fine_tuned_chat_models = self.llama2_google_next_inference_fine_tuned_chat_models,
+  llama2_google_next_inference_fine_tuned_chat_models:: common.PyTorchTest {
     local config = self,
     modelName: 'llama2-model',
     paramsOverride:: {
@@ -51,8 +51,8 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: self.paramsOverride.trainCommand,
   },
-  local llama2-stable-tokenizer = self.llama2-stable-tokenizer,
-  llama2-stable-tokenizer:: common.PyTorchTest {
+  local llama2_stable_tokenizer = self.llama2_stable_tokenizer,
+  llama2_stable_tokenizer:: common.PyTorchTest {
     local config = self,
     modelName: 'llama2-model',
     paramsOverride:: {
@@ -66,8 +66,8 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: self.paramsOverride.trainCommand,
   },
-  local llama2-stable-quant = self.llama2-stable-quant,
-  llama2-stable-quant:: common.PyTorchTest {
+  local llama2_stable_quant = self.llama2_stable_quant,
+  llama2_stable_quant:: common.PyTorchTest {
     local config = self,
     modelName: 'llama2-model',
     paramsOverride:: {
@@ -85,8 +85,8 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: self.paramsOverride.trainCommand,
   },
-  local llama2-stable-quant = self.llama2-stable-quant,
-  llama2-stable-quant:: common.PyTorchTest {
+  local llama2_stable_quant_without_download = self.llama2_stable_quant_without_download,
+  llama2_stable_quant_without_download:: common.PyTorchTest {
     local config = self,
     modelName: 'llama2-model',
     paramsOverride:: {
@@ -106,8 +106,8 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: self.paramsOverride.trainCommand,
   },
-  local llama2-google-next-inference = self.llama2-google-next-inference,
-  llama2-google-next-inference:: common.PyTorchTpuVmMixin {
+  local llama2_google_next_inference = self.llama2_google_next_inference,
+  llama2_google_next_inference:: common.PyTorchTpuVmMixin {
     modelName+: '-llama2-google-next-inference',
     tpuSettings+: {
       tpuVmExtraSetup: |||
@@ -145,9 +145,10 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   configs: [
-    llama2-google-next-inference-pretrained-models + v4_8 + common.Functional + timeouts.Hours(3) + google-next-inference,
-    // llama2-google-next-inference-fine-tuned-chat-models + v4_8 + common.Functional + timeouts.Hours(3) + google-next-inference,
-    llama2-stable-tokenizer + v4_8 + common.Functional + timeouts.Hours(3) + stable,
-    llama2-stable-quant + v4_8 + common.Functional + timeouts.Hours(3) + stable,
+    llama2_google_next_inference_pretrained_models + v4_8 + common.Functional + timeouts.Hours(3) + llama2_google_next_inference,
+    // llama2_google_next_inference_fine_tuned_chat_models + v4_8 + common.Functional + timeouts.Hours(3) + llama2_google_next_inference,
+    llama2_stable_tokenizer + v4_8 + common.Functional + timeouts.Hours(3) + stable,
+    llama2_stable_quant + v4_8 + common.Functional + timeouts.Hours(3) + stable,
+    llama2_stable_quant_without_download + v4_8 + common.Functional + timeouts.Hours(3) + stable,
   ],
 }
