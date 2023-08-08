@@ -66,6 +66,9 @@ local tpus = import 'templates/tpus.libsonnet';
       set -u
       set -e
 
+      # .bash_logout sometimes causes a spurious bad exit code, remove it.
+      rm .bash_logout
+
       %(setup)s
       %(runTest)s
     ||| % self,
@@ -179,9 +182,6 @@ local tpus = import 'templates/tpus.libsonnet';
   huggingFaceTransformer:: {
     scriptConfig+: {
       installPackages: |||
-        # .bash_logout sometimes causes a spurious bad exit code, remove it.
-        rm .bash_logout
-
         pip install --upgrade pip
         git clone https://github.com/huggingface/transformers.git
         cd transformers && pip install .
@@ -204,9 +204,6 @@ local tpus = import 'templates/tpus.libsonnet';
   huggingFaceDiffuser:: {
     scriptConfig+: {
       installPackages: |||
-        # .bash_logout sometimes causes a spurious bad exit code, remove it.
-        rm .bash_logout
-
         pip install --upgrade pip
         git clone https://github.com/huggingface/diffusers.git
         cd diffusers && pip install .

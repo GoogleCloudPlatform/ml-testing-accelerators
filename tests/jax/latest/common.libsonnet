@@ -24,9 +24,6 @@ local tpus = import 'templates/tpus.libsonnet';
     extraFlags:: [],
 
     setup: |||
-      # .bash_logout sometimes causes a spurious bad exit code, remove it.
-      rm .bash_logout
-
       pip install --upgrade pip
       pip install --upgrade clu %(extraDeps)s
 
