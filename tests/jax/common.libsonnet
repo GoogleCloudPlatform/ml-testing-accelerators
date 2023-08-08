@@ -179,10 +179,6 @@ local tpus = import 'templates/tpus.libsonnet';
   huggingFaceTransformer:: {
     scriptConfig+: {
       installPackages: |||
-        set -x
-        set -u
-        set -e
-
         # .bash_logout sometimes causes a spurious bad exit code, remove it.
         rm .bash_logout
 
