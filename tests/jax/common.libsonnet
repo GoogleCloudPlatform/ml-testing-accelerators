@@ -67,7 +67,6 @@ local tpus = import 'templates/tpus.libsonnet';
       set -e
 
       %(setup)s
-
       %(runTest)s
     ||| % self,
     command: [
@@ -209,10 +208,6 @@ local tpus = import 'templates/tpus.libsonnet';
   huggingFaceDiffuser:: {
     scriptConfig+: {
       installPackages: |||
-        set -x
-        set -u
-        set -e
-
         # .bash_logout sometimes causes a spurious bad exit code, remove it.
         rm .bash_logout
 
