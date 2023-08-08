@@ -58,9 +58,18 @@ local tpus = import 'templates/tpus.libsonnet';
       tpuVmCreateSleepSeconds: 60,
     },
 
-    // JAX tests are structured as bash scripts that run directly on the Cloud
-    // TPU VM instead of using docker images
-    testScript:: error 'Must define `testScript`',
+    setup: error "Must define `setup`",
+    runTest: error "Must define `runTest`",
+
+    testScript:: |||
+      set -x
+      set -u
+      set -e
+
+      %(setup)s
+
+      %(runTest)s
+    ||| % self,
     command: [
       'bash',
       '-c',

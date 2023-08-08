@@ -23,11 +23,12 @@ local tpus = import 'templates/tpus.libsonnet';
     frameworkPrefix: 'flax.latest',
     modelName:: 'bart-wiki.summary',
     extraFlags:: [],
-    testScript:: |||
+    setup: |||
       %(installPackages)s
       pip install -r examples/flax/summarization/requirements.txt
       %(verifySetup)s
-
+    ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
+    runTest: |||
       export GCS_BUCKET=$(MODEL_DIR)
       python3 examples/flax/summarization/run_summarization_flax.py \
         --output_dir './bart-base-wiki' \

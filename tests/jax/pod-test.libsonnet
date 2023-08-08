@@ -21,15 +21,12 @@ local tpus = import 'templates/tpus.libsonnet';
   podTest:: common.JaxTest + mixins.Functional {
     modelName: 'pod-%s-%s' % [self.jaxlibVersion, self.tpuSettings.softwareVersion],
 
-    testScript:: |||
-      set -x
-      set -u
-      set -e
-
+    setup: |||
       %(installLocalJax)s
       %(maybeBuildJaxlib)s
       %(printDiagnostics)s
-
+    ||| % self.scriptConfig,
+    runTest: |||
       # Very basic smoke test
       python3 -c "import jax; assert jax.device_count() == 32, jax.device_count()"
 

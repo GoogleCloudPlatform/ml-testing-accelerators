@@ -20,11 +20,7 @@ local mixins = import 'templates/mixins.libsonnet';
   compilationCacheTest:: common.JaxTest + common.tpuVmBaseImage + mixins.Functional {
     modelName: 'compilation-cache-test',
 
-    testScript:: |||
-      set -x
-      set -u
-      set -e
-
+    setup: |||
       # .bash_logout sometimes causes a spurious bad exit code, remove it.
       rm .bash_logout
 
@@ -59,12 +55,12 @@ local mixins = import 'templates/mixins.libsonnet';
       num_of_files = sum(1 for f in os.listdir("/tmp/compilation_cache_integration_test"))
       assert num_of_files == 1, f"The number of files in the cache should be 1 but is {num_of_files}"
       END_SCRIPT
-
+    ||| % self.scriptConfig,
+    runTest: |||
       python3 integration.py
       python3 directory_size.py
       python3 integration.py
       python3 directory_size.py
-
     ||| % self.scriptConfig,
   },
 
