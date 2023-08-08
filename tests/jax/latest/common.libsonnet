@@ -44,7 +44,6 @@ local tpus = import 'templates/tpus.libsonnet';
       cd flax
       pip install --upgrade git+https://github.com/google/flax.git
     ||| % (self.scriptConfig {
-             folderName: config.folderName,
              extraDeps: std.join(' ', config.extraDeps),
            }),
     runTest: |||
@@ -54,7 +53,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
       python3 main.py --workdir=$(MODEL_DIR)  --config=configs/%(extraConfig)s %(extraFlags)s
     ||| % (self.scriptConfig {
-             modelName: config.modelName,
+             folderName: config.folderName,
              extraConfig: config.extraConfig,
              extraFlags: std.join(' ', config.extraFlags),
            }),
