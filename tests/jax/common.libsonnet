@@ -58,8 +58,8 @@ local tpus = import 'templates/tpus.libsonnet';
       tpuVmCreateSleepSeconds: 60,
     },
 
-    setup: error "Must define `setup`",
-    runTest: error "Must define `runTest`",
+    setup: error 'Must define `setup`',
+    runTest: error 'Must define `runTest`',
 
     testScript:: |||
       set -x
