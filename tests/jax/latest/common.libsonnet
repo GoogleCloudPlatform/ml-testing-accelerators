@@ -43,12 +43,12 @@ local tpus = import 'templates/tpus.libsonnet';
       git clone https://github.com/google/flax
       cd flax
       pip install --upgrade git+https://github.com/google/flax.git
-      cd examples/%(folderName)s
     ||| % (self.scriptConfig {
              folderName: config.folderName,
              extraDeps: std.join(' ', config.extraDeps),
            }),
     runTest: |||
+      cd examples/%(folderName)s
       export GCS_BUCKET=$(MODEL_DIR)
       export TFDS_DATA_DIR=$(TFDS_DIR)
 
@@ -69,11 +69,10 @@ local tpus = import 'templates/tpus.libsonnet';
       %(installPackages)s
       pip install -r examples/flax/text-classification/requirements.txt
       %(verifySetup)s
-
+    ||| % self.scriptConfig,
+    runTest: |||
       export GCS_BUCKET=$(MODEL_DIR)
       export OUTPUT_DIR='./bert-glue'
-    ||| % (self.scriptConfig),
-    runTest: |||
       python3 examples/flax/text-classification/run_flax_glue.py --model_name_or_path bert-base-cased \
         --output_dir ${OUTPUT_DIR} \
         --logging_dir ${OUTPUT_DIR} \
