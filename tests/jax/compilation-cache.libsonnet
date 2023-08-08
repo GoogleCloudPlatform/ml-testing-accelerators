@@ -33,6 +33,8 @@ local mixins = import 'templates/mixins.libsonnet';
         exit 1
       fi
 
+      cd ~
+
       mkdir "/tmp/compilation_cache_integration_test"
       cat >integration.py <<'END_SCRIPT'
       import jax
