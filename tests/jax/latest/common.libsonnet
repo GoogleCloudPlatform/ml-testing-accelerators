@@ -46,10 +46,7 @@ local tpus = import 'templates/tpus.libsonnet';
       cd examples/%(folderName)s
     ||| % (self.scriptConfig {
              folderName: config.folderName,
-             modelName: config.modelName,
              extraDeps: std.join(' ', config.extraDeps),
-             extraConfig: config.extraConfig,
-             extraFlags: std.join(' ', config.extraFlags),
            }),
     runTest: |||
       export GCS_BUCKET=$(MODEL_DIR)
@@ -57,9 +54,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
       python3 main.py --workdir=$(MODEL_DIR)  --config=configs/%(extraConfig)s %(extraFlags)s
     ||| % (self.scriptConfig {
-             folderName: config.folderName,
              modelName: config.modelName,
-             extraDeps: std.join(' ', config.extraDeps),
              extraConfig: config.extraConfig,
              extraFlags: std.join(' ', config.extraFlags),
            }),
@@ -77,7 +72,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
       export GCS_BUCKET=$(MODEL_DIR)
       export OUTPUT_DIR='./bert-glue'
-    ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
+    ||| % (self.scriptConfig),
     runTest: |||
       python3 examples/flax/text-classification/run_flax_glue.py --model_name_or_path bert-base-cased \
         --output_dir ${OUTPUT_DIR} \

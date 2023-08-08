@@ -30,7 +30,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
       wget https://s3.amazonaws.com/fast-ai-imageclas/imagenette2.tgz
       tar -xvzf imagenette2.tgz
-    ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
+    ||| % self.scriptConfig,
     runTest: |||
       export GCS_BUCKET=$(MODEL_DIR)
       python3 examples/flax/vision/run_image_classification.py \

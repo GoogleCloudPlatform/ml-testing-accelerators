@@ -27,7 +27,7 @@ local tpus = import 'templates/tpus.libsonnet';
       %(installPackages)s
       pip install -U -r examples/text_to_image/requirements_flax.txt
       %(verifySetup)s
-    ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
+    ||| % self.scriptConfig,
     runTest: |||
       export GCS_BUCKET=$(MODEL_DIR)
       export MODEL_NAME="duongna/stable-diffusion-v1-4-flax"
