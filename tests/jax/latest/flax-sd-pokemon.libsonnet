@@ -23,11 +23,12 @@ local tpus = import 'templates/tpus.libsonnet';
     frameworkPrefix: 'flax.latest',
     modelName:: 'sd-pokemon',
     extraFlags:: [],
-    testScript:: |||
+    setup: |||
       %(installPackages)s
       pip install -U -r examples/text_to_image/requirements_flax.txt
       %(verifySetup)s
-
+    ||| % self.scriptConfig,
+    runTest: |||
       export GCS_BUCKET=$(MODEL_DIR)
       export MODEL_NAME="duongna/stable-diffusion-v1-4-flax"
       export dataset_name="lambdalabs/pokemon-blip-captions"
@@ -42,7 +43,6 @@ local tpus = import 'templates/tpus.libsonnet';
         --output_dir="./sd-pokemon-model" \
         --cache_dir /tmp \
         %(extraFlags)s
-
     ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
   },
 

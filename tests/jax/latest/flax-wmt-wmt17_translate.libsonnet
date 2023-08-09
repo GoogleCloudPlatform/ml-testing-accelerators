@@ -55,13 +55,13 @@ local tpus = import 'templates/tpus.libsonnet';
   local wmt_profiling = self.wmt_profiling,
   wmt_profiling:: wmt {
     local config = self,
-    testScript+:: |||
+    runTest+: |||
       gsutil -q stat $(MODEL_DIR)/plugins/profile/*/*.xplane.pb
       gsutil cp -r $(MODEL_DIR)/plugins /tmp/
       python3 -m pip uninstall tensorboard_plugin_profile
       python3 -m pip install tbp-nightly
       python3 ~/.local/lib/python3.*/site-packages/tensorboard_plugin_profile/integration_tests/tpu/tensorflow/tpu_tf2_keras_test.* --log_directory=/tmp/
-    ||| % (self.scriptConfig {}),
+    ||| % (self.scriptConfig),
   },
   configs: [
     wmt + functional + v2_8,

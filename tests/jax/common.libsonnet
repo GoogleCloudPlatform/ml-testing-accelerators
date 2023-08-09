@@ -58,9 +58,20 @@ local tpus = import 'templates/tpus.libsonnet';
       tpuVmCreateSleepSeconds: 60,
     },
 
-    // JAX tests are structured as bash scripts that run directly on the Cloud
-    // TPU VM instead of using docker images
-    testScript:: error 'Must define `testScript`',
+    setup: error 'Must define `setup`',
+    runTest: error 'Must define `runTest`',
+
+    testScript:: |||
+      set -x
+      set -u
+      set -e
+
+      # .bash_logout sometimes causes a spurious bad exit code, remove it.
+      rm .bash_logout
+
+      %(setup)s
+      %(runTest)s
+    ||| % self,
     command: [
       'bash',
       '-c',
@@ -171,13 +182,6 @@ local tpus = import 'templates/tpus.libsonnet';
   huggingFaceTransformer:: {
     scriptConfig+: {
       installPackages: |||
-        set -x
-        set -u
-        set -e
-
-        # .bash_logout sometimes causes a spurious bad exit code, remove it.
-        rm .bash_logout
-
         pip install --upgrade pip
         git clone https://github.com/huggingface/transformers.git
         cd transformers && pip install .
@@ -200,13 +204,6 @@ local tpus = import 'templates/tpus.libsonnet';
   huggingFaceDiffuser:: {
     scriptConfig+: {
       installPackages: |||
-        set -x
-        set -u
-        set -e
-
-        # .bash_logout sometimes causes a spurious bad exit code, remove it.
-        rm .bash_logout
-
         pip install --upgrade pip
         git clone https://github.com/huggingface/diffusers.git
         cd diffusers && pip install .
