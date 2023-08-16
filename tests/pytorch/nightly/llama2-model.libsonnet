@@ -24,7 +24,7 @@ local utils = import 'templates/utils.libsonnet';
     local config = self,
     modelName: 'l2-e',
     paramsOverride:: {
-      scriptPath: 'example_text_completion.py',
+      scriptPath: 'llama/example_text_completion.py',
       trainCommand: [
         'torchrun --nproc_per_node 1',
         self.scriptPath,
@@ -40,7 +40,7 @@ local utils = import 'templates/utils.libsonnet';
     local config = self,
     modelName: 'l2',
     paramsOverride:: {
-      scriptPath: 'example_text_completion.py',
+      scriptPath: 'llama/example_text_completion.py',
       trainCommand: [
         'python3',
         self.scriptPath,
@@ -57,7 +57,7 @@ local utils = import 'templates/utils.libsonnet';
     local config = self,
     modelName: 'l2-c-e',
     paramsOverride:: {
-      scriptPath: 'example_chat_completion.py',
+      scriptPath: 'llama/example_chat_completion.py',
       trainCommand: [
         'torchrun --nproc_per_node 1',
         self.scriptPath,
@@ -73,7 +73,7 @@ local utils = import 'templates/utils.libsonnet';
     local config = self,
     modelName: 'l2-c',
     paramsOverride:: {
-      scriptPath: 'example_chat_completion.py',
+      scriptPath: 'llama/example_chat_completion.py',
       trainCommand: [
         'python3',
         self.scriptPath,
