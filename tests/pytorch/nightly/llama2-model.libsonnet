@@ -19,10 +19,10 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local llama2_google_next_inference_pretrained_models = self.llama2_google_next_inference_pretrained_models,
-  llama2_google_next_inference_pretrained_models:: common.PyTorchTest {
+  local llama2_google_next_inference_pretrained_models_eager = self.llama2_google_next_inference_pretrained_models_eager,
+  llama2_google_next_inference_pretrained_models_eager:: common.PyTorchTest {
     local config = self,
-    modelName: 'llama2',
+    modelName: 'llama2-eager',
     paramsOverride:: {
       scriptPath: 'example_text_completion.py',
       trainCommand: [
@@ -35,10 +35,27 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: self.paramsOverride.trainCommand,
   },
-  local llama2_google_next_inference_fine_tuned_chat_models = self.llama2_google_next_inference_fine_tuned_chat_models,
-  llama2_google_next_inference_fine_tuned_chat_models:: common.PyTorchTest {
+  local llama2_google_next_inference_pretrained_models = self.llama2_google_next_inference_pretrained_models,
+  llama2_google_next_inference_pretrained_models:: common.PyTorchTest {
     local config = self,
-    modelName: 'llama2-chat',
+    modelName: 'llama2',
+    paramsOverride:: {
+      scriptPath: 'example_text_completion.py',
+      trainCommand: [
+        'python3',
+        self.scriptPath,
+        '--ckpt_dir llama_2_model/llama-2-13b-dummy/',
+        '--tokenizer_path llama_2_model/tokenizer.model',
+        '--max_seq_len 128 --max_batch_size 4',
+        '--mp True --dynamo True',
+      ],
+    },
+    command: self.paramsOverride.trainCommand,
+  },
+  local llama2_google_next_inference_fine_tuned_chat_models_eager = self.llama2_google_next_inference_fine_tuned_chat_models_eager,
+  llama2_google_next_inference_fine_tuned_chat_models_eager:: common.PyTorchTest {
+    local config = self,
+    modelName: 'llama2-chat-eager',
     paramsOverride:: {
       scriptPath: 'example_chat_completion.py',
       trainCommand: [
@@ -51,6 +68,23 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: self.paramsOverride.trainCommand,
   },
+  local llama2_google_next_inference_fine_tuned_chat_models = self.llama2_google_next_inference_fine_tuned_chat_models,
+  llama2_google_next_inference_fine_tuned_chat_models:: common.PyTorchTest {
+    local config = self,
+    modelName: 'llama2-chat',
+    paramsOverride:: {
+      scriptPath: 'example_chat_completion.py',
+      trainCommand: [
+        'python3',
+        self.scriptPath,
+        '--ckpt_dir llama_2_model/llama-2-13b-dummy/',
+        '--tokenizer_path llama_2_model/tokenizer.model',
+        '--max_seq_len 512 --max_batch_size 4',
+        '--mp True --dynamo True',
+      ],
+    },
+    command: self.paramsOverride.trainCommand,
+  },
   local llama2_stable_tokenizer = self.llama2_stable_tokenizer,
   llama2_stable_tokenizer:: common.PyTorchTest {
     local config = self,
@@ -58,10 +92,11 @@ local utils = import 'templates/utils.libsonnet';
     paramsOverride:: {
       scriptPath: 'example.py',
       trainCommand: [
-        'torchrun --nproc_per_node MP',
+        'python3',
         self.scriptPath,
         '--ckpt_dir llama_2_model/llama-2-13b-dummy/',
         '--tokenizer_path llama_2_model/tokenizer.model',
+        '--mp True --dynamo True',
       ],
     },
     command: self.paramsOverride.trainCommand,
@@ -80,7 +115,7 @@ local utils = import 'templates/utils.libsonnet';
         '--max_seq_len 256',
         '--max_batch_size 1',
         '--temperature 0.8',
-        '--mp True',
+        '--mp True --dynamo True',
       ],
     },
     command: self.paramsOverride.trainCommand,
@@ -138,6 +173,24 @@ local utils = import 'templates/utils.libsonnet';
       |||,
     },
   },
+  local xla = self.xla,
+  stable:: common.PyTorchTpuVmMixin {
+    modelName+: '-xla',
+    tpuSettings+: {
+      tpuVmExtraSetup: |||
+        sudo apt update 
+        sudo apt-get -y install libopenblas-dev
+        pip install accelerate -U
+        sudo apt update
+        sudo apt-get -y install libopenblas-dev
+        pip3 uninstall -y torch torch_xla
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
+        pip3 uninstall -y libtpu-nightly
+        pip3 install torch_xla[tpuvm] --user
+      |||,
+    },
+  },
 
   local v4_8 = self.v4_8,
   v4_8:: {
@@ -145,10 +198,10 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   configs: [
-    llama2_google_next_inference_pretrained_models + v4_8 + common.Functional + timeouts.Hours(3) + llama2_google_next_inference,
-    // llama2_google_next_inference_fine_tuned_chat_models + v4_8 + common.Functional + timeouts.Hours(3) + llama2_google_next_inference,
-    llama2_stable_tokenizer + v4_8 + common.Functional + timeouts.Hours(3) + stable,
-    llama2_stable_quant + v4_8 + common.Functional + timeouts.Hours(3) + stable,
-    llama2_stable_quant_without_download + v4_8 + common.Functional + timeouts.Hours(3) + stable,
+    llama2_google_next_inference_pretrained_models + v4_8 + common.Functional + timeouts.Hours(3) + llama2_google_next_inference + xla,
+    // llama2_google_next_inference_fine_tuned_chat_models + v4_8 + common.Functional + timeouts.Hours(3) + llama2_google_next_inference + xla,
+    llama2_stable_tokenizer + v4_8 + common.Functional + timeouts.Hours(3) + stable + xla,
+    llama2_stable_quant + v4_8 + common.Functional + timeouts.Hours(3) + stable + xla,
+    llama2_stable_quant_without_download + v4_8 + common.Functional + timeouts.Hours(3) + stable + xla,
   ],
 }
