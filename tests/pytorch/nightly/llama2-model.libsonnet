@@ -174,7 +174,7 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local xla = self.xla,
-  stable:: common.PyTorchTpuVmMixin {
+  xla:: common.PyTorchTpuVmMixin {
     modelName+: '-xla',
     tpuSettings+: {
       tpuVmExtraSetup: |||
