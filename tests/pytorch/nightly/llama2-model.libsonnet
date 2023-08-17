@@ -146,14 +146,31 @@ local utils = import 'templates/utils.libsonnet';
     modelName+: '-n-i',
     tpuSettings+: {
       tpuVmExtraSetup: |||
+        # show current path
+        pwd
+        ls
         git clone -b llama2-google-next-inference https://github.com/pytorch-tpu/llama.git
         cd llama
+        # show current path
+        pwd
+        ls
+        pip list | grep torch
         pip install -r requirements.txt
         pip install -e .
+        pip list | grep torch
         # prepare data
+        # show current path
+        pwd
+        ls
         wget https://storage.mtls.cloud.google.com/manfei_bucket/LLaMA2/llama_2_model.zip
+        # show current path
+        pwd
+        ls
         sudo apt-get install unzip
         unzip llama_2_model.zip
+        # show current path
+        pwd
+        ls
       |||,
     },
   },
