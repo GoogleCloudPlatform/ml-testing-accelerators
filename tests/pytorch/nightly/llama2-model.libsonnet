@@ -146,6 +146,16 @@ local utils = import 'templates/utils.libsonnet';
     modelName+: '-n-i',
     tpuSettings+: {
       tpuVmExtraSetup: |||
+        sudo apt update 
+        sudo apt-get -y install libopenblas-dev
+        pip install accelerate -U
+        sudo apt update
+        sudo apt-get -y install libopenblas-dev
+        pip3 uninstall -y torch torch_xla
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
+        pip3 uninstall -y libtpu-nightly
+        pip3 install torch_xla[tpuvm] --user
         # show current path
         pwd
         ls
@@ -215,7 +225,7 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   configs: [
-    llama2_google_next_inference_pretrained_models + v4_8 + common.Functional + timeouts.Hours(3) + llama2_google_next_inference + xla,
+    llama2_google_next_inference_pretrained_models + v4_8 + common.Functional + timeouts.Hours(3) + llama2_google_next_inference,
     // llama2_google_next_inference_fine_tuned_chat_models + v4_8 + common.Functional + timeouts.Hours(3) + llama2_google_next_inference + xla,
     llama2_stable_tokenizer + v4_8 + common.Functional + timeouts.Hours(3) + stable + xla,
     llama2_stable_quant + v4_8 + common.Functional + timeouts.Hours(3) + stable + xla,
