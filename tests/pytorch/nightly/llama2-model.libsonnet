@@ -47,7 +47,6 @@ local utils = import 'templates/utils.libsonnet';
         '--ckpt_dir llama_2_model/llama-2-13b-dummy/',
         '--tokenizer_path llama_2_model/tokenizer.model',
         '--max_seq_len 128 --max_batch_size 4',
-        '--mp True --dynamo True',
       ],
     },
     command: self.paramsOverride.trainCommand,
@@ -152,35 +151,58 @@ local utils = import 'templates/utils.libsonnet';
         sudo apt update
         sudo apt-get -y install libopenblas-dev
         pip3 uninstall -y torch torch_xla
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp38-cp38-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp38-cp38-linux_x86_64.whl
         pip3 uninstall -y libtpu-nightly
         pip3 install torch_xla[tpuvm] --user
         # show current path
         pwd
+        ## /home/xl-ml-test
         ls
+        ## pytorch snap
         git clone -b llama2-google-next-inference https://github.com/pytorch-tpu/llama.git
         cd llama
         # show current path
         pwd
+        ## /home/xl-ml-test/llama
         ls
+        ## CODE_OF_CONDUCT.md   CONTRIBUTING.md   LICENSE MODEL_CARD.md   README.md   Responsible-Use-Guide.pdf   USE_POLICY.md   download.sh   example_chat_completion.py
+        ## example_text_completion.py   llama   requirements.txt   reshard_checkpoints.py   setup.py
         pip list | grep torch
+        ## torch                    2.1.0
+        ## torch-xla                2.1.0
+        ## torchvision              0.16.0.dev20230817+cpu
         pip install -r requirements.txt
         pip install -e .
         pip list | grep torch
+        ## torch                    2.1.0
+        ## torch-xla                2.1.0
+        ## torchvision              0.16.0.dev20230817+cpu
         # prepare data
         # show current path
         pwd
+        ## /home/xl-ml-test/llama
         ls
-        wget https://storage.mtls.cloud.google.com/manfei_bucket/LLaMA2/llama_2_model.zip
+        ## CODE_OF_CONDUCT.md   CONTRIBUTING.md   LICENSE   MODEL_CARD.md   README.md   Responsible-Use-Guide.pdf   USE_POLICY.md   download.sh   example_chat_completion.py
+        ## example_text_completion.py   llama   llama.egg-info   requirements.txt   reshard_checkpoints.py   setup.py
+        # --- wget https://storage.mtls.cloud.google.com/manfei_bucket/LLaMA2/llama_2_model.zip
         # show current path
         pwd
+        ## /home/xl-ml-test/llama
         ls
-        sudo apt-get install unzip
-        unzip llama_2_model.zip
+        ## CODE_OF_CONDUCT.md   CONTRIBUTING.md   LICENSE   MODEL_CARD.md   README.md   Responsible-Use-Guide.pdf   USE_POLICY.md   download.sh   example_chat_completion.py
+        ## example_text_completion.py   llama   llama.egg-info   llama_2_model.zip   requirements.txt   reshard_checkpoints.py   setup.py
+        # --- sudo apt-get install unzip
+        # --- unzip llama_2_model.zip
+        wget -nv -O llama_2_model.zip https://storage.mtls.cloud.google.com/manfei_bucket/LLaMA2/llama_2_model.zip
+        unzip -o llama_2_model.zip
+        ## unzip:  cannot find zipfile directory in one of llama_2_model.zip or llama_2_model.zip.zip, and cannot find llama_2_model.zip.ZIP, period.
         # show current path
         pwd
+        ## /home/xl-ml-test/llama
         ls
+        ## CODE_OF_CONDUCT.md   CONTRIBUTING.md   LICENSE   MODEL_CARD.md   README.md   Responsible-Use-Guide.pdf   USE_POLICY.md   download.sh   example_chat_completion.py
+        ## example_text_completion.py   llama   llama.egg-info   llama_2_model.zip   requirements.txt   reshard_checkpoints.py   setup.py
       |||,
     },
   },
