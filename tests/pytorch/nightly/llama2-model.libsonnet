@@ -151,8 +151,11 @@ local utils = import 'templates/utils.libsonnet';
         sudo apt update
         sudo apt-get -y install libopenblas-dev
         pip3 uninstall -y torch torch_xla
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp38-cp38-linux_x86_64.whl
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp38-cp38-linux_x86_64.whl
+        ## pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp38-cp38-linux_x86_64.whl
+        ## pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp38-cp38-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch-nightly+20230422-cp38-cp38-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/cuda/118/torch_xla-nightly+20230422-cp38-cp38-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/cuda/118/torchvision-nightly+20230422-cp38-cp38-linux_x86_64.whl
         pip3 uninstall -y libtpu-nightly
         pip3 install torch_xla[tpuvm] --user
         # show current path
