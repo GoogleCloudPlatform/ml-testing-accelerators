@@ -44,8 +44,8 @@ local utils = import 'templates/utils.libsonnet';
       trainCommand: [
         'python3',
         self.scriptPath,
-        '--ckpt_dir llama_2_model/llama-2-13b-dummy/',
-        '--tokenizer_path llama_2_model/tokenizer.model',
+        '--ckpt_dir 7B/',
+        '--tokenizer_path spiece.model',
         '--max_seq_len 128 --max_batch_size 4',
       ],
     },
@@ -194,8 +194,13 @@ local utils = import 'templates/utils.libsonnet';
         ## example_text_completion.py   llama   llama.egg-info   llama_2_model.zip   requirements.txt   reshard_checkpoints.py   setup.py
         # --- sudo apt-get install unzip
         # --- unzip llama_2_model.zip
-        wget -nv -O llama_2_model.zip https://storage.mtls.cloud.google.com/manfei_bucket/LLaMA2/llama_2_model.zip
-        unzip -o llama_2_model.zip
+        ## wget -nv -O llama_2_model.zip https://storage.mtls.cloud.google.com/manfei_bucket/LLaMA2/llama_2_model.zip
+        ## unzip -o llama_2_model.zip
+        ## 7B
+        gsutil cp gs://tpu-pytorch/lsiyuan-experiment/llama/spiece.model .
+        mkdir 7B
+        cd 7B/
+        echo -e '{"dim": 4096, "multiple_of": 256, "n_heads": 32, "n_layers": 32, "norm_eps": 1e-05, "vocab_size": -1}' >> params.json
         ## unzip:  cannot find zipfile directory in one of llama_2_model.zip or llama_2_model.zip.zip, and cannot find llama_2_model.zip.ZIP, period.
         # show current path
         pwd
