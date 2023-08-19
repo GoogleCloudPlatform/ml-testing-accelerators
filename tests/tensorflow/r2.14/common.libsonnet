@@ -23,7 +23,7 @@ local volumes = import 'templates/volumes.libsonnet';
   HuggingFaceTransformer:: common.ModelGardenTest {
     local config = self,
 
-    frameworkPrefix: 'tf-2.14.0',
+    frameworkPrefix: 'tf.2.14.0',
     tpuSettings+: {
       softwareVersion: '2.14.0',
     },
@@ -42,7 +42,7 @@ local volumes = import 'templates/volumes.libsonnet';
   ModelGardenTest:: common.ModelGardenTest {
     local config = self,
 
-    frameworkPrefix: 'tf-2.14.0',
+    frameworkPrefix: 'tf.2.14.0',
     tpuSettings+: {
       softwareVersion: '2.14.0',
     },
@@ -152,7 +152,7 @@ local volumes = import 'templates/volumes.libsonnet';
                   metadata: {
                     'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
                     'startup-script': %(startupScript)s,
-                    'tensorflow-docker-url': 'gcr.io/cloud-tpu-v2-images-dev/grpc_tpu_worker:nightly'
+                    'tensorflow-docker-url': 'gcr.io/cloud-tpu-v2-images-dev/grpc_tpu_worker:tf-2.14.0'
                   }
               }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
               echo "Waiting for TPU Pod ${tpu_name} to become ready..."
@@ -179,7 +179,7 @@ local volumes = import 'templates/volumes.libsonnet';
               softwareVersion=%(softwareVersion)s
               gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "echo 'WRAPT_DISABLE_EXTENSIONS=true' | sudo tee -a /etc/environment"
               if [[ ${softwareVersion: -3} == "pod" ]]; then
-                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:nightly\"/' /etc/systemd/system/tpu-runtime.service"
+                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:tf-2.14.0\"/' /etc/systemd/system/tpu-runtime.service"
                  gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart tpu-runtime"
               fi
             ||| % tpuCreateSettings),
