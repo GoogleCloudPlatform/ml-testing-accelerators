@@ -24,13 +24,13 @@ local wmt = import 'tf-wmt-wmt14_translate.libsonnet';
 
 // Add new models here
 std.flattenArrays([
-  //  dlrm.configs,
+  dlrm.configs,
   keras_api.configs,
-  //  bert.configs,
-  //  wmt.configs,
-  //  maskrcnn.configs,
-  //  retinanet.configs,
+  bert.configs,
+  wmt.configs,
+  maskrcnn.configs,
+  retinanet.configs,
   resnet.configs,
-  //  resnetrs.configs,
-  //  gpt2.configs,
+  resnetrs.configs,
+  gpt2.configs,
 ])
