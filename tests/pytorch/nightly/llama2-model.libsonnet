@@ -28,9 +28,14 @@ local utils = import 'templates/utils.libsonnet';
       trainCommand: [
         'python3',
         self.scriptPath,
+        'True',
+        '"/home/xl-ml-test/llama/7B"',
+        '/home/xl-ml-test/spiece.model',
         '--ckpt_dir llama/7B/',
         '--tokenizer_path spiece.model',
-        '--max_seq_len 128 --max_batch_size 4',
+        '--max_seq_len 2048 --max_gen_len 1000',
+        '--max_batch_size 12',
+        '--mp True --dynamo True',
       ],
     },
     command: self.paramsOverride.trainCommand,
@@ -39,11 +44,6 @@ local utils = import 'templates/utils.libsonnet';
   pjrt:: common.PyTorchTpuVmMixin {
     modelName+: '-n-i',
     tpuSettings+: {
-      tpuVmExports+: |||
-        export LD_LIBRARY_PATH=/usr/local/lib/
-        export PT_XLA_DEBUG=0
-        export USE_TORCH=ON
-      |||,
       tpuVmExtraSetup: |||
         pip3 uninstall torch torch_xla torchvision libtpu-nightly -y
         sudo apt-get update -y
@@ -53,8 +53,9 @@ local utils = import 'templates/utils.libsonnet';
         pip3 install numpy
         sudo apt-get install numactl -y
         sudo apt-get install libopenblas-dev -y
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly+20230726-cp38-cp38-linux_x86_64.whl
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly+20230726-cp38-cp38-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly+20230821-cp310-cp310-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly+20230821-cp310-cp310-linux_x86_64.whl
+        pip3 install --user --pre --no-deps torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
         pip3 install torch_xla[tpuvm]
 
         # install tokenizer model
@@ -70,11 +71,6 @@ local utils = import 'templates/utils.libsonnet';
         mkdir 7B
         cd 7B/
         echo -e '{"dim": 4096, "multiple_of": 256, "n_heads": 32, "n_layers": 32, "norm_eps": 1e-05, "vocab_size": -1}' >> params.json
-        cat params.json
-        pwd
-
-        # set up env
-        echo 'export PATH=~/.local/bin:$PATH' >> ~/.bash_profile
       |||,
     },
   },
