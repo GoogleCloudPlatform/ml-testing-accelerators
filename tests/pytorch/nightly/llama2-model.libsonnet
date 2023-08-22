@@ -57,7 +57,6 @@ local utils = import 'templates/utils.libsonnet';
         sudo apt-get install libopenblas-dev -y
         pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly+20230821-cp310-cp310-linux_x86_64.whl
         pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly+20230821-cp310-cp310-linux_x86_64.whl
-        # pip3 install --user --pre --no-deps torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
         pip3 install torch_xla[tpuvm]
 
         # install tokenizer model
