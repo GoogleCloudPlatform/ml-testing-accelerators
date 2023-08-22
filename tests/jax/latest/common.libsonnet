@@ -23,14 +23,7 @@ local tpus = import 'templates/tpus.libsonnet';
     extraDeps:: [],
     extraFlags:: [],
 
-    testScript:: |||
-      set -x
-      set -u
-      set -e
-
-      # .bash_logout sometimes causes a spurious bad exit code, remove it.
-      rm .bash_logout
-
+    setup: |||
       pip install --upgrade pip
       pip install --upgrade clu %(extraDeps)s
 
@@ -47,16 +40,17 @@ local tpus = import 'templates/tpus.libsonnet';
       git clone https://github.com/google/flax
       cd flax
       pip install --upgrade git+https://github.com/google/flax.git
+    ||| % (self.scriptConfig {
+             extraDeps: std.join(' ', config.extraDeps),
+           }),
+    runTest: |||
       cd examples/%(folderName)s
-
       export GCS_BUCKET=$(MODEL_DIR)
       export TFDS_DATA_DIR=$(TFDS_DIR)
 
       python3 main.py --workdir=$(MODEL_DIR)  --config=configs/%(extraConfig)s %(extraFlags)s
     ||| % (self.scriptConfig {
              folderName: config.folderName,
-             modelName: config.modelName,
-             extraDeps: std.join(' ', config.extraDeps),
              extraConfig: config.extraConfig,
              extraFlags: std.join(' ', config.extraFlags),
            }),
@@ -67,14 +61,14 @@ local tpus = import 'templates/tpus.libsonnet';
     frameworkPrefix: 'flax.latest',
     modelName:: 'bert-glue',
     extraFlags:: [],
-    testScript:: |||
+    setup: |||
       %(installPackages)s
       pip install -r examples/flax/text-classification/requirements.txt
       %(verifySetup)s
-
+    ||| % self.scriptConfig,
+    runTest: |||
       export GCS_BUCKET=$(MODEL_DIR)
       export OUTPUT_DIR='./bert-glue'
-
       python3 examples/flax/text-classification/run_flax_glue.py --model_name_or_path bert-base-cased \
         --output_dir ${OUTPUT_DIR} \
         --logging_dir ${OUTPUT_DIR} \

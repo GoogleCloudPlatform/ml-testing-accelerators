@@ -138,7 +138,7 @@ local volumes = import 'templates/volumes.libsonnet';
               }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
               echo "Waiting for TPU Pod ${tpu_name} to become ready..."
               timeout 10m bash -c -- "
-              while [[ \${health:-NONE} != READY ]];
+              while [[ \${health:-NONE} != "HEALTHY" ]];
                 do sleep 60 && \
                 health=\$(gcloud \
                   --project=${project} \
@@ -147,8 +147,8 @@ local volumes = import 'templates/volumes.libsonnet';
                   describe \
                   ${tpu_name} \
                   --zone=${zone} \
-                  --format='value(state)') && \
-                echo 'Waiting for ready TPU (current state \${health:-NONE})...';
+                  --format='value(health)') && \
+                echo 'Waiting for ready TPU (current health \${health:-NONE})...';
               done
               "
               echo ${zone} > /scripts/zone

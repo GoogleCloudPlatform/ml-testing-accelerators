@@ -24,14 +24,15 @@ local tpus = import 'templates/tpus.libsonnet';
     frameworkPrefix: 'flax.latest',
     modelName:: 'gpt2-oscar',
     extraFlags:: [],
-    testScript:: |||
+    setup: |||
       %(installPackages)s
       pip install -r examples/flax/language-modeling/requirements.txt
       %(verifySetup)s
 
       cd examples/flax/language-modeling
       gsutil cp -r gs://cloud-tpu-tpuvm-artifacts/config/xl-ml-test/jax/gpt2 .
-
+    ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
+    runTest: |||
       python3 run_clm_flax.py \
         --output_dir=./gpt2 \
         --model_type=gpt2 \
@@ -52,7 +53,6 @@ local tpus = import 'templates/tpus.libsonnet';
         --logging_steps=500 \
         --eval_steps=2500 \
          %(extraFlags)s
-
     ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
   },
 

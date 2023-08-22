@@ -23,11 +23,11 @@ local volumes = import 'templates/volumes.libsonnet';
   HuggingFaceTransformer:: common.ModelGardenTest {
     local config = self,
 
-    frameworkPrefix: 'tf.nightly',
+    frameworkPrefix: 'tf.2.14.0',
     tpuSettings+: {
-      softwareVersion: 'nightly',
+      softwareVersion: '2.14.0',
     },
-    imageTag: 'nightly',
+    imageTag: 'r2.14.0',
     script: {
       initialSetup:
         |||
@@ -42,11 +42,11 @@ local volumes = import 'templates/volumes.libsonnet';
   ModelGardenTest:: common.ModelGardenTest {
     local config = self,
 
-    frameworkPrefix: 'tf.nightly',
+    frameworkPrefix: 'tf.2.14.0',
     tpuSettings+: {
-      softwareVersion: 'nightly',
+      softwareVersion: '2.14.0',
     },
-    imageTag: 'nightly',
+    imageTag: 'r2.14.0',
     podTemplate+:: if config.accelerator.type == 'tpu' then
       {
         spec+: {
@@ -116,9 +116,9 @@ local volumes = import 'templates/volumes.libsonnet';
     local config = self,
     tpuSettings+: {
       softwareVersion: if config.accelerator.replicas == 1 then
-        'v2-nightly'
+        'tpu-vm-tf-2.13.0'
       else
-        'v2-nightly-pod',
+        'tpu-vm-tf-2.13.0-pod',
     },
     podTemplate+:: {
       spec+: {
@@ -148,11 +148,11 @@ local volumes = import 'templates/volumes.libsonnet';
                   runtime_version: %(softwareVersion)s,
                   network_config: {enable_external_ips: true},
                   labels: {test_name: '%(testName)s' },
-                  boot_disk: {source_image: 'projects/cloud-tpu-v2-images-dev/global/images/family/tpu-vm-tf-nightly'},
+                  boot_disk: {source_image: 'projects/cloud-tpu-v2-images-dev/global/images/family/tpu-vm-tf-2-14-0'},
                   metadata: {
                     'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
                     'startup-script': %(startupScript)s,
-                    'tensorflow-docker-url': 'gcr.io/cloud-tpu-v2-images-dev/grpc_tpu_worker:nightly'
+                    'tensorflow-docker-url': 'gcr.io/cloud-tpu-v2-images-dev/grpc_tpu_worker:tf-2.14.0'
                   }
               }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
               echo "Waiting for TPU Pod ${tpu_name} to become ready..."
@@ -179,7 +179,7 @@ local volumes = import 'templates/volumes.libsonnet';
               softwareVersion=%(softwareVersion)s
               gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "echo 'WRAPT_DISABLE_EXTENSIONS=true' | sudo tee -a /etc/environment"
               if [[ ${softwareVersion: -3} == "pod" ]]; then
-                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:nightly\"/' /etc/systemd/system/tpu-runtime.service"
+                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:tf-2.14.0\"/' /etc/systemd/system/tpu-runtime.service"
                  gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart tpu-runtime"
               fi
             ||| % tpuCreateSettings),
