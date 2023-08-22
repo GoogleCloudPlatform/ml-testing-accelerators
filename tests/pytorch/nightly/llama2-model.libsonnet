@@ -24,6 +24,9 @@ local utils = import 'templates/utils.libsonnet';
     local config = self,
     modelName: 'l2',
     paramsOverride:: {
+      max_seq_len: 2048,
+      max_gen_len: 1000,
+      max_batch_size: 2,
       scriptPath: 'llama/example_text_completion.py',
       trainCommand: [
         'python3',
@@ -31,11 +34,10 @@ local utils = import 'templates/utils.libsonnet';
         'True',
         '"/home/xl-ml-test/llama/7B"',
         '/home/xl-ml-test/spiece.model',
-        '--ckpt_dir llama/7B/',
-        '--tokenizer_path spiece.model',
-        '--max_seq_len 2048 --max_gen_len 1000',
-        '--max_batch_size 12',
-        '--mp True --dynamo True',
+        '--max_seq_len=%d ' % config.paramsOverride.max_seq_len,
+        '--max_gen_len=%d ' % config.paramsOverride.max_gen_len,
+        '--max_batch_size=%d ' % config.paramsOverride.max_batch_size,
+        '--dynamo=True',
       ],
     },
     command: self.paramsOverride.trainCommand,
@@ -55,7 +57,7 @@ local utils = import 'templates/utils.libsonnet';
         sudo apt-get install libopenblas-dev -y
         pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly+20230821-cp310-cp310-linux_x86_64.whl
         pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly+20230821-cp310-cp310-linux_x86_64.whl
-        pip3 install --user --pre --no-deps torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+        # pip3 install --user --pre --no-deps torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
         pip3 install torch_xla[tpuvm]
 
         # install tokenizer model
