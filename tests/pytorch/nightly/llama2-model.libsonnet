@@ -67,6 +67,7 @@ local utils = import 'templates/utils.libsonnet';
         cd llama
         pip3 install -r requirements.txt
         pip3 install -e .
+        # TODO: add latency/token as a threshold for llama2 test
 
         # 7B config
         mkdir 7B
