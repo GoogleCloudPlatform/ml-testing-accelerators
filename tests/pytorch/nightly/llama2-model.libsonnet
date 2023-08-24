@@ -24,20 +24,10 @@ local utils = import 'templates/utils.libsonnet';
     local config = self,
     modelName: 'l2',
     paramsOverride:: {
-      max_seq_len: 2048,
-      max_gen_len: 1000,
-      max_batch_size: 2,
-      scriptPath: 'llama/example_text_completion.py',
+      scriptPath: 'llama/7B/llama2test.sh',
       trainCommand: [
-        'python3',
+        'bash',
         self.scriptPath,
-        'True',
-        '"/home/xl-ml-test/llama/7B"',
-        '/home/xl-ml-test/spiece.model',
-        '--max_seq_len=%d ' % config.paramsOverride.max_seq_len,
-        '--max_gen_len=%d ' % config.paramsOverride.max_gen_len,
-        '--max_batch_size=%d ' % config.paramsOverride.max_batch_size,
-        '--dynamo=True',
       ],
     },
     command: self.paramsOverride.trainCommand,
@@ -67,13 +57,49 @@ local utils = import 'templates/utils.libsonnet';
         cd llama
         pip3 install -r requirements.txt
         pip3 install -e .
-        # TODO: add latency/token as a threshold for llama2 test
 
         # 7B config
         mkdir 7B
         cd 7B/
         echo -e '{"dim": 4096, "multiple_of": 256, "n_heads": 32, "n_layers": 32, "norm_eps": 1e-05, "vocab_size": -1}' >> params.json
+
+        # save llama2 test
+        echo -e 'python3 llama/example_text_completion.py True "/home/xl-ml-test/llama/7B" /home/xl-ml-test/spiece.model --max_seq_len=2048 --max_gen_len=1000 --max_batch_size=2 --dynamo=True > output.txt' >> llama2test.sh
+        echo -e 'file = open("output.txt")' >> getvalue.py
+        echo -e 'content = file.readlines()' >> getvalue.py
+        echo -e 'warm_line = content[-6]' >> getvalue.py
+        echo -e 'warm_value = float((warm_line.split())[5])' >> getvalue.py
+        echo -e 'if warm_value > 7.948752 or warm_value < 7.191728:' >> getvalue.py
+        echo -e '    raise ValueError("warm latency/token exceeded throuhold 7.57024 +- 5%")' >> getvalue.py
+        echo -e 'else:' >> getvalue.py
+        echo -e '    print("Finished llama2 test and warm latency/token within expected throuhold 7.57024 +- 5%")' >> getvalue.py
+        echo -e 'cat output.txt' >> llama2test.sh
+        echo -e 'python3 llama/7B/getvalue.py' >> llama2test.sh
+        cat llama2test.sh
       |||,
+    },
+  },
+  local convergence = self.convergence,
+  convergence:: common.Convergence {
+    local config = self,
+
+    metricConfig+: {
+      sourceMap+:: {
+        tensorboard+: {
+          aggregateAssertionsMap+:: {
+            'time/test': {
+              FINAL: {
+                fixed_value: {
+                  comparison: 'SMALLER',
+                  value: 0,
+                },
+                inclusive_bounds: false,
+                wait_for_n_data_points: 0,
+              },
+            },
+          },
+        },
+      },
     },
   },
 
@@ -86,3 +112,4 @@ local utils = import 'templates/utils.libsonnet';
     llama2_google_next_inference_pretrained_models + v4_8 + common.Functional + timeouts.Hours(3) + pjrt,
   ],
 }
+
