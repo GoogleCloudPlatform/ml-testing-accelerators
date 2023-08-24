@@ -112,4 +112,3 @@ local utils = import 'templates/utils.libsonnet';
     llama2_google_next_inference_pretrained_models + v4_8 + common.Functional + timeouts.Hours(3) + pjrt,
   ],
 }
-
