@@ -64,8 +64,8 @@ local utils = import 'templates/utils.libsonnet';
         # taming-transformers and CLIP override existing torch and torchvision so we need to reinstall
         pip uninstall -y torch torchvision
         pip install --user \
-          https://storage.googleapis.com/pytorch-xla-releases/wheels/xrt/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl \
-          'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/xrt/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl'
+          https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl \
+          'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl'
         pip3 install --user --pre --no-deps torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
 
         # Setup data
