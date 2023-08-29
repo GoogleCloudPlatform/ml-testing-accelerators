@@ -58,8 +58,8 @@ local utils = import 'templates/utils.libsonnet';
         pip3 install numpy
         sudo apt-get install numactl -y
         sudo apt-get install libopenblas-dev -y
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly+20230821-cp310-cp310-linux_x86_64.whl
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly+20230821-cp310-cp310-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
         pip3 install torch_xla[tpuvm]
 
         # install tokenizer model
@@ -107,8 +107,8 @@ local utils = import 'templates/utils.libsonnet';
         pip3 install numpy
         sudo apt-get install numactl -y
         sudo apt-get install libopenblas-dev -y
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly+20230821-cp310-cp310-linux_x86_64.whl
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly+20230821-cp310-cp310-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
         pip3 install torch_xla[tpuvm]
 
         # install tokenizer model
@@ -139,41 +139,6 @@ local utils = import 'templates/utils.libsonnet';
 
         # save llama2 training
         echo -e 'python3 -u llama/transformers/examples/pytorch/xla_spawn.py --num_cores 64 llama/transformers/examples/pytorch/language-modeling/run_clm.py    --num_train_epochs 2  --dataset_name wikitext     --dataset_config_name wikitext-2-raw-v1     --per_device_train_batch_size 8 --do_train --output_dir . --overwrite_output_dir --config_name llama/transformers/7B/7B.json --cache_dir /tmp --tokenizer_name gpt2 --block_size 1024 --optim adafactor --adafactor true  --save_strategy no --logging_strategy no' >> llama2training.sh
-        cat llama2training.sh
-        pwd
-        ls
-      |||,
-    },
-  },
-  local hff = self.hff,
-  hff:: common.PyTorchTpuVmMixin {
-    modelName+: '-hff',
-    tpuSettings+: {
-      tpuVmExtraSetup: |||
-        # gsutil cp -r gs://tpu-pytorch/lsiyuan-experiment/configs/hf_llama /tmp/
-
-        # install tokenizer model ### llama/llama2-fsdp/transformers/spiece.model
-        ## wget https://storage.googleapis.com/tpu-pytorch/lsiyuan-experiment/llama/spiece.model
-        ## pwd
-        ## ls
-
-        # 7B config ### llama/llama2-fsdp/transformers/7B/
-        ## mkdir 7B
-        ## cd 7B/
-        ## ## echo -e '{"dim": 4096, "multiple_of": 256, "n_heads": 32, "n_layers": 32, "norm_eps": 1e-05, "vocab_size": -1}' >> params.json
-        ## wget https://storage.googleapis.com/tpu-pytorch/lsiyuan-experiment/configs/hf_llama/7B.json
-
-        pwd
-        ls
-
-        # save llama2 training ### llama/llama2-fsdp/transformers/7B/llama2training.sh
-        ## echo -e 'export PJRT_DEVICE=TPU' >> llama2training.sh
-        ## echo -e 'export PT_XLA_DEBUG=0' >> llama2training.sh
-        ## echo -e 'export USE_TORCH=ON' >> llama2training.sh
-        ## echo -e 'export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/:$LD_LIBRARY_PATH' >> llama2training.sh
-        ## echo -e 'export PROFILE_LOGDIR=/tmp/llama-7b-bs-8' >> llama2training.sh
-        ## echo -e 'mkdir /tmp/test-clm-llama' >> llama2training.sh
-        echo -e 'python3 -u llama/llama2-fsdp/transformers/examples/pytorch/xla_spawn.py --num_cores 64 llama/llama2-fsdp/transformers/examples/pytorch/language-modeling/run_clm.py    --num_train_epochs 2  --dataset_name wikitext     --dataset_config_name wikitext-2-raw-v1     --per_device_train_batch_size 8 --do_train --output_dir /tmp/test-clm-llama     --overwrite_output_dir --config_name llama/llama2-fsdp/transformers/7B/7B.json --cache_dir /tmp --tokenizer_name gpt2 --block_size 1024 --optim adafactor --adafactor true  --save_strategy no --logging_strategy no' >> llama2training.sh
         cat llama2training.sh
         pwd
         ls
