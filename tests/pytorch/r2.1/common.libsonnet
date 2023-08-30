@@ -19,14 +19,14 @@ local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
 {
-  local Nightly = {
-    frameworkPrefix: 'pt-nightly',
+  local r2_1 = {
+    frameworkPrefix: 'pt-2.1',
     tpuSettings+: {
-      softwareVersion: 'pytorch-nightly',
+      softwareVersion: 'pytorch-2.1',
     },
-    imageTag: 'nightly_3.7',
+    imageTag: 'r2.1_3.8',
   },
-  PyTorchTest:: common.PyTorchTest + Nightly {
+  PyTorchTest:: common.PyTorchTest + r2_1 {
     local config = self,
 
     podTemplate+:: {
@@ -67,7 +67,7 @@ local volumes = import 'templates/volumes.libsonnet';
 
                 ctc = cloud_tpu_client.Client(tpu=os.path.basename('$(TPU_NAME)'), zone=os.path.dirname('$(TPU_NAME)'))
                 ctc.wait_for_healthy()
-                ctc.configure_tpu_version(f'pytorch-nightly-dev{libtpu_date}', restart_type='always')
+                ctc.configure_tpu_version(f'pytorch-2.1-dev{libtpu_date}', restart_type='always')
                 ctc.wait_for_healthy()
               |||,
             ],
@@ -77,66 +77,36 @@ local volumes = import 'templates/volumes.libsonnet';
     },
   },
   Functional:: mixins.Functional {
-    schedule: '0 7 * * *',
+    schedule: '0 7 * * 2',
     tpuSettings+: {
       preemptible: false,
     },
   },
-  Convergence:: mixins.Convergence,
-  PyTorchTpuVmMixin:: experimental.PyTorchTpuVmMixin + experimental.PjRt {
-    local config = self,
-
-    tpuSettings+: {
-      softwareVersion: 'tpu-ubuntu2204-base',
-      tpuVmPytorchSetup: |||
-        pip3 install -U setuptools
-        # `unattended-upgr` blocks us from installing apt dependencies
-        sudo systemctl stop unattended-upgrades
-        sudo apt-get -y update
-        sudo apt install -y libopenblas-base
-        # for huggingface tests
-        sudo apt install -y libsndfile-dev
-        pip install --user \
-          https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl \
-          'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl'
-        pip3 install --user --pre --no-deps torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
-        pip3 install pillow
-        git clone --depth=1 https://github.com/pytorch/pytorch.git
-        cd pytorch
-        git clone https://github.com/pytorch/xla.git
-      |||,
-    },
-    podTemplate+:: {
-      spec+: {
-        initContainerMap+:: {
-          'tpu-version': null,
-        },
-      },
-    },
+  Convergence:: mixins.Convergence {
+    schedule: null,
   },
-
-  // TODO: Remove after 2.1 release cut
-  XrtTpuVmMixin:: experimental.PyTorchTpuVmMixin {
+  PyTorchTpuVmMixin:: experimental.PyTorchTpuVmMixin {
     local config = self,
 
     tpuSettings+: {
-      softwareVersion: 'tpu-ubuntu2204-base',
+      softwareVersion: if config.accelerator.version < 4 then
+        'tpu-vm-base'
+      else
+        'tpu-vm-v4-base',
       tpuVmPytorchSetup: |||
-        pip3 install -U setuptools
-        # `unattended-upgr` blocks us from installing apt dependencies
-        sudo systemctl stop unattended-upgrades
+        sudo pip3 uninstall --yes torch torch_xla torchvision numpy
+        sudo pip3 install torch==2.1.0
+        sudo pip3 install torchvision==0.15.1
+        sudo pip3 install https://storage.googleapis.com/tpu-pytorch/wheels/tpuvm/torch_xla-2.1-cp38-cp38-linux_x86_64.whl
+        sudo pip3 install numpy
+        sudo pip3 install mkl mkl-include cloud-tpu-client
         sudo apt-get -y update
-        sudo apt install -y libopenblas-base
+        sudo apt-get install -y libomp5
         # for huggingface tests
-        sudo apt install -y libsndfile-dev
-        pip install --user \
-          https://storage.googleapis.com/pytorch-xla-releases/wheels/xrt/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl \
-          'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/xrt/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl'
-        pip3 install --user --pre --no-deps torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
-        pip3 install pillow
-        git clone --depth=1 https://github.com/pytorch/pytorch.git
+        sudo apt-get install -y libsndfile-dev
+        git clone https://github.com/pytorch/pytorch.git -b release/2.1
         cd pytorch
-        git clone https://github.com/pytorch/xla.git
+        git clone https://github.com/pytorch/xla.git -b r2.1
       |||,
     },
     podTemplate+:: {
@@ -153,7 +123,7 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   GpuMixin:: {
     local config = self,
-    imageTag+: '_cuda_11.8',
+    imageTag+: '_cuda_11.7',
 
     podTemplate+:: {
       spec+: {
@@ -171,40 +141,5 @@ local volumes = import 'templates/volumes.libsonnet';
     },
   },
 
-
-  Accelerate:: {
-    local config = self,
-    tpuSettings+: {
-      tpuVmExports+: |||
-        export PATH=~/.local/bin:$PATH
-      |||,
-      tpuVmExtraSetup: |||
-        git clone https://github.com/huggingface/accelerate.git
-        pip install --user ./accelerate
-
-        mkdir -p ~/.cache/huggingface/accelerate/
-        cat > ~/.cache/huggingface/accelerate/default_config.yaml << 'HF_CONFIG_EOF'
-        compute_environment: LOCAL_MACHINE
-        distributed_type: TPU
-        downcast_bf16: 'no'
-        machine_rank: 0
-        main_training_function: main
-        mixed_precision: 'no'
-        num_machines: 1
-        num_processes: %d
-        rdzv_backend: static
-        same_network: true
-        tpu_env: []
-        tpu_use_cluster: false
-        tpu_use_sudo: false
-        use_cpu: false
-        HF_CONFIG_EOF
-
-        .local/bin/accelerate env
-      ||| % [config.accelerator.numCores],
-    },
-  },
-
-  // DEPRECATED: Use PyTorchTpuVmMixin instead
-  tpu_vm_nightly_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
+  tpu_vm_r2_1_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
 }
