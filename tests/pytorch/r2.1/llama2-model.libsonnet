@@ -58,8 +58,8 @@ local utils = import 'templates/utils.libsonnet';
         pip3 install numpy
         sudo apt-get install numactl -y
         sudo apt-get install libopenblas-dev -y
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly+20230821-cp310-cp310-linux_x86_64.whl
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly+20230821-cp310-cp310-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
         pip3 install torch_xla[tpuvm]
 
         # install tokenizer model
@@ -107,8 +107,8 @@ local utils = import 'templates/utils.libsonnet';
         pip3 install numpy
         sudo apt-get install numactl -y
         sudo apt-get install libopenblas-dev -y
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly+20230821-cp310-cp310-linux_x86_64.whl
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly+20230821-cp310-cp310-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
         pip3 install torch_xla[tpuvm]
 
         # install tokenizer model
