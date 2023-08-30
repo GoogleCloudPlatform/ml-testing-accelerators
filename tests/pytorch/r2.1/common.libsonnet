@@ -26,7 +26,7 @@ local volumes = import 'templates/volumes.libsonnet';
     },
     imageTag: 'r2.1_3.8',
   },
-  PyTorchTest:: common.PyTorchTest + Nightly {
+  PyTorchTest:: common.PyTorchTest + r2_1 {
     local config = self,
 
     podTemplate+:: {
