@@ -37,7 +37,7 @@ local utils = import 'templates/utils.libsonnet';
     local config = self,
     modelName: 'llama2-t',
     paramsOverride:: {
-      scriptPath: 'llama/transformers/7B/llama2training.sh',
+      scriptPath: 'transformers/7B/llama2training.sh',
       trainCommand: [
         'bash',
         self.scriptPath,
@@ -114,14 +114,8 @@ local utils = import 'templates/utils.libsonnet';
         # install tokenizer model
         wget https://storage.googleapis.com/tpu-pytorch/lsiyuan-experiment/llama/spiece.model
 
-        # git clone and build llama
-        git clone --branch llama2-google-next-inference https://github.com/pytorch-tpu/llama.git
-        cd llama
-        pip3 install -r requirements.txt
-        pip3 install -e .
-
         # git clone and build transformers ### llama/transformers/
-        git clone -b lsiyuan/fsdp-data-aug https://github.com/pytorch-tpu/transformers.git
+        git clone https://github.com/pytorch-tpu/transformers.git
         cd transformers
         sudo pip3 uninstall transformers
         sudo pip3 install -e .
@@ -138,7 +132,7 @@ local utils = import 'templates/utils.libsonnet';
         wget https://storage.googleapis.com/tpu-pytorch/lsiyuan-experiment/configs/hf_llama/7B.json
 
         # save llama2 training
-        echo -e 'python3 -u llama/transformers/examples/pytorch/xla_spawn.py --num_cores 64 llama/transformers/examples/pytorch/language-modeling/run_clm.py    --num_train_epochs 2  --dataset_name wikitext     --dataset_config_name wikitext-2-raw-v1     --per_device_train_batch_size 8 --do_train --output_dir . --overwrite_output_dir --config_name llama/transformers/7B/7B.json --cache_dir /tmp --tokenizer_name gpt2 --block_size 1024 --optim adafactor --adafactor true  --save_strategy no --logging_strategy no' >> llama2training.sh
+        echo -e 'python3 -u transformers/examples/pytorch/xla_spawn.py --num_cores 64 transformers/examples/pytorch/language-modeling/run_clm.py    --num_train_epochs 2  --dataset_name wikitext     --dataset_config_name wikitext-2-raw-v1     --per_device_train_batch_size 8 --do_train --output_dir . --overwrite_output_dir --config_name transformers/7B/7B.json --cache_dir /tmp --tokenizer_name gpt2 --block_size 1024 --optim adafactor --adafactor true  --save_strategy no --logging_strategy no' >> llama2training.sh
         cat llama2training.sh
         pwd
         ls
@@ -177,12 +171,6 @@ local utils = import 'templates/utils.libsonnet';
         # install tokenizer model
         wget https://storage.googleapis.com/tpu-pytorch/lsiyuan-experiment/llama/spiece.model
 
-        # git clone and build llama
-        git clone --branch llama2-google-next-inference https://github.com/pytorch-tpu/llama.git
-        cd llama
-        pip3 install -r requirements.txt
-        pip3 install -e .
-
         # git clone and build transformers ### llama/transformers/
         git clone -b llama2-google-next-training https://github.com/pytorch-tpu/transformers.git
         cd transformers
@@ -201,7 +189,7 @@ local utils = import 'templates/utils.libsonnet';
         wget https://storage.googleapis.com/manfei_public_experimental/7BSPMD.json
 
         # save llama2 training
-        echo -e 'python llama/transformers/examples/pytorch/language-modeling/run_clm.py --tokenizer_name gpt2 --dataset_name wikitext --dataset_config_name wikitext-2-raw-v1 --per_device_train_batch_size 32 --per_device_eval_batch_size 8 --num_train_epochs 1 --do_train --output_dir /tmp/output --overwrite_output_dir --config_name llama/transformers/7B/7BSPMD.json --save_strategy no --logging_strategy no --remove_unused_columns no --spmd_fsdp_sharding --torch_dtype bfloat16 --dataloader_drop_last yes --spmd_grad_chkpt' >> llama2training.sh
+        echo -e 'python transformers/examples/pytorch/language-modeling/run_clm.py --tokenizer_name gpt2 --dataset_name wikitext --dataset_config_name wikitext-2-raw-v1 --per_device_train_batch_size 32 --per_device_eval_batch_size 8 --num_train_epochs 1 --do_train --output_dir /tmp/output --overwrite_output_dir --config_name transformers/7B/7BSPMD.json --save_strategy no --logging_strategy no --remove_unused_columns no --spmd_fsdp_sharding --torch_dtype bfloat16 --dataloader_drop_last yes --spmd_grad_chkpt' >> llama2training.sh
         cat llama2training.sh
         pwd
         ls
