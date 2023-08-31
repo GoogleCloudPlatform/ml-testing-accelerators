@@ -58,9 +58,13 @@ local utils = import 'templates/utils.libsonnet';
         pip3 install numpy
         sudo apt-get install numactl -y
         sudo apt-get install libopenblas-dev -y
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
-        pip3 install torch_xla[tpuvm]
+        # TODO change back to torch2.1 once pytorch released torch2.1 from current used pre-release wheel
+        # pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
+        # pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
+        # pip3 install torch_xla[tpuvm]
+        pip3 install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly%2B20230825-cp310-cp310-linux_x86_64.whl
+        pip install torch_xla[tpuvm]
 
         # install tokenizer model
         wget https://storage.googleapis.com/tpu-pytorch/lsiyuan-experiment/llama/spiece.model
@@ -107,9 +111,13 @@ local utils = import 'templates/utils.libsonnet';
         pip3 install numpy
         sudo apt-get install numactl -y
         sudo apt-get install libopenblas-dev -y
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
-        pip3 install torch_xla[tpuvm]
+        # TODO change back to torch2.1 once pytorch released torch2.1
+        # pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
+        # pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
+        # pip3 install torch_xla[tpuvm]
+        pip3 install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly%2B20230825-cp310-cp310-linux_x86_64.whl
+        pip install torch_xla[tpuvm]
 
         # install tokenizer model
         wget https://storage.googleapis.com/tpu-pytorch/lsiyuan-experiment/llama/spiece.model
