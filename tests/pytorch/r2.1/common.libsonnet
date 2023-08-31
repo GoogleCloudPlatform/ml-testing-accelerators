@@ -100,10 +100,11 @@ local volumes = import 'templates/volumes.libsonnet';
         # pip install --user \
         #   https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-2.1-cp310-cp310-linux_x86_64.whl \
         #   'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.1-cp310-cp310-linux_x86_64.whl'
-        pip3 install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly%2B20230825-cp310-cp310-linux_x86_64.whl
+        pip install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+        pip install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly%2B20230825-cp310-cp310-linux_x86_64.whl
         pip install torch_xla[tpuvm]
         pip3 install pillow
+        pip3 install typing_extensions
         git clone --depth=1 -b release/2.1 https://github.com/pytorch/pytorch.git
         cd pytorch
         git clone -b r2.1 https://github.com/pytorch/xla.git
@@ -136,10 +137,11 @@ local volumes = import 'templates/volumes.libsonnet';
         # pip install --user \
         #   https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-2.1-cp310-cp310-linux_x86_64.whl \
         #   'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.1-cp310-cp310-linux_x86_64.whl'
-        pip3 install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly%2B20230825-cp310-cp310-linux_x86_64.whl
+        pip install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+        pip install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly%2B20230825-cp310-cp310-linux_x86_64.whl
         pip install torch_xla[tpuvm]
         pip3 install pillow
+        pip3 install typing_extensions
         git clone --depth=1 -b release/2.1 https://github.com/pytorch/pytorch.git
         cd pytorch
         git clone -b r2.1 https://github.com/pytorch/xla.git
