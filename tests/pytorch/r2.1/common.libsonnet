@@ -105,6 +105,7 @@ local volumes = import 'templates/volumes.libsonnet';
         pip install torch_xla[tpuvm]
         pip3 install pillow
         pip3 install typing_extensions
+        pip3 install sympy
         git clone --depth=1 -b release/2.1 https://github.com/pytorch/pytorch.git
         cd pytorch
         git clone -b r2.1 https://github.com/pytorch/xla.git
@@ -142,6 +143,7 @@ local volumes = import 'templates/volumes.libsonnet';
         pip install torch_xla[tpuvm]
         pip3 install pillow
         pip3 install typing_extensions
+        pip3 install sympy
         git clone --depth=1 -b release/2.1 https://github.com/pytorch/pytorch.git
         cd pytorch
         git clone -b r2.1 https://github.com/pytorch/xla.git
