@@ -152,6 +152,8 @@ local utils = import 'templates/utils.libsonnet';
         export PROFILE_EPOCH=2
         export PROFILE_STEP=0
         export PROFILE_DURATION_MS=20000
+        export XLA_USE_SPMD=1
+        export PJRT_DEVICE=TPU
       |||,
       tpuVmExtraSetup: |||
         pip3 uninstall torch torch_xla torchvision libtpu-nightly -y
