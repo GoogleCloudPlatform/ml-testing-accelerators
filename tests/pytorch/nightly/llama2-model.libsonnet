@@ -206,7 +206,7 @@ local utils = import 'templates/utils.libsonnet';
 
   configs: [
     llama2_inference + v4_8 + common.Functional + timeouts.Hours(3) + infer,
-    # llama2_training + v4_8 + common.Functional + timeouts.Hours(3) + fsdp,
+    // llama2_training + v4_8 + common.Functional + timeouts.Hours(3) + fsdp,
     llama2_training + v4_8 + common.Functional + timeouts.Hours(3) + spmd,
   ],
 }
