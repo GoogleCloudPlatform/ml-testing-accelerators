@@ -163,7 +163,6 @@ local utils = import 'templates/utils.libsonnet';
         pip install accelerate -U
         sudo apt-get install libomp5 -y
         pip3 install mkl mkl-include
-        pip3 install tf-nightly tb-nightly tbp-nightly
         pip3 install numpy
         sudo apt-get install numactl -y
         sudo apt-get install libopenblas-dev -y
@@ -189,10 +188,10 @@ local utils = import 'templates/utils.libsonnet';
         # 7B config
         mkdir 7B
         cd 7B/
-        wget https://storage.googleapis.com/manfei_public_experimental/7BSPMD.json
+        wget https://storage.mtls.cloud.google.com/hf-train-config/llama/2B.json
 
         # save llama2 training
-        echo -e 'python transformers/examples/pytorch/language-modeling/run_clm.py --tokenizer_name gpt2 --dataset_name wikitext --dataset_config_name wikitext-2-raw-v1 --per_device_train_batch_size 32 --per_device_eval_batch_size 8 --num_train_epochs 1 --do_train --output_dir /tmp/output --overwrite_output_dir --config_name transformers/7B/7BSPMD.json --save_strategy no --logging_strategy no --remove_unused_columns no --spmd_fsdp_sharding --torch_dtype bfloat16 --dataloader_drop_last yes --spmd_grad_chkpt' >> llama2training.sh
+        echo -e 'python transformers/examples/pytorch/language-modeling/run_clm.py --tokenizer_name gpt2 --dataset_name wikitext --dataset_config_name wikitext-2-raw-v1 --per_device_train_batch_size 32 --per_device_eval_batch_size 8 --num_train_epochs 1 --do_train --output_dir /tmp/output --overwrite_output_dir --config_name transformers/7B/2B.json --save_strategy no --logging_strategy no --remove_unused_columns no --spmd_fsdp_sharding --torch_dtype bfloat16 --dataloader_drop_last yes --spmd_grad_chkpt' >> llama2training.sh
         cat llama2training.sh
         pwd
         ls
