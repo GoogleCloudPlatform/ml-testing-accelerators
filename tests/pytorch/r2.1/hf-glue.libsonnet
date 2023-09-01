@@ -121,7 +121,6 @@ local utils = import 'templates/utils.libsonnet';
       |||,
     },
   },
-  xrt:: common.XrtTpuVmMixin + tpuVm,
   local pjrt = self.pjrt,
   pjrt:: common.PyTorchTpuVmMixin + tpuVm {
     modelName: 'hf-glue-pjrt',
@@ -135,7 +134,6 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_8,
   },
   configs: [
-    hf_glue + v3_8 + distilbert_base_uncased + timeouts.Hours(2) + xrt,
     hf_glue + v4_8 + distilbert_base_uncased + timeouts.Hours(2) + pjrt,
   ],
 }
