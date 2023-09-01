@@ -120,43 +120,6 @@ local volumes = import 'templates/volumes.libsonnet';
     },
   },
 
-  // TODO: Remove after 2.1 release cut
-  XrtTpuVmMixin:: experimental.PyTorchTpuVmMixin {
-    local config = self,
-
-    tpuSettings+: {
-      softwareVersion: 'tpu-ubuntu2204-base',
-      tpuVmPytorchSetup: |||
-        pip3 install -U setuptools
-        # `unattended-upgr` blocks us from installing apt dependencies
-        sudo systemctl stop unattended-upgrades
-        sudo apt-get -y update
-        sudo apt install -y libopenblas-base
-        # for huggingface tests
-        sudo apt install -y libsndfile-dev
-        # TODO change back to torch2.1 once pytorch released torch2.1
-        # pip install --user \
-        #   https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-2.1-cp310-cp310-linux_x86_64.whl \
-        #   'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.1-cp310-cp310-linux_x86_64.whl'
-        pip install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
-        pip install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly%2B20230825-cp310-cp310-linux_x86_64.whl
-        pip install torch_xla[tpuvm]
-        pip3 install pillow
-        pip3 install typing_extensions
-        pip3 install sympy
-        git clone --depth=1 -b release/2.1 https://github.com/pytorch/pytorch.git
-        cd pytorch
-        git clone -b r2.1 https://github.com/pytorch/xla.git
-      |||,
-    },
-    podTemplate+:: {
-      spec+: {
-        initContainerMap+:: {
-          'tpu-version': null,
-        },
-      },
-    },
-  },
   datasetsVolume: volumes.PersistentVolumeSpec {
     name: 'pytorch-datasets-claim',
     mountPath: '/datasets',
