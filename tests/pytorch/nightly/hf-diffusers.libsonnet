@@ -55,6 +55,9 @@ local tpus = import 'templates/tpus.libsonnet';
         sed '/accelerate/d' requirements.txt > clean_requirements.txt
         sed '/torchvision/d' requirements.txt > clean_requirements.txt
         pip install -r clean_requirements.txt
+
+        # Skip saving the pretrained model, which contains invalid tensor storage
+        sed -i 's/pipeline.save_pretrained(args.output_dir)//g' train_text_to_image.py
       |||,
     },
   },
