@@ -182,7 +182,7 @@ local volumes = import 'templates/volumes.libsonnet';
 
               softwareVersion=%(softwareVersion)s
               gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "echo 'WRAPT_DISABLE_EXTENSIONS=true' | sudo tee -a /etc/environment"
-              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command 'sudo sed -i "/HEALTH_AGENT_DOCKER_URL/c\HEALTH_AGENT_DOCKER_URL=\"gcr.io/cloud-tpu-v2-images/tpu_agents:cl_560157697\"" /home/tpu-runtime/tpu-env'
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command 'sudo sed -i "/HEALTH_AGENT_DOCKER_URL/c\HEALTH_AGENT_DOCKER_URL=\"gcr.io/cloud-tpu-v2-images/tpu_agents:cl_562025307\"" /home/tpu-runtime/tpu-env'
 
               gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart healthagent.service"
               if [[ ${softwareVersion: -3} == "pod" ]]; then
