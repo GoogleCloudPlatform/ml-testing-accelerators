@@ -188,7 +188,7 @@ local utils = import 'templates/utils.libsonnet';
         # 7B config
         mkdir 7B
         cd 7B/
-        wget https://storage.mtls.cloud.google.com/hf-train-config/llama/2B.json
+        wget https://storage.googleapis.com/manfei_public_experimental/2B.json
 
         # save llama2 training
         echo -e 'python transformers/examples/pytorch/language-modeling/run_clm.py --tokenizer_name gpt2 --dataset_name wikitext --dataset_config_name wikitext-2-raw-v1 --per_device_train_batch_size 32 --per_device_eval_batch_size 8 --num_train_epochs 1 --do_train --output_dir /tmp/output --overwrite_output_dir --config_name transformers/7B/2B.json --save_strategy no --logging_strategy no --remove_unused_columns no --spmd_fsdp_sharding --torch_dtype bfloat16 --dataloader_drop_last yes --spmd_grad_chkpt --report_to none' >> llama2training.sh

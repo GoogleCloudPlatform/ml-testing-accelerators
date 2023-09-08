@@ -62,7 +62,7 @@ local utils = import 'templates/utils.libsonnet';
         # pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
         # pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
         # pip3 install torch_xla[tpuvm]
-        pip3 install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+        pip3 install torch --index-url https://download.pytorch.org/whl/test/cpu
         pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly%2B20230825-cp310-cp310-linux_x86_64.whl
         pip install torch_xla[tpuvm]
 
@@ -102,9 +102,9 @@ local utils = import 'templates/utils.libsonnet';
     tpuSettings+: {
       tpuVmExtraSetup: |||
         pip3 uninstall torch torch_xla torchvision libtpu-nightly -y
-        sudo apt update -y
+        # sudo apt update -y
         sudo apt-get update -y
-        pip install accelerate -U
+        # pip install accelerate -U
         sudo apt-get install libomp5 -y
         pip3 install mkl mkl-include
         pip3 install tf-nightly tb-nightly tbp-nightly
@@ -115,7 +115,7 @@ local utils = import 'templates/utils.libsonnet';
         # pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
         # pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
         # pip3 install torch_xla[tpuvm]
-        pip3 install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+        pip3 install torch --index-url https://download.pytorch.org/whl/test/cpu
         pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly%2B20230825-cp310-cp310-linux_x86_64.whl
         pip install torch_xla[tpuvm]
 
@@ -166,9 +166,9 @@ local utils = import 'templates/utils.libsonnet';
       |||,
       tpuVmExtraSetup: |||
         pip3 uninstall torch torch_xla torchvision libtpu-nightly -y
-        sudo apt update -y
+        # sudo apt update -y
         sudo apt-get update -y
-        pip install accelerate -U
+        # pip install accelerate -U
         sudo apt-get install libomp5 -y
         pip3 install mkl mkl-include
         pip3 install numpy
@@ -178,14 +178,14 @@ local utils = import 'templates/utils.libsonnet';
         # pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
         # pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
         # pip3 install torch_xla[tpuvm]
-        pip3 install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+        pip3 install torch --index-url https://download.pytorch.org/whl/test/cpu
         pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly%2B20230825-cp310-cp310-linux_x86_64.whl
         pip install torch_xla[tpuvm]
 
         # install tokenizer model
         wget https://storage.googleapis.com/tpu-pytorch/lsiyuan-experiment/llama/spiece.model
 
-        # git clone and build transformers ### llama/transformers/
+        # git clone and build transformers ### transformers/
         git clone -b llama2-google-next-training https://github.com/pytorch-tpu/transformers.git
         cd transformers
         sudo pip3 uninstall transformers
@@ -197,10 +197,11 @@ local utils = import 'templates/utils.libsonnet';
         pwd
         ls
 
-        # 7B config
+        # 2B config
         mkdir 7B
         cd 7B/
-        wget https://storage.mtls.cloud.google.com/hf-train-config/llama/2B.json
+        wget https://storage.googleapis.com/manfei_public_experimental/2B.json
+        cat 2B.json
 
         # save llama2 training
         echo -e 'python transformers/examples/pytorch/language-modeling/run_clm.py --tokenizer_name gpt2 --dataset_name wikitext --dataset_config_name wikitext-2-raw-v1 --per_device_train_batch_size 32 --per_device_eval_batch_size 8 --num_train_epochs 1 --do_train --output_dir /tmp/output --overwrite_output_dir --config_name transformers/7B/2B.json --save_strategy no --logging_strategy no --remove_unused_columns no --spmd_fsdp_sharding --torch_dtype bfloat16 --dataloader_drop_last yes --spmd_grad_chkpt --report_to none' >> llama2training.sh
