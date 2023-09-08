@@ -96,57 +96,6 @@ local utils = import 'templates/utils.libsonnet';
       |||,
     },
   },
-  local fsdp = self.fsdp,
-  fsdp:: common.PyTorchTpuVmMixin {
-    modelName+: '-train-fsdp',
-    tpuSettings+: {
-      tpuVmExtraSetup: |||
-        pip3 uninstall torch torch_xla torchvision libtpu-nightly -y
-        # sudo apt update -y
-        sudo apt-get update -y
-        # pip install accelerate -U
-        sudo apt-get install libomp5 -y
-        pip3 install mkl mkl-include
-        pip3 install tf-nightly tb-nightly tbp-nightly
-        pip3 install numpy
-        sudo apt-get install numactl -y
-        sudo apt-get install libopenblas-dev -y
-        # TODO change back to torch2.1 once pytorch released torch2.1
-        # pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
-        # pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
-        # pip3 install torch_xla[tpuvm]
-        pip3 install torch --index-url https://download.pytorch.org/whl/test/cpu
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly%2B20230825-cp310-cp310-linux_x86_64.whl
-        pip install torch_xla[tpuvm]
-
-        # install tokenizer model
-        wget https://storage.googleapis.com/tpu-pytorch/lsiyuan-experiment/llama/spiece.model
-
-        # git clone and build transformers ### llama/transformers/
-        git clone -b lsiyuan/fsdp-data-aug https://github.com/pytorch-tpu/transformers.git
-        cd transformers
-        sudo pip3 uninstall transformers
-        sudo pip3 install -e .
-        pip3 install datasets
-        pip3 install evaluate
-        pip3 install scikit-learn
-        pip3 install accelerate
-        pwd
-        ls
-
-        # 7B config
-        mkdir 7B
-        cd 7B/
-        wget https://storage.googleapis.com/tpu-pytorch/lsiyuan-experiment/configs/hf_llama/7B.json
-
-        # save llama2 training
-        echo -e 'python3 -u transformers/examples/pytorch/xla_spawn.py --num_cores 64 transformers/examples/pytorch/language-modeling/run_clm.py    --num_train_epochs 2  --dataset_name wikitext     --dataset_config_name wikitext-2-raw-v1     --per_device_train_batch_size 8 --do_train --output_dir . --overwrite_output_dir --config_name transformers/7B/7B.json --cache_dir /tmp --tokenizer_name gpt2 --block_size 1024 --optim adafactor --adafactor true  --save_strategy no --logging_strategy no' >> llama2training.sh
-        cat llama2training.sh
-        pwd
-        ls
-      |||,
-    },
-  },
   local spmd = self.spmd,
   spmd:: common.PyTorchTpuVmMixin {
     modelName+: '-train-spmd',
@@ -219,7 +168,6 @@ local utils = import 'templates/utils.libsonnet';
 
   configs: [
     llama2_inference + v4_8 + common.Functional + timeouts.Hours(3) + infer,
-    // llama2_training + v4_8 + common.Functional + timeouts.Hours(3) + fsdp,
     llama2_training + v4_8 + common.Functional + timeouts.Hours(3) + spmd,
   ],
 }
