@@ -302,10 +302,7 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   local functional_schedule = '0 9 * * *',
   Functional:: mixins.Functional {
-    schedule: if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' || self.accelerator.name == 'v4-8' then
-      functional_schedule
-    else
-      null,
+    schedule: functional_schedule,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
