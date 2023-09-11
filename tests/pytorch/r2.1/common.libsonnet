@@ -100,7 +100,7 @@ local volumes = import 'templates/volumes.libsonnet';
         # pip install --user \
         #   https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-2.1-cp310-cp310-linux_x86_64.whl \
         #   'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.1-cp310-cp310-linux_x86_64.whl'
-        pip install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
+        pip install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/test/cpu
         pip install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.1.0rc2-cp310-cp310-linux_x86_64.whl
         pip install torch_xla[tpuvm]
         pip3 install pillow
