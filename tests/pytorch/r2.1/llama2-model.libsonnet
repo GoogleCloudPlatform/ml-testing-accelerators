@@ -37,7 +37,7 @@ local utils = import 'templates/utils.libsonnet';
     local config = self,
     modelName: 'llama2-t',
     paramsOverride:: {
-      scriptPath: 'transformers/7B/llama2training.sh',
+      scriptPath: 'transformers/2B/llama2training.sh',
       trainCommand: [
         'bash',
         self.scriptPath,
@@ -118,23 +118,24 @@ local utils = import 'templates/utils.libsonnet';
         ls
 
         # 2B config
-        mkdir 7B
-        cd 7B/
+        mkdir 2B
+        cd 2B/
         wget https://storage.googleapis.com/manfei_public_experimental/2B.json
         cat 2B.json
 
         # save llama2 training
-        echo -e 'python3 transformers/examples/pytorch/language-modeling/run_clm.py --tokenizer_name gpt2 --dataset_name wikitext --dataset_config_name wikitext-2-raw-v1 --per_device_train_batch_size 32 --per_device_eval_batch_size 8 --num_train_epochs 1 --do_train --output_dir /tmp/output --overwrite_output_dir --config_name transformers/7B/2B.json --save_strategy no --logging_strategy no --remove_unused_columns no --spmd_fsdp_sharding --torch_dtype bfloat16 --dataloader_drop_last yes --spmd_grad_chkpt --report_to none > output.txt' >> llama2training.sh
+        echo -e 'python3 transformers/examples/pytorch/language-modeling/run_clm.py --tokenizer_name gpt2 --dataset_name wikitext --dataset_config_name wikitext-2-raw-v1 --per_device_train_batch_size 32 --per_device_eval_batch_size 8 --num_train_epochs 1 --do_train --output_dir /tmp/output --overwrite_output_dir --config_name transformers/2B/2B.json --save_strategy no --logging_strategy no --remove_unused_columns no --spmd_fsdp_sharding --torch_dtype bfloat16 --dataloader_drop_last yes --spmd_grad_chkpt --report_to none > output.txt' >> llama2training.sh
         echo -e 'file = open("output.txt")' >> getvalue.py
         echo -e 'content = file.readlines()' >> getvalue.py
         echo -e 'value_line = content[-1]' >> getvalue.py
         echo -e 'value_value = float((value_line.split())[2])' >> getvalue.py
-        echo -e 'if value_value > 6.863 or value_value < 6.209:' >> getvalue.py
+        echo -e 'value_value = torch.reciprocal(value_value)' >> getvalue.py
+        echo -e 'if value_value > 6.863 or value_value < 6.209 :' >> getvalue.py
         echo -e '    raise ValueError("expose to train_steps_per_second exceeded throuhold 6.536 +- 5%")' >> getvalue.py
         echo -e 'else:' >> getvalue.py
         echo -e '    print("Finished llama2 test and warm latency/token within expected throuhold 6.536 +- 5%")' >> getvalue.py
         echo -e 'cat output.txt' >> llama2training.sh
-        echo -e 'python3 transformers/7B/getvalue.py' >> llama2training.sh
+        echo -e 'python3 transformers/2B/getvalue.py' >> llama2training.sh
         cat llama2training.sh
         pwd
         ls
