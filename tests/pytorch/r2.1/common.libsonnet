@@ -97,12 +97,9 @@ local volumes = import 'templates/volumes.libsonnet';
         # for huggingface tests
         sudo apt install -y libsndfile-dev
         # TODO change back to torch2.1 once pytorch released torch2.1
-        # pip install --user \
-        #   https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-2.1-cp310-cp310-linux_x86_64.whl \
-        #   'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.1-cp310-cp310-linux_x86_64.whl'
         pip install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/test/cpu
-        pip install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.1.0rc2-cp310-cp310-linux_x86_64.whl
-        pip install torch_xla[tpuvm]
+        pip install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.1.0rc5-cp310-cp310-linux_x86_64.whl
+        pip install torch_xla[tpu] -f https://storage.googleapis.com/libtpu-releases/libtpu_releases.html
         pip3 install pillow
         pip3 install typing_extensions
         pip3 install sympy
