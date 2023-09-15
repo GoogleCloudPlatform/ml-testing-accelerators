@@ -63,10 +63,9 @@ local utils = import 'templates/utils.libsonnet';
 
         # taming-transformers and CLIP override existing torch and torchvision so we need to reinstall
         # TODO change back to torch2.1 once pytorch released torch2.1
-        pip uninstall -y torch torchvision
-        pip3 install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/test/cpu
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.1.0rc2-cp310-cp310-linux_x86_64.whl
-        pip install torch_xla[tpuvm]
+        pip install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/test/cpu
+        pip install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.1.0rc5-cp310-cp310-linux_x86_64.whl
+        pip install torch_xla[tpu] -f https://storage.googleapis.com/libtpu-releases/libtpu_releases.html
 
         # Setup data
         wget -nv https://s3.amazonaws.com/fast-ai-imageclas/imagenette2.tgz
