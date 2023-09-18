@@ -115,38 +115,6 @@ local volumes = import 'templates/volumes.libsonnet';
     },
   },
 
-  // TODO: Remove after 2.1 release cut
-  XrtTpuVmMixin:: experimental.PyTorchTpuVmMixin {
-    local config = self,
-
-    tpuSettings+: {
-      softwareVersion: 'tpu-ubuntu2204-base',
-      tpuVmPytorchSetup: |||
-        pip3 install -U setuptools
-        # `unattended-upgr` blocks us from installing apt dependencies
-        sudo systemctl stop unattended-upgrades
-        sudo apt-get -y update
-        sudo apt install -y libopenblas-base
-        # for huggingface tests
-        sudo apt install -y libsndfile-dev
-        pip install --user \
-          https://storage.googleapis.com/pytorch-xla-releases/wheels/xrt/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl \
-          'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/xrt/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl'
-        pip3 install --user --pre --no-deps torchvision --extra-index-url https://download.pytorch.org/whl/nightly/cpu
-        pip3 install pillow
-        git clone --depth=1 https://github.com/pytorch/pytorch.git
-        cd pytorch
-        git clone https://github.com/pytorch/xla.git
-      |||,
-    },
-    podTemplate+:: {
-      spec+: {
-        initContainerMap+:: {
-          'tpu-version': null,
-        },
-      },
-    },
-  },
   datasetsVolume: volumes.PersistentVolumeSpec {
     name: 'pytorch-datasets-claim',
     mountPath: '/datasets',
