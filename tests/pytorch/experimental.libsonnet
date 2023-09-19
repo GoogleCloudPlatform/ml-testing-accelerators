@@ -90,7 +90,7 @@ local utils = import 'templates/utils.libsonnet';
                 sudo kill -9 $(lsof /var/lib/dpkg/lock-frontend | awk '{print $2}')
                 sudo dpkg --configure -a
                 sudo apt-get -y install nfs-common
-                sudo mkdir /datasets && sudo mount $(PYTORCH_DATA_LOCATION) /datasets
+                sudo mkdir /datasets && sudo mount.nfs $(PYTORCH_DATA_LOCATION) /datasets
 
                 yes '' | gcloud compute config-ssh
 
