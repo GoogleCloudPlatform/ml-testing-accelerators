@@ -183,7 +183,7 @@ local utils = import 'templates/utils.libsonnet';
   },
   local spmd2B256 = self.spmd2B256,
   spmd2B256:: common.PyTorchTpuVmMixin + pjrt {
-    modelName+: '-train-spmd2b-bs256',
+    modelName+: '-train-spmd2b-256',
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=1
