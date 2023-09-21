@@ -184,8 +184,7 @@ local volumes = import 'templates/volumes.libsonnet';
         export PATH=~/.local/bin:$PATH
       |||,
       tpuVmExtraSetup: |||
-        git clone https://github.com/huggingface/accelerate.git
-        pip install --user ./accelerate
+        pip install --user accelerate==0.22.0
 
         mkdir -p ~/.cache/huggingface/accelerate/
         cat > ~/.cache/huggingface/accelerate/default_config.yaml << 'HF_CONFIG_EOF'
