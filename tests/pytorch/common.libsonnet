@@ -20,7 +20,7 @@ local volumes = import 'templates/volumes.libsonnet';
   local PyTorchBaseTest = common.CloudAcceleratorTest {
     configMaps+: ['pytorch-nfs-ip'],
 
-    image: 'gcr.io/tpu-pytorch/xla',
+    image: 'us-central1-docker.pkg.dev/tpu-pytorch-releases/docker/xla',
 
     metricConfig+: {
       sourceMap+:: {
