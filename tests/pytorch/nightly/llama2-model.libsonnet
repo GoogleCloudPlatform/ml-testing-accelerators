@@ -58,7 +58,7 @@ local utils = import 'templates/utils.libsonnet';
         pip3 install numpy
         sudo apt-get install numactl -y
         sudo apt-get install libopenblas-dev -y
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
+        pip3 install --user --pre torch --index-url https://download.pytorch.org/whl/nightly/cpu
         pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
         pip3 install torch_xla[tpuvm]
 
@@ -119,7 +119,7 @@ local utils = import 'templates/utils.libsonnet';
         pip3 install numpy
         sudo apt-get install numactl -y
         sudo apt-get install libopenblas-dev -y
-        pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch-nightly-cp310-cp310-linux_x86_64.whl
+        pip3 install --user --pre torch --index-url https://download.pytorch.org/whl/nightly/cpu
         pip3 install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-nightly-cp310-cp310-linux_x86_64.whl
         pip3 install torch_xla[tpuvm]
 
