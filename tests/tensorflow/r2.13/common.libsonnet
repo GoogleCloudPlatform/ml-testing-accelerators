@@ -23,11 +23,11 @@ local volumes = import 'templates/volumes.libsonnet';
   ModelGardenTest:: common.ModelGardenTest {
     local config = self,
 
-    frameworkPrefix: 'tf-r2.13.0',
+    frameworkPrefix: 'tf.2.13.1',
     tpuSettings+: {
-      softwareVersion: '2.13.0',
+      softwareVersion: '2.13.1',
     },
-    imageTag: 'r2.13.0',
+    imageTag: 'r2.13.1',
     podTemplate+:: if config.accelerator.type == 'tpu' then
       {
         spec+: {
@@ -129,11 +129,11 @@ local volumes = import 'templates/volumes.libsonnet';
                   runtime_version: %(softwareVersion)s,
                   network_config: {enable_external_ips: true},
                   labels: {test_name: '%(testName)s' },
-                  boot_disk: {source_image: 'projects/cloud-tpu-v2-images-dev/global/images/family/tpu-vm-tf-2-13-0'},
+                  boot_disk: {source_image: 'projects/cloud-tpu-v2-images-dev/global/images/family/tpu-vm-tf-2-13-1'},
                   metadata: {
                     'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
                     'startup-script': %(startupScript)s,
-                    'tensorflow-docker-url': 'gcr.io/cloud-tpu-v2-images-dev/grpc_tpu_worker:tf-2.13.0'
+                    'tensorflow-docker-url': 'gcr.io/cloud-tpu-v2-images-dev/grpc_tpu_worker:tf-2.13.1'
                   }
               }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
               echo "Waiting for TPU Pod ${tpu_name} to become ready..."
@@ -159,7 +159,7 @@ local volumes = import 'templates/volumes.libsonnet';
 
               softwareVersion=%(softwareVersion)s
               if [[ ${softwareVersion: -3} == "pod" ]]; then
-                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:tf-2.13.0\"/' /etc/systemd/system/tpu-runtime.service"
+                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:tf-2.13.1\"/' /etc/systemd/system/tpu-runtime.service"
                  gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart tpu-runtime"
               fi
             ||| % tpuCreateSettings),
@@ -273,7 +273,7 @@ local volumes = import 'templates/volumes.libsonnet';
       },
     },
   },
-  local functional_schedule = null,
+  local functional_schedule = '0 1 * * *',
   Functional:: mixins.Functional {
     schedule: functional_schedule,
     metricConfig+: {
@@ -300,7 +300,7 @@ local volumes = import 'templates/volumes.libsonnet';
     schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
-    schedule: null,
+    schedule: '0 3 * * 1,3,5',
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
