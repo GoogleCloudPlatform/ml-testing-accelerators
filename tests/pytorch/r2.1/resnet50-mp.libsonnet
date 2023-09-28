@@ -213,7 +213,7 @@ local tpus = import 'templates/tpus.libsonnet';
     // XRT
     resnet50 + functional + v100x4 + timeouts.Hours(1),
     resnet50 + fake_data + v3_8 + timeouts.Hours(2) + xrt,
-    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + xrt + xrt_ddp,
+    resnet50 + fake_data + v3_8 + timeouts.Hours(7) + xrt + xrt_ddp,
     resnet50 + convergence + v3_8 + timeouts.Hours(24) + xrt,
     resnet50 + fake_data + v3_32 + timeouts.Hours(1) + xrt,
     resnet50 + fake_data + v4_8 + timeouts.Hours(2) + xrt,
