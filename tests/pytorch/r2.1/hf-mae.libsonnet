@@ -147,7 +147,7 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_8,
   },
   configs: [
-    hf_mae + v3_8 + hf_vit_mae + timeouts.Hours(2) + xrt,
+    hf_mae + v3_8 + hf_vit_mae + timeouts.Hours(5) + xrt,
     hf_mae + v4_8 + hf_vit_mae + timeouts.Hours(2) + xrt,
   ],
 }

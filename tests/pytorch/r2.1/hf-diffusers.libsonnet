@@ -1,5 +1,6 @@
 local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
+local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 
 {
@@ -73,6 +74,6 @@ local tpus = import 'templates/tpus.libsonnet';
 
   configs: [
     diffusers + functional + v4_8 + pjrt,
-    diffusers + convergence + v4_8 + pjrt,
+    diffusers + convergence + v4_8 + timeouts.Hours(24) + pjrt,
   ],
 }
