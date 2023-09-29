@@ -115,10 +115,7 @@ local volumes = import 'templates/volumes.libsonnet';
   tpuVm:: experimental.TensorFlowTpuVmMixin {
     local config = self,
     tpuSettings+: {
-      softwareVersion: if config.accelerator.replicas == 1 then
-        'v2-nightly'
-      else
-        'v2-nightly-pod',
+      softwareVersion: 'v2-alpha-tpuv5-lite'
     },
     podTemplate+:: {
       spec+: {
@@ -136,44 +133,51 @@ local volumes = import 'templates/volumes.libsonnet';
               zone=$(curl -sS "http://metadata.google.internal/computeMetadata/v1/instance/zone" -H "Metadata-Flavor: Google" | awk -F'/' '{print $4}')
               tpu_name=tpu-${POD_UID}
               ssh-keygen -t rsa -f /scripts/id_rsa -q -N ""
+
               echo "
-                gcloud alpha compute tpus tpu-vm delete -q ${tpu_name} --zone=${zone}
+              gcloud alpha compute tpus tpu-vm delete -q --async ${tpu_name} --zone=${zone}
+              sleep 60
               " > /scripts/cleanup.sh
 
-              curl -X POST \
-                -H "Authorization: Bearer $(gcloud auth print-access-token)" \
-                -H "Content-Type: application/json" \
-                -d "{
-                  accelerator_type: %(acceleratorName)s,
-                  runtime_version: %(softwareVersion)s,
-                  network_config: {enable_external_ips: true},
-                  labels: {test_name: '%(testName)s' },
-                  boot_disk: {source_image: 'projects/cloud-tpu-v2-images-dev/global/images/family/tpu-vm-tf-nightly'},
-                  metadata: {
-                    'ssh-keys': 'xl-ml-test:$(cat /scripts/id_rsa.pub)',
-                    'startup-script': %(startupScript)s
-                  }
-              }" https://tpu.googleapis.com/v2alpha1/projects/${project}/locations/${zone}/nodes?node_id=${tpu_name}
-              echo "Waiting for TPU Pod ${tpu_name} to become ready..."
-              timeout 10m bash -c -- "
-              while [[ \${health:-NONE} != "HEALTHY" ]];
-                do sleep 60 && \
-                health=\$(gcloud \
-                  --project=${project} \
-                  compute \
-                  tpus \
-                  describe \
-                  ${tpu_name} \
-                  --zone=${zone} \
-                  --format='value(health)') && \
-                echo 'Waiting for ready TPU (current health \${health:-NONE})...';
+              echo "xl-ml-test:$(cat /scripts/id_rsa.pub)" > ssh-keys.txt
+              echo %(startupScript)s > startup-script.txt
+
+              # Retry every 30 seconds for up to 10 minutes
+              start_time="$(date -u +%%s)"
+              for i in {1..20}; do
+                set +e
+                gcloud alpha compute tpus tpu-vm create ${tpu_name} \
+                  --accelerator-type=%(acceleratorName)s \
+                  --version=%(softwareVersion)s  \
+                  --metadata-from-file='ssh-keys=ssh-keys.txt,startup-script=startup-script.txt' \
+                  --labels='test-name=%(testName)s' \
+                  --zone=${zone}
+
+                exit_code=$?
+                set -e
+
+                current_time="$(date -u +%%s)"
+                elapsed_seconds=$(($current_time-$start_time))
+                # Break if command passed or 10-minute limit reached
+                test $exit_code = 0 && break
+                test $elapsed_seconds -gt 600 && break
+                sleep 30
               done
-              "
+
+              if [ $exit_code -ne 0 ]; then
+                exit $exit_code
+              fi 
               echo ${zone} > /scripts/zone
               echo ${tpu_name} > /scripts/tpu_name
               gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --format="value(networkEndpoints[0].ipAddress)" > /scripts/tpu_ip
               gcloud compute tpus describe ${tpu_name} --project=${project} --zone=${zone} --flatten="networkEndpoints[]" --format="csv[no-heading](networkEndpoints.ipAddress)" > /scripts/all_tpu_ips
               sleep %(sleepTime)d
+
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "pip install tensorflow-text-nightly"
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "gsutil -m cp gs://cloud-tpu-v2-images-dev-artifacts/tensorflow/tf-nightly/latest/*.whl /tmp/ && pip install /tmp/tf*.whl --force"
+
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo gsutil -m cp gs://cloud-tpu-v2-images-dev-artifacts/libtpu/latest/libtpu.so /lib/"
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "sudo mkdir -p /usr/share/tpu && cd /usr/share/tpu && git clone https://github.com/tensorflow/models.git"
 
               softwareVersion=%(softwareVersion)s
 
