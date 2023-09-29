@@ -115,7 +115,7 @@ local volumes = import 'templates/volumes.libsonnet';
   tpuVm:: experimental.TensorFlowTpuVmMixin {
     local config = self,
     tpuSettings+: {
-      softwareVersion: 'v2-alpha-tpuv5-lite'
+      softwareVersion: 'v2-alpha-tpuv5-lite',
     },
     podTemplate+:: {
       spec+: {
