@@ -1,7 +1,7 @@
 local experimental = import '../experimental.libsonnet';
 local common = import 'common.libsonnet';
-local tpus = import 'templates/tpus.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
+local tpus = import 'templates/tpus.libsonnet';
 
 {
   local diffusers = self.diffusers,
