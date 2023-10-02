@@ -179,15 +179,10 @@ local volumes = import 'templates/volumes.libsonnet';
               gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo gsutil -m cp gs://cloud-tpu-v2-images-dev-artifacts/libtpu/latest/libtpu.so /lib/"
               gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "sudo mkdir -p /usr/share/tpu && cd /usr/share/tpu && git clone https://github.com/tensorflow/models.git"
 
-              softwareVersion=%(softwareVersion)s
-
-              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "echo 'WRAPT_DISABLE_EXTENSIONS=true' | sudo tee -a /etc/environment"
-              if [[ ${softwareVersion: -3} == "pod" ]]; then
-                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:se-nightly\"/' /etc/systemd/system/tpu-runtime.service"
-                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart tpu-runtime"
-              else
-                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name} --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --command 'sudo usermod -a -G docker ${USER} && gcloud auth configure-docker --quiet'
-                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command 'LIBTPU_DOCKER_IMAGE_PATH=gcr.io/cloud-tpu-v2-images-dev/libtpu:nightly && docker pull "${LIBTPU_DOCKER_IMAGE_PATH}" && docker create --name libtpu "${LIBTPU_DOCKER_IMAGE_PATH}" "/bin/bash" && sudo docker cp libtpu:libtpu.so /lib/libtpu.so'
+              accelerator_type=%(acceleratorName)s
+              if (( ${accelerator_type: -2} > 8 )); then
+                gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:nightly\"/' /etc/systemd/system/tpu-runtime.service"
+                gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart tpu-runtime"
               fi
             ||| % tpuCreateSettings),
           },
