@@ -222,7 +222,7 @@ local utils = import 'templates/utils.libsonnet';
 
         # save llama2 training
         cd ..
-        echo -e 'python3 transformers/examples/pytorch/language-modeling/run_clm.py --tokenizer_name gpt2 --dataset_name wikitext --dataset_config_name wikitext-2-raw-v1 --per_device_train_batch_size 256 --per_device_eval_batch_size 8 --num_train_epochs 1 --do_train --output_dir /tmp/output --overwrite_output_dir --config_name transformers/2B/2B.json --save_strategy no --logging_strategy no --remove_unused_columns no --spmd_fsdp_sharding --torch_dtype bfloat16 --dataloader_drop_last yes --spmd_grad_chkpt --report_to none > output.txt' >> llama2training.sh
+        echo -e 'XLA_USE_BF16=1 python3 transformers/examples/pytorch/language-modeling/run_clm.py --tokenizer_name hf-internal-testing/llama-tokenizer --dataset_name wikitext --dataset_config_name wikitext-2-raw-v1 --per_device_train_batch_size 256 --per_device_eval_batch_size 8 --num_train_epochs 1 --do_train --output_dir /tmp/output --overwrite_output_dir --config_name transformers/2B/2B.json --save_strategy no --logging_strategy no --remove_unused_columns no --spmd_fsdp_sharding --torch_dtype bfloat16 --dataloader_drop_last yes --spmd_grad_chkpt --report_to none --optim adafactor > output.txt' >> llama2training.sh
         echo -e 'import numpy as np' >> getvalue.py
         echo -e 'file = open("output.txt")' >> getvalue.py
         echo -e 'content = file.readlines()' >> getvalue.py
@@ -383,7 +383,7 @@ local utils = import 'templates/utils.libsonnet';
     llama2_inference + v4_8 + common.Functional + timeouts.Hours(3) + infer7B,
     llama2_inference + v4_8 + common.Functional + timeouts.Hours(3) + infer70B,
     llama2_training + v4_8 + common.Functional + timeouts.Hours(3) + spmd2B,
-    llama2_training + v4_8 + common.Functional + timeouts.Hours(3) + spmd2B128,
+    llama2_training + v4_8 + common.Functional + timeouts.Hours(3) + spmd2B256,
     llama2_training + convergence + v4_8 + common.Functional + timeouts.Hours(3) + spmd2Bconv,
   ],
 }
