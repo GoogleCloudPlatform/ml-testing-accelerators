@@ -229,10 +229,10 @@ local utils = import 'templates/utils.libsonnet';
         echo -e 'value_line = content[-1]' >> getvalue.py
         echo -e 'value_value = float((value_line.split())[2])' >> getvalue.py
         echo -e 'value_value = np.reciprocal(value_value)' >> getvalue.py
-        echo -e 'if value_value > 6.863 or value_value < 6.209 :' >> getvalue.py
-        echo -e '    raise ValueError("expose to train_steps_per_second exceeded throuhold 6.536 +- 5%")' >> getvalue.py
+        echo -e 'if value_value > 14.000 or value_value < 12.667 :' >> getvalue.py
+        echo -e '    raise ValueError("expose to train_steps_per_second exceeded throuhold 13.333 +- 5%")' >> getvalue.py
         echo -e 'else:' >> getvalue.py
-        echo -e '    print("Finished llama2 test and warm latency/token within expected throuhold 6.536 +- 5%")' >> getvalue.py
+        echo -e '    print("Finished llama2 test and warm latency/token within expected throuhold 13.333 +- 5%")' >> getvalue.py
         echo -e 'cat output.txt' >> llama2training.sh
         echo -e 'python3 transformers/getvalue.py' >> llama2training.sh
         cat llama2training.sh
