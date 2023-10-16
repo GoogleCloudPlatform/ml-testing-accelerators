@@ -293,7 +293,7 @@ local volumes = import 'templates/volumes.libsonnet';
       },
     },
   },
-  local functional_schedule = '0 9 * * *',
+  local functional_schedule = null,
   Functional:: mixins.Functional {
     schedule: if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' || self.accelerator.name == 'v4-8' then
       functional_schedule
@@ -323,7 +323,7 @@ local volumes = import 'templates/volumes.libsonnet';
     schedule: functional_schedule,
   },
   Convergence:: mixins.Convergence {
-    schedule: '0 5 * * 0,2,4',
+    schedule: null,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
