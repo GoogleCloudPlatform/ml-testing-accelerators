@@ -115,11 +115,11 @@ local volumes = import 'templates/volumes.libsonnet';
   tpuVm:: experimental.TensorFlowTpuVmMixin {
     local config = self,
     tpuSettings+: {
-      tpuVmEnvVars+: {
+      softwareVersion: 'v2-alpha-tpuv5-lite',
+      tpuVmEnvVars+: (if std.parseInt(std.split(config.accelerator.name, "-")[1]) <= 8 then {
         TF_PLUGGABLE_DEVICE_LIBRARY_PATH: '/lib/libtpu.so',
         NEXT_PLUGGABLE_DEVICE_USE_C_API: 'true',
-      },
-      softwareVersion: 'v2-alpha-tpuv5-lite',
+      } else {}), 
     },
     podTemplate+:: {
       spec+: {
