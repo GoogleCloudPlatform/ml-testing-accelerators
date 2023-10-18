@@ -115,6 +115,10 @@ local volumes = import 'templates/volumes.libsonnet';
   tpuVm:: experimental.TensorFlowTpuVmMixin {
     local config = self,
     tpuSettings+: {
+      tpuVmEnvVars+: {
+        TF_PLUGGABLE_DEVICE_LIBRARY_PATH: '/lib/libtpu.so',
+        NEXT_PLUGGABLE_DEVICE_USE_C_API: 'true',
+      },
       softwareVersion: if config.accelerator.replicas == 1 then
         'v2-nightly'
       else
@@ -178,6 +182,9 @@ local volumes = import 'templates/volumes.libsonnet';
 
               softwareVersion=%(softwareVersion)s
               gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "echo 'WRAPT_DISABLE_EXTENSIONS=true' | sudo tee -a /etc/environment"
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command 'sudo sed -i "/HEALTH_AGENT_DOCKER_URL/c\HEALTH_AGENT_DOCKER_URL=\"gcr.io/cloud-tpu-v2-images/tpu_agents:cl_562025307\"" /home/tpu-runtime/tpu-env'
+
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart healthagent.service"
               if [[ ${softwareVersion: -3} == "pod" ]]; then
                  gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:nightly\"/' /etc/systemd/system/tpu-runtime.service"
                  gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart tpu-runtime"
@@ -295,10 +302,7 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   local functional_schedule = '0 9 * * *',
   Functional:: mixins.Functional {
-    schedule: if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' || self.accelerator.name == 'v4-8' then
-      functional_schedule
-    else
-      null,
+    schedule: functional_schedule,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
