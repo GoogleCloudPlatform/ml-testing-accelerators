@@ -307,7 +307,7 @@ local volumes = import 'templates/volumes.libsonnet';
     schedule: if !(self.accelerator.type == 'tpu') || self.accelerator.name == 'v3-8' || self.accelerator.name == 'v4-8' then
       functional_schedule
     else
-      null,
+      functional_schedule,
     metricConfig+: {
       sourceMap+:: {
         tensorboard+: {
