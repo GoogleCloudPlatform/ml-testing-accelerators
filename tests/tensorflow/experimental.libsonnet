@@ -21,6 +21,7 @@ local mixins = import 'templates/mixins.libsonnet';
     tpuSettings+: {
       tpuVmEnvVars+: {
         PYTHONPATH: '${PWD}',
+        WRAPT_DISABLE_EXTENSIONS: 'true',
       } + if config.accelerator.replicas > 1 then {
         TPU_LOAD_LIBRARY: '0',
       } else {},
