@@ -118,7 +118,7 @@ local volumes = import 'templates/volumes.libsonnet';
       softwareVersion: if config.accelerator.replicas == 1 then
         'tpu-vm-tf-2.15.0'
       else
-        'tpu-vm-tf-2.15.0-pod'
+        'tpu-vm-tf-2.15.0-pod',
       tpuVmEnvVars+: (if std.parseInt(std.split(config.accelerator.name, '-')[1]) <= 8 then {
                         TF_PLUGGABLE_DEVICE_LIBRARY_PATH: '/lib/libtpu.so',
                         NEXT_PLUGGABLE_DEVICE_USE_C_API: 'true',
