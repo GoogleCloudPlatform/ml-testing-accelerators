@@ -116,10 +116,11 @@ local volumes = import 'templates/volumes.libsonnet';
     local config = self,
     tpuSettings+: {
       softwareVersion: if config.accelerator.replicas == 1 then
-        'tpu-vm-tf-2.15.0'
+        'v2-alpha-tpuv5'
       else
-        'tpu-vm-tf-2.15.0-pod',
+        'v2-alpha-tpuv5',
       tpuVmEnvVars+: (if std.parseInt(std.split(config.accelerator.name, '-')[1]) <= 8 then {
+                        WRAPT_DISABLE_EXTENSIONS: 'true',
                         TF_PLUGGABLE_DEVICE_LIBRARY_PATH: '/lib/libtpu.so',
                         NEXT_PLUGGABLE_DEVICE_USE_C_API: 'true',
                       } else {}),
@@ -183,15 +184,15 @@ local volumes = import 'templates/volumes.libsonnet';
               sleep %(sleepTime)d
 
               softwareVersion=%(softwareVersion)s
-              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "pip install tensorflow-text-nightly"
-              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "gsutil -m cp gs://cloud-tpu-v2-images-dev-artifacts/tensorflow/tf-nightly/latest/*.whl /tmp/ && pip install /tmp/tf*.whl --force"
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "pip install tensorflow-text==2.15.0rc0" # tensorflow-text-nightly"
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "gsutil -m cp gs://cloud-tpu-v2-images-dev-artifacts/tensorflow/tf-2-15-0/latest/tensorflow-2.15.0rc0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl /tmp/ && pip install /tmp/tensorflow*.whl --force"
 
-              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "sudo gsutil -m cp gs://cloud-tpu-v2-images-dev-artifacts/libtpu/latest/libtpu.so /lib/"
-              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "sudo mkdir -p /usr/share/tpu && cd /usr/share/tpu && git clone https://github.com/tensorflow/models.git"
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "sudo gsutil -m cp gs://cloud-tpu-v2-images-dev-artifacts/libtpu/1.9.0/latest/libtpu.so /lib"
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "sudo mkdir -p /usr/share/tpu && cd /usr/share/tpu && git clone https://github.com/tensorflow/models.git && cd models && git checkout r2.15.0"
 
               accelerator_type=%(acceleratorName)s
               if (( ${accelerator_type: -2} > 8 )); then 
-                gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:nightly\"/' /etc/systemd/system/tpu-runtime.service"
+                gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:tf-2.15.0-pjrt\"/' /etc/systemd/system/tpu-runtime.service"
                 gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart tpu-runtime"
               fi
             ||| % tpuCreateSettings),
