@@ -115,10 +115,7 @@ local volumes = import 'templates/volumes.libsonnet';
   tpuVm:: experimental.TensorFlowTpuVmMixin {
     local config = self,
     tpuSettings+: {
-      softwareVersion: if config.accelerator.replicas == 1 then
-        'v2-alpha-tpuv5'
-      else
-        'v2-alpha-tpuv5',
+      softwareVersion: 'v2-alpha-tpuv5',
       tpuVmEnvVars+: (if std.parseInt(std.split(config.accelerator.name, '-')[1]) <= 8 then {
                         WRAPT_DISABLE_EXTENSIONS: 'true',
                         TF_PLUGGABLE_DEVICE_LIBRARY_PATH: '/lib/libtpu.so',
@@ -184,16 +181,17 @@ local volumes = import 'templates/volumes.libsonnet';
               sleep %(sleepTime)d
 
               softwareVersion=%(softwareVersion)s
-              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "pip install tensorflow-text==2.15.0rc0" # tensorflow-text-nightly"
-              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "gsutil -m cp gs://cloud-tpu-v2-images-dev-artifacts/tensorflow/tf-2-15-0/latest/tensorflow-2.15.0rc0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl /tmp/ && pip install /tmp/tensorflow*.whl --force"
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "pip install tensorflow-text==2.15.0rc0"
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "gsutil -m cp gs://ptxla-debug/tf/215/*.whl /tmp/ && pip install /tmp/tensorflow*.whl --force"
 
-              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "sudo gsutil -m cp gs://cloud-tpu-v2-images-dev-artifacts/libtpu/1.9.0/latest/libtpu.so /lib"
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "sudo gsutil -m cp gs://ptxla-debug/tf/215/libtpu.so /lib/"
               gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=0 --command "sudo mkdir -p /usr/share/tpu && cd /usr/share/tpu && git clone https://github.com/tensorflow/models.git && cd models && git checkout r2.15.0"
 
               accelerator_type=%(acceleratorName)s
               if (( ${accelerator_type: -2} > 8 )); then 
-                gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:tf-2.15.0-pjrt\"/' /etc/systemd/system/tpu-runtime.service"
-                gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart tpu-runtime"
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo sed -i 's/HEALTH_AGENT_DOCKER_URL=.*/HEALTH_AGENT_DOCKER_URL=gcr.io\/cloud-tpu-v2-images\/tpu_agents:cl_562025307\"/' /home/tpu-runtime/tpu-env"
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo systemctl daemon-reload && sudo systemctl restart healthagent.service"
+              gcloud alpha compute tpus tpu-vm ssh ${tpu_name}  --zone=${zone} --project=${project}  --internal-ip --ssh-key-file=/scripts/id_rsa --worker=all --command "sudo sed -i 's/TF_DOCKER_URL=.*/TF_DOCKER_URL=gcr.io\/cloud-tpu-v2-images-dev\/grpc_tpu_worker:tf-2.15.0-pjrt\"/' /etc/systemd/system/tpu-runtime.service" 
               fi
             ||| % tpuCreateSettings),
           },
