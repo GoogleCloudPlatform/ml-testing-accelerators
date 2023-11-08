@@ -145,11 +145,72 @@ local tpus = import 'templates/tpus.libsonnet';
     memory: '40Gi',
 
     // Disable XLA metrics report on GPU
-    command+: [
-      '--nometrics_debug',
+    command: [
+      'bash',
+      '-c',
+      |||
+        export PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
+        pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121
+        pip install --user https://storage.googleapis.com/pytorch-xla-releases/wheels/cuda/12.1/torch_xla-2.1.0-cp310-cp310-manylinux_2_28_x86_64.whl
+
+        git clone --depth=1 https://github.com/pytorch/pytorch.git
+        cd pytorch
+        git clone https://github.com/pytorch/xla.git
+
+        while true
+        do
+          ip=$(getent hosts ptxla-hello-world-0.headless-svc | awk {'print $1'})
+          if [ $? -eq 0 ] && [ \"${ip}\" != \"\" ]
+          then
+            break
+          else
+            sleep 10
+          fi
+        done
+        echo $ip
+
+        PJRT_DEVICE=CUDA torchrun --nnodes=4 --node_rank=$JOB_COMPLETION_INDEX --nproc_per_node=4 --rdzv_endpoint=$ip:12355 xla/test/test_train_mp_imagenet.py  --fake_data --pjrt_distributed --batch_size=128 --num_epochs=1"
+      |||,
     ],
     flags+: {
       modelDir: null,
+    },
+
+    jobTemplate+:: {
+      spec+: {
+        completionMode: 'Indexed',
+        completions: 4,
+        parallelism: 4,
+      },
+    },
+
+    podTemplate+:: {
+      spec+: {
+        backoffLimit: 1,
+        initContainerMap+:: {
+        },
+        containerMap+:: {
+          train+: {
+            envMap+: {
+            },
+          },
+        },
+        subdomain: '$(JOB_NAME)', # xw32: need to verify.
+        tolerations: [
+          {
+            key: "nvidia.com/gpu",
+            operator: "Exists",
+            effect: "NoSchedule",
+          },
+        ],
+        ports: [
+          {
+            containerPort: 1234,
+          },
+        ],
+      },
     },
   },
   local v100x4 = self.v100x4,
@@ -194,6 +255,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
+    resnet50 + functional + v100x4 + timeouts.Hours(2),
     // PJRT
     resnet50 + fake_data + v2_8 + timeouts.Hours(3) + pjrt,
     resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt,
