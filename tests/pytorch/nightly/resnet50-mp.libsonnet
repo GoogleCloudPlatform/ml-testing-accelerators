@@ -152,6 +152,9 @@ local tpus = import 'templates/tpus.libsonnet';
         export PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
         export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64
 
+        nvidia-smi
+        nvcc -V
+
         pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121
         pip install --user https://storage.googleapis.com/pytorch-xla-releases/wheels/cuda/12.1/torch_xla-2.1.0-cp310-cp310-manylinux_2_28_x86_64.whl
 
