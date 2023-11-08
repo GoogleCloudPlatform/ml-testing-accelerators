@@ -161,7 +161,7 @@ local tpus = import 'templates/tpus.libsonnet';
 
         while true
         do
-          ip=$(getent hosts ptxla-hello-world-0.headless-svc | awk {'print $1'})
+          ip=$(getent hosts ptxla-hello-world-0.headless-svc-$(JOB_NAME) | awk {'print $1'})
           if [ $? -eq 0 ] && [ \"${ip}\" != \"\" ]
           then
             break
@@ -190,6 +190,11 @@ local tpus = import 'templates/tpus.libsonnet';
       spec+: {
         backoffLimit: 1,
         initContainerMap+:: {
+          'tpu-version': {
+            command: [
+              "kubectl expose headless-svc-$(JOB_NAME) --type='None' --selector='job-name: $(JOB_NAME)'",
+            ],
+          },
         },
         containerMap+:: {
           train+: {
@@ -197,7 +202,7 @@ local tpus = import 'templates/tpus.libsonnet';
             },
           },
         },
-        subdomain: '$(JOB_NAME)', # xw32: need to verify.
+        subdomain: 'headless-svc-$(JOB_NAME)', # xw32: need to verify.
         tolerations: [
           {
             key: "nvidia.com/gpu",
