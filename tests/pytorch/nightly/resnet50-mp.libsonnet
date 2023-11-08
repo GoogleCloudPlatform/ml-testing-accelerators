@@ -191,7 +191,6 @@ local tpus = import 'templates/tpus.libsonnet';
 
     podTemplate+:: {
       spec+: {
-        backoffLimit: 1,
         initContainerMap+:: {
           'tpu-version': {
             command: [
@@ -201,8 +200,11 @@ local tpus = import 'templates/tpus.libsonnet';
         },
         containerMap+:: {
           train+: {
-            envMap+: {
-            },
+            ports: [
+              {
+                containerPort: 1234,
+              },
+            ],
           },
         },
         subdomain: 'headless-svc-$(JOB_NAME)', # xw32: need to verify.
@@ -213,11 +215,7 @@ local tpus = import 'templates/tpus.libsonnet';
             effect: "NoSchedule",
           },
         ],
-        ports: [
-          {
-            containerPort: 1234,
-          },
-        ],
+        
       },
     },
   },
