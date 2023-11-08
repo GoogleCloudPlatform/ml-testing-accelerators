@@ -196,6 +196,7 @@ local tpus = import 'templates/tpus.libsonnet';
             command: [
               "kubectl expose headless-svc-$(JOB_NAME) --type='None' --selector='job-name: $(JOB_NAME)'",
             ],
+            "image": "google/cloud-sdk",
           },
         },
         containerMap+:: {
