@@ -15,5 +15,5 @@ pillow==9.0.1
 packaging==20.3
 typing_extensions>=3.7.4.1
 redis==3.4.1
-pyarrow==4.0.1
+pyarrow==14.0.1
 urllib3<2
