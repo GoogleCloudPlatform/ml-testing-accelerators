@@ -209,5 +209,6 @@ local tpus = import 'templates/tpus.libsonnet';
     // SPMD
     resnet50 + functional + v4_8 + timeouts.Hours(2) + spmd(['batch']),
     resnet50 + functional + v4_8 + timeouts.Hours(2) + spmd(['spatial']),
+    resnet50 + convergence + v4_8 + timeouts.Hours(14) + spmd(['batch']),
   ],
 }
