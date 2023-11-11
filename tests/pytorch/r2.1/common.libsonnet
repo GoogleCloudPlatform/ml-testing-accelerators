@@ -24,7 +24,7 @@ local volumes = import 'templates/volumes.libsonnet';
     tpuSettings+: {
       softwareVersion: 'pytorch-2.1',
     },
-    imageTag: 'r2.1_3.8',
+    imageTag: 'r2.1.0_3.8',
   },
   PyTorchTest:: common.PyTorchTest + r2_1 {
     local config = self,
@@ -98,7 +98,7 @@ local volumes = import 'templates/volumes.libsonnet';
         sudo apt install -y libsndfile-dev
         # TODO change back to torch2.1 once pytorch released torch2.1
         pip install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/test/cpu
-        pip install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.1.0rc5-cp310-cp310-manylinux_2_28_x86_64.whl
+        pip install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.1.0-cp310-cp310-manylinux_2_28_x86_64.whl
         pip install torch_xla[tpu] -f https://storage.googleapis.com/libtpu-releases/index.html
         pip3 install pillow
         pip3 install typing_extensions
@@ -134,7 +134,7 @@ local volumes = import 'templates/volumes.libsonnet';
         # TODO change back to torch2.1 once pytorch released torch2.1
         pip install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/test/cpu
         pip install --user \
-          https://storage.googleapis.com/pytorch-xla-releases/wheels/xrt/tpuvm/torch_xla-2.1.0rc5+xrt-cp310-cp310-manylinux_2_28_x86_64.whl
+          https://storage.googleapis.com/pytorch-xla-releases/wheels/xrt/tpuvm/torch_xla-2.1.0+xrt-cp310-cp310-manylinux_2_28_x86_64.whl
         pip3 install pillow
         pip3 install typing_extensions
         pip3 install sympy
@@ -184,8 +184,7 @@ local volumes = import 'templates/volumes.libsonnet';
         export PATH=~/.local/bin:$PATH
       |||,
       tpuVmExtraSetup: |||
-        git clone https://github.com/huggingface/accelerate.git
-        pip install --user ./accelerate
+        pip install --user accelerate==0.22.0
 
         mkdir -p ~/.cache/huggingface/accelerate/
         cat > ~/.cache/huggingface/accelerate/default_config.yaml << 'HF_CONFIG_EOF'
