@@ -119,7 +119,8 @@ local volumes = import 'templates/volumes.libsonnet';
       tpuVmEnvVars+: (if std.parseInt(std.split(config.accelerator.name, '-')[1]) <= 8 then {
                         TF_PLUGGABLE_DEVICE_LIBRARY_PATH: '/lib/libtpu.so',
                         NEXT_PLUGGABLE_DEVICE_USE_C_API: 'true',
-                      } else {}),
+                        TF_USE_LEGACY_KERAS: 1,
+                      } else { TF_USE_LEGACY_KERAS: 1 }),
     },
     podTemplate+:: {
       spec+: {
