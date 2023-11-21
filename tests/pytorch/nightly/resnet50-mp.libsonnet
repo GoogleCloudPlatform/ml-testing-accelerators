@@ -208,7 +208,8 @@ local tpus = import 'templates/tpus.libsonnet';
             ],
           },
         },
-        subdomain: 'headless-svc-$(JOB_NAME)', # xw32: need to verify.
+        // subdomain: 'headless-svc-$(JOB_NAME)', doesn't work.
+        // subdomain: "headless-svc-metadata.labels['job-name']", doesn't work.
         tolerations: [
           {
             key: "nvidia.com/gpu",
