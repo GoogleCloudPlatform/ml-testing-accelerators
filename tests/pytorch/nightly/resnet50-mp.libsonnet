@@ -194,6 +194,9 @@ local tpus = import 'templates/tpus.libsonnet';
         initContainerMap+:: {
           'tpu-version': {
             command: [
+              "echo JOB_NAME=$(JOB_NAME)",
+              "echo POD_NAME=$(POD_NAME)",
+              "kubectl patch job $(JOB_NAME) -p \'{\"spec\":{\"subdomain\": \"headless-svc-$(JOB_NAME)\"}}\'",
               "kubectl expose headless-svc-$(JOB_NAME) --type='None' --selector='job-name: $(JOB_NAME)'",
             ],
             "image": "google/cloud-sdk",
