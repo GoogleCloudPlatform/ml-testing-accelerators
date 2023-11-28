@@ -116,6 +116,7 @@ local volumes = import 'templates/volumes.libsonnet';
     local config = self,
     tpuSettings+: {
       softwareVersion: 'v2-alpha-tpuv5-lite',
+      tpuVmEnvVars+: ({ TF_USE_LEGACY_KERAS: 1 }),
     },
     podTemplate+:: {
       spec+: {

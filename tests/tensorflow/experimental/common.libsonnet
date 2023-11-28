@@ -119,6 +119,7 @@ local volumes = import 'templates/volumes.libsonnet';
         'v2-nightly'
       else
         'v2-nightly-pod',
+      tpuVmEnvVars+: ({ TF_USE_LEGACY_KERAS: 1 }),
     },
     podTemplate+:: {
       spec+: {
