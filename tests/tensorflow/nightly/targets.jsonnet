@@ -19,7 +19,6 @@ local resnet = import 'tf-resnet-imagenet.libsonnet';
 
 // Add new models here
 std.flattenArrays([
-  dlrm.configs,
   keras_api.configs,
   resnet.configs,
   gpt2.configs,
