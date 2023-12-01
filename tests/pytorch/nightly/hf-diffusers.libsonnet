@@ -23,6 +23,9 @@ local tpus = import 'templates/tpus.libsonnet';
       '--lr_warmup_steps=0',
       '--output_dir=/tmp/sd-pokemon-model',
       '--checkpoints_total_limit=3',
+      # `train_text_to_image.py` does not support `save_strategy`,
+      # set checkpoint steps to a high value to skip.
+      '--checkpointing_steps=1000000',
     ],
   },
 
