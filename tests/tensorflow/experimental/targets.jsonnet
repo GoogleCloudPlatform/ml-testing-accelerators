@@ -12,13 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local dcn = import 'tf-dcn-criteo.libsonnet';
-local t5 = import 'tf-t5-wmt16.libsonnet';
 local vit = import 'tf-vit-beans.libsonnet';
 
 // Add new models here
 std.flattenArrays([
-  dcn.configs,
   vit.configs,
-  t5.configs,
 ])
