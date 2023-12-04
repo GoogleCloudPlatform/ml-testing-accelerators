@@ -96,7 +96,6 @@ local volumes = import 'templates/volumes.libsonnet';
         sudo apt install -y libopenblas-base
         # for huggingface tests
         sudo apt install -y libsndfile-dev
-        # TODO change back to torch2.2 once pytorch released torch2.2
         pip install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/test/cpu
         pip install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.2.0-cp310-cp310-manylinux_2_28_x86_64.whl
         pip install torch_xla[tpu] -f https://storage.googleapis.com/libtpu-releases/index.html
