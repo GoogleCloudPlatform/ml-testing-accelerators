@@ -30,10 +30,10 @@ local utils = import 'templates/utils.libsonnet';
   local command_copy_metrics = |||
     gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
   |||,
-  local hf_mae = self.hf_mae,
-  hf_mae:: common.PyTorchTest {
+  local hf_glue = self.hf_glue,
+  hf_glue:: common.PyTorchTest {
     local config = self,
-    modelName: 'hf-mae',
+    modelName: 'hf-glue',
     paramsOverride:: {
       scriptPath: 'examples/pytorch/xla_spawn.py',
       tpuCores: config.accelerator.numCores,
@@ -41,32 +41,24 @@ local utils = import 'templates/utils.libsonnet';
         'python3',
         self.scriptPath,
         '--num_cores=%d' % config.paramsOverride.tpuCores,
-        'examples/pytorch/image-pretraining/run_mae.py',
-        '--dataset_name=cifar10',
-        '--remove_unused_columns=False',
-        '--label_names=pixel_values',
-        '--mask_ratio=0.75',
-        '--norm_pix_loss=True',
+        'examples/pytorch/text-classification/run_glue.py',
+        '--model_name_or_path=%s' % config.paramsOverride.model_name_or_path,
+        '--logging_dir=./tensorboard-metrics',
+        '--task_name=MNLI',
+        '--cache_dir=./cache_dir',
         '--do_train=true',
         '--do_eval=true',
-        '--base_learning_rate=1.5e-4',
-        '--lr_scheduler_type=cosine',
-        '--weight_decay=0.05',
         '--num_train_epochs=3',
-        '--warmup_ratio=0.05',
+        '--max_seq_length=128',
+        '--learning_rate=3e-5',
+        '--output_dir=MNLI',
+        '--overwrite_output_dir=true',
+        '--logging_steps=30',
+        '--save_steps=3000',
+        '--overwrite_cache=true',
+        '--debug=tpu_metrics_debug',
         '--per_device_train_batch_size=%d ' % config.paramsOverride.per_device_train_batch_size,
         '--per_device_eval_batch_size=%d ' % config.paramsOverride.per_device_eval_batch_size,
-        '--logging_strategy=steps',
-        '--logging_steps=30',
-        '--evaluation_strategy=epoch',
-        '--save_strategy=epoch',
-        '--load_best_model_at_end=True',
-        '--save_total_limit=3',
-        '--seed=1337',
-        '--output_dir=MAE',
-        '--overwrite_output_dir=true',
-        '--logging_dir=./tensorboard-metrics',
-        '--debug=tpu_metrics_debug',
       ],
     },
     command: utils.scriptCommand(
@@ -95,13 +87,13 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  local hf_vit_mae = self.hf_vit_mae,
-  hf_vit_mae:: common.Convergence {
-    modelName: 'hf-vit-mae',
+  local distilbert_base_uncased = self.distilbert_base_uncased,
+  distilbert_base_uncased:: common.Convergence {
+    modelName: 'hf-glue-distilbert-b-uc',
     paramsOverride+:: {
-      model_name: 'vit-mae',
-      per_device_train_batch_size: 8,
-      per_device_eval_batch_size: 8,
+      model_name_or_path: 'distilbert-base-uncased',
+      per_device_train_batch_size: 512,
+      per_device_eval_batch_size: 512,
     },
     metricConfig+: {
       sourceMap+:: {
@@ -111,7 +103,7 @@ local utils = import 'templates/utils.libsonnet';
               FINAL: {
                 fixed_value: {
                   comparison: 'GREATER',
-                  value: 0.85,
+                  value: 0.70,
                 },
                 inclusive_bounds: false,
                 wait_for_n_data_points: 0,
@@ -122,21 +114,16 @@ local utils = import 'templates/utils.libsonnet';
       },
     },
   },
-  // TODO: Remove after 2.1 release cut
-  local xrt = self.xrt,
-  xrt:: common.XrtTpuVmMixin {
+  local tpuVm = {
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=$(XLA_USE_BF16)
       |||,
-      tpuVmExtraSetup: |||
-        echo 'export XLA_USE_BF16=1' >> ~/.bash_profile
-      |||,
     },
   },
-  local v2_8 = self.v2_8,
-  v2_8:: {
-    accelerator: tpus.v2_8,
+  local pjrt = self.pjrt,
+  pjrt:: common.PyTorchTpuVmMixin + tpuVm {
+    modelName: 'hf-glue-pjrt',
   },
   local v3_8 = self.v3_8,
   v3_8:: {
@@ -147,7 +134,6 @@ local utils = import 'templates/utils.libsonnet';
     accelerator: tpus.v4_8,
   },
   configs: [
-    hf_mae + v3_8 + hf_vit_mae + timeouts.Hours(5) + xrt,
-    hf_mae + v4_8 + hf_vit_mae + timeouts.Hours(2) + xrt,
+    hf_glue + v4_8 + distilbert_base_uncased + timeouts.Hours(2) + pjrt,
   ],
 }

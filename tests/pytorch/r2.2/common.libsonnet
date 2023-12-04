@@ -19,14 +19,14 @@ local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
 {
-  local r2_1 = {
-    frameworkPrefix: 'pt-2.1',
+  local r2_2 = {
+    frameworkPrefix: 'pt-2.2',
     tpuSettings+: {
-      softwareVersion: 'pytorch-2.1',
+      softwareVersion: 'pytorch-2.2',
     },
-    imageTag: 'r2.1.0_3.8',
+    imageTag: '2.2.0',
   },
-  PyTorchTest:: common.PyTorchTest + r2_1 {
+  PyTorchTest:: common.PyTorchTest + r2_2 {
     local config = self,
 
     podTemplate+:: {
@@ -67,7 +67,7 @@ local volumes = import 'templates/volumes.libsonnet';
 
                 ctc = cloud_tpu_client.Client(tpu=os.path.basename('$(TPU_NAME)'), zone=os.path.dirname('$(TPU_NAME)'))
                 ctc.wait_for_healthy()
-                ctc.configure_tpu_version(f'pytorch-2.1-dev{libtpu_date}', restart_type='always')
+                ctc.configure_tpu_version(f'pytorch-2.2-dev{libtpu_date}', restart_type='always')
                 ctc.wait_for_healthy()
               |||,
             ],
@@ -96,16 +96,16 @@ local volumes = import 'templates/volumes.libsonnet';
         sudo apt install -y libopenblas-base
         # for huggingface tests
         sudo apt install -y libsndfile-dev
-        # TODO change back to torch2.1 once pytorch released torch2.1
+        # TODO change back to torch2.2 once pytorch released torch2.2
         pip install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/test/cpu
-        pip install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.1.0-cp310-cp310-manylinux_2_28_x86_64.whl
+        pip install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.2.0-cp310-cp310-manylinux_2_28_x86_64.whl
         pip install torch_xla[tpu] -f https://storage.googleapis.com/libtpu-releases/index.html
         pip3 install pillow
         pip3 install typing_extensions
         pip3 install sympy
-        git clone --depth=1 -b release/2.1 https://github.com/pytorch/pytorch.git
+        git clone --depth=1 -b release/2.2 https://github.com/pytorch/pytorch.git
         cd pytorch
-        git clone -b r2.1 https://github.com/pytorch/xla.git
+        git clone -b r2.2 https://github.com/pytorch/xla.git
       |||,
     },
     podTemplate+:: {
@@ -117,7 +117,7 @@ local volumes = import 'templates/volumes.libsonnet';
     },
   },
 
-  // TODO: Remove after 2.1 release cut
+  // TODO: Remove after 2.2 release cut
   XrtTpuVmMixin:: experimental.PyTorchTpuVmMixin {
     local config = self,
 
@@ -131,16 +131,16 @@ local volumes = import 'templates/volumes.libsonnet';
         sudo apt install -y libopenblas-base
         # for huggingface tests
         sudo apt install -y libsndfile-dev
-        # TODO change back to torch2.1 once pytorch released torch2.1
+        # TODO change back to torch2.2 once pytorch released torch2.2
         pip install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/test/cpu
         pip install --user \
-          https://storage.googleapis.com/pytorch-xla-releases/wheels/xrt/tpuvm/torch_xla-2.1.0+xrt-cp310-cp310-manylinux_2_28_x86_64.whl
-        pip3 install pillow
+          https://storage.googleapis.com/pytorch-xla-releases/wheels/xrt/tpuvm/torch_xla-2.2.0+xrt-cp310-cp310-manylinux_2_28_x86_64.whl
         pip3 install typing_extensions
+        pip3 install pillow
         pip3 install sympy
-        git clone --depth=1 -b release/2.1 https://github.com/pytorch/pytorch.git
+        git clone --depth=1 -b release/2.2 https://github.com/pytorch/pytorch.git
         cd pytorch
-        git clone -b r2.1 https://github.com/pytorch/xla.git
+        git clone -b r2.2 https://github.com/pytorch/xla.git
       |||,
     },
     podTemplate+:: {

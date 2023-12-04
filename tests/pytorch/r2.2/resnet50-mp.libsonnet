@@ -156,20 +156,6 @@ local tpus = import 'templates/tpus.libsonnet';
   v100x4:: gpu {
     accelerator: gpus.teslaV100 { count: 4 },
   },
-
-  local xrt_ddp = self.xrt_ddp,
-  xrt_ddp:: {
-    modelName+: '-torch-ddp',
-    tpuSettings+: {
-      tpuVmExports+: |||
-        export MASTER_ADDR=localhost
-        export MASTER_PORT=12355
-      |||,
-    },
-    command+: [
-      '--ddp',
-    ],
-  },
   local pjrt_ddp = self.pjrt_ddp,
   pjrt_ddp:: {
     modelName+: '-ddp',
@@ -187,8 +173,6 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
   // TODO: Remove after 2.1 release cut
-  local xrt = self.xrt,
-  xrt:: common.XrtTpuVmMixin + tpuVm,
   local pjrt = self.pjrt,
   pjrt:: common.PyTorchTpuVmMixin + tpuVm {
     modelName: 'resnet50-pjrt',
@@ -210,13 +194,6 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
-    // XRT
-    resnet50 + functional + v100x4 + timeouts.Hours(1),
-    resnet50 + fake_data + v3_8 + timeouts.Hours(2) + xrt,
-    resnet50 + fake_data + v3_8 + timeouts.Hours(7) + xrt + xrt_ddp,
-    resnet50 + convergence + v3_8 + timeouts.Hours(24) + xrt,
-    resnet50 + fake_data + v3_32 + timeouts.Hours(1) + xrt,
-    resnet50 + fake_data + v4_8 + timeouts.Hours(2) + xrt,
     // PJRT
     resnet50 + fake_data + v2_8 + timeouts.Hours(3) + pjrt,
     resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt,
