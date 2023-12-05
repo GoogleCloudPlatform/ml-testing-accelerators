@@ -10,10 +10,9 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License.
+// limitations under the License.ß
 
 local dlrm = import 'tf-dlrm-criteo.libsonnet';
-local gpt2 = import 'tf-gpt2-wikitext.libsonnet';
 local keras_api = import 'tf-keras-api.libsonnet';
 local resnet = import 'tf-resnet-imagenet.libsonnet';
 
@@ -21,5 +20,4 @@ local resnet = import 'tf-resnet-imagenet.libsonnet';
 std.flattenArrays([
   keras_api.configs,
   resnet.configs,
-  gpt2.configs,
 ])
