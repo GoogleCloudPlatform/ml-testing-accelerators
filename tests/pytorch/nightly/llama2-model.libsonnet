@@ -23,7 +23,6 @@ local utils = import 'templates/utils.libsonnet';
   llama2:: common.PyTorchTest {
     modelName: 'llama2',
     paramsOverride:: {
-      scriptPath: 'llama/7B/llama2inference.sh',
       trainCommand: [
         'bash',
         self.scriptPath,
