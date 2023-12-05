@@ -12,14 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-local experimental = import 'experimental/targets.jsonnet';
 local nightly_se = import 'nightly-se/targets.jsonnet';
 local nightly = import 'nightly/targets.jsonnet';
 local r2_14 = import 'r2.14/targets.jsonnet';
 
 // Add new versions here
 std.flattenArrays([
-  experimental,
   nightly,
   nightly_se,
   r2_14,
