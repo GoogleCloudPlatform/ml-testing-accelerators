@@ -3,6 +3,8 @@ local tpus = import 'templates/tpus.libsonnet';
 {
   local lmspmd2b = common.NightlyPaxTest + common.Functional {
     modelName:: 'lmspmd2b',
+    // Never trigger the run (Feb 31st does not exist)
+    schedule: '0 0 31 2 *',
     expPath:: 'tasks.lm.params.lm_cloud.LmCloudSpmd2BLimitSteps',
     extraFlags:: ['--jax_fully_async_checkpoint=False'],
   },
@@ -10,6 +12,8 @@ local tpus = import 'templates/tpus.libsonnet';
     local config = self,
     expPath:: 'tasks.lm.params.lm_cloud.LmCloudSpmd2BLimitSteps',
     modelName:: 'lmspmd2b-ckpt',
+    // Never trigger the run (Feb 31st does not exist)
+    schedule: '0 0 31 2 *',
 
     // PAX tests are structured as bash scripts that run directly on the Cloud
     // TPU VM instead of using docker images

@@ -5,6 +5,8 @@ local tpus = import 'templates/tpus.libsonnet';
   local lmtransformeradam = self.lmtransformeradam,
   lmtransformeradam:: common.NightlyPaxTest + common.Functional {
     modelName: 'lmtransformeradam',
+    // Never trigger the run (Feb 31st does not exist)
+    schedule: '0 0 31 2 *',
     expPath:: 'tasks.lm.params.lm_cloud.LmCloudTransformerAdamLimitSteps',
     extraFlags:: ['--jax_fully_async_checkpoint=False', '--pmap_use_tensorstore=True'],
   },
