@@ -21,7 +21,7 @@ local mixins = import 'templates/mixins.libsonnet';
     modelName: 'compilation-cache-test',
 
     // Never trigger the run (Feb 31st does not exist)
-    schedule: '0 0 31 2 *', 
+    schedule: '0 0 31 2 *',
 
     setup: |||
       pip install --upgrade pip

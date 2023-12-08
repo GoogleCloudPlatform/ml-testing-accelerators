@@ -22,7 +22,7 @@ local tpus = import 'templates/tpus.libsonnet';
     modelName: 'pod-%s-%s' % [self.jaxlibVersion, self.tpuSettings.softwareVersion],
 
     // Never trigger the run (Feb 31st does not exist)
-    schedule: '0 0 31 2 *', 
+    schedule: '0 0 31 2 *',
 
     setup: |||
       %(installLocalJax)s
