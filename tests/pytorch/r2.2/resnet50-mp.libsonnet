@@ -156,6 +156,7 @@ local tpus = import 'templates/tpus.libsonnet';
   v100x4:: gpu {
     accelerator: gpus.teslaV100 { count: 4 },
   },
+
   local pjrt_ddp = self.pjrt_ddp,
   pjrt_ddp:: {
     modelName+: '-ddp',
@@ -172,7 +173,6 @@ local tpus = import 'templates/tpus.libsonnet';
       |||,
     },
   },
-  // TODO: Remove after 2.1 release cut
   local pjrt = self.pjrt,
   pjrt:: common.PyTorchTpuVmMixin + tpuVm {
     modelName: 'resnet50-pjrt',
@@ -194,7 +194,6 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
-    resnet50 + functional + v100x4 + timeouts.Hours(1),
     // PJRT
     resnet50 + fake_data + v2_8 + timeouts.Hours(3) + pjrt,
     resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt,

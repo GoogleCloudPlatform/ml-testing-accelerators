@@ -24,7 +24,7 @@ local utils = import 'templates/utils.libsonnet';
     local config = self,
     modelName: 'llama2-i',
     paramsOverride:: {
-      scriptPath: 'llama/llama2inference.sh',
+      scriptPath: 'llama/7B/llama2inference.sh',
       trainCommand: [
         'bash',
         self.scriptPath,
@@ -37,7 +37,7 @@ local utils = import 'templates/utils.libsonnet';
     local config = self,
     modelName: 'llama2-t',
     paramsOverride:: {
-      scriptPath: 'transformers/llama2training.sh',
+      scriptPath: 'transformers/7B/llama2training.sh',
       trainCommand: [
         'bash',
         self.scriptPath,
@@ -49,9 +49,9 @@ local utils = import 'templates/utils.libsonnet';
   pjrt:: common.PyTorchTpuVmMixin {
     modelName: 'llama2-pjrt',
   },
-  local infer7B = self.infer7B,
-  infer7B:: common.PyTorchTpuVmMixin + pjrt {
-    modelName+: '-infer7b',
+  local infer = self.infer,
+  infer:: common.PyTorchTpuVmMixin + pjrt {
+    modelName+: '-infer',
     tpuSettings+: {
       tpuVmExtraSetup: |||
         # install tokenizer model
@@ -69,7 +69,6 @@ local utils = import 'templates/utils.libsonnet';
         echo -e '{"dim": 4096, "multiple_of": 256, "n_heads": 32, "n_layers": 32, "norm_eps": 1e-05, "vocab_size": -1}' >> params.json
 
         # save llama2 test
-        cd ..
         echo -e 'python3 llama/example_text_completion.py True "/home/xl-ml-test/llama/7B" /home/xl-ml-test/spiece.model --max_seq_len=2048 --max_gen_len=1000 --max_batch_size=2 --dynamo=True > output.txt' >> llama2inference.sh
         echo -e 'file = open("output.txt")' >> getvalue.py
         echo -e 'content = file.readlines()' >> getvalue.py
@@ -80,50 +79,14 @@ local utils = import 'templates/utils.libsonnet';
         echo -e 'else:' >> getvalue.py
         echo -e '    print("Finished llama2 test and warm latency/token within expected throuhold 7.57024 +- 5%")' >> getvalue.py
         echo -e 'cat output.txt' >> llama2inference.sh
-        echo -e 'python3 llama/getvalue.py' >> llama2inference.sh
+        echo -e 'python3 llama/7B/getvalue.py' >> llama2inference.sh
         cat llama2inference.sh
       |||,
     },
   },
-  local infer70B = self.infer70B,
-  infer70B:: common.PyTorchTpuVmMixin + pjrt {
-    modelName+: '-infer70b',
-    tpuSettings+: {
-      tpuVmExtraSetup: |||
-        # install tokenizer model
-        wget https://storage.googleapis.com/tpu-pytorch/lsiyuan-experiment/llama/spiece.model
-
-        # git clone and build llama
-        git clone --branch llama2-google-next-inference https://github.com/pytorch-tpu/llama.git
-        cd llama
-        pip3 install -r requirements.txt
-        pip3 install -e .
-
-        # 70B config
-        mkdir 70B
-        cd 70B/
-        echo -e '{"dim": 8192, "multiple_of": 4096, "ffn_dim_multiplier": 1.3, "n_heads": 64, "n_kv_heads": 16, "n_layers": 80, "norm_eps": 1e-05, "vocab_size": -1, "quant": true}' >> params.json
-
-        # save llama2 test
-        cd ..
-        echo -e 'python3 llama/example_text_completion.py True "/home/xl-ml-test/llama/70B" /home/xl-ml-test/spiece.model --max_seq_len=2048 --max_gen_len=1000 --max_batch_size=2 --dynamo=True > output.txt' >> llama2inference.sh
-        echo -e 'file = open("output.txt")' >> getvalue.py
-        echo -e 'content = file.readlines()' >> getvalue.py
-        echo -e 'warm_line = content[-6]' >> getvalue.py
-        echo -e 'warm_value = float((warm_line.split())[5])' >> getvalue.py
-        echo -e 'if warm_value > 33.2177 or warm_value < 30.0541:' >> getvalue.py
-        echo -e '    raise ValueError("warm latency/token exceeded throuhold 31.63587 +- 5%")' >> getvalue.py
-        echo -e 'else:' >> getvalue.py
-        echo -e '    print("Finished llama2 test and warm latency/token within expected throuhold 31.63587 +- 5%")' >> getvalue.py
-        echo -e 'cat output.txt' >> llama2inference.sh
-        echo -e 'python3 llama/getvalue.py' >> llama2inference.sh
-        cat llama2inference.sh
-      |||,
-    },
-  },
-  local spmd2B = self.spmd2B,
-  spmd2B:: common.PyTorchTpuVmMixin + pjrt {
-    modelName+: '-train-spmd2b',
+  local spmd = self.spmd,
+  spmd:: common.PyTorchTpuVmMixin + pjrt {
+    modelName+: '-train-spmd',
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=1
@@ -142,7 +105,7 @@ local utils = import 'templates/utils.libsonnet';
         # install tokenizer model
         wget https://storage.googleapis.com/tpu-pytorch/lsiyuan-experiment/llama/spiece.model
 
-        # git clone and build transformers ### transformers/
+        # git clone and build transformers ### llama/transformers/
         git clone -b llama2-google-next-training https://github.com/pytorch-tpu/transformers.git
         cd transformers
         sudo pip3 uninstall transformers
@@ -154,236 +117,27 @@ local utils = import 'templates/utils.libsonnet';
         pwd
         ls
 
-        # 2B config
-        mkdir 2B
-        cd 2B/
+        # 7B config
+        mkdir 7B
+        cd 7B/
         wget https://storage.googleapis.com/manfei_public_experimental/2B.json
-        cat 2B.json
 
         # save llama2 training
-        cd ..
-        echo -e 'python3 transformers/examples/pytorch/language-modeling/run_clm.py --tokenizer_name gpt2 --dataset_name wikitext --dataset_config_name wikitext-2-raw-v1 --per_device_train_batch_size 32 --per_device_eval_batch_size 8 --num_train_epochs 1 --do_train --output_dir /tmp/output --overwrite_output_dir --config_name transformers/2B/2B.json --save_strategy no --logging_strategy no --remove_unused_columns no --spmd_fsdp_sharding --torch_dtype bfloat16 --dataloader_drop_last yes --spmd_grad_chkpt --report_to none > output.txt' >> llama2training.sh
-        echo -e 'import numpy as np' >> getvalue.py
-        echo -e 'file = open("output.txt")' >> getvalue.py
-        echo -e 'content = file.readlines()' >> getvalue.py
-        echo -e 'value_line = content[-1]' >> getvalue.py
-        echo -e 'value_value = float((value_line.split())[2])' >> getvalue.py
-        echo -e 'value_value = np.reciprocal(value_value)' >> getvalue.py
-        echo -e 'if value_value > 6.863 or value_value < 6.209 :' >> getvalue.py
-        echo -e '    raise ValueError("expose to train_steps_per_second exceeded throuhold 6.536 +- 5%")' >> getvalue.py
-        echo -e 'else:' >> getvalue.py
-        echo -e '    print("Finished llama2 test and warm latency/token within expected throuhold 6.536 +- 5%")' >> getvalue.py
-        echo -e 'cat output.txt' >> llama2training.sh
-        echo -e 'python3 transformers/getvalue.py' >> llama2training.sh
+        echo -e 'python transformers/examples/pytorch/language-modeling/run_clm.py --tokenizer_name gpt2 --dataset_name wikitext --dataset_config_name wikitext-2-raw-v1 --per_device_train_batch_size 32 --per_device_eval_batch_size 8 --num_train_epochs 1 --do_train --output_dir /tmp/output --overwrite_output_dir --config_name transformers/7B/2B.json --save_strategy no --logging_strategy no --remove_unused_columns no --spmd_fsdp_sharding --torch_dtype bfloat16 --dataloader_drop_last yes --spmd_grad_chkpt --report_to none' >> llama2training.sh
         cat llama2training.sh
         pwd
         ls
       |||,
     },
-  },
-  local spmd2B256 = self.spmd2B256,
-  spmd2B256:: common.PyTorchTpuVmMixin + pjrt {
-    modelName+: '-train-spmd2b-256',
-    tpuSettings+: {
-      tpuVmExports+: |||
-        export XLA_USE_BF16=1
-        export XLA_IR_DEBUG=1
-        export XLA_HLO_DEBUG=1
-        export BATCH_SIZE=32
-        export NUM_EPOCH=5
-        export PROFILE_EPOCH=2
-        export PROFILE_STEP=0
-        export PROFILE_DURATION_MS=20000
-        export XLA_USE_SPMD=1
-        export PJRT_DEVICE=TPU
-        export TPU_MEGACORE=megacore_dense
-      |||,
-      tpuVmExtraSetup: |||
-        # install tokenizer model
-        wget https://storage.googleapis.com/tpu-pytorch/lsiyuan-experiment/llama/spiece.model
-
-        # git clone and build transformers ### transformers/
-        git clone -b llama2-google-next-training https://github.com/pytorch-tpu/transformers.git
-        cd transformers
-        sudo pip3 uninstall transformers
-        sudo pip3 install -e .
-        pip3 install datasets
-        pip3 install evaluate
-        pip3 install scikit-learn
-        pip3 install accelerate
-        pwd
-        ls
-
-        # 2B config
-        mkdir 2B
-        cd 2B/
-        wget https://storage.googleapis.com/manfei_public_experimental/2B.json
-        cat 2B.json
-
-        # save llama2 training
-        cd ..
-        echo -e 'python3 transformers/examples/pytorch/language-modeling/run_clm.py --tokenizer_name gpt2 --dataset_name wikitext --dataset_config_name wikitext-2-raw-v1 --per_device_train_batch_size 256 --per_device_eval_batch_size 8 --num_train_epochs 1 --do_train --output_dir /tmp/output --overwrite_output_dir --config_name transformers/2B/2B.json --save_strategy no --logging_strategy no --remove_unused_columns no --spmd_fsdp_sharding --torch_dtype bfloat16 --dataloader_drop_last yes --spmd_grad_chkpt --report_to none > output.txt' >> llama2training.sh
-        echo -e 'import numpy as np' >> getvalue.py
-        echo -e 'file = open("output.txt")' >> getvalue.py
-        echo -e 'content = file.readlines()' >> getvalue.py
-        echo -e 'value_line = content[-1]' >> getvalue.py
-        echo -e 'value_value = float((value_line.split())[2])' >> getvalue.py
-        echo -e 'value_value = np.reciprocal(value_value)' >> getvalue.py
-        echo -e 'if value_value > 6.863 or value_value < 6.209 :' >> getvalue.py
-        echo -e '    raise ValueError("expose to train_steps_per_second exceeded throuhold 6.536 +- 5%")' >> getvalue.py
-        echo -e 'else:' >> getvalue.py
-        echo -e '    print("Finished llama2 test and warm latency/token within expected throuhold 6.536 +- 5%")' >> getvalue.py
-        echo -e 'cat output.txt' >> llama2training.sh
-        echo -e 'python3 transformers/getvalue.py' >> llama2training.sh
-        cat llama2training.sh
-        pwd
-        ls
-      |||,
-    },
-  },
-  local spmd2B128 = self.spmd2B128,
-  spmd2B128:: common.PyTorchTpuVmMixin + pjrt {
-    modelName+: '-train-spmd2b-128',
-    tpuSettings+: {
-      tpuVmExports+: |||
-        export XLA_USE_BF16=1
-        export XLA_IR_DEBUG=1
-        export XLA_HLO_DEBUG=1
-        export BATCH_SIZE=32
-        export NUM_EPOCH=5
-        export PROFILE_EPOCH=2
-        export PROFILE_STEP=0
-        export PROFILE_DURATION_MS=20000
-        export XLA_USE_SPMD=1
-        export PJRT_DEVICE=TPU
-        export TPU_MEGACORE=megacore_dense
-      |||,
-      tpuVmExtraSetup: |||
-        # install tokenizer model
-        wget https://storage.googleapis.com/tpu-pytorch/lsiyuan-experiment/llama/spiece.model
-
-        # git clone and build transformers ### transformers/
-        git clone -b llama2-google-next-training https://github.com/pytorch-tpu/transformers.git
-        cd transformers
-        sudo pip3 uninstall transformers
-        sudo pip3 install -e .
-        pip3 install datasets
-        pip3 install evaluate
-        pip3 install scikit-learn
-        pip3 install accelerate
-        pwd
-        ls
-
-        # 2B config
-        mkdir 2B
-        cd 2B/
-        wget https://storage.googleapis.com/manfei_public_experimental/2B.json
-        cat 2B.json
-
-        # save llama2 training
-        cd ..
-        echo -e 'python3 transformers/examples/pytorch/language-modeling/run_clm.py --tokenizer_name gpt2 --dataset_name wikitext --dataset_config_name wikitext-2-raw-v1 --per_device_train_batch_size 128 --per_device_eval_batch_size 8 --num_train_epochs 1 --do_train --output_dir /tmp/output --overwrite_output_dir --config_name transformers/2B/2B.json --save_strategy no --logging_strategy no --remove_unused_columns no --spmd_fsdp_sharding --torch_dtype bfloat16 --dataloader_drop_last yes --spmd_grad_chkpt --report_to none > output.txt' >> llama2training.sh
-        echo -e 'import numpy as np' >> getvalue.py
-        echo -e 'file = open("output.txt")' >> getvalue.py
-        echo -e 'content = file.readlines()' >> getvalue.py
-        echo -e 'value_line = content[-1]' >> getvalue.py
-        echo -e 'value_value = float((value_line.split())[2])' >> getvalue.py
-        echo -e 'value_value = np.reciprocal(value_value)' >> getvalue.py
-        echo -e 'if value_value > 25.000 or value_value < 22.619 :' >> getvalue.py
-        echo -e '    raise ValueError("expose to train_steps_per_second exceeded throuhold 23.8095 +- 5%")' >> getvalue.py
-        echo -e 'else:' >> getvalue.py
-        echo -e '    print("Finished llama2 test and warm latency/token within expected throuhold 23.8095 +- 5%")' >> getvalue.py
-        echo -e 'cat output.txt' >> llama2training.sh
-        echo -e 'python3 transformers/getvalue.py' >> llama2training.sh
-        cat llama2training.sh
-        pwd
-        ls
-      |||,
-    },
-  },
-  local spmd2Bconv = self.spmd2Bconv,
-  spmd2Bconv:: common.PyTorchTpuVmMixin + pjrt {
-    modelName+: '-train-spmd2b-conv',
-    tpuSettings+: {
-      tpuVmExports+: |||
-        export XLA_USE_BF16=1
-        export XLA_IR_DEBUG=1
-        export XLA_HLO_DEBUG=1
-        export BATCH_SIZE=32
-        export NUM_EPOCH=5
-        export PROFILE_EPOCH=2
-        export PROFILE_STEP=0
-        export PROFILE_DURATION_MS=20000
-        export XLA_USE_SPMD=1
-        export PJRT_DEVICE=TPU
-        export TPU_MEGACORE=megacore_dense
-      |||,
-      tpuVmExtraSetup: |||
-        # install tokenizer model
-        wget https://storage.googleapis.com/tpu-pytorch/lsiyuan-experiment/llama/spiece.model
-
-        # git clone and build transformers ### transformers/
-        git clone -b llama2-google-next-training https://github.com/pytorch-tpu/transformers.git
-        cd transformers
-        sudo pip3 uninstall transformers
-        sudo pip3 install -e .
-        pip3 install datasets
-        pip3 install evaluate
-        pip3 install scikit-learn
-        pip3 install accelerate
-        pwd
-        ls
-
-        # 2B config
-        mkdir 2B
-        cd 2B/
-        wget https://storage.googleapis.com/manfei_public_experimental/2B.json
-        cat 2B.json
-
-        # save llama2 training
-        cd ..
-        echo -e 'python3 transformers/examples/pytorch/language-modeling/run_clm.py --tokenizer_name gpt2 --dataset_name wikitext --dataset_config_name wikitext-2-raw-v1 --per_device_train_batch_size 32 --per_device_eval_batch_size 8 --num_train_epochs 1 --do_train --output_dir /tmp/output --overwrite_output_dir --config_name transformers/2B/2B.json --save_strategy no --logging_strategy no --remove_unused_columns no --spmd_fsdp_sharding --torch_dtype bfloat16 --dataloader_drop_last yes --spmd_grad_chkpt --report_to none > output.txt' >> llama2training.sh
-        echo -e 'import numpy as np' >> getvalue.py
-        echo -e 'file = open("output.txt")' >> getvalue.py
-        echo -e 'content = file.readlines()' >> getvalue.py
-        echo -e 'value_line = content[-1]' >> getvalue.py
-        echo -e 'value_value = float((value_line.split())[2])' >> getvalue.py
-        echo -e 'value_value = np.reciprocal(value_value)' >> getvalue.py
-        echo -e 'if value_value > 6.863 or value_value < 6.209 :' >> getvalue.py
-        echo -e '    raise ValueError("expose to train_steps_per_second exceeded throuhold 6.536 +- 5%")' >> getvalue.py
-        echo -e 'else:' >> getvalue.py
-        echo -e '    print("Finished llama2 test and warm latency/token within expected throuhold 6.536 +- 5%")' >> getvalue.py
-        echo -e 'cat output.txt' >> llama2training.sh
-        echo -e 'python3 transformers/getvalue.py' >> llama2training.sh
-        cat llama2training.sh
-        pwd
-        ls
-      |||,
-    },
-  },
-  local convergence = self.convergence,
-  convergence:: common.Convergence {
-    local config = self,
-
-    command+: [
-      '--num_epochs=20',
-    ],
   },
 
   local v4_8 = self.v4_8,
   v4_8:: {
     accelerator: tpus.v4_8,
   },
-  local v4_32 = self.v4_32,
-  v4_32:: {
-    accelerator: tpus.v4_32,
-  },
 
   configs: [
-    llama2_inference + v4_8 + common.Functional + timeouts.Hours(3) + infer7B,
-    llama2_inference + v4_8 + common.Functional + timeouts.Hours(3) + infer70B,
-    llama2_training + v4_8 + common.Functional + timeouts.Hours(3) + spmd2B,
-    llama2_training + v4_8 + common.Functional + timeouts.Hours(3) + spmd2B128,
-    llama2_training + convergence + v4_8 + common.Functional + timeouts.Hours(3) + spmd2Bconv,
+    llama2_inference + v4_8 + common.Functional + timeouts.Hours(3) + infer,
+    llama2_training + v4_8 + common.Functional + timeouts.Hours(3) + spmd,
   ],
 }

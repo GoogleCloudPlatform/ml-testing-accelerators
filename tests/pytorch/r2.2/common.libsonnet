@@ -96,12 +96,10 @@ local volumes = import 'templates/volumes.libsonnet';
         sudo apt install -y libopenblas-base
         # for huggingface tests
         sudo apt install -y libsndfile-dev
-        pip install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/test/cpu
-        pip install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.2.0rc5-cp310-cp310-manylinux_2_28_x86_64.whl
-        pip install torch_xla[tpu] -f https://storage.googleapis.com/libtpu-releases/index.html
+        pip3 install --user --pre torch torchvision --index-url https://download.pytorch.org/whl/test/cpu
+        pip install --user \
+          'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.2.0rc5-cp310-cp310-manylinux_2_28_x86_64.whl'
         pip3 install pillow
-        pip3 install typing_extensions
-        pip3 install sympy
         git clone --depth=1 -b release/2.2 https://github.com/pytorch/pytorch.git
         cd pytorch
         git clone -b r2.2 https://github.com/pytorch/xla.git
@@ -115,7 +113,6 @@ local volumes = import 'templates/volumes.libsonnet';
       },
     },
   },
-
 
   datasetsVolume: volumes.PersistentVolumeSpec {
     name: 'pytorch-datasets-claim',
@@ -149,7 +146,8 @@ local volumes = import 'templates/volumes.libsonnet';
         export PATH=~/.local/bin:$PATH
       |||,
       tpuVmExtraSetup: |||
-        pip install --user accelerate==0.22.0
+        git clone https://github.com/huggingface/accelerate.git
+        pip install --user ./accelerate
 
         mkdir -p ~/.cache/huggingface/accelerate/
         cat > ~/.cache/huggingface/accelerate/default_config.yaml << 'HF_CONFIG_EOF'
@@ -175,5 +173,5 @@ local volumes = import 'templates/volumes.libsonnet';
   },
 
   // DEPRECATED: Use PyTorchTpuVmMixin instead
-  tpu_vm_r2_1_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
+  tpu_vm_r2_2_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
 }
