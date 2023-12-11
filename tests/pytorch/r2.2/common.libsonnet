@@ -98,6 +98,7 @@ local volumes = import 'templates/volumes.libsonnet';
         sudo apt install -y libsndfile-dev
         pip3 install torch==2.2.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/test/cpu
         pip install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.2.0rc5-cp310-cp310-linux_x86_64.whl
+        pip install torch_xla[tpu] -f https://storage.googleapis.com/libtpu-releases/index.html
         pip3 install pillow
         git clone --depth=1 -b release/2.2 https://github.com/pytorch/pytorch.git
         cd pytorch
