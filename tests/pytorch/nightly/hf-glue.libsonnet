@@ -59,7 +59,6 @@ local utils = import 'templates/utils.libsonnet';
         '--debug=tpu_metrics_debug',
         '--per_device_train_batch_size=%d ' % config.paramsOverride.per_device_train_batch_size,
         '--per_device_eval_batch_size=%d ' % config.paramsOverride.per_device_eval_batch_size,
-        '--save_strategy=no',  // skip checkpointing.
       ],
     },
     command: utils.scriptCommand(
