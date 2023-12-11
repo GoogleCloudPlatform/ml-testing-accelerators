@@ -13,14 +13,11 @@
 // limitations under the License.
 
 local dlrm = import 'tf-dlrm-criteo.libsonnet';
-local gpt2 = import 'tf-gpt2-wikitext.libsonnet';
 local keras_api = import 'tf-keras-api.libsonnet';
 local resnet = import 'tf-resnet-imagenet.libsonnet';
 
 // Add new models here
 std.flattenArrays([
-  dlrm.configs,
   keras_api.configs,
   resnet.configs,
-  gpt2.configs,
 ])
