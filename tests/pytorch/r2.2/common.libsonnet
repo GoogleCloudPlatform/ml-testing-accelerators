@@ -19,14 +19,14 @@ local utils = import 'templates/utils.libsonnet';
 local volumes = import 'templates/volumes.libsonnet';
 
 {
-  local r2_1 = {
-    frameworkPrefix: 'pt-2.1',
+  local r2_2 = {
+    frameworkPrefix: 'pt-2.2',
     tpuSettings+: {
-      softwareVersion: 'pytorch-2.1',
+      softwareVersion: 'pytorch-2.2',
     },
-    imageTag: 'r2.1.0_3.8',
+    imageTag: 'r2.2.0-rc5_3.10',
   },
-  PyTorchTest:: common.PyTorchTest + r2_1 {
+  PyTorchTest:: common.PyTorchTest + r2_2 {
     local config = self,
 
     podTemplate+:: {
@@ -67,7 +67,7 @@ local volumes = import 'templates/volumes.libsonnet';
 
                 ctc = cloud_tpu_client.Client(tpu=os.path.basename('$(TPU_NAME)'), zone=os.path.dirname('$(TPU_NAME)'))
                 ctc.wait_for_healthy()
-                ctc.configure_tpu_version(f'pytorch-2.1-dev{libtpu_date}', restart_type='always')
+                ctc.configure_tpu_version(f'pytorch-2.2-dev{libtpu_date}', restart_type='always')
                 ctc.wait_for_healthy()
               |||,
             ],
@@ -96,51 +96,13 @@ local volumes = import 'templates/volumes.libsonnet';
         sudo apt install -y libopenblas-base
         # for huggingface tests
         sudo apt install -y libsndfile-dev
-        # TODO change back to torch2.1 once pytorch released torch2.1
-        pip install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/test/cpu
-        pip install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.1.0-cp310-cp310-manylinux_2_28_x86_64.whl
+        pip3 install torch==2.2.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/test/cpu
+        pip install https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.2.0rc5-cp310-cp310-linux_x86_64.whl
         pip install torch_xla[tpu] -f https://storage.googleapis.com/libtpu-releases/index.html
         pip3 install pillow
-        pip3 install typing_extensions
-        pip3 install sympy
-        git clone --depth=1 -b release/2.1 https://github.com/pytorch/pytorch.git
+        git clone --depth=1 -b release/2.2 https://github.com/pytorch/pytorch.git
         cd pytorch
-        git clone -b r2.1 https://github.com/pytorch/xla.git
-      |||,
-    },
-    podTemplate+:: {
-      spec+: {
-        initContainerMap+:: {
-          'tpu-version': null,
-        },
-      },
-    },
-  },
-
-  // TODO: Remove after 2.1 release cut
-  XrtTpuVmMixin:: experimental.PyTorchTpuVmMixin {
-    local config = self,
-
-    tpuSettings+: {
-      softwareVersion: 'tpu-ubuntu2204-base',
-      tpuVmPytorchSetup: |||
-        pip3 install -U setuptools
-        # `unattended-upgr` blocks us from installing apt dependencies
-        sudo systemctl stop unattended-upgrades
-        sudo apt-get -y update
-        sudo apt install -y libopenblas-base
-        # for huggingface tests
-        sudo apt install -y libsndfile-dev
-        # TODO change back to torch2.1 once pytorch released torch2.1
-        pip install --user --pre --no-deps torch torchvision --extra-index-url https://download.pytorch.org/whl/test/cpu
-        pip install --user \
-          https://storage.googleapis.com/pytorch-xla-releases/wheels/xrt/tpuvm/torch_xla-2.1.0+xrt-cp310-cp310-manylinux_2_28_x86_64.whl
-        pip3 install pillow
-        pip3 install typing_extensions
-        pip3 install sympy
-        git clone --depth=1 -b release/2.1 https://github.com/pytorch/pytorch.git
-        cd pytorch
-        git clone -b r2.1 https://github.com/pytorch/xla.git
+        git clone -b r2.2 https://github.com/pytorch/xla.git
       |||,
     },
     podTemplate+:: {
@@ -184,7 +146,8 @@ local volumes = import 'templates/volumes.libsonnet';
         export PATH=~/.local/bin:$PATH
       |||,
       tpuVmExtraSetup: |||
-        pip install --user accelerate==0.22.0
+        git clone https://github.com/huggingface/accelerate.git
+        pip install --user ./accelerate
 
         mkdir -p ~/.cache/huggingface/accelerate/
         cat > ~/.cache/huggingface/accelerate/default_config.yaml << 'HF_CONFIG_EOF'
@@ -210,5 +173,5 @@ local volumes = import 'templates/volumes.libsonnet';
   },
 
   // DEPRECATED: Use PyTorchTpuVmMixin instead
-  tpu_vm_r2_1_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
+  tpu_vm_r2_2_install: self.PyTorchTpuVmMixin.tpuSettings.tpuVmPytorchSetup,
 }

@@ -27,6 +27,9 @@ local mixins = import 'templates/mixins.libsonnet';
       # .bash_logout sometimes causes a spurious bad exit code, remove it.
       rm .bash_logout
 
+      # update pip version
+      pip install --upgrade pip
+
       # check for nightly build
       gsutil cp gs://pax-on-cloud-tpu-project/wheels/%(buildDate)s/paxml*.whl .
       gsutil cp gs://pax-on-cloud-tpu-project/wheels/%(buildDate)s/praxis*.whl .
