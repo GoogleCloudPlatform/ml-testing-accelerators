@@ -77,7 +77,7 @@ local volumes = import 'templates/volumes.libsonnet';
     },
   },
   Functional:: mixins.Functional {
-    schedule: '0 7 * * *',
+    schedule: '0 8 * * *',
     tpuSettings+: {
       preemptible: false,
     },
