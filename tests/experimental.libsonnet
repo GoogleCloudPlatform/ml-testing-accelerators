@@ -100,7 +100,7 @@ local volumes = import 'templates/volumes.libsonnet';
 
               # Retry every 30 seconds for up to 10 minutes
               start_time="$(date -u +%%s)"
-              for i in {1..20}; do
+              for i in {1..40}; do
                 set +e
                 gcloud alpha compute tpus tpu-vm create ${tpu_name} \
                   --accelerator-type=%(acceleratorName)s \
