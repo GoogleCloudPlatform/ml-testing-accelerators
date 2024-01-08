@@ -54,27 +54,11 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  local v2 = self.v2,
-  v2:: common.tpuVmBaseImage {
-    extraFlags+:: ['--per_device_train_batch_size 4', '--per_device_eval_batch_size 4'],
-  },
-  local v3 = self.v3,
-  v3:: common.tpuVmBaseImage {
-    extraFlags+:: ['--per_device_train_batch_size 4', '--per_device_eval_batch_size 4'],
-  },
   local v4 = self.v4,
   v4:: common.tpuVmV4Base {
     extraFlags+:: ['--per_device_train_batch_size 8', '--per_device_eval_batch_size 8'],
   },
 
-  local v2_8 = self.v2_8,
-  v2_8:: v2 {
-    accelerator: tpus.v2_8,
-  },
-  local v3_8 = self.v3_8,
-  v3_8:: v3 {
-    accelerator: tpus.v3_8,
-  },
   local v4_8 = self.v4_8,
   v4_8:: v4 {
     accelerator: tpus.v4_8,
@@ -87,7 +71,5 @@ local tpus = import 'templates/tpus.libsonnet';
   configs: [
     hf_bert_mnli + convergence + v4_32,
     hf_bert_mnli + functional + v4_8,
-    hf_bert_mnli + functional + v3_8 + timeouts.Minutes(75),
-    hf_bert_mnli + functional + v2_8 + timeouts.Minutes(75),
   ],
 }
