@@ -22,7 +22,8 @@ local tpus = import 'templates/tpus.libsonnet';
       '--lr_scheduler=constant',
       '--lr_warmup_steps=0',
       '--output_dir=/tmp/sd-pokemon-model',
-      '--checkpoints_total_limit=3',
+      '--checkpoints_total_limit=1',
+      '--checkpointing_steps=6000',
     ],
   },
 
