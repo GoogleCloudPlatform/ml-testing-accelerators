@@ -13,11 +13,10 @@
 // limitations under the License.
 
 local jax_targets = import 'jax/targets.jsonnet';
-local pax_targets = import 'pax/targets.jsonnet';
 local pytorch_targets = import 'pytorch/targets.jsonnet';
 local tensorflow_targets = import 'tensorflow/targets.jsonnet';
 
-local all_targets = tensorflow_targets + pytorch_targets + jax_targets + pax_targets;
+local all_targets = tensorflow_targets + pytorch_targets + jax_targets;
 
 // Mapping from unique test name to test config
 {
