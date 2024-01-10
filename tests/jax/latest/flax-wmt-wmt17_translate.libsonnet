@@ -17,16 +17,6 @@ local mixins = import 'templates/mixins.libsonnet';
 local timeouts = import 'templates/timeouts.libsonnet';
 local tpus = import 'templates/tpus.libsonnet';
 {
-  local functional = self.functional,
-  functional:: mixins.Functional {
-    extraFlags+:: ['--config.num_train_steps=10', '--config.per_device_batch_size=16'],
-    extraConfig:: 'default.py',
-  },
-  local convergence = self.convergence,
-  convergence:: mixins.Convergence {
-    extraConfig:: 'default.py',
-    extraFlags+:: ['--config.reverse_translation=True', '--config.per_device_batch_size=32', '--config.num_train_steps=70000'],
-  },
   local profile = self.profile,
   profile:: mixins.Functional {
     mode: 'profile',
@@ -37,14 +27,6 @@ local tpus = import 'templates/tpus.libsonnet';
   local v3_8 = self.v3_8,
   v3_8:: {
     accelerator: tpus.v3_8,
-  },
-  local v3_32 = self.v3_32,
-  v3_32:: {
-    accelerator: tpus.v3_32,
-  },
-  local v2_8 = self.v2_8,
-  v2_8:: {
-    accelerator: tpus.v2_8,
   },
   local wmt = self.wmt,
   wmt:: common.runFlaxLatest {
@@ -64,8 +46,6 @@ local tpus = import 'templates/tpus.libsonnet';
     ||| % (self.scriptConfig),
   },
   configs: [
-    wmt + functional + v2_8,
-    wmt + convergence + v3_32,
     wmt_profiling + profile + v3_8 + timeouts.Hours(1),
   ],
 }

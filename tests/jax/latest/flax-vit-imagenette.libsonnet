@@ -74,35 +74,11 @@ local tpus = import 'templates/tpus.libsonnet';
     },
   },
 
-  local v2 = self.v2,
-  v2:: common.tpuVmBaseImage {
-    extraFlags+:: ['--per_device_train_batch_size 32', '--per_device_eval_batch_size 32'],
-  },
-  local v3 = self.v3,
-  v3:: common.tpuVmBaseImage {
-    extraFlags+:: ['--per_device_train_batch_size 32', '--per_device_eval_batch_size 32'],
-  },
   local v4 = self.v4,
   v4:: common.tpuVmV4Base {
     extraFlags+:: ['--per_device_train_batch_size 64', '--per_device_eval_batch_size 64'],
   },
 
-  local v2_8 = self.v2_8,
-  v2_8:: {
-    accelerator: tpus.v2_8,
-  },
-  local v2_32 = self.v2_32,
-  v2_32:: {
-    accelerator: tpus.v2_32,
-  },
-  local v3_8 = self.v3_8,
-  v3_8:: {
-    accelerator: tpus.v3_8,
-  },
-  local v3_32 = self.v3_32,
-  v3_32:: {
-    accelerator: tpus.v3_32,
-  },
   local v4_8 = self.v4_8,
   v4_8:: {
     accelerator: tpus.v4_8,
@@ -113,13 +89,10 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   local func_tests = [
-    hf_vit_common + func + v2 + v2_8,
-    hf_vit_common + func + v3 + v3_8,
     hf_vit_common + func + v4 + v4_8,
   ],
 
   local conv_tests = [
-    hf_vit_common + conv + v3 + v3_32,
     hf_vit_common + conv + v4 + v4_32,
   ],
 
