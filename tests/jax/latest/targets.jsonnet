@@ -12,21 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License,
 
-local hf_bart = import 'flax-bart-wiki_summary.libsonnet';
-local hf_bert_mnli = import 'flax-bert-glue_mnli.libsonnet';
-local hf_bert_mrpc = import 'flax-bert-glue_mrpc.libsonnet';
-local hf_gpt2 = import 'flax-gpt2-oscar.libsonnet';
-local hf_sd = import 'flax-sd-pokemon.libsonnet';
-local hf_vit = import 'flax-vit-imagenette.libsonnet';
 local wmt = import 'flax-wmt-wmt17_translate.libsonnet';
 
 // Add new models here
 std.flattenArrays([
-  hf_bart.configs,
-  hf_vit.configs,
-  hf_bert_mnli.configs,
-  hf_bert_mrpc.configs,
-  hf_gpt2.configs,
   wmt.configs,
-  hf_sd.configs,
 ])
