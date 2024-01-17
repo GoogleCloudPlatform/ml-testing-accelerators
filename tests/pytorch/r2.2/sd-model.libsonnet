@@ -65,7 +65,7 @@ local utils = import 'templates/utils.libsonnet';
         pip uninstall -y torch torchvision
         pip3 install --user --pre torch torchvision --index-url https://download.pytorch.org/whl/test/cpu
         pip install --user \
-          'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.2.0rc6-cp310-cp310-manylinux_2_28_x86_64.whl'
+          'torch_xla[tpuvm] @ https://storage.googleapis.com/pytorch-xla-releases/wheels/tpuvm/torch_xla-2.2.0rc8-cp310-cp310-manylinux_2_28_x86_64.whl'
 
         # Setup data
         wget -nv https://s3.amazonaws.com/fast-ai-imageclas/imagenette2.tgz
