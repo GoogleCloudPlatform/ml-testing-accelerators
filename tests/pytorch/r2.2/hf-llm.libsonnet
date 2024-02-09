@@ -106,6 +106,7 @@ local utils = import 'templates/utils.libsonnet';
         export LD_LIBRARY_PATH=/usr/local/lib/
         export PT_XLA_DEBUG=0
         export USE_TORCH=ON
+        export XLA_USE_BF16=1
       |||,
       tpuVmExtraSetup: |||
         pip install --upgrade accelerate
