@@ -1,3 +1,5 @@
+> **_IMPORTANT:_**  This repository is being deprecated. Please migrate or onboard your ML tests to our new repository [here](https://github.com/GoogleCloudPlatform/ml-auto-solutions).
+
 # ML Testing Accelerators
 
 A set of tools and examples to run machine learning tests on ML hardware
