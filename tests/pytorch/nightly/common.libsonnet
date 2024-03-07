@@ -77,12 +77,14 @@ local volumes = import 'templates/volumes.libsonnet';
     },
   },
   Functional:: mixins.Functional {
-    schedule: '0 6 * * *',
+    schedule: null,
     tpuSettings+: {
       preemptible: false,
     },
   },
-  Convergence:: mixins.Convergence,
+  Convergence:: mixins.Convergence {
+    schedule: null,
+  },
   PyTorchTpuVmMixin:: experimental.PyTorchTpuVmMixin + experimental.PjRt {
     local config = self,
 
