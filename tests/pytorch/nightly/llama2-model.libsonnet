@@ -19,12 +19,10 @@ local tpus = import 'templates/tpus.libsonnet';
 local utils = import 'templates/utils.libsonnet';
 
 {
-  local llama2_inference = self.llama2_inference,
-  llama2_inference:: common.PyTorchTest {
-    local config = self,
-    modelName: 'llama2-i',
+  local llama2 = self.llama2,
+  llama2:: common.PyTorchTest {
+    modelName: 'llama2',
     paramsOverride:: {
-      scriptPath: 'llama/7B/llama2inference.sh',
       trainCommand: [
         'bash',
         self.scriptPath,
@@ -32,26 +30,13 @@ local utils = import 'templates/utils.libsonnet';
     },
     command: self.paramsOverride.trainCommand,
   },
-  local llama2_training = self.llama2_training,
-  llama2_training:: common.PyTorchTest {
-    local config = self,
-    modelName: 'llama2-t',
-    paramsOverride:: {
-      scriptPath: 'transformers/7B/llama2training.sh',
-      trainCommand: [
-        'bash',
-        self.scriptPath,
-      ],
-    },
-    command: self.paramsOverride.trainCommand,
-  },
-  local pjrt = self.pjrt,
-  pjrt:: common.PyTorchTpuVmMixin {
-    modelName: 'llama2-pjrt',
-  },
+
   local infer = self.infer,
-  infer:: common.PyTorchTpuVmMixin + pjrt {
+  infer:: common.Functional + common.PyTorchTpuVmMixin {
     modelName+: '-infer',
+    paramsOverride+:: {
+      scriptPath: 'llama/7B/llama2inference.sh',
+    },
     tpuSettings+: {
       tpuVmExtraSetup: |||
         # install tokenizer model
@@ -85,8 +70,11 @@ local utils = import 'templates/utils.libsonnet';
     },
   },
   local spmd = self.spmd,
-  spmd:: common.PyTorchTpuVmMixin + pjrt {
+  spmd:: common.Functional + common.PyTorchTpuVmMixin {
     modelName+: '-train-spmd',
+    paramsOverride+:: {
+      scriptPath: 'transformers/7B/llama2training.sh',
+    },
     tpuSettings+: {
       tpuVmExports+: |||
         export XLA_USE_BF16=1
@@ -137,7 +125,7 @@ local utils = import 'templates/utils.libsonnet';
   },
 
   configs: [
-    llama2_inference + v4_8 + common.Functional + timeouts.Hours(3) + infer,
-    llama2_training + v4_8 + common.Functional + timeouts.Hours(3) + spmd,
+    llama2 + v4_8 + infer + timeouts.Hours(3),
+    llama2 + v4_8 + spmd + timeouts.Hours(3),
   ],
 }
