@@ -145,11 +145,83 @@ local tpus = import 'templates/tpus.libsonnet';
     memory: '40Gi',
 
     // Disable XLA metrics report on GPU
-    command+: [
-      '--nometrics_debug',
+    command: [
+      'bash',
+      '-c',
+      |||
+        export PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+
+        nvidia-smi
+        nvcc -V
+
+        pip3 install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121
+        pip install --user https://storage.googleapis.com/pytorch-xla-releases/wheels/cuda/12.1/torch_xla-2.1.0-cp310-cp310-manylinux_2_28_x86_64.whl
+
+        git clone --depth=1 https://github.com/pytorch/pytorch.git
+        cd pytorch
+        git clone https://github.com/pytorch/xla.git
+
+        while true
+        do
+          ip=$(getent hosts ptxla-hello-world-0.headless-svc-$(JOB_NAME) | awk {'print $1'})
+          if [ $? -eq 0 ] && [ \"${ip}\" != \"\" ]
+          then
+            break
+          else
+            sleep 10
+          fi
+        done
+        echo $ip
+
+        PJRT_DEVICE=CUDA torchrun --nnodes=4 --node_rank=$JOB_COMPLETION_INDEX --nproc_per_node=4 --rdzv_endpoint=$ip:12355 xla/test/test_train_mp_imagenet.py  --fake_data --pjrt_distributed --batch_size=128 --num_epochs=1"
+      |||,
     ],
     flags+: {
       modelDir: null,
+    },
+
+    jobTemplate+:: {
+      spec+: {
+        completionMode: 'Indexed',
+        completions: 4,
+        parallelism: 4,
+      },
+    },
+
+    podTemplate+:: {
+      spec+: {
+        initContainerMap+:: {
+          'tpu-version': {
+            command: [
+              "echo JOB_NAME=$(JOB_NAME)",
+              "echo POD_NAME=$(POD_NAME)",
+              "kubectl patch job $(JOB_NAME) -p \'{\"spec\":{\"subdomain\": \"headless-svc-$(JOB_NAME)\"}}\'",
+              "kubectl expose headless-svc-$(JOB_NAME) --type='None' --selector='job-name: $(JOB_NAME)'",
+            ],
+            "image": "google/cloud-sdk",
+          },
+        },
+        containerMap+:: {
+          train+: {
+            ports: [
+              {
+                containerPort: 1234,
+              },
+            ],
+          },
+        },
+        // subdomain: 'headless-svc-$(JOB_NAME)', doesn't work.
+        // subdomain: "headless-svc-metadata.labels['job-name']", doesn't work.
+        tolerations: [
+          {
+            key: "nvidia.com/gpu",
+            operator: "Exists",
+            effect: "NoSchedule",
+          },
+        ],
+        
+      },
     },
   },
   local v100x4 = self.v100x4,
@@ -194,6 +266,7 @@ local tpus = import 'templates/tpus.libsonnet';
   },
 
   configs: [
+    resnet50 + functional + v100x4 + timeouts.Hours(2),
     // PJRT
     resnet50 + fake_data + v2_8 + timeouts.Hours(3) + pjrt,
     resnet50 + fake_data + v3_8 + timeouts.Hours(2) + pjrt,
