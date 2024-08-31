@@ -1,0 +1,30 @@
+"apiVersion": "batch/v1"
+"kind": "CronJob"
+"metadata":
+  "name": "cronjob-cleanup"
+"spec":
+  "jobTemplate":
+    "spec":
+      "backoffLimit": 0
+      "template":
+        "spec":
+          "containers":
+          - "args":
+            - |
+              cat > tests.txt <<EOF
+              cronjob.batch/jax-pod-head-tpu-ubuntu2204-base-func-v2-32-1vm
+              cronjob.batch/jax-pod-latest-tpu-ubuntu2204-base-func-v2-32-1vm
+              EOF
+              
+              delete_list=$(kubectl get cronjob --namespace=automated -l benchmarkId -o name | grep -vx -f tests.txt)
+              if [[ "$delete_list" ]]; then
+                kubectl delete $delete_list;
+              fi
+            "command":
+            - "bash"
+            - "-cx"
+            "image": "google/cloud-sdk"
+            "name": "clean"
+          "restartPolicy": "Never"
+          "serviceAccount": "cronjob-cleaner"
+  "schedule": "0 */4 * * *"
