@@ -122,7 +122,7 @@ local volumes = import 'templates/volumes.libsonnet';
   },
   GpuMixin:: {
     local config = self,
-    imageTag+: '_cuda_11.8',
+    imageTag: 'nightly_3.10_cuda_12.1',
 
     podTemplate+:: {
       spec+: {
