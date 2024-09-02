@@ -13,8 +13,10 @@
 // limitations under the License.
 
 local r2_14 = import 'r2.14/targets.jsonnet';
+local r2_15 = import 'r2.15/targets.jsonnet';
 
 // Add new versions here
 std.flattenArrays([
   r2_14,
+  r2_15,
 ])
