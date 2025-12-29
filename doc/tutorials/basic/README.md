@@ -1,4 +1,3 @@
-
 # Creating Tests with JSonnet Templates
 
 ## Prerequisites
@@ -30,7 +29,7 @@
     kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/cos/daemonset-preloaded.yaml
     ```
 1. A GCS bucket.
-  - To create a new GCS bucket, run `gsutil mb -c standard -l us-central1 gs://your-bucket-name`
+  - To create a new GCS bucket, run `gcloud storage buckets create gs://your-bucket-name --default-storage-class=standard --location=us-central1`
 
 `ml-testing-accelerators` relies heavily on GKE to run workloads, so it is also expected that you should have basic familiarity with creating and running Kubernetes batch workloads. If you need a refresher, see the following documents:
 

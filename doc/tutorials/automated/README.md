@@ -23,7 +23,7 @@ It is strongly recommended that you work through the [`basic` tutorial](../basic
     gcloud container clusters get-credentials tutorial-cluster --project $PROJECT_ID --zone us-central1-b
     ```
 1. A GCS bucket, if you didn't create one in the previous tutorial.
-  - To create a new GCS bucket, run `gsutil mb -c standard -l us-central1 gs://your-bucket-name`
+  - To create a new GCS bucket, run `gcloud storage buckets create gs://your-bucket-name --default-storage-class=standard --location=us-central1`
 
 Before you begin, set the following environment variables:
 
