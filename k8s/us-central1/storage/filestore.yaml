@@ -49,11 +49,11 @@ spec:
           - name: sync
             image: google/cloud-sdk
             command:
-            - gsutil
-            - -m
+            - gcloud
+            - storage
             - rsync
-            - -d
-            - -r
+            - --delete-unmatched-destination-objects
+            - --recursive
             - gs://xl-ml-test-filestore
             - /filestore
             volumeMounts:

@@ -28,7 +28,7 @@ local utils = import 'templates/utils.libsonnet';
     pip install -r no_vision_require.txt
   |||,
   local command_copy_metrics = |||
-    gsutil -m cp -r ./tensorboard-metrics/* $(MODEL_DIR)
+    gcloud storage cp --recursive ./tensorboard-metrics/* $(MODEL_DIR)
   |||,
   local hf_glue = self.hf_glue,
   hf_glue:: common.PyTorchTest {

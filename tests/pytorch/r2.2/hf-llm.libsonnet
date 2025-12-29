@@ -20,7 +20,7 @@ local utils = import 'templates/utils.libsonnet';
 
 {
   local command_copy_metrics = |||
-    gsutil -m cp -r /tmp/test-clm/*.json $(MODEL_DIR)
+    gcloud storage cp --recursive /tmp/test-clm/*.json $(MODEL_DIR)
   |||,
 
   local gpt2_model = self.gpt2_model,
@@ -116,8 +116,8 @@ local utils = import 'templates/utils.libsonnet';
         pip install .
         git log -1
         pip install datasets evaluate scikit-learn
-        gsutil cp -r gs://cloud-tpu-tpuvm-artifacts/config/xl-ml-test/pytorch/gpt2/my_config_*.json examples/pytorch/language-modeling/
-        gsutil cp gs://cloud-tpu-tpuvm-artifacts/config/xl-ml-test/pytorch/gpt2/fsdp_config.json examples/pytorch/language-modeling/
+        gcloud storage cp --recursive gs://cloud-tpu-tpuvm-artifacts/config/xl-ml-test/pytorch/gpt2/my_config_*.json examples/pytorch/language-modeling/
+        gcloud storage cp gs://cloud-tpu-tpuvm-artifacts/config/xl-ml-test/pytorch/gpt2/fsdp_config.json examples/pytorch/language-modeling/
       |||,
     },
   },

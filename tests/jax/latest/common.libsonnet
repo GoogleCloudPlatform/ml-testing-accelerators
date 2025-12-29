@@ -76,7 +76,7 @@ local tpus = import 'templates/tpus.libsonnet';
         %(extraFlags)s
 
       # Upload files from worker 0, and ignore CommandException for the rest workers in TPU pod
-      gsutil -m cp -r ${OUTPUT_DIR} $(MODEL_DIR) || exit 0
+      gcloud storage cp --recursive ${OUTPUT_DIR} $(MODEL_DIR) || exit 0
     ||| % (self.scriptConfig { extraFlags: std.join(' ', config.extraFlags) }),
   },
 }
